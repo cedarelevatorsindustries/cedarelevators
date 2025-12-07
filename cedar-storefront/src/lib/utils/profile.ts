@@ -1,0 +1,248 @@
+import { AccountType, ProfileNavigationGroup, PROFILE_SECTIONS } from '@/lib/constants/profile'
+
+export function getInitials(firstName: string, lastName: string): string {
+  const first = firstName?.charAt(0)?.toUpperCase() || ''
+  const last = lastName?.charAt(0)?.toUpperCase() || ''
+  return `${first}${last}` || 'U'
+}
+
+export function getProfileNavigation(accountType: AccountType): ProfileNavigationGroup[] {
+  const commonNavigation: ProfileNavigationGroup[] = [
+    {
+      title: 'Account',
+      icon: 'User',
+      items: [
+        {
+          section: PROFILE_SECTIONS.OVERVIEW,
+          label: 'Dashboard',
+          icon: 'LayoutDashboard',
+        },
+        {
+          section: PROFILE_SECTIONS.PERSONAL_INFO,
+          label: 'Personal Info',
+          icon: 'User',
+        },
+        {
+          section: PROFILE_SECTIONS.ADDRESSES,
+          label: 'Addresses',
+          icon: 'MapPin',
+        },
+        {
+          section: PROFILE_SECTIONS.CHANGE_PASSWORD,
+          label: 'Change Password',
+          icon: 'Lock',
+        },
+      ],
+    },
+    {
+      title: 'Orders & Quotes',
+      icon: 'Package',
+      items: [
+        {
+          section: PROFILE_SECTIONS.ORDER_HISTORY,
+          label: 'Order History',
+          icon: 'Package',
+        },
+        {
+          section: PROFILE_SECTIONS.QUOTES,
+          label: 'My Quotes',
+          icon: 'FileText',
+        },
+        {
+          section: PROFILE_SECTIONS.WISHLISTS,
+          label: 'Wishlist',
+          icon: 'Heart',
+        },
+      ],
+    },
+    {
+      title: 'Settings',
+      icon: 'Settings',
+      items: [
+        {
+          section: PROFILE_SECTIONS.SECURITY,
+          label: 'Security Settings',
+          icon: 'Shield',
+        },
+        {
+          section: PROFILE_SECTIONS.NOTIFICATIONS,
+          label: 'Notifications',
+          icon: 'Bell',
+        },
+      ],
+    },
+  ]
+
+  // Add business-specific navigation
+  if (accountType === 'business') {
+    return [
+      ...commonNavigation.slice(0, 1),
+      {
+        title: 'Business',
+        icon: 'Building2',
+        items: [
+          {
+            section: PROFILE_SECTIONS.BUSINESS_INFO,
+            label: 'Business Info',
+            icon: 'Building2',
+          },
+          {
+            section: PROFILE_SECTIONS.APPROVALS,
+            label: 'Verification',
+            icon: 'CheckCircle',
+            badge: 'status',
+          },
+          {
+            section: PROFILE_SECTIONS.BUSINESS_DOCUMENTS,
+            label: 'Business Documents',
+            icon: 'Upload',
+          },
+          {
+            section: PROFILE_SECTIONS.PAYMENT_METHODS,
+            label: 'Payment Methods',
+            icon: 'CreditCard',
+          },
+          {
+            section: PROFILE_SECTIONS.INVOICES,
+            label: 'Invoices',
+            icon: 'FileText',
+          },
+        ],
+      },
+      ...commonNavigation.slice(1),
+    ]
+  }
+
+  return commonNavigation
+}
+
+export function formatPhoneNumber(phone: string): string {
+  // Remove all non-numeric characters
+  const cleaned = phone.replace(/\D/g, '')
+  
+  // Format as (XXX) XXX-XXXX for 10-digit numbers
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`
+  }
+  
+  // Format with country code for 11+ digit numbers
+  if (cleaned.length > 10) {
+    const countryCode = cleaned.slice(0, cleaned.length - 10)
+    const areaCode = cleaned.slice(-10, -7)
+    const firstPart = cleaned.slice(-7, -4)
+    const lastPart = cleaned.slice(-4)
+    return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`
+  }
+  
+  return phone
+}
+
+export function getAccountTypeBadge(accountType: AccountType): {
+  label: string
+  color: string
+} {
+  switch (accountType) {
+    case 'business':
+      return { label: 'Business', color: 'blue' }
+    case 'individual':
+      return { label: 'Individual', color: 'green' }
+    default:
+      return { label: 'Guest', color: 'gray' }
+  }
+}
+
+export interface PasswordStrength {
+  score: number // 0-4
+  strength: 'weak' | 'medium' | 'strong'
+  label: 'Weak' | 'Fair' | 'Good' | 'Strong' | 'Very Strong'
+  color: string
+  feedback: string[]
+  isValid: boolean
+}
+
+export function validatePasswordStrength(password: string): PasswordStrength {
+  let score = 0
+  const feedback: string[] = []
+
+  // Check length
+  if (password.length >= 8) {
+    score++
+  } else {
+    feedback.push('Password should be at least 8 characters long')
+  }
+
+  // Check for lowercase letters
+  if (/[a-z]/.test(password)) {
+    score++
+  } else {
+    feedback.push('Add lowercase letters')
+  }
+
+  // Check for uppercase letters
+  if (/[A-Z]/.test(password)) {
+    score++
+  } else {
+    feedback.push('Add uppercase letters')
+  }
+
+  // Check for numbers
+  if (/\d/.test(password)) {
+    score++
+  } else {
+    feedback.push('Add numbers')
+  }
+
+  // Check for special characters
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    score++
+  } else {
+    feedback.push('Add special characters (!@#$%^&*)')
+  }
+
+  // Bonus: Check for length > 12
+  if (password.length >= 12) {
+    score = Math.min(score + 1, 5)
+  }
+
+  // Determine label and color based on score
+  let label: PasswordStrength['label']
+  let strength: PasswordStrength['strength']
+  let color: string
+  let isValid: boolean
+
+  if (score <= 1) {
+    label = 'Weak'
+    strength = 'weak'
+    color = 'red'
+    isValid = false
+  } else if (score === 2) {
+    label = 'Fair'
+    strength = 'weak'
+    color = 'orange'
+    isValid = false
+  } else if (score === 3) {
+    label = 'Good'
+    strength = 'medium'
+    color = 'yellow'
+    isValid = true
+  } else if (score === 4) {
+    label = 'Strong'
+    strength = 'strong'
+    color = 'green'
+    isValid = true
+  } else {
+    label = 'Very Strong'
+    strength = 'strong'
+    color = 'emerald'
+    isValid = true
+  }
+
+  return {
+    score: Math.min(score, 4), // Cap at 4 for display purposes
+    strength,
+    label,
+    color,
+    feedback: feedback.length > 0 ? feedback : ['Password meets all requirements'],
+    isValid,
+  }
+}

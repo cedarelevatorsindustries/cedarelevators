@@ -1,0 +1,161 @@
+============================================================
+SOFTWARE LICENSE AGREEMENT
+Cedar Elevator Industries – E-Commerce Platform
+(Elevator Components Store)
+============================================================
+
+Copyright © 2025 Cedar Elevator Industries. All rights reserved.
+
+Developed by Mergex
+https://mergex.in
+
+This Software (the "E-Commerce Platform") including but not limited to 
+source code, design assets, database structure, documentation, Medusa v2 
+backend customizations, Clerk authentication module, custom Next.js 
+storefront, and all associated media (collectively referred to as the 
+"Software") is the exclusive property of Cedar Elevator Industries.
+
+============================================================
+1. GRANT OF LICENSE
+============================================================
+
+Cedar Elevator Industries hereby grants you (the "Licensee" – Cedar 
+Elevator Industries and its authorized personnel) a limited, non-exclusive, 
+non-transferable, non-sublicensable, perpetual license to use the Software 
+solely for operating the official Cedar Elevator Industries e-commerce 
+website at https://cedarelevator.com and any subdomains thereof.
+
+============================================================
+2. OWNERSHIP & INTELLECTUAL PROPERTY
+============================================================
+
+The Software was entirely designed, developed, and deployed by MergeX 
+(https://mergex.in), Chennai, Tamil Nadu, India.
+
+All intellectual property rights, title, and interest in and to the source 
+code and custom development remain jointly owned by Cedar Elevator 
+Industries and MergeX. This license does not constitute a sale of the 
+source code.
+
+============================================================
+3. PERMITTED USE
+============================================================
+
+You may:
+• Operate the Software on the live domain cedarelevator.com
+• Make modifications and improvements for internal business use
+• Create backups of the Software
+• Use the Software for selling elevator components and related products
+
+============================================================
+4. RESTRICTIONS
+============================================================
+
+You may NOT:
+• Resell, distribute, lease, sublicense, or white-label the Software
+• Use the Software on any other domain or for any other company
+• Offer the platform as SaaS to third parties
+• Remove or obscure the "Developed by MergeX" credit without written consent
+• Transfer this license to any third party
+
+============================================================
+5. THIRD-PARTY COMPONENTS
+============================================================
+
+This Software incorporates the following open-source components:
+
+• Medusa (https://medusajs.com) - MIT License
+• Next.js (https://nextjs.org) - MIT License
+• React (https://react.dev) - MIT License
+• Clerk (https://clerk.com) - Commercial License
+• Neon Database (https://neon.tech) - Commercial License
+• Tailwind CSS (https://tailwindcss.com) - MIT License
+
+Each third-party component is subject to its own license terms. This 
+license applies only to the custom development and integration work 
+performed by Mergex.
+
+============================================================
+6. SUPPORT & MAINTENANCE
+============================================================
+
+Support and maintenance services are provided separately by Mergex under 
+a separate service agreement. This license does not include any obligation 
+for support, updates, or maintenance.
+
+For support inquiries, contact:
+Mergex
+Chennai, Tamil Nadu, India
+support@mergex.in
+https://mergex.in
+
+============================================================
+7. WARRANTY DISCLAIMER
+============================================================
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+CEDAR ELEVATOR INDUSTRIES OR MERGEX BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+OTHER DEALINGS IN THE SOFTWARE.
+
+============================================================
+8. LIMITATION OF LIABILITY
+============================================================
+
+IN NO EVENT SHALL CEDAR ELEVATOR INDUSTRIES OR MERGEX BE LIABLE FOR ANY 
+SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER 
+(INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, 
+BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER 
+PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THIS 
+SOFTWARE, EVEN IF CEDAR ELEVATOR INDUSTRIES OR MERGEX HAS BEEN ADVISED 
+OF THE POSSIBILITY OF SUCH DAMAGES.
+
+============================================================
+9. TERMINATION
+============================================================
+
+This license is effective until terminated. Your rights under this license 
+will terminate automatically without notice if you fail to comply with any 
+term(s) of this license. Upon termination, you must cease all use of the 
+Software and destroy all copies.
+
+============================================================
+10. GOVERNING LAW
+============================================================
+
+This Agreement shall be governed by and construed in accordance with the 
+laws of India, without regard to its conflict of law provisions. Any 
+disputes arising under this Agreement shall be subject to the exclusive 
+jurisdiction of the courts in Chennai, Tamil Nadu, India.
+
+============================================================
+11. ENTIRE AGREEMENT
+============================================================
+
+This Agreement constitutes the entire agreement between the parties 
+concerning the subject matter hereof and supersedes all prior or 
+contemporaneous oral or written agreements concerning such subject matter.
+
+============================================================
+12. CONTACT INFORMATION
+============================================================
+
+For licensing inquiries or permissions:
+
+Cedar Elevator Industries
+Website: https://cedarelevator.com
+
+Developer:
+Mergex
+Chennai, Tamil Nadu, India
+Website: https://mergex.in
+
+============================================================
+
+Last Updated: November 30, 2024
+Version: 1.0.0
+
+============================================================
