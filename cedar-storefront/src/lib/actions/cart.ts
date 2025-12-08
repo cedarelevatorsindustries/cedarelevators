@@ -31,7 +31,7 @@ export async function initiatePaymentSession(
     sessionData.save = "1"
   }
 
-  return sdk.store.payment.initiatePaymentSession(paymentCollectionId, {
+  return sdk.store.payment.initiatePaymentSession(cart, {
     provider_id: data?.provider_id || "razorpay",
     data: sessionData,
   })
@@ -47,7 +47,8 @@ export async function setPaymentSession(
     throw new Error("Payment collection not found")
   }
 
-  return sdk.store.payment.updatePaymentCollection(paymentCollectionId, {
+  // Use initiatePaymentSession to set the provider
+  return sdk.store.payment.initiatePaymentSession(cart, {
     provider_id: providerId,
   })
 }

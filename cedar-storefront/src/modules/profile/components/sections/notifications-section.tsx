@@ -46,7 +46,7 @@ export default function NotificationsSection({
   }
 
   const togglePreference = (key: keyof NotificationPreferences) => {
-    setFormData((prev: NotificationPreferences) => ({
+    setFormData((prev) => ({
       ...prev,
       [key]: !prev[key],
     }))

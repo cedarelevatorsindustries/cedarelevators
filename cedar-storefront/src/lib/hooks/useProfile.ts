@@ -12,13 +12,17 @@ export function useProfile() {
   const [isLoading, setIsLoading] = useState(true)
   const [addresses, setAddresses] = useState<Address[]>([])
   const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>({
-    email_marketing: false,
-    email_order_updates: true,
-    email_quote_updates: true,
-    email_promotions: false,
-    sms_order_updates: false,
-    sms_quote_updates: false,
-    push_notifications: true,
+    order_updates_email: true,
+    order_updates_sms: false,
+    order_updates_push: true,
+    quote_responses_email: true,
+    quote_responses_push: true,
+    price_drops_email: false,
+    stock_alerts_email: false,
+    promotions_email: false,
+    newsletters_email: false,
+    account_security_email: true,
+    team_activity_email: false,
   })
   const [activeSection, setActiveSection] = useState<ProfileSection>('overview')
 

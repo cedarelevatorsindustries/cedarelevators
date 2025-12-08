@@ -32,8 +32,8 @@ export async function getSavedPaymentMethods(
         credentials: "include",
       }
     )
-    .then((res) => res)
-    .catch((error) => {
+    .then((res: SavedPaymentMethodsResponse) => res)
+    .catch((error: unknown) => {
       console.error("Error fetching saved payment methods:", error)
       return { payment_methods: [] }
     })

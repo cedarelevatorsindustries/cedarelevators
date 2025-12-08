@@ -32,7 +32,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
         const { getQuoteByNumber } = await import('@/lib/actions/quotes')
         const result = await getQuoteByNumber(quoteNumber)
 
-        if (result.success && result.quote) {
+        if (result.success && 'quote' in result && result.quote) {
           setQuote(result.quote as Quote)
         }
       } catch (error) {
@@ -57,7 +57,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
         // Refresh quote data
         const { getQuoteByNumber } = await import('@/lib/actions/quotes')
         const refreshResult = await getQuoteByNumber(quoteNumber)
-        if (refreshResult.success && refreshResult.quote) {
+        if (refreshResult.success && 'quote' in refreshResult && refreshResult.quote) {
           setQuote(refreshResult.quote as Quote)
         }
         setNewMessage('')
@@ -81,7 +81,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
         // Refresh quote data
         const { getQuoteByNumber } = await import('@/lib/actions/quotes')
         const refreshResult = await getQuoteByNumber(quoteNumber)
-        if (refreshResult.success && refreshResult.quote) {
+        if (refreshResult.success && 'quote' in refreshResult && refreshResult.quote) {
           setQuote(refreshResult.quote as Quote)
         }
       }
@@ -136,19 +136,21 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
   const mockQuote: Quote = {
   id: '1',
   quote_number: 'Q10042',
-  company_id: 'comp1',
-  customer_id: 'cust1',
   company_name: 'CEDAR ELEVATORS INDUSTRIES',
   customer_name: 'Rajesh Kumar',
   customer_email: 'rajesh@cedar.com',
   status: 'accepted',
   requested_date: '2025-11-18T10:00:00Z',
   valid_until: '2025-12-18T10:00:00Z',
+  subtotal: 1036400,
+  tax_total: 186552,
+  discount_total: 148800,
+  total: 1240000,
   items: [
     {
       id: '1',
-      product_id: 'prod1',
       variant_id: 'var1',
+      product_id: 'prod1',
       product_name: 'Elevator Controller',
       quantity: 5,
       unit_price: 85000,
@@ -158,8 +160,8 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
     },
     {
       id: '2',
-      product_id: 'prod2',
       variant_id: 'var2',
+      product_id: 'prod2',
       product_name: 'Traction Machine',
       quantity: 3,
       unit_price: 240000,
@@ -168,10 +170,6 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
       total: 662400,
     },
   ],
-  subtotal: 1036400,
-  tax_total: 186552,
-  discount_total: 148800,
-  total: 1240000,
   attachments: [
     {
       id: '1',
@@ -210,8 +208,6 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
       is_internal: false,
     },
   ],
-  created_at: '2025-11-18T10:00:00Z',
-  updated_at: '2025-11-18T10:00:00Z',
 }
 
   // Use actual quote data

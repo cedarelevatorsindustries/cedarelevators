@@ -24,7 +24,7 @@ export default function ExclusiveProducts() {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {exclusiveProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} product={product as any} />
         ))}
       </div>
     </section>

@@ -36,9 +36,17 @@ export function formatPaymentLabel(status: string): string {
 }
 
 export function calculateOrderSummary(orders: HttpTypes.StoreOrder[]) {
+  const delivered = orders.filter(o => o.status === 'delivered').length
+  const inTransit = orders.filter(o => o.status === 'shipped' || o.status === 'processing').length
+  const totalSpent = orders.reduce((sum, order) => sum + (order.total || 0), 0)
+  
   return {
     total: orders.length,
-    totalValue: orders.reduce((sum, order) => sum + (order.total || 0), 0),
+    totalOrders: orders.length,
+    totalValue: totalSpent,
+    totalSpent,
+    delivered,
+    inTransit,
   }
 }
 
@@ -47,16 +55,20 @@ export function filterOrdersByStatus(orders: HttpTypes.StoreOrder[], status: str
   return orders.filter(order => order.status === status)
 }
 
-export function filterOrdersByDateRange(orders: HttpTypes.StoreOrder[], range: string) {
+export function filterOrdersByDateRange(orders: HttpTypes.StoreOrder[], range: string | number) {
   const now = new Date()
+  const rangeStr = typeof range === 'number' ? range.toString() : range
   const filtered = orders.filter(order => {
     const orderDate = new Date(order.created_at)
-    switch (range) {
+    switch (rangeStr) {
       case 'last_7_days':
+      case '7':
         return (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24) <= 7
       case 'last_30_days':
+      case '30':
         return (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24) <= 30
       case 'last_90_days':
+      case '90':
         return (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24) <= 90
       default:
         return true

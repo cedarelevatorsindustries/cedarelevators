@@ -20,7 +20,10 @@ export async function getQuotes(filters: QuoteFilters) {
   }
 }
 
-export async function getQuoteByNumber(quoteNumber: string) {
+export async function getQuoteByNumber(quoteNumber: string): Promise<
+  | { success: true; quote: Quote | null }
+  | { success: false; error: string }
+> {
   try {
     // TODO: Implement actual quote fetching from database
     const quote: Quote | null = null

@@ -366,7 +366,7 @@ export default function AddressesSection({
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="text-gray-600">
-                      {getAddressIcon(address.type)}
+                      {getAddressIcon(address.type || 'home')}
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 capitalize">

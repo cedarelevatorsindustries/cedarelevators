@@ -1,6 +1,6 @@
 "use client"
 
-import { Info, TrendingDown } from "lucide-react"
+import Link from "next/link"
 
 interface PricingBlockSectionProps {
   showPrice: boolean
@@ -30,7 +30,7 @@ export default function PricingBlockSection({
     : null
 
   return (
-    <div className="bg-gray-50 rounded-xl p-6 space-y-4">
+    <div className="border-t border-b border-gray-200 py-4">
       {showPrice && price ? (
         <>
           {/* Verified Business - Show Price */}
@@ -45,71 +45,58 @@ export default function PricingBlockSection({
                 </span>
                 {discount && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded">
-                    <TrendingDown className="w-4 h-4" />
                     {discount}% OFF
                   </span>
                 )}
               </>
             )}
           </div>
-          
-          <div className="flex items-start gap-2 text-sm text-green-700 bg-green-50 p-3 rounded-lg">
-            <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <p>
-              <strong>Verified Business Pricing</strong> - Instant checkout available
-            </p>
-          </div>
-
-          {/* Bulk Pricing Hint */}
-          <p className="text-sm text-gray-600">
-            💼 <strong>Bulk orders?</strong> Contact us for volume discounts
-          </p>
         </>
       ) : (
         <>
-          {/* Non-Verified - Show XXX */}
-          <div className="space-y-3">
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-gray-400 tracking-wider">
-                ₹ XXX
-              </span>
-              <span className="text-sm text-gray-500">(Price hidden)</span>
+          {/* Guest User - Simple Text Prompt */}
+          {isGuest && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              <h3 className="text-lg font-bold text-blue-600 mb-1">
+                Price Information Hidden
+              </h3>
+              <p className="text-sm text-gray-700">
+                Login or <Link href="/sign-up" className="text-blue-600 font-semibold underline">Register as Business</Link> to see the full price.
+              </p>
             </div>
+          )}
 
-            {/* Contextual Message */}
-            <div className="flex items-start gap-2 text-sm bg-orange-50 text-orange-700 p-3 rounded-lg">
-              <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div>
-                {isGuest ? (
-                  <p>
-                    <strong>Login to see pricing</strong> - Sign in to view product prices
-                  </p>
-                ) : isBusiness && !isVerified ? (
-                  <p>
-                    <strong>Verify your account to see pricing</strong> - Complete business verification to access prices
-                  </p>
-                ) : (
-                  <p>
-                    <strong>Request a quote for pricing</strong> - Our team will provide a custom quote
-                  </p>
-                )}
-              </div>
+          {/* Business User (Not Verified) - Simple Text Prompt */}
+          {isBusiness && !isVerified && (
+            <div className="bg-yellow-50 border border-yellow-400 rounded-lg p-4">
+              <h3 className="text-lg font-bold text-yellow-900 mb-1">
+                Verify your business to see prices
+              </h3>
+              <p className="text-sm text-yellow-800">
+                Access exclusive B2B pricing and add items to your cart by completing your{" "}
+                <Link href="/profile/verification" className="font-semibold underline">
+                  business verification
+                </Link>.
+              </p>
             </div>
+          )}
 
-            {/* CTA */}
-            <p className="text-sm text-gray-600">
-              📞 <strong>Need pricing?</strong> Request a quote or contact our sales team
-            </p>
-          </div>
+          {/* Individual User - Simple Text Prompt */}
+          {!isGuest && !isBusiness && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <h3 className="text-lg font-bold text-purple-600 mb-1">
+                Business Pricing Available
+              </h3>
+              <p className="text-sm text-gray-700">
+                <Link href="/profile/account" className="font-semibold underline text-purple-600">
+                  Upgrade to a business account
+                </Link>{" "}
+                to access wholesale pricing and checkout features.
+              </p>
+            </div>
+          )}
         </>
       )}
-
-      {/* Additional Info */}
-      <div className="pt-4 border-t space-y-2 text-sm text-gray-600">
-        <p>✓ GST included in price</p>
-        <p>✓ Free shipping on orders above ₹50,000</p>
-        <p>✓ 2-year warranty included</p>
-      </div>
     </div>
   )
 }

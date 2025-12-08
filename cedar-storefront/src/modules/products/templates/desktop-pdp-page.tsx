@@ -8,17 +8,14 @@ import Link from "next/link"
 // Import desktop sections
 import ProductHeroSection from "../sections/01-product-hero-section"
 import TitleBadgesSection from "../sections/02-title-badges-section"
-import ShortDescriptionSection from "../sections/03-short-description-section"
 import PricingBlockSection from "../sections/04-pricing-block-section"
-import VariantsSelectorSection from "../sections/05-variants-selector-section"
 import CTAButtonsSection from "../sections/06-cta-buttons-section"
-import DetailedDescriptionSection from "../sections/07-detailed-description-section"
-import KeySpecTableSection from "../sections/08-key-spec-table-section"
-import ResourcesSection from "../sections/09-resources-section"
-import TestimonialsSection from "../sections/10-testimonials-section"
-import FAQSection from "../sections/11-faq-section"
+import ProductTabsSection from "../sections/14-product-tabs-section"
+import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
+import VariantSelector from "../components/product/variant-selector"
+import { useRef, useState } from "react"
 
 interface CatalogContext {
   from?: string
@@ -41,6 +38,8 @@ export default function ProductDetailPage({
   catalogContext
 }: ProductDetailPageProps) {
   const { user } = useUser()
+  const reviewsSectionRef = useRef<HTMLDivElement>(null)
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
 
   // User type and pricing logic
   const isGuest = !user
@@ -62,9 +61,7 @@ export default function ProductDetailPage({
     { label: "SKU", value: product.id },
     { label: "Category", value: product.categories?.[0]?.name || "N/A" }
   ]
-  const resources = product.metadata?.resources as any[] || []
-  const testimonials = product.metadata?.testimonials as any[] || []
-  const faqs = product.metadata?.faqs as any[] || []
+  const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
   const variants = product.metadata?.variants as any[] || []
 
@@ -76,10 +73,19 @@ export default function ProductDetailPage({
     return "/catalog"
   }
 
+  // Check if all variants are selected
+  const allVariantsSelected = variants.length === 0 || 
+    variants.every((variantGroup: any) => selectedVariants[variantGroup.type])
+
   // Handlers
+  const handleVariantChange = (variantType: string, variantId: string) => {
+    setSelectedVariants(prev => ({ ...prev, [variantType]: variantId }))
+    console.log("Variant changed:", variantType, variantId)
+  }
+
   const handleAddToCart = (quantity: number) => {
-    console.log("Add to cart:", product.id, "Quantity:", quantity)
-    // TODO: Implement add to cart
+    console.log("Add to cart:", product.id, "Quantity:", quantity, "Variants:", selectedVariants)
+    // TODO: Implement add to cart with selected variants
   }
 
   const handleRequestQuote = () => {
@@ -107,6 +113,10 @@ export default function ProductDetailPage({
     // TODO: Implement bundle add to cart
   }
 
+  const scrollToReviews = () => {
+    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <>
       {/* Desktop Back Navigation */}
@@ -122,96 +132,99 @@ export default function ProductDetailPage({
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="bg-gray-50">
-        <div className="max-w-[1400px] mx-auto px-8 py-8 space-y-8">
-        {/* Section 1 & 2-6: Hero + Product Info (3-column layout) */}
-        <div className="flex gap-4">
-          {/* Left + Middle Column - Product Hero + Variants */}
-          <div className="flex-1 space-y-6">
-            <ProductHeroSection 
-              images={allImages}
-              productTitle={product.title || "Product"}
+      {/* Main Content - 2 Column Layout with Sticky Left */}
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-[1400px] mx-auto px-8 py-4">
+          {/* 2-Column Product Info Section */}
+          <div className="grid grid-cols-2 gap-8 mb-8 items-start">
+            {/* Left Column - Sticky Image Section */}
+            <div className="sticky top-24 self-start">
+              <ProductHeroSection 
+                images={allImages}
+                productTitle={product.title || "Product"}
+              />
+            </div>
+
+            {/* Right Column - Scrollable Content */}
+            <div className="space-y-6">
+              {/* Product Info Section */}
+              <div className="bg-white rounded-lg p-6 space-y-6">
+                {/* Badges → Title → Description → SKU → Stars */}
+                <TitleBadgesSection
+                  title={product.title || ""}
+                  badges={badges}
+                  sku={product.id}
+                  description={product.description || ""}
+                />
+
+                {/* Variant Selector */}
+                {variants.length > 0 && (
+                  <VariantSelector
+                    variants={variants}
+                    onVariantChange={handleVariantChange}
+                  />
+                )}
+
+                {/* Pricing Block */}
+                <PricingBlockSection
+                  showPrice={showPrice}
+                  price={price}
+                  originalPrice={originalPrice}
+                  isGuest={isGuest}
+                  isBusiness={isBusiness}
+                  isVerified={isVerified}
+                />
+
+                {/* CTA Buttons */}
+                <CTAButtonsSection
+                  isGuest={isGuest}
+                  isBusiness={isBusiness}
+                  isVerified={isVerified}
+                  accountType={accountType}
+                  allVariantsSelected={allVariantsSelected}
+                  hasVariants={variants.length > 0}
+                  onAddToCart={handleAddToCart}
+                  onRequestQuote={handleRequestQuote}
+                  onWishlist={handleWishlist}
+                  onShare={handleShare}
+                />
+              </div>
+
+              {/* Product Tabs: Description, Tech Specs, Reviews */}
+              <ProductTabsSection
+                description={product.description || ""}
+                features={features}
+                specifications={specifications}
+                reviews={reviews}
+                onScrollToReviews={scrollToReviews}
+              />
+            </div>
+          </div>
+
+          {/* Full Width Sections Below */}
+          <div className="space-y-8">
+            {/* Reviews Section - Full Width */}
+            <ReviewsSection
+              ref={reviewsSectionRef}
+              reviews={reviews}
+              productId={product.id}
             />
 
-            {/* Section 5: Variants Selector (moved under image) */}
-            {variants.length > 0 && (
-              <VariantsSelectorSection variants={variants} />
+            {/* Frequently Bought Together */}
+            {bundleProducts.length > 0 && (
+              <FrequentlyBoughtTogetherSection
+                mainProduct={product}
+                bundleProducts={bundleProducts}
+                onAddBundle={handleAddBundle}
+              />
             )}
-          </div>
 
-          {/* Right Column - Sections 2-4, 6 */}
-          <div className="flex-1 space-y-6">
-            {/* Section 2: Title + Badges */}
-            <TitleBadgesSection
-              title={product.title || ""}
-              badges={badges}
-            />
-
-            {/* Section 3: Short Description */}
-            <ShortDescriptionSection
-              description={product.description || ""}
-            />
-
-            {/* Section 4: Pricing Block */}
-            <PricingBlockSection
-              showPrice={showPrice}
-              price={price}
-              originalPrice={originalPrice}
-              isGuest={isGuest}
-              isBusiness={isBusiness}
-              isVerified={isVerified}
-            />
-
-            {/* Section 6: CTA Buttons */}
-            <CTAButtonsSection
-              showAddToCart={showPrice}
-              onAddToCart={handleAddToCart}
-              onRequestQuote={handleRequestQuote}
-              onWishlist={handleWishlist}
-              onShare={handleShare}
+            {/* Related + Recently Viewed */}
+            <RelatedRecentlyViewedSection
+              relatedProducts={relatedProducts}
+              catalogContext={catalogContext}
             />
           </div>
-        </div>
-
-        {/* Section 7: Detailed Description */}
-        <DetailedDescriptionSection
-          description={product.description || ""}
-          features={features}
-        />
-
-        {/* Section 8: Key Spec Table */}
-        <KeySpecTableSection specifications={specifications} />
-
-        {/* Section 9: Resources */}
-        {resources.length > 0 && (
-          <ResourcesSection resources={resources} />
-        )}
-
-        {/* Section 10: Testimonials */}
-        {testimonials.length > 0 && (
-          <TestimonialsSection testimonials={testimonials} />
-        )}
-
-        {/* Section 11: FAQ */}
-        {faqs.length > 0 && (
-          <FAQSection faqs={faqs} />
-        )}
-
-        {/* Section 12: Frequently Bought Together */}
-        {bundleProducts.length > 0 && (
-          <FrequentlyBoughtTogetherSection
-            mainProduct={product}
-            bundleProducts={bundleProducts}
-            onAddBundle={handleAddBundle}
-          />
-        )}
-
-        {/* Section 13: Related + Recently Viewed */}
-        <RelatedRecentlyViewedSection
-          relatedProducts={relatedProducts}
-          catalogContext={catalogContext}
-        />
         </div>
       </div>
     </>

@@ -56,6 +56,7 @@ export default function ProfileLayout({
     // Hide floating action card on profile pages (but NOT the bottom navigation)
     // Look for floating cards that are NOT the bottom navigation (which has grid-cols-5)
     const floatingCards = document.querySelectorAll('[class*="fixed"][class*="bottom-"]')
+    
     let targetCard: HTMLElement | null = null
     
     floatingCards.forEach((card) => {
@@ -67,12 +68,9 @@ export default function ProfileLayout({
       // Find the floating action card (has svg with specific viewBox)
       if (element.querySelector('svg[viewBox="0 0 24 24"]')) {
         targetCard = element
+        element.style.display = 'none'
       }
     })
-    
-    if (targetCard && targetCard instanceof HTMLElement) {
-      targetCard.style.display = 'none'
-    }
 
     // Cleanup on unmount
     return () => {

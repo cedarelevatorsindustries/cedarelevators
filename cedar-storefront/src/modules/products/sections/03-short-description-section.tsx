@@ -4,14 +4,8 @@ interface ShortDescriptionSectionProps {
   description: string
 }
 
+// This component is now integrated into TitleBadgesSection
+// Kept for backward compatibility but renders nothing
 export default function ShortDescriptionSection({ description }: ShortDescriptionSectionProps) {
-  if (!description) return null
-
-  return (
-    <div className="py-4 border-y">
-      <p className="text-gray-700 leading-relaxed">
-        {description}
-      </p>
-    </div>
-  )
+  return null
 }

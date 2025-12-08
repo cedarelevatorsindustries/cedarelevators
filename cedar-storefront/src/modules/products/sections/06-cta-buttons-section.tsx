@@ -1,10 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { ShoppingCart, MessageSquare, Heart, Share2, Minus, Plus } from "lucide-react"
+import { ShoppingCart, MessageSquare, Heart, Share2 } from "lucide-react"
+import QuantitySelector from "../components/product/quantity-selector"
 
 interface CTAButtonsSectionProps {
-  showAddToCart: boolean
+  isGuest: boolean
+  isBusiness: boolean
+  isVerified: boolean
+  accountType?: string
+  allVariantsSelected?: boolean
+  hasVariants?: boolean
   onAddToCart?: (quantity: number) => void
   onRequestQuote?: () => void
   onWishlist?: () => void
@@ -12,7 +18,12 @@ interface CTAButtonsSectionProps {
 }
 
 export default function CTAButtonsSection({
-  showAddToCart,
+  isGuest,
+  isBusiness,
+  isVerified,
+  accountType,
+  allVariantsSelected = true,
+  hasVariants = false,
   onAddToCart,
   onRequestQuote,
   onWishlist,
@@ -26,87 +37,67 @@ export default function CTAButtonsSection({
     onWishlist?.()
   }
 
+  // Determine if cart button should be enabled
+  const canAddToCart = allVariantsSelected
+
   return (
     <div className="space-y-4">
-      {/* Quantity Selector */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-2">
-          Quantity
-        </label>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-20 h-10 text-center border-2 border-gray-300 rounded-lg font-semibold"
-          />
-          <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      {/* Quantity Selector Row */}
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-semibold text-gray-700">Quantity:</span>
+        <QuantitySelector
+          quantity={quantity}
+          onQuantityChange={setQuantity}
+          disabled={false}
+          size="md"
+        />
 
-      {/* Primary CTAs */}
-      <div className="space-y-3">
-        {showAddToCart ? (
-          <button
-            onClick={() => onAddToCart?.(quantity)}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-base"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Add to Cart
-          </button>
-        ) : (
-          <button
-            onClick={onRequestQuote}
-            className="w-full py-3.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 text-base"
-          >
-            <MessageSquare className="w-5 h-5" />
-            Request Quote
-          </button>
-        )}
+        {/* Spacer */}
+        <div className="flex-1"></div>
 
-        {/* Secondary CTA */}
-        {showAddToCart && (
-          <button
-            onClick={onRequestQuote}
-            className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-          >
-            <MessageSquare className="w-5 h-5" />
-            Get Bulk Quote
-          </button>
-        )}
-      </div>
-
-      {/* Secondary Actions */}
-      <div className="flex gap-2">
+        {/* Wishlist and Share Icons */}
         <button
           onClick={handleWishlist}
-          className={`flex-1 py-3 rounded-lg font-medium border-2 transition-all flex items-center justify-center gap-2 ${
+          className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center transition-all ${
             isWishlisted
               ? "border-red-500 text-red-500 bg-red-50"
-              : "border-gray-300 text-gray-700 hover:border-gray-400"
+              : "border-gray-300 text-gray-600 hover:border-gray-400"
           }`}
         >
           <Heart className={`w-5 h-5 ${isWishlisted ? "fill-red-500" : ""}`} />
-          {isWishlisted ? "Saved" : "Save"}
         </button>
         
         <button
           onClick={onShare}
-          className="flex-1 py-3 rounded-lg font-medium border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-all flex items-center justify-center gap-2"
+          className="w-12 h-12 rounded-lg border-2 border-gray-300 text-gray-600 hover:border-gray-400 transition-all flex items-center justify-center"
         >
           <Share2 className="w-5 h-5" />
-          Share
+        </button>
+      </div>
+
+      {/* Action Buttons Row */}
+      <div className="flex gap-3">
+        {/* Add to Cart Button - Enabled only when variants are selected */}
+        <button
+          onClick={() => canAddToCart && onAddToCart?.(quantity)}
+          disabled={!canAddToCart}
+          className={`flex-1 py-3.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 text-base ${
+            canAddToCart
+              ? "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 cursor-pointer"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          <ShoppingCart className="w-5 h-5" />
+          Add to Cart
+        </button>
+
+        {/* Request Quote Button */}
+        <button
+          onClick={onRequestQuote}
+          className="flex-1 py-3.5 border-2 border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+        >
+          <MessageSquare className="w-5 h-5" />
+          Request a Quote
         </button>
       </div>
     </div>

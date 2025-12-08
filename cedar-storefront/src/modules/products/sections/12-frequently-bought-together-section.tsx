@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
-import { Plus, ShoppingCart, Check } from "lucide-react"
+import { ShoppingCart, Check, Package, Heart, MessageSquare } from "lucide-react"
+import { useUser } from "@/lib/auth/client"
 
 interface FrequentlyBoughtTogetherSectionProps {
   mainProduct: HttpTypes.StoreProduct
@@ -17,10 +18,12 @@ export default function FrequentlyBoughtTogetherSection({
   onAddBundle,
   isMobile = false
 }: FrequentlyBoughtTogetherSectionProps) {
+  const { user } = useUser()
+  
   if (bundleProducts.length === 0) return null
 
-  // Limit to 2 bundle products (total 3 with main product)
-  const limitedBundleProducts = bundleProducts.slice(0, 2)
+  // Show up to 3 bundle products (4 total with main product)
+  const limitedBundleProducts = bundleProducts.slice(0, 3)
   
   // All products including main product
   const allProducts = [mainProduct, ...limitedBundleProducts]
@@ -30,13 +33,17 @@ export default function FrequentlyBoughtTogetherSection({
     new Set(allProducts.map(p => p.id))
   )
 
+  // User type and pricing logic
+  const isGuest = !user
+  const accountType = user?.unsafeMetadata?.accountType as string | undefined
+  const isBusiness = accountType === "business"
+  const isVerified = user?.unsafeMetadata?.is_verified === true
+  const showPrice = isBusiness && isVerified
+
   const toggleProduct = (productId: string) => {
     const newSelected = new Set(selectedProducts)
     if (newSelected.has(productId)) {
-      // Don't allow deselecting if it's the only one left
-      if (newSelected.size > 1) {
-        newSelected.delete(productId)
-      }
+      newSelected.delete(productId)
     } else {
       newSelected.add(productId)
     }
@@ -54,90 +61,104 @@ export default function FrequentlyBoughtTogetherSection({
   const selectedCount = selectedProducts.size
 
   return (
-    <div className={`bg-white rounded-xl ${isMobile ? 'p-4' : 'p-6 lg:p-8'}`}>
-      <h2 className={`font-bold text-gray-900 mb-4 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+    <div className={`bg-white rounded-xl border border-gray-200 ${isMobile ? 'p-4' : 'p-6 lg:p-8'}`}>
+      <h2 className={`font-bold text-gray-900 mb-6 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
         Frequently Bought Together
       </h2>
       
-      {/* Products Row with Checkboxes */}
-      <div className={`flex items-center gap-3 mb-4 overflow-x-auto pb-4 ${isMobile ? '-mx-4 px-4' : ''}`}>
-        {allProducts.map((product, index) => (
-          <div key={product.id} className="flex items-center gap-3 flex-shrink-0">
-            {index > 0 && <Plus className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} text-gray-400 flex-shrink-0`} />}
-            
-            <div className={`${isMobile ? 'w-24' : 'w-32'} relative`}>
-              {/* Checkbox Overlay */}
-              <button
-                onClick={() => toggleProduct(product.id)}
-                className={`absolute top-2 left-2 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-                  selectedProducts.has(product.id)
-                    ? 'bg-blue-600 border-blue-600'
-                    : 'bg-white/90 border-gray-300 hover:border-blue-400'
-                }`}
-              >
-                {selectedProducts.has(product.id) && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </button>
-
+      {/* Products Grid */}
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 mb-6`}>
+        {allProducts.map((product) => {
+          const productPrice = product.variants?.[0]?.calculated_price?.calculated_amount || 0
+          const formattedPrice = productPrice ? `₹${(productPrice / 100).toLocaleString("en-IN")}` : null
+          const isSelected = selectedProducts.has(product.id)
+          
+          return (
+            <div key={product.id} className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
               {/* Product Image */}
-              <div className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
-                selectedProducts.has(product.id) ? 'border-blue-600' : 'border-gray-200'
-              } ${!selectedProducts.has(product.id) ? 'opacity-50' : ''}`}>
-                {product.thumbnail && (
+              <div className={`aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm transition-opacity ${
+                !isSelected ? 'opacity-40' : ''
+              }`}>
+                {product.thumbnail ? (
                   <img
                     src={product.thumbnail}
                     alt={product.title || ""}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-12 h-12 text-gray-400" />
+                  </div>
                 )}
+
+                {/* Checkbox - Inside Image, Top Left */}
+                <button
+                  onClick={() => toggleProduct(product.id)}
+                  className={`absolute top-3 left-3 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all shadow-md ${
+                    isSelected
+                      ? 'bg-blue-600 border-blue-600'
+                      : 'bg-white/90 border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  {isSelected && (
+                    <Check className="w-4 h-4 text-white" />
+                  )}
+                </button>
               </div>
 
-              {/* Product Title */}
-              <p className={`text-xs text-gray-600 mt-2 line-clamp-2 ${
-                !selectedProducts.has(product.id) ? 'opacity-50' : ''
-              }`}>
-                {product.title}
-              </p>
+              {/* Product Content */}
+              <div className={`space-y-2 transition-opacity ${!isSelected ? 'opacity-40' : ''}`}>
+                {/* Title */}
+                <h3 className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold text-gray-900 line-clamp-2 leading-tight`}>
+                  {product.title}
+                </h3>
 
-              {/* "This" Badge for Main Product */}
-              {index === 0 && (
-                <div className="absolute top-2 right-2 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                  This
-                </div>
+                {/* Description - Always show for all cards */}
+                <p className={`text-gray-600 line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'} min-h-[2.5rem]`}>
+                  {product.description || "High-quality product for your needs"}
+                </p>
+
+                {/* Price - Only for verified business users */}
+                {showPrice && formattedPrice && (
+                  <p className={`font-bold text-gray-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                    {formattedPrice}
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Add to Bundle Bar - Fixed at Bottom */}
+      {selectedCount > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-2 border-blue-200">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">
+                {selectedCount} {selectedCount === 1 ? 'item' : 'items'} selected
+              </p>
+              {showPrice && totalPrice > 0 ? (
+                <p className="text-2xl font-bold text-gray-900">
+                  ₹{(totalPrice / 100).toLocaleString("en-IN")}
+                </p>
+              ) : (
+                <p className="text-lg font-semibold text-orange-600">
+                  Request Quote for Bundle
+                </p>
               )}
             </div>
+
+            <button
+              onClick={onAddBundle}
+              className="bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 px-6 py-3 shadow-lg"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Add to Bundle
+            </button>
           </div>
-        ))}
-      </div>
-
-      {/* Total Price and CTA */}
-      <div className={`flex items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg ${isMobile ? 'flex-col items-stretch' : ''}`}>
-        <div className={isMobile ? 'text-center' : ''}>
-          <p className="text-sm text-gray-600">
-            Total for {selectedCount} {selectedCount === 1 ? 'item' : 'items'}
-          </p>
-          {totalPrice > 0 ? (
-            <p className={`font-bold text-gray-900 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
-              ₹{(totalPrice / 100).toLocaleString("en-IN")}
-            </p>
-          ) : (
-            <p className={`font-semibold text-orange-600 ${isMobile ? 'text-base' : 'text-lg'}`}>
-              Request Quote
-            </p>
-          )}
         </div>
-
-        <button
-          onClick={onAddBundle}
-          className={`bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 ${
-            isMobile ? 'w-full py-3 text-sm' : 'px-6 py-3'
-          }`}
-        >
-          <ShoppingCart className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
-          Add {selectedCount > 1 ? 'Bundle' : 'Item'} to Cart
-        </button>
-      </div>
+      )}
     </div>
   )
 }

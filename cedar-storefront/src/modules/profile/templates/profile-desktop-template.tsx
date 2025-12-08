@@ -1,7 +1,7 @@
 'use client'
 
 import { useProfile } from '@/lib/hooks/useProfile'
-import { PROFILE_SECTIONS } from '@/lib/constants/profile'
+import { PROFILE_SECTIONS, type ProfileSection } from '@/lib/constants/profile'
 import ProfileTopbar from '../components/profile-topbar'
 import ProfileSidebar from '../components/profile-sidebar'
 import QuickActions from '../components/quick-actions'

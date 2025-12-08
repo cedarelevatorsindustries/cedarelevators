@@ -10,13 +10,9 @@ import Link from "next/link"
 import TitleBadgesSection from "../sections/02-title-badges-section"
 import ShortDescriptionSection from "../sections/03-short-description-section"
 import PricingBlockSection from "../sections/04-pricing-block-section"
-import VariantsSelectorSection from "../sections/05-variants-selector-section"
 import CTAButtonsSection from "../sections/06-cta-buttons-section"
-import DetailedDescriptionSection from "../sections/07-detailed-description-section"
-import KeySpecTableSection from "../sections/08-key-spec-table-section"
-import ResourcesSection from "../sections/09-resources-section"
-import TestimonialsSection from "../sections/10-testimonials-section"
-import FAQSection from "../sections/11-faq-section"
+import ProductTabsSection from "../sections/14-product-tabs-section"
+import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
 
@@ -45,6 +41,7 @@ export default function MobileProductDetailPage({
   const [showFloatingBar, setShowFloatingBar] = useState(false)
   const imageScrollRef = useRef<HTMLDivElement>(null)
   const ctaSectionRef = useRef<HTMLDivElement>(null)
+  const reviewsSectionRef = useRef<HTMLDivElement>(null)
 
   // User type and pricing logic
   const isGuest = !user
@@ -66,9 +63,7 @@ export default function MobileProductDetailPage({
     { label: "SKU", value: product.id },
     { label: "Category", value: product.categories?.[0]?.name || "N/A" }
   ]
-  const resources = product.metadata?.resources as any[] || []
-  const testimonials = product.metadata?.testimonials as any[] || []
-  const faqs = product.metadata?.faqs as any[] || []
+  const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
   const variants = product.metadata?.variants as any[] || []
 
@@ -109,6 +104,10 @@ export default function MobileProductDetailPage({
   const handleAddBundle = () => {
     console.log("Add bundle to cart")
     // TODO: Implement bundle add to cart
+  }
+
+  const scrollToReviews = () => {
+    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   // Track image scroll
@@ -230,14 +229,57 @@ export default function MobileProductDetailPage({
 
         {/* Main Content */}
         <div className="px-4 py-6 space-y-6">
-          {/* Product Info */}
+          {/* Variant Selector - Under Image */}
+          {variants.length > 0 && (
+            <div className="bg-white -mx-4 px-4 py-4">
+              {variants.map((variantGroup) => {
+                const [selectedVariant, setSelectedVariant] = useState("")
+                
+                return (
+                  <div key={variantGroup.type} className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {variantGroup.type}
+                    </h3>
+                    
+                    <div className="flex flex-wrap gap-3">
+                      {variantGroup.options.map((option: any) => {
+                        const isSelected = selectedVariant === option.id
+                        const isDisabled = !option.inStock
+
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => !isDisabled && setSelectedVariant(option.id)}
+                            disabled={isDisabled}
+                            className={`
+                              px-6 py-3 rounded-xl font-medium text-base transition-all
+                              ${isSelected 
+                                ? "bg-blue-50 text-blue-600 border-2 border-blue-500" 
+                                : "bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300"
+                              }
+                              ${isDisabled 
+                                ? "opacity-40 cursor-not-allowed" 
+                                : "cursor-pointer"
+                              }
+                            `}
+                          >
+                            {option.value}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Product Info - Order: Badges → Title → Description → SKU → Stars → Price → Buttons */}
           <div className="bg-white -mx-4 px-4 py-4 space-y-4">
             <TitleBadgesSection
               title={product.title || ""}
               badges={badges}
-            />
-
-            <ShortDescriptionSection
+              sku={product.id}
               description={product.description || ""}
             />
 
@@ -250,13 +292,12 @@ export default function MobileProductDetailPage({
               isVerified={isVerified}
             />
 
-            {variants.length > 0 && (
-              <VariantsSelectorSection variants={variants} />
-            )}
-
             <div ref={ctaSectionRef}>
               <CTAButtonsSection
-                showAddToCart={showPrice}
+                isGuest={isGuest}
+                isBusiness={isBusiness}
+                isVerified={isVerified}
+                accountType={accountType}
                 onAddToCart={handleAddToCart}
                 onRequestQuote={handleRequestQuote}
                 onWishlist={handleWishlist}
@@ -265,31 +306,14 @@ export default function MobileProductDetailPage({
             </div>
           </div>
 
-          {/* Section 7: Detailed Description */}
-          <DetailedDescriptionSection
+          {/* Product Tabs: Description, Attributes */}
+          <ProductTabsSection
             description={product.description || ""}
             features={features}
+            specifications={specifications}
           />
 
-          {/* Section 8: Key Spec Table */}
-          <KeySpecTableSection specifications={specifications} />
-
-          {/* Section 9: Resources */}
-          {resources.length > 0 && (
-            <ResourcesSection resources={resources} />
-          )}
-
-          {/* Section 10: Testimonials */}
-          {testimonials.length > 0 && (
-            <TestimonialsSection testimonials={testimonials} />
-          )}
-
-          {/* Section 11: FAQ */}
-          {faqs.length > 0 && (
-            <FAQSection faqs={faqs} />
-          )}
-
-          {/* Section 12: Frequently Bought Together */}
+          {/* Frequently Bought Together */}
           {bundleProducts.length > 0 && (
             <FrequentlyBoughtTogetherSection
               mainProduct={product}
@@ -299,7 +323,14 @@ export default function MobileProductDetailPage({
             />
           )}
 
-          {/* Section 13: Related + Recently Viewed */}
+          {/* Reviews Section - Full Detail */}
+          <ReviewsSection
+            ref={reviewsSectionRef}
+            reviews={reviews}
+            productId={product.id}
+          />
+
+          {/* Related + Recently Viewed */}
           <div className="pb-20">
             <RelatedRecentlyViewedSection
               relatedProducts={relatedProducts}
@@ -337,17 +368,39 @@ export default function MobileProductDetailPage({
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons - Based on User Type */}
               <div className="flex gap-2">
-                {showPrice && (
+                {isGuest ? (
+                  <Link
+                    href="/sign-in"
+                    className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    Login
+                  </Link>
+                ) : accountType === "individual" ? (
+                  <Link
+                    href="/profile/account"
+                    className="px-4 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"
+                  >
+                    Upgrade
+                  </Link>
+                ) : isBusiness && !isVerified ? (
+                  <Link
+                    href="/profile/verification"
+                    className="px-4 py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2 text-sm"
+                  >
+                    Verify
+                  </Link>
+                ) : showPrice ? (
                   <button
                     onClick={() => handleAddToCart(1)}
                     className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
                   >
                     <ShoppingCart className="w-4 h-4" />
-                    Add to Cart
+                    Add
                   </button>
-                )}
+                ) : null}
+                
                 <button
                   onClick={handleRequestQuote}
                   className="px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2"

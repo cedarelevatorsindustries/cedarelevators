@@ -386,7 +386,7 @@ function OrderTableRow({
           >
             <Eye size={18} />
           </a>
-          {canTrackOrder(status) && (
+          {canTrackOrder(order) && (
             <button
               className="p-2 text-gray-600 dark:text-gray-400 hover:text-[#F97316] dark:hover:text-[#F97316] transition-colors"
               title="Track Order"
@@ -394,7 +394,7 @@ function OrderTableRow({
               <Truck size={18} />
             </button>
           )}
-          {canReorderOrder(status) && (
+          {canReorderOrder(order) && (
             <button
               className="p-2 text-gray-600 dark:text-gray-400 hover:text-[#F97316] dark:hover:text-[#F97316] transition-colors"
               title="Reorder"
@@ -474,7 +474,7 @@ function OrderMobileCard({
         >
           View Details
         </a>
-        {canReorderOrder(status) && (
+        {canReorderOrder(order) && (
           <button className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
             Reorder
           </button>
