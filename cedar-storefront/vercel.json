@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd cedar-storefront && pnpm run build",
+  "outputDirectory": "cedar-storefront/.next",
+  "framework": "nextjs",
+  "installCommand": "cd cedar-storefront && pnpm install",
+  "devCommand": "cd cedar-storefront && pnpm run dev"
+}
