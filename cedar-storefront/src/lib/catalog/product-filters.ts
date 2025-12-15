@@ -1,4 +1,4 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product } from "@/lib/types/domain"
 import { CatalogType } from "@/types/catalog"
 
 interface FilterContext {
@@ -13,13 +13,13 @@ interface FilterContext {
  * Filter products based on catalog type and context
  */
 export function filterProductsByType(
-  products: HttpTypes.StoreProduct[],
+  products: Product[],
   context: FilterContext
-): { primary: HttpTypes.StoreProduct[]; fallback: HttpTypes.StoreProduct[] } {
+): { primary: Product[]; fallback: Product[] } {
   const { type, category, application, search, recentlyViewedIds = [] } = context
 
-  let primary: HttpTypes.StoreProduct[] = []
-  let fallback: HttpTypes.StoreProduct[] = []
+  let primary: Product[] = []
+  let fallback: Product[] = []
 
   switch (type) {
     case "browse-all":
@@ -104,7 +104,7 @@ export function filterProductsByType(
  * Get product tag for display (used in trending-collections and top-applications)
  */
 export function getProductTag(
-  product: HttpTypes.StoreProduct,
+  product: Product,
   type: CatalogType
 ): string | null {
   if (type === "trending-collections" && product.categories?.[0]) {
@@ -123,7 +123,7 @@ export function getProductTag(
  */
 export function getRelatedKeywords(
   search: string,
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 ): string[] {
   if (!search?.trim()) return []
 

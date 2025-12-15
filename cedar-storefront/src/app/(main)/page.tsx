@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
-import { listProducts, listCategories, demoTestimonials, demoMedusaProducts, demoMedusaCategories } from "@/lib/data"
+import { listProducts, listCategories } from "@/lib/data"
 import {
   DesktopHomepage,
   DesktopHomepageLoggedIn,
@@ -18,43 +18,27 @@ export default async function HomePage() {
   // Get user type from Clerk
   const userType = await getUserType()
 
-  // Fetch products from Medusa backend with demo data fallback
-  let products = demoMedusaProducts
-  let categories = demoMedusaCategories
-  let testimonials = demoTestimonials
+  // Fetch products from Medusa backend
+  const { response } = await listProducts({
+    queryParams: { limit: 20 }
+  })
+  
+  const products = response.products
 
-  try {
-    const { response } = await listProducts({
-      queryParams: { limit: 20 }
-    })
-    
-    if (response.products.length > 0) {
-      products = response.products
-    }
+  // Fetch categories
+  const categories = await listCategories({ 
+    parent_category_id: null,
+    include_descendants_tree: true 
+  })
 
-    // Fetch categories for logged-in users
-    if (userType !== "guest") {
-      const fetchedCategories = await listCategories()
-      if (fetchedCategories.length > 0) {
-        categories = fetchedCategories
-      }
+  // Extract testimonials from product metadata (if available)
+  const testimonials: any[] = []
+  response.products.forEach((product: any) => {
+    const productTestimonials = product.metadata?.testimonials as any[]
+    if (Array.isArray(productTestimonials)) {
+      testimonials.push(...productTestimonials)
     }
-
-    // Extract testimonials from product metadata (if available)
-    const extractedTestimonials: any[] = []
-    response.products.forEach((product: any) => {
-      const productTestimonials = product.metadata?.testimonials as any[]
-      if (Array.isArray(productTestimonials)) {
-        extractedTestimonials.push(...productTestimonials)
-      }
-    })
-    
-    if (extractedTestimonials.length > 0) {
-      testimonials = extractedTestimonials
-    }
-  } catch (error) {
-    console.log("Using demo data - Medusa backend not available")
-  }
+  })
 
   // For logged-in users, show the dashboard-style layout
   if (userType !== "guest") {
@@ -89,6 +73,7 @@ export default async function HomePage() {
       <div className="hidden md:block">
         <DesktopHomepage
           products={products}
+          categories={categories}
           testimonials={testimonials}
         />
       </div>

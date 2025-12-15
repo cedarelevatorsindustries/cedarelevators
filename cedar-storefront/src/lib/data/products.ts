@@ -1,16 +1,20 @@
-import { HttpTypes } from "@medusajs/types"
+import { getSupabaseClient } from "@/lib/supabase/client"
+import { Product } from "@/lib/types/domain"
+import { isDemoMode } from "./demo/config"
+import { getDemoProducts, getDemoProductByHandle } from "./demo"
 
 interface ListProductsParams {
   queryParams?: {
     limit?: number
     offset?: number
     category_id?: string[]
+    q?: string
   }
 }
 
 interface ListProductsResponse {
   response: {
-    products: HttpTypes.StoreProduct[]
+    products: Product[]
     count: number
     offset: number
     limit: number
@@ -18,60 +22,111 @@ interface ListProductsResponse {
 }
 
 /**
- * Fetch products from Medusa backend
- * TODO: Replace with actual Medusa API endpoint
+ * Fetch products - Uses demo data when demo mode is enabled
  */
 export async function listProducts(params?: ListProductsParams): Promise<ListProductsResponse> {
+  const { queryParams } = params || {}
+  const limit = queryParams?.limit || 20
+  const offset = queryParams?.offset || 0
+
+  // 🚀 Demo Mode: Return static data for client review
+  if (isDemoMode()) {
+    const demoResult = getDemoProducts({
+      limit,
+      offset,
+      category_id: queryParams?.category_id,
+      q: queryParams?.q,
+    })
+    return { response: demoResult }
+  }
+
+  // Production Mode: Fetch from Supabase
   try {
-    const { queryParams } = params || {}
-    
-    // TODO: Replace with your actual Medusa backend URL
-    // const searchParams = new URLSearchParams()
-    // if (queryParams?.limit) searchParams.set('limit', queryParams.limit.toString())
-    // if (queryParams?.offset) searchParams.set('offset', queryParams.offset.toString())
-    // if (queryParams?.category_id) queryParams.category_id.forEach(id => searchParams.append('category_id[]', id))
-    
-    // const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/products?${searchParams}`)
-    // const data = await response.json()
-    
-    // Mock data for now
+    const supabase = getSupabaseClient()
+
+    let query = supabase
+      .from('products')
+      .select('*', { count: 'exact' })
+      .range(offset, offset + limit - 1)
+
+    if (queryParams?.q) {
+      query = query.ilike('title', `%${queryParams.q}%`)
+    }
+
+    if (queryParams?.category_id && queryParams.category_id.length > 0) {
+      query = query.in('category_id', queryParams.category_id)
+    }
+
+    const { data, error, count } = await query
+
+    if (error) {
+      console.error("Error fetching products from Supabase:", error)
+      return {
+        response: {
+          products: [],
+          count: 0,
+          offset,
+          limit
+        }
+      }
+    }
+
+    const products: Product[] = (data || []).map((p: any) => ({
+      ...p,
+      images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
+    }))
+
     return {
       response: {
-        products: [],
-        count: 0,
-        offset: 0,
-        limit: queryParams?.limit || 20
+        products,
+        count: count || 0,
+        offset,
+        limit
       }
     }
   } catch (error) {
-    console.error("Error fetching products:", error)
+    console.error("Error in listProducts:", error)
     return {
       response: {
         products: [],
         count: 0,
-        offset: 0,
-        limit: 20
+        offset,
+        limit
       }
     }
   }
 }
 
 /**
- * Fetch a single product by handle from Medusa backend
- * TODO: Replace with actual Medusa API endpoint
+ * Fetch a single product by handle - Uses demo data when demo mode is enabled
  */
-export async function getProductByHandle(handle: string): Promise<HttpTypes.StoreProduct | null> {
+export async function getProductByHandle(handle: string): Promise<Product | null> {
+  // 🚀 Demo Mode: Return static data for client review
+  if (isDemoMode()) {
+    return getDemoProductByHandle(handle)
+  }
+
+  // Production Mode: Fetch from Supabase
   try {
-    // TODO: Replace with your actual Medusa backend URL
-    // const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/products/${handle}`)
-    // if (!response.ok) return null
-    // const data = await response.json()
-    // return data.product
-    
-    // Mock data for now - return null to trigger not found
-    return null
+    const supabase = getSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, variants(*)')
+      .eq('handle', handle)
+      .single()
+
+    if (error || !data) {
+      console.error("Error fetching product by handle:", error)
+      return null
+    }
+
+    return {
+      ...data,
+      images: typeof data.images === 'string' ? JSON.parse(data.images) : data.images
+    } as Product
   } catch (error) {
-    console.error("Error fetching product:", error)
+    console.error("Error in getProductByHandle:", error)
     return null
   }
 }

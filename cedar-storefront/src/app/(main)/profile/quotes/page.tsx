@@ -11,14 +11,14 @@ export const metadata: Metadata = {
 export default async function QuotesPage() {
   // Check Clerk authentication
   const { userId } = await auth()
-  
+
   if (!userId) {
     redirect('/sign-in?redirect=/profile/quotes')
   }
 
-  const { createClient } = await import('@/lib/supabase/server')
-  const supabase = await createClient()
-  
+  const { createClerkSupabaseClient } = await import('@/lib/supabase/server')
+  const supabase = await createClerkSupabaseClient()
+
   // Get user profile to check account type
   const { data: profile } = await supabase
     .from('user_profiles')
@@ -32,7 +32,7 @@ export default async function QuotesPage() {
   }
 
   return (
-    <QuotesSection 
+    <QuotesSection
       accountType={profile?.account_type || 'individual'}
       verificationStatus={profile?.verification_status}
     />

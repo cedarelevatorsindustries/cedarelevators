@@ -3,32 +3,27 @@
 import { useState, useEffect } from 'react'
 import { CreditCard, Check, Plus } from 'lucide-react'
 import { getSavedPaymentMethods, type SavedPaymentMethod } from '@/lib/data/payment'
-import type { HttpTypes } from "@medusajs/types"
+import { Cart } from "@/lib/types/domain"
 
 interface RazorpayPaymentProps {
-  cart: HttpTypes.StoreCart
-  paymentSession?: HttpTypes.StorePaymentSession
+  cart: Cart
   onPaymentMethodSelect: (methodId: string | null) => void
   onNewCardSelect: () => void
 }
 
 export default function RazorpayPayment({
   cart,
-  paymentSession,
   onPaymentMethodSelect,
   onNewCardSelect,
 }: RazorpayPaymentProps) {
   const [savedPaymentMethods, setSavedPaymentMethods] = useState<SavedPaymentMethod[]>([])
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(
-    paymentSession?.data?.payment_method_id as string | null
-  )
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null)
   const [isUsingSavedMethod, setIsUsingSavedMethod] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const accountHolderId = (
-      paymentSession?.context?.account_holder as Record<string, string>
-    )?.id
+    // Mock user ID fetch or passed prop
+    const accountHolderId = "user_123" // TODO: Get from auth context
 
     if (!accountHolderId) {
       setLoading(false)
@@ -43,7 +38,7 @@ export default function RazorpayPayment({
       .catch(() => {
         setLoading(false)
       })
-  }, [paymentSession])
+  }, [])
 
   const handleSelectSavedMethod = (method: SavedPaymentMethod) => {
     setSelectedPaymentMethod(method.id)
@@ -94,8 +89,8 @@ export default function RazorpayPayment({
                   onClick={() => handleSelectSavedMethod(method)}
                   className={`
                     w-full p-4 rounded-lg border-2 text-left transition-all
-                    ${isSelected 
-                      ? 'border-indigo-500 bg-indigo-50' 
+                    ${isSelected
+                      ? 'border-indigo-500 bg-indigo-50'
                       : 'border-gray-200 hover:border-gray-300'
                     }
                   `}
@@ -155,8 +150,8 @@ export default function RazorpayPayment({
           onClick={handleSelectNewCard}
           className={`
             w-full p-4 rounded-lg border-2 text-left transition-all
-            ${!isUsingSavedMethod 
-              ? 'border-indigo-500 bg-indigo-50' 
+            ${!isUsingSavedMethod
+              ? 'border-indigo-500 bg-indigo-50'
               : 'border-gray-200 hover:border-gray-300'
             }
           `}

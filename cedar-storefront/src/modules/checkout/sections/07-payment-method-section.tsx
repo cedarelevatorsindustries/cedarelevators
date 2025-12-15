@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import { CreditCard, FileText, Building, Wallet, Check, Upload, Info } from 'lucide-react'
 import type { PaymentMethod } from '../types'
-import type { HttpTypes } from "@medusajs/types"
+import { Cart } from "@/lib/types/domain"
 import RazorpayPayment from '../components/razorpay-payment'
-import { initiatePaymentSession } from '@/lib/actions/cart'
 
 interface PaymentMethodSectionProps {
   methods: PaymentMethod[]
@@ -13,8 +12,7 @@ interface PaymentMethodSectionProps {
   onSelectMethod: (method: PaymentMethod) => void
   onPOUpload?: (file: File) => void
   isVerifiedDealer: boolean
-  cart?: HttpTypes.StoreCart
-  paymentSession?: HttpTypes.StorePaymentSession
+  cart?: Cart
 }
 
 const DEFAULT_METHODS: PaymentMethod[] = [
@@ -63,7 +61,6 @@ export default function PaymentMethodSection({
   onPOUpload,
   isVerifiedDealer,
   cart,
-  paymentSession,
 }: PaymentMethodSectionProps) {
   const [poFile, setPOFile] = useState<File | null>(null)
   const [selectedSavedPaymentMethod, setSelectedSavedPaymentMethod] = useState<string | null>(null)
@@ -80,26 +77,14 @@ export default function PaymentMethodSection({
     if (!cart) return
 
     setSelectedSavedPaymentMethod(methodId)
-    
-    // Initiate payment session with saved payment method
-    if (methodId) {
-      await initiatePaymentSession(cart, {
-        provider_id: "razorpay",
-        payment_method_id: methodId,
-      })
-    }
+    // TODO: Handle saved payment method selection (e.g. store in local state or update cart in DB)
   }
 
   const handleNewCardSelect = async () => {
     if (!cart) return
 
     setSelectedSavedPaymentMethod(null)
-    
-    // Initiate payment session for new payment method
-    await initiatePaymentSession(cart, {
-      provider_id: "razorpay",
-      save_payment_method: true,
-    })
+    // TODO: Handle new card selection
   }
 
   const availableMethods = methods.filter(
@@ -129,8 +114,8 @@ export default function PaymentMethodSection({
                 onClick={() => onSelectMethod(method)}
                 className={`
                   w-full p-4 rounded-lg border-2 text-left transition-all
-                  ${isSelected 
-                    ? 'border-indigo-500 bg-indigo-50' 
+                  ${isSelected
+                    ? 'border-indigo-500 bg-indigo-50'
                     : 'border-gray-200 hover:border-gray-300'
                   }
                 `}
@@ -197,7 +182,6 @@ export default function PaymentMethodSection({
                 <div className="mt-3 ml-4">
                   <RazorpayPayment
                     cart={cart}
-                    paymentSession={paymentSession}
                     onPaymentMethodSelect={handlePaymentMethodSelect}
                     onNewCardSelect={handleNewCardSelect}
                   />

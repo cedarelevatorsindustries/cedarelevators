@@ -1,10 +1,13 @@
 "use client"
 
 import Image from "next/image"
-import { demoVerificationStatus } from "@/lib/data/demo-data"
 
 export default function VerificationStatusCard() {
-  const { isVerified, status, submittedDate, documentsRequired } = demoVerificationStatus
+  // TODO: Fetch from user profile or Medusa metadata
+  const isVerified = false
+  const status = "pending" as "pending" | "verified" | "rejected"
+  const submittedDate = new Date().toISOString()
+  const documentsRequired = ["GST Certificate", "Business License"]
 
   // Determine colors and content based on status
   const getStatusConfig = () => {

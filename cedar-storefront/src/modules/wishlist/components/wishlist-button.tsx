@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { Heart, Loader2 } from "lucide-react"
 import { useWishlist } from "@/lib/hooks"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 
 interface WishlistButtonProps {
-  product: HttpTypes.StoreProduct
+  product: Product
   variant?: "icon" | "button"
   size?: "sm" | "md" | "lg"
   className?: string
@@ -79,11 +79,10 @@ export default function WishlistButton({
           <Loader2 className={`${iconSizes[size]} animate-spin text-gray-600`} />
         ) : (
           <Heart
-            className={`${iconSizes[size]} transition-all ${
-              isWishlisted
+            className={`${iconSizes[size]} transition-all ${isWishlisted
                 ? "fill-red-500 text-red-500"
                 : "text-gray-600 hover:text-red-500"
-            }`}
+              }`}
           />
         )}
       </button>
@@ -100,10 +99,9 @@ export default function WishlistButton({
         border-2 transition-all
         font-medium text-sm
         disabled:opacity-50 disabled:cursor-not-allowed
-        ${
-          isWishlisted
-            ? "border-red-500 text-red-500 bg-red-50"
-            : "border-gray-300 text-gray-700 hover:border-gray-400"
+        ${isWishlisted
+          ? "border-red-500 text-red-500 bg-red-50"
+          : "border-gray-300 text-gray-700 hover:border-gray-400"
         }
         ${className}
       `}

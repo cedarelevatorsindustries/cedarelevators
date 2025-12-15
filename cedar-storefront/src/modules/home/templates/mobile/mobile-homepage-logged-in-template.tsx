@@ -1,22 +1,23 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroLiteMobile,
   ApplicationsMobile,
-  ProductSectionMobile
+  ProductSectionMobile,
+  QuickAccessCategoriesSection
 } from "../../components/mobile"
 
 interface MobileHomepageLoggedInProps {
-  products: HttpTypes.StoreProduct[]
-  categories: HttpTypes.StoreProductCategory[]
-  favoriteProducts?: HttpTypes.StoreProduct[]
-  recentlyViewedProducts?: HttpTypes.StoreProduct[]
-  recommendedProducts?: HttpTypes.StoreProduct[]
+  products: Product[]
+  categories: ProductCategory[]
+  favoriteProducts?: Product[]
+  recentlyViewedProducts?: Product[]
+  recommendedProducts?: Product[]
   userType?: "individual" | "business"
 }
 
-export default function MobileHomepageLoggedIn({ 
+export default function MobileHomepageLoggedIn({
   products,
   categories,
   favoriteProducts = [],
@@ -35,27 +36,30 @@ export default function MobileHomepageLoggedIn({
       {/* Hero Lite - Compact search */}
       <HeroLiteMobile />
 
+      {/* Quick Access Categories */}
+      <QuickAccessCategoriesSection categories={categories} />
+
       {/* Shop by Application - FIRST - Always show */}
       <ApplicationsMobile />
 
       {/* Your Favorites (from wishlist) - Show with demo data if empty */}
-      <ProductSectionMobile 
-        title="Your Favorites" 
+      <ProductSectionMobile
+        title="Your Favorites"
         products={favoriteProducts.length > 0 ? favoriteProducts : products.slice(0, 5)}
         viewAllLink="/account/wishlist"
       />
 
       {/* Recently Viewed Products - Show with demo data if empty */}
-      <ProductSectionMobile 
-        title="Recently Viewed" 
+      <ProductSectionMobile
+        title="Recently Viewed"
         products={recentlyViewedProducts.length > 0 ? recentlyViewedProducts : products.slice(5, 10)}
         viewAllLink="/products"
       />
 
       {/* Top Selling Components */}
       {topSelling.length > 0 && (
-        <ProductSectionMobile 
-          title="Top Selling Components" 
+        <ProductSectionMobile
+          title="Top Selling Components"
           products={topSelling}
           viewAllLink="/products?sort=best-selling"
         />
@@ -63,8 +67,8 @@ export default function MobileHomepageLoggedIn({
 
       {/* Recommended for You */}
       {recommendedProducts.length > 0 && (
-        <ProductSectionMobile 
-          title="Recommended for You" 
+        <ProductSectionMobile
+          title="Recommended for You"
           products={recommendedProducts}
           viewAllLink="/products?filter=recommended"
         />
@@ -72,8 +76,8 @@ export default function MobileHomepageLoggedIn({
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
-        <ProductSectionMobile 
-          title="New Arrivals" 
+        <ProductSectionMobile
+          title="New Arrivals"
           products={newArrivals}
           viewAllLink="/products?sort=newest"
         />
@@ -81,8 +85,8 @@ export default function MobileHomepageLoggedIn({
 
       {/* Top Choices This Month */}
       {topChoices.length > 0 && (
-        <ProductSectionMobile 
-          title="Top Choices This Month" 
+        <ProductSectionMobile
+          title="Top Choices This Month"
           products={topChoices}
           viewAllLink="/products?filter=top-choices"
         />
@@ -90,8 +94,8 @@ export default function MobileHomepageLoggedIn({
 
       {/* Trending Products */}
       {trending.length > 0 && (
-        <ProductSectionMobile 
-          title="Trending Products" 
+        <ProductSectionMobile
+          title="Trending Products"
           products={trending}
           viewAllLink="/products?filter=trending"
         />

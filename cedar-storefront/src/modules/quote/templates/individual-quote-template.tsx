@@ -1,6 +1,6 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { Plus, Wallet, TrendingUp, Package, RefreshCw, Grid } from "lucide-react"
 import Link from "next/link"
 import {
@@ -13,7 +13,7 @@ import {
 } from "../components"
 
 interface IndividualQuoteTemplateProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function IndividualQuoteTemplate({ products }: IndividualQuoteTemplateProps) {

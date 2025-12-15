@@ -1,13 +1,13 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { useState } from "react"
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react"
 import ProductSectionHorizontal from "../../sections/mobile/product-section-horizontal"
 import ProductCard from "@/components/ui/product-card"
 
 interface ProductsTabProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function ProductsTabTemplate({ products }: ProductsTabProps) {
@@ -48,68 +48,68 @@ export default function ProductsTabTemplate({ products }: ProductsTabProps) {
 
       {/* Product Sections - Horizontal Scroll */}
       <div className="space-y-2">
-        <ProductSectionHorizontal 
-          title="🔥 Trending Now" 
+        <ProductSectionHorizontal
+          title="🔥 Trending Now"
           products={trending}
           viewAllLink="/catalog?filter=trending"
         />
-        
-        <ProductSectionHorizontal 
-          title="✨ New Arrivals" 
+
+        <ProductSectionHorizontal
+          title="✨ New Arrivals"
           products={newArrivals}
           viewAllLink="/catalog?filter=new"
         />
-        
-        <ProductSectionHorizontal 
-          title="⭐ Top Choices This Month" 
+
+        <ProductSectionHorizontal
+          title="⭐ Top Choices This Month"
           products={topChoices}
           viewAllLink="/catalog?filter=top-choices"
         />
-        
-        <ProductSectionHorizontal 
-          title="🏆 Best Sellers" 
+
+        <ProductSectionHorizontal
+          title="🏆 Best Sellers"
           products={bestSellers}
           viewAllLink="/catalog?filter=best-sellers"
         />
-        
-        <ProductSectionHorizontal 
-          title="💡 Recommended for You" 
+
+        <ProductSectionHorizontal
+          title="💡 Recommended for You"
           products={recommended}
           viewAllLink="/catalog?filter=recommended"
         />
-        
-        <ProductSectionHorizontal 
-          title="👁️ Recently Viewed" 
+
+        <ProductSectionHorizontal
+          title="👁️ Recently Viewed"
           products={recentlyViewed}
           viewAllLink="/catalog?filter=recent"
         />
-        
-        <ProductSectionHorizontal 
-          title="❤️ Your Favorites" 
+
+        <ProductSectionHorizontal
+          title="❤️ Your Favorites"
           products={favorites}
           viewAllLink="/account/wishlist"
         />
-        
-        <ProductSectionHorizontal 
-          title="💼 Exclusive to Business" 
+
+        <ProductSectionHorizontal
+          title="💼 Exclusive to Business"
           products={exclusiveBusiness}
           viewAllLink="/catalog?filter=business-exclusive"
         />
-        
-        <ProductSectionHorizontal 
-          title="⚡ Limited Stock" 
+
+        <ProductSectionHorizontal
+          title="⚡ Limited Stock"
           products={limitedStock}
           viewAllLink="/catalog?filter=limited"
         />
-        
-        <ProductSectionHorizontal 
-          title="🎯 Seasonal Picks" 
+
+        <ProductSectionHorizontal
+          title="🎯 Seasonal Picks"
           products={seasonal}
           viewAllLink="/catalog?filter=seasonal"
         />
-        
-        <ProductSectionHorizontal 
-          title="🌟 Featured Products" 
+
+        <ProductSectionHorizontal
+          title="🌟 Featured Products"
           products={featured}
           viewAllLink="/catalog?filter=featured"
         />
@@ -119,7 +119,7 @@ export default function ProductsTabTemplate({ products }: ProductsTabProps) {
       <div className="mt-6 bg-white">
         <div className="px-4 py-4 border-b border-gray-200">
           <h2 className="text-base font-bold text-gray-900 mb-3">All Products</h2>
-          
+
           {/* Filter Bar */}
           <div className="flex gap-3">
             <button

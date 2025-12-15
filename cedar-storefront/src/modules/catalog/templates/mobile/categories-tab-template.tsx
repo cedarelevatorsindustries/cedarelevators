@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Package } from "lucide-react"
 import ApplicationsMobile from "@/modules/home/components/mobile/sections/applications-mobile"
@@ -9,12 +9,12 @@ import ProductCard from "@/components/ui/product-card"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 
 interface CategoriesTabProps {
-  categories: HttpTypes.StoreProductCategory[]
-  products: HttpTypes.StoreProduct[]
+  categories: ProductCategory[]
+  products: Product[]
 }
 
 export default function CategoriesTabTemplate({ categories, products }: CategoriesTabProps) {
-  const [selectedCategory, setSelectedCategory] = useState<HttpTypes.StoreProductCategory | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null)
 
   // Handle browser back button
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
     )
   }
   // Mock data for Top Applications converted to Product structure
-  const elevatorTypes: HttpTypes.StoreProduct[] = [
+  const elevatorTypes: Product[] = [
     {
       id: "home-lift",
       title: "Home Elevator Kit",
@@ -61,7 +61,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
           currency_code: "inr"
         }
       }]
-    } as unknown as HttpTypes.StoreProduct,
+    } as unknown as Product,
     {
       id: "passenger-lift",
       title: "Commercial Passenger Lift",
@@ -77,7 +77,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
           currency_code: "inr"
         }
       }]
-    } as unknown as HttpTypes.StoreProduct,
+    } as unknown as Product,
     {
       id: "hospital-lift",
       title: "Stretcher Lift System",
@@ -93,7 +93,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
           currency_code: "inr"
         }
       }]
-    } as unknown as HttpTypes.StoreProduct,
+    } as unknown as Product,
     {
       id: "goods-lift",
       title: "Heavy Duty Goods Lift",
@@ -109,7 +109,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
           currency_code: "inr"
         }
       }]
-    } as unknown as HttpTypes.StoreProduct
+    } as unknown as Product
   ]
 
   return (
@@ -118,7 +118,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       <div className="bg-white py-6 px-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">Shop by Categories</h2>
-          <button 
+          <button
             onClick={() => {
               // Show first category as default when viewing all
               if (categories.length > 0) {

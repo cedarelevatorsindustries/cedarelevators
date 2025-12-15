@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { ShoppingCart, Check, Package, Heart, MessageSquare } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
 
 interface FrequentlyBoughtTogetherSectionProps {
-  mainProduct: HttpTypes.StoreProduct
-  bundleProducts: HttpTypes.StoreProduct[]
+  mainProduct: Product
+  bundleProducts: Product[]
   onAddBundle?: () => void
   isMobile?: boolean
 }
@@ -19,15 +19,15 @@ export default function FrequentlyBoughtTogetherSection({
   isMobile = false
 }: FrequentlyBoughtTogetherSectionProps) {
   const { user } = useUser()
-  
+
   if (bundleProducts.length === 0) return null
 
   // Show up to 3 bundle products (4 total with main product)
   const limitedBundleProducts = bundleProducts.slice(0, 3)
-  
+
   // All products including main product
   const allProducts = [mainProduct, ...limitedBundleProducts]
-  
+
   // State for selected products (all selected by default)
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(allProducts.map(p => p.id))
@@ -65,20 +65,19 @@ export default function FrequentlyBoughtTogetherSection({
       <h2 className={`font-bold text-gray-900 mb-6 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
         Frequently Bought Together
       </h2>
-      
+
       {/* Products Grid */}
       <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 mb-6`}>
         {allProducts.map((product) => {
           const productPrice = product.variants?.[0]?.calculated_price?.calculated_amount || 0
           const formattedPrice = productPrice ? `₹${(productPrice / 100).toLocaleString("en-IN")}` : null
           const isSelected = selectedProducts.has(product.id)
-          
+
           return (
             <div key={product.id} className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
               {/* Product Image */}
-              <div className={`aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm transition-opacity ${
-                !isSelected ? 'opacity-40' : ''
-              }`}>
+              <div className={`aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm transition-opacity ${!isSelected ? 'opacity-40' : ''
+                }`}>
                 {product.thumbnail ? (
                   <img
                     src={product.thumbnail}
@@ -94,11 +93,10 @@ export default function FrequentlyBoughtTogetherSection({
                 {/* Checkbox - Inside Image, Top Left */}
                 <button
                   onClick={() => toggleProduct(product.id)}
-                  className={`absolute top-3 left-3 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all shadow-md ${
-                    isSelected
+                  className={`absolute top-3 left-3 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all shadow-md ${isSelected
                       ? 'bg-blue-600 border-blue-600'
                       : 'bg-white/90 border-gray-300 hover:border-blue-400'
-                  }`}
+                    }`}
                 >
                   {isSelected && (
                     <Check className="w-4 h-4 text-white" />

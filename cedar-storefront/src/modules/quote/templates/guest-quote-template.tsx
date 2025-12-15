@@ -1,6 +1,6 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import Link from "next/link"
 import { CheckCircle, TrendingUp, Shield, Headset } from "lucide-react"
 import {
@@ -11,7 +11,7 @@ import {
 import { BestSellingCarousel } from "../components/best-selling-carousel"
 
 interface GuestQuoteTemplateProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function GuestQuoteTemplate({ products }: GuestQuoteTemplateProps) {

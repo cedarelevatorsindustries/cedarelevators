@@ -1,16 +1,16 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface RecentlyViewedSectionProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function RecentlyViewedSection({ products }: RecentlyViewedSectionProps) {
   const recentProducts = products.slice(0, 5)
-  
+
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
@@ -22,7 +22,7 @@ export default function RecentlyViewedSection({ products }: RecentlyViewedSectio
           View All →
         </LocalizedClientLink>
       </div>
-      
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {recentProducts.map((product) => (
           <ProductCard key={product.id} product={product} />

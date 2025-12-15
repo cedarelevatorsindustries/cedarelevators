@@ -27,8 +27,6 @@ export default function RootLayout({
       }}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/"
     >
       <html lang="en">
         <body className={spaceGrotesk.variable}>

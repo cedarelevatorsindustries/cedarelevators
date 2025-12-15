@@ -51,7 +51,7 @@ export default function BusinessRegisterForm() {
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/",
+        redirectUrl: "/sso-callback",
         redirectUrlComplete: "/",
       })
     } catch (err: any) {

@@ -42,7 +42,7 @@ export default function LoginForm() {
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/",
+        redirectUrl: "/sso-callback",
         redirectUrlComplete: "/",
       })
     } catch (err: any) {

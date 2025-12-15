@@ -1,20 +1,87 @@
-import { HttpTypes } from "@medusajs/types"
+import { getSupabaseClient } from "@/lib/supabase/client"
+import { ProductCategory } from "@/lib/types/domain"
+import { isDemoMode } from "./demo/config"
+import { getDemoCategories, getDemoCategory } from "./demo"
 
 /**
- * Fetch categories from Medusa backend
- * TODO: Replace with actual Medusa API endpoint
+ * List categories - Uses demo data when demo mode is enabled
  */
-export async function listCategories(): Promise<HttpTypes.StoreProductCategory[]> {
+export async function listCategories(params?: {
+  parent_category_id?: string | null
+  include_descendants_tree?: boolean
+}): Promise<ProductCategory[]> {
+  // 🚀 Demo Mode: Return static data for client review
+  if (isDemoMode()) {
+    return getDemoCategories(params)
+  }
+
+  // Production Mode: Fetch from Supabase
   try {
-    // TODO: Replace with your actual Medusa backend URL
-    // const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories`)
-    // const data = await response.json()
-    // return data.product_categories
-    
-    // Mock data for now
-    return []
+    const supabase = getSupabaseClient()
+    let query = supabase
+      .from('categories')
+      .select('*')
+
+    if (params?.parent_category_id !== undefined) {
+      if (params.parent_category_id === null) {
+        query = query.is('parent_category_id', null)
+      } else {
+        query = query.eq('parent_category_id', params.parent_category_id)
+      }
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error("Error fetching categories:", error)
+      return []
+    }
+
+    let categories = data as ProductCategory[]
+
+    if (params?.include_descendants_tree) {
+      // Basic tree building - fetch all and build structure
+    }
+
+    return categories
   } catch (error) {
-    console.error("Error fetching categories:", error)
+    console.error("Error fetching categories from Supabase:", error)
     return []
+  }
+}
+
+/**
+ * Get a single category - Uses demo data when demo mode is enabled
+ */
+export async function getCategory(idOrHandle: string): Promise<ProductCategory | null> {
+  // 🚀 Demo Mode: Return static data for client review
+  if (isDemoMode()) {
+    return getDemoCategory(idOrHandle)
+  }
+
+  // Production Mode: Fetch from Supabase
+  try {
+    const supabase = getSupabaseClient()
+
+    const isId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrHandle)
+
+    let query = supabase
+      .from('categories')
+      .select('*')
+
+    if (isId) {
+      query = query.eq('id', idOrHandle)
+    } else {
+      query = query.eq('handle', idOrHandle)
+    }
+
+    const { data, error } = await query.single()
+
+    if (error || !data) return null
+
+    return data as ProductCategory
+  } catch (error) {
+    console.error("Error fetching category from Supabase:", error)
+    return null
   }
 }

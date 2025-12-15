@@ -1,17 +1,17 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface ProductSectionMobileProps {
   title: string
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
   viewAllLink?: string
 }
 
-export default function ProductSectionMobile({ 
-  title, 
-  products, 
-  viewAllLink = "/products" 
+export default function ProductSectionMobile({
+  title,
+  products,
+  viewAllLink = "/products"
 }: ProductSectionMobileProps) {
   if (products.length === 0) return null
 
@@ -26,9 +26,9 @@ export default function ProductSectionMobile({
           View All →
         </LocalizedClientLink>
       </div>
-      
+
       {/* Horizontal Scrollable Product Cards */}
-      <div 
+      <div
         className="overflow-x-auto overflow-y-hidden [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { HttpTypes } from "@medusajs/types"
+import { ProductCategory } from "@/lib/types/domain"
 import { Search } from "lucide-react"
 
 type HeroLiteProps = {
   userType: "individual" | "business"
-  categories?: HttpTypes.StoreProductCategory[]
+  categories?: ProductCategory[]
 }
 
 const searchPlaceholders = [
@@ -31,16 +31,16 @@ export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
   const [isFocused, setIsFocused] = useState(false)
 
   // Define tabs based on user type
-  const tabs = userType === "business" 
+  const tabs = userType === "business"
     ? [
-        { id: "products" as const, label: "Products" },
-        { id: "categories" as const, label: "Categories" },
-        { id: "business-hub" as const, label: "Business Hub" },
-      ]
+      { id: "products" as const, label: "Products" },
+      { id: "categories" as const, label: "Categories" },
+      { id: "business-hub" as const, label: "Business Hub" },
+    ]
     : [
-        { id: "products" as const, label: "Products" },
-        { id: "categories" as const, label: "Categories" },
-      ]
+      { id: "products" as const, label: "Products" },
+      { id: "categories" as const, label: "Categories" },
+    ]
 
   // Elevator-related frequently searched items (7 items)
   const frequentlySearched = [
@@ -58,7 +58,7 @@ export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
     if (isFocused || searchValue) return
 
     const currentText = searchPlaceholders[currentIndex]
-    
+
     if (isTyping) {
       if (charIndex < currentText.length) {
         const timeout = setTimeout(() => {
@@ -135,11 +135,10 @@ export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
-                className={`px-4 py-2 text-xl font-bold transition-all text-center relative ${
-                  activeTab === tab.id
-                    ? "text-white"
-                    : "text-white/70 hover:text-white/90"
-                }`}
+                className={`px-4 py-2 text-xl font-bold transition-all text-center relative ${activeTab === tab.id
+                  ? "text-white"
+                  : "text-white/70 hover:text-white/90"
+                  }`}
               >
                 {tab.label}
                 {activeTab === tab.id && (

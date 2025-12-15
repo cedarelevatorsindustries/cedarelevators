@@ -1,9 +1,9 @@
 import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductImage } from "@/lib/types/domain"
 
 type ThumbnailProps = {
   thumbnail?: string | null
-  images?: HttpTypes.StoreProductImage[] | null
+  images?: ProductImage[] | null
   size?: "small" | "medium" | "large" | "full"
   className?: string
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, type ReactElement } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { ArrowLeft, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProductCard from "@/components/ui/product-card"
@@ -14,9 +14,9 @@ function getMetadataString(value: unknown): string {
 }
 
 interface SubcategoryTemplateProps {
-  category: HttpTypes.StoreProductCategory
-  products: HttpTypes.StoreProduct[]
-  allCategories: HttpTypes.StoreProductCategory[]
+  category: ProductCategory
+  products: Product[]
+  allCategories: ProductCategory[]
   onBack?: () => void
 }
 
@@ -28,10 +28,10 @@ export default function SubcategoryTemplate({
 }: SubcategoryTemplateProps): ReactElement {
   const router = useRouter()
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null)
-  
+
   // Get subcategories (either children or siblings, or create virtual subcategories)
-  let subcategories: HttpTypes.StoreProductCategory[] = []
-  
+  let subcategories: ProductCategory[] = []
+
   if (category.category_children && category.category_children.length > 0) {
     // Use actual children
     subcategories = category.category_children
@@ -45,7 +45,7 @@ export default function SubcategoryTemplate({
         ...category,
         name: "All " + category.name,
         id: category.id + "_all"
-      } as HttpTypes.StoreProductCategory
+      } as ProductCategory
     ]
   }
 
@@ -54,13 +54,13 @@ export default function SubcategoryTemplate({
     ? selectedSubCategory.includes("_all")
       ? products.filter(p => p.categories?.some(c => c.id === category.id))
       : (() => {
-          // Try to filter by subcategory first
-          const subcatProducts = products.filter(p => p.categories?.some(c => c.id === selectedSubCategory))
-          // If no products found for subcategory, show all products from parent category
-          return subcatProducts.length > 0 
-            ? subcatProducts 
-            : products.filter(p => p.categories?.some(c => c.id === category.id))
-        })()
+        // Try to filter by subcategory first
+        const subcatProducts = products.filter(p => p.categories?.some(c => c.id === selectedSubCategory))
+        // If no products found for subcategory, show all products from parent category
+        return subcatProducts.length > 0
+          ? subcatProducts
+          : products.filter(p => p.categories?.some(c => c.id === category.id))
+      })()
     : products.filter(p => p.categories?.some(c => c.id === category.id))
 
   // Auto-select first subcategory if available
@@ -102,19 +102,17 @@ export default function SubcategoryTemplate({
               <button
                 key={subcat.id}
                 onClick={() => setSelectedSubCategory(subcat.id)}
-                className={`w-full px-2 py-3 text-center transition-all ${
-                  selectedSubCategory === subcat.id
+                className={`w-full px-2 py-3 text-center transition-all ${selectedSubCategory === subcat.id
                     ? "bg-white border-l-2 border-orange-600 text-orange-600 font-semibold"
                     : "text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <div className="flex flex-col items-center gap-1">
                   {/* Icon placeholder */}
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    selectedSubCategory === subcat.id
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${selectedSubCategory === subcat.id
                       ? "bg-orange-50"
                       : "bg-white"
-                  }`}>
+                    }`}>
                     <span className="text-2xl">
                       {getMetadataString(subcat.metadata?.icon) || "📦"}
                     </span>

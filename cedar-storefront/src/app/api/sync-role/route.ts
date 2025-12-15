@@ -1,7 +1,5 @@
 import { auth, clerkClient } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
-import { medusaClient } from "@/lib/medusa"
-import { upsertCustomerMeta } from "@/lib/db"
 
 export async function POST() {
   try {
@@ -72,22 +70,46 @@ export async function POST() {
       )
     }
 
-    // 5. Sync role to Neon DB (customer_meta table)
+    // 5. Sync role to Neon DB (customer_meta table) via Medusa endpoint
     const companyName = clerkUser.unsafeMetadata?.company as string | undefined
     const taxId = clerkUser.unsafeMetadata?.tax_id as string | undefined
 
-    const customerMeta = await upsertCustomerMeta({
+    const metaPayload = {
       customer_id: medusaCustomer.id,
       clerk_user_id: userId,
-      account_type: accountType as "individual" | "business",
+      account_type: accountType,
       company_name: companyName || null,
       tax_id: taxId || null,
-      is_verified: false, // Can be updated later via admin panel
-    })
+      is_verified: false,
+    }
 
-    if (!customerMeta) {
+    console.log("Syncing customer metadata to Medusa:", metaPayload)
+
+    try {
+      const metaSyncResponse = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/customers/sync-meta`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+        },
+        body: JSON.stringify(metaPayload),
+      })
+
+      if (!metaSyncResponse.ok) {
+        const errorData = await metaSyncResponse.json()
+        console.error("Failed to sync customer metadata:", errorData)
+        return NextResponse.json(
+          { error: `Failed to sync customer metadata: ${errorData.error || 'Unknown error'}` },
+          { status: 500 }
+        )
+      }
+
+      const metaData = await metaSyncResponse.json()
+      console.log("Customer metadata synced successfully:", metaData)
+    } catch (metaError: any) {
+      console.error("Error syncing customer metadata:", metaError)
       return NextResponse.json(
-        { error: "Failed to sync customer metadata to database" },
+        { error: `Failed to sync customer metadata: ${metaError.message || 'Unknown error'}` },
         { status: 500 }
       )
     }

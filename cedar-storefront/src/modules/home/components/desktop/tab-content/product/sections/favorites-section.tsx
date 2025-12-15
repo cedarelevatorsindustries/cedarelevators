@@ -1,17 +1,17 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { Heart } from "lucide-react"
 
 interface FavoritesSectionProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function FavoritesSection({ products }: FavoritesSectionProps) {
   const favoriteProducts = products.slice(0, 5)
-  
+
   if (favoriteProducts.length === 0) {
     return (
       <section>
@@ -32,7 +32,7 @@ export default function FavoritesSection({ products }: FavoritesSectionProps) {
       </section>
     )
   }
-  
+
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
@@ -44,7 +44,7 @@ export default function FavoritesSection({ products }: FavoritesSectionProps) {
           View All →
         </LocalizedClientLink>
       </div>
-      
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {favoriteProducts.map((product) => (
           <ProductCard key={product.id} product={product} />

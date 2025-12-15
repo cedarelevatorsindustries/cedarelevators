@@ -1,4 +1,4 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroGuestMobile as HeroSection,
   HeroButtonsMobile as HeroButtonsSection,
@@ -12,7 +12,7 @@ import {
 } from "../../components/mobile"
 
 interface MobileHomepageProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
   testimonials: any[]
 }
 

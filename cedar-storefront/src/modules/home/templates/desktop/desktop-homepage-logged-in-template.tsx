@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import HeroLite from "../../components/common/hero-lite"
 import { WelcomeSection } from "../../components/common/welcome-section"
 import ProductsTab from "../../components/desktop/tab-content/product"
@@ -9,10 +9,10 @@ import CategoriesTab from "../../components/desktop/tab-content/categories"
 import BusinessHubTab from "../../components/desktop/tab-content/business-hub"
 
 interface DesktopHomepageLoggedInProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
   testimonials: any[]
   userType: "individual" | "business"
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
 }
 
 export default function DesktopHomepageLoggedIn({

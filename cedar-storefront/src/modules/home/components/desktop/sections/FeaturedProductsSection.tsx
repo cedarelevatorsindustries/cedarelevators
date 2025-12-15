@@ -1,9 +1,9 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface FeaturedProductsSectionProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 const FeaturedProductsSection = ({ products }: FeaturedProductsSectionProps) => {
@@ -28,7 +28,7 @@ const FeaturedProductsSection = ({ products }: FeaturedProductsSectionProps) => 
           View All →
         </LocalizedClientLink>
       </div>
-      
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {featuredProducts.map((product) => (
           <ProductCard key={product.id} product={product} />

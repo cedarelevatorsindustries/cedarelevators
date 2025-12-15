@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import { Pagination, ResultsHeader, FilterSidebar } from "@/modules/catalog/sections"
 import { BannerCarousel } from "@/modules/catalog/components/banner-carousel"
@@ -11,8 +11,8 @@ import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
 
 interface CatalogTemplateProps {
-  products: HttpTypes.StoreProduct[]
-  categories: HttpTypes.StoreProductCategory[]
+  products: Product[]
+  categories: ProductCategory[]
   searchParams?: {
     type?: string
     category?: string
@@ -90,15 +90,15 @@ export default function CatalogTemplate({
     return categories.map(cat => ({
       id: cat.id,
       name: cat.name || "",
-      count: initialProducts.filter(p => 
-        p.categories?.some(c => c.id === cat.id)
+      count: initialProducts.filter(p =>
+        p.categories?.some((c: ProductCategory) => c.id === cat.id)
       ).length
     }))
   }, [categories, initialProducts])
 
   // Combine and filter products
   const allDisplayProducts = useMemo(() => {
-    const combined = config.fallbackToAll 
+    const combined = config.fallbackToAll
       ? [...primaryProducts, ...fallbackProducts]
       : primaryProducts
 
@@ -107,7 +107,7 @@ export default function CatalogTemplate({
     // Apply sidebar filters
     if (activeFilters.category && activeFilters.category.length > 0) {
       filtered = filtered.filter(product =>
-        product.categories?.some(cat => 
+        product.categories?.some(cat =>
           activeFilters.category.includes(cat.handle || cat.id)
         )
       )
@@ -121,20 +121,20 @@ export default function CatalogTemplate({
         break
       case "price-low":
         sorted.sort((a, b) => {
-          const priceA = a.variants?.[0]?.calculated_price?.calculated_amount || 0
-          const priceB = b.variants?.[0]?.calculated_price?.calculated_amount || 0
+          const priceA = a.price?.amount || a.variants?.[0]?.price || 0
+          const priceB = b.price?.amount || b.variants?.[0]?.price || 0
           return priceA - priceB
         })
         break
       case "price-high":
         sorted.sort((a, b) => {
-          const priceA = a.variants?.[0]?.calculated_price?.calculated_amount || 0
-          const priceB = b.variants?.[0]?.calculated_price?.calculated_amount || 0
+          const priceA = a.price?.amount || a.variants?.[0]?.price || 0
+          const priceB = b.price?.amount || b.variants?.[0]?.price || 0
           return priceB - priceA
         })
         break
       case "newest":
-        sorted.sort((a, b) => 
+        sorted.sort((a, b) =>
           new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
         )
         break
@@ -168,7 +168,7 @@ export default function CatalogTemplate({
     setActiveFilters(filters)
   }
 
-  const getProductBadge = (product: HttpTypes.StoreProduct) => {
+  const getProductBadge = (product: Product) => {
     if (product.metadata?.badge) {
       return product.metadata.badge as "offer" | "trending" | "top-application" | "verified" | "pending"
     }
@@ -230,7 +230,7 @@ export default function CatalogTemplate({
         {/* Two Column Layout */}
         <div className="flex gap-8">
           {/* Left Sidebar - Filters */}
-          <FilterSidebar 
+          <FilterSidebar
             onFilterChange={handleFilterChange}
           />
 

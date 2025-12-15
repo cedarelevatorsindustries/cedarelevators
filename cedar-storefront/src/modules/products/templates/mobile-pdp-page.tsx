@@ -1,14 +1,14 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
-import { ChevronLeft, Heart, Share2, ShoppingCart, MessageSquare } from "lucide-react"
+import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 
-// Import sections
+// Sections
 import TitleBadgesSection from "../sections/02-title-badges-section"
-import ShortDescriptionSection from "../sections/03-short-description-section"
 import PricingBlockSection from "../sections/04-pricing-block-section"
 import CTAButtonsSection from "../sections/06-cta-buttons-section"
 import ProductTabsSection from "../sections/14-product-tabs-section"
@@ -24,9 +24,9 @@ interface CatalogContext {
 }
 
 interface MobileProductDetailPageProps {
-  product: HttpTypes.StoreProduct
-  relatedProducts?: HttpTypes.StoreProduct[]
-  bundleProducts?: HttpTypes.StoreProduct[]
+  product: Product
+  relatedProducts?: Product[]
+  bundleProducts?: Product[]
   catalogContext?: CatalogContext
 }
 
@@ -37,11 +37,12 @@ export default function MobileProductDetailPage({
   catalogContext
 }: MobileProductDetailPageProps) {
   const { user } = useUser()
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [showFloatingBar, setShowFloatingBar] = useState(false)
-  const imageScrollRef = useRef<HTMLDivElement>(null)
-  const ctaSectionRef = useRef<HTMLDivElement>(null)
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
+  const imageScrollRef = useRef<HTMLDivElement>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const ctaSectionRef = useRef<HTMLDivElement>(null)
+  const [showFloatingBar, setShowFloatingBar] = useState(false)
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
 
   // User type and pricing logic
   const isGuest = !user
@@ -50,8 +51,8 @@ export default function MobileProductDetailPage({
   const isVerified = user?.unsafeMetadata?.is_verified === true
   const showPrice = isBusiness && isVerified
 
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount || null
-  const originalPrice = product.variants?.[0]?.calculated_price?.original_amount || null
+  const price = product.price?.amount || 0
+  const originalPrice = null
 
   // Images
   const images = product.images || []
@@ -61,7 +62,7 @@ export default function MobileProductDetailPage({
   const badges = product.metadata?.badges as any[] || []
   const specifications = product.metadata?.specifications as any[] || [
     { label: "SKU", value: product.id },
-    { label: "Category", value: product.categories?.[0]?.name || "N/A" }
+    { label: "Category", value: product.category_id || "N/A" }
   ]
   const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
@@ -69,9 +70,9 @@ export default function MobileProductDetailPage({
 
   // Back URL
   const getBackUrl = () => {
-    if (catalogContext?.category) return `/catalog?category=${catalogContext.category}`
-    if (catalogContext?.application) return `/catalog?application=${catalogContext.application}`
-    if (catalogContext?.search) return `/catalog?search=${catalogContext.search}`
+    if (catalogContext?.category) return `/ catalog ? category = ${catalogContext.category} `
+    if (catalogContext?.application) return `/ catalog ? application = ${catalogContext.application} `
+    if (catalogContext?.search) return `/ catalog ? search = ${catalogContext.search} `
     return "/catalog"
   }
 
@@ -144,17 +145,17 @@ export default function MobileProductDetailPage({
   return (
     <>
       <style jsx global>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .pb-safe {
-          padding-bottom: env(safe-area-inset-bottom);
-        }
-      `}</style>
+  .scrollbar - hide {
+  -ms - overflow - style: none;
+  scrollbar - width: none;
+}
+        .scrollbar - hide:: -webkit - scrollbar {
+  display: none;
+}
+        .pb - safe {
+  padding - bottom: env(safe - area - inset - bottom);
+}
+`}</style>
 
       <div className="bg-gray-50">
         {/* Mobile Hero Image Carousel - Full Screen */}
@@ -165,13 +166,13 @@ export default function MobileProductDetailPage({
               <ChevronLeft size={24} className="text-white" />
             </Link>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={handleShare}
                 className="p-2 bg-black/30 backdrop-blur-sm hover:bg-black/40 rounded-lg transition-colors"
               >
                 <Share2 size={20} className="text-white" />
               </button>
-              <button 
+              <button
                 onClick={handleWishlist}
                 className="p-2 bg-black/30 backdrop-blur-sm hover:bg-black/40 rounded-lg transition-colors"
               >
@@ -181,7 +182,7 @@ export default function MobileProductDetailPage({
           </div>
 
           {/* Dark Gradient Overlay for Header Visibility */}
-          <div 
+          <div
             className="absolute top-0 left-0 right-0 h-32 z-10"
             style={{
               background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
@@ -190,7 +191,7 @@ export default function MobileProductDetailPage({
           />
 
           {/* Image Carousel */}
-          <div 
+          <div
             ref={imageScrollRef}
             className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
           >
@@ -199,7 +200,7 @@ export default function MobileProductDetailPage({
                 <div className="aspect-square bg-white relative">
                   <img
                     src={image}
-                    alt={`${product.title} - View ${i + 1}`}
+                    alt={`${product.title} - View ${i + 1} `}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -213,15 +214,14 @@ export default function MobileProductDetailPage({
               <button
                 key={i}
                 onClick={() => {
-                  imageScrollRef.current?.scrollTo({ 
-                    left: i * (imageScrollRef.current?.offsetWidth || 0), 
-                    behavior: 'smooth' 
+                  imageScrollRef.current?.scrollTo({
+                    left: i * (imageScrollRef.current?.offsetWidth || 0),
+                    behavior: 'smooth'
                   })
                 }}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === currentImageIndex ? "bg-white w-6" : "bg-white/50 w-1.5"
-                }`}
-                aria-label={`Go to image ${i + 1}`}
+                className={`h - 1.5 rounded - full transition - all ${i === currentImageIndex ? "bg-white w-6" : "bg-white/50 w-1.5"
+                  } `}
+                aria-label={`Go to image ${i + 1} `}
               />
             ))}
           </div>
@@ -234,13 +234,13 @@ export default function MobileProductDetailPage({
             <div className="bg-white -mx-4 px-4 py-4">
               {variants.map((variantGroup) => {
                 const [selectedVariant, setSelectedVariant] = useState("")
-                
+
                 return (
                   <div key={variantGroup.type} className="space-y-3">
                     <h3 className="text-lg font-semibold text-gray-800">
                       {variantGroup.type}
                     </h3>
-                    
+
                     <div className="flex flex-wrap gap-3">
                       {variantGroup.options.map((option: any) => {
                         const isSelected = selectedVariant === option.id
@@ -252,16 +252,16 @@ export default function MobileProductDetailPage({
                             onClick={() => !isDisabled && setSelectedVariant(option.id)}
                             disabled={isDisabled}
                             className={`
-                              px-6 py-3 rounded-xl font-medium text-base transition-all
-                              ${isSelected 
-                                ? "bg-blue-50 text-blue-600 border-2 border-blue-500" 
+px - 6 py - 3 rounded - xl font - medium text - base transition - all
+                              ${isSelected
+                                ? "bg-blue-50 text-blue-600 border-2 border-blue-500"
                                 : "bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300"
                               }
-                              ${isDisabled 
-                                ? "opacity-40 cursor-not-allowed" 
+                              ${isDisabled
+                                ? "opacity-40 cursor-not-allowed"
                                 : "cursor-pointer"
                               }
-                            `}
+`}
                           >
                             {option.value}
                           </button>
@@ -341,10 +341,9 @@ export default function MobileProductDetailPage({
         </div>
 
         {/* Floating Bottom Bar - Shows after scrolling past CTA section */}
-        <div 
-          className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-transform duration-300 z-50 ${
-            showFloatingBar ? 'translate-y-0' : 'translate-y-full'
-          }`}
+        <div
+          className={`fixed bottom - 0 left - 0 right - 0 bg - white border - t border - gray - 200 shadow - lg transition - transform duration - 300 z - 50 ${showFloatingBar ? 'translate-y-0' : 'translate-y-full'
+            } `}
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="px-4 py-3">
@@ -400,7 +399,7 @@ export default function MobileProductDetailPage({
                     Add
                   </button>
                 ) : null}
-                
+
                 <button
                   onClick={handleRequestQuote}
                   className="px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2"

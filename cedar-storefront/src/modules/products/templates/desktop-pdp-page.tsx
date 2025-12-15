@@ -1,6 +1,6 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
@@ -25,9 +25,9 @@ interface CatalogContext {
 }
 
 interface ProductDetailPageProps {
-  product: HttpTypes.StoreProduct
-  relatedProducts?: HttpTypes.StoreProduct[]
-  bundleProducts?: HttpTypes.StoreProduct[]
+  product: Product
+  relatedProducts?: Product[]
+  bundleProducts?: Product[]
   catalogContext?: CatalogContext
 }
 
@@ -48,8 +48,8 @@ export default function ProductDetailPage({
   const isVerified = user?.unsafeMetadata?.is_verified === true
   const showPrice = isBusiness && isVerified
 
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount || null
-  const originalPrice = product.variants?.[0]?.calculated_price?.original_amount || null
+  const price = product.price?.amount || 0
+  const originalPrice = null // TODO: Add original price to schema if needed
 
   // Images
   const images = product.images || []
@@ -59,7 +59,7 @@ export default function ProductDetailPage({
   const badges = product.metadata?.badges as any[] || []
   const specifications = product.metadata?.specifications as any[] || [
     { label: "SKU", value: product.id },
-    { label: "Category", value: product.categories?.[0]?.name || "N/A" }
+    { label: "Category", value: product.category_id || "N/A" }
   ]
   const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
@@ -74,7 +74,7 @@ export default function ProductDetailPage({
   }
 
   // Check if all variants are selected
-  const allVariantsSelected = variants.length === 0 || 
+  const allVariantsSelected = variants.length === 0 ||
     variants.every((variantGroup: any) => selectedVariants[variantGroup.type])
 
   // Handlers
@@ -122,7 +122,7 @@ export default function ProductDetailPage({
       {/* Desktop Back Navigation */}
       <div className="bg-white border-b">
         <div className="max-w-[1400px] mx-auto px-4 py-3">
-          <Link 
+          <Link
             href={getBackUrl()}
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
           >
@@ -139,7 +139,7 @@ export default function ProductDetailPage({
           <div className="grid grid-cols-2 gap-8 mb-8 items-start">
             {/* Left Column - Sticky Image Section */}
             <div className="sticky top-24 self-start">
-              <ProductHeroSection 
+              <ProductHeroSection
                 images={allImages}
                 productTitle={product.title || "Product"}
               />

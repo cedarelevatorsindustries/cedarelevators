@@ -1,13 +1,13 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product } from "@/lib/types/domain"
 import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { useUser } from "@/lib/auth/client"
 import { useState } from "react"
 
 interface ProductCardProps {
-  product: HttpTypes.StoreProduct
+  product: Product
   variant?: "default" | "special" | "mobile"
   badge?: "offer" | "trending" | "top-application" | "verified" | "pending"
 }
@@ -29,7 +29,7 @@ export default function ProductCard({
 
   // Pricing logic - only show for verified business
   const showPrice = isBusiness && isVerified
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount
+  const price = product.price?.amount || product.variants?.[0]?.price
   const formattedPrice = price ? `₹${(price / 100).toLocaleString("en-IN")}` : null
 
   const handleAddToCart = (e: React.MouseEvent) => {

@@ -1,13 +1,13 @@
 "use client"
 
 import { Package } from "lucide-react"
-import { HttpTypes } from "@medusajs/types"
+import { ProductCategory } from "@/lib/types/domain"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { MegaMenu } from "./mega-menu/index"
 import type { NavbarConfig } from "../config"
 
 interface NavbarBrowseProps {
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
   config: NavbarConfig
   isTransparent: boolean
   isScrolled: boolean
@@ -21,11 +21,10 @@ export function NavbarBrowse({ categories, config, isTransparent, isScrolled, on
     return (
       <LocalizedClientLink
         href="/catalog"
-        className={`flex items-center gap-2 text-sm font-medium transition-colors font-montserrat ${
-          isTransparent
-            ? 'text-white hover:text-blue-300' 
-            : 'text-gray-700 hover:text-blue-700'
-        }`}
+        className={`flex items-center gap-2 text-sm font-medium transition-colors font-montserrat ${isTransparent
+          ? 'text-white hover:text-blue-300'
+          : 'text-gray-700 hover:text-blue-700'
+          }`}
       >
         <Package size={16} />
         Browse Products
@@ -36,9 +35,9 @@ export function NavbarBrowse({ categories, config, isTransparent, isScrolled, on
   // Show Mega Menu (All Categories dropdown) when not scrolled in transparent hero state
   if (config.showMegaMenu && !isScrolled) {
     return (
-      <MegaMenu 
-        categories={categories} 
-        isScrolled={!isTransparent} 
+      <MegaMenu
+        categories={categories}
+        isScrolled={!isTransparent}
         onOpenChange={onMegaMenuChange}
       />
     )
@@ -49,11 +48,10 @@ export function NavbarBrowse({ categories, config, isTransparent, isScrolled, on
     return (
       <LocalizedClientLink
         href="/catalog"
-        className={`flex items-center gap-2 text-sm font-medium transition-colors font-montserrat ${
-          isTransparent
-            ? 'text-white hover:text-blue-300' 
-            : 'text-gray-700 hover:text-blue-700'
-        }`}
+        className={`flex items-center gap-2 text-sm font-medium transition-colors font-montserrat ${isTransparent
+          ? 'text-white hover:text-blue-300'
+          : 'text-gray-700 hover:text-blue-700'
+          }`}
       >
         <Package size={16} />
         Browse Products

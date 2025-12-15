@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { User } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
+import { useSignIn } from "@/lib/auth/client"
 
 interface LoginHoverCardProps {
   isTransparent: boolean
@@ -10,6 +11,7 @@ interface LoginHoverCardProps {
 }
 
 export function LoginHoverCard({ isTransparent, onHover }: LoginHoverCardProps) {
+  const { isLoaded: signInLoaded, signIn } = useSignIn()
   const [isOpen, setIsOpen] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -36,9 +38,20 @@ export function LoginHoverCard({ isTransparent, onHover }: LoginHoverCardProps) 
     ? "text-white hover:text-blue-300"
     : "text-gray-700 hover:text-blue-700"
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google Sign-In
-    console.log("Google Sign-In clicked")
+  const handleGoogleAuth = async () => {
+    // Try sign-in first, if user doesn't exist, Clerk will handle sign-up
+    if (!signInLoaded) return
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/",
+      })
+    } catch (err: any) {
+      console.error("Google Auth error:", err)
+      // If sign-in fails, the error might indicate we need to sign up
+      // Clerk should handle this automatically with OAuth
+    }
   }
 
   return (
@@ -102,9 +115,9 @@ export function LoginHoverCard({ isTransparent, onHover }: LoginHoverCardProps) 
               </div>
             </div>
             
-            {/* Google Sign-In */}
+            {/* Google Authentication */}
             <button
-              onClick={handleGoogleSignIn}
+              onClick={handleGoogleAuth}
               className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-lg border-2 border-gray-300 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -125,7 +138,7 @@ export function LoginHoverCard({ isTransparent, onHover }: LoginHoverCardProps) 
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              <span>Sign in with Google</span>
+              <span>Continue with Google</span>
             </button>
           </div>
         </div>

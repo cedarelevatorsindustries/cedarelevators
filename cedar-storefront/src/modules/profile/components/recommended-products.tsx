@@ -3,16 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ProductCard from '@/components/ui/product-card'
-import { HttpTypes } from '@medusajs/types'
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { listProducts } from '@/lib/data/products'
-import { demoProducts } from '@/lib/data/demo-products'
 
 interface RecommendedProductsProps {
   className?: string
 }
 
 export default function RecommendedProducts({ className }: RecommendedProductsProps) {
-  const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -21,15 +20,10 @@ export default function RecommendedProducts({ className }: RecommendedProductsPr
         const { response } = await listProducts({
           queryParams: { limit: 8 }
         })
-        // Use demo products if no products from Medusa
-        const productsToShow = response.products.length > 0 
-          ? response.products 
-          : demoProducts as HttpTypes.StoreProduct[]
-        setProducts(productsToShow)
+        setProducts(response.products)
       } catch (error) {
         console.error('Error fetching products:', error)
-        // Fallback to demo products on error
-        setProducts(demoProducts as HttpTypes.StoreProduct[])
+        setProducts([])
       } finally {
         setIsLoading(false)
       }

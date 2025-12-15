@@ -1,4 +1,4 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory } from "@/lib/types/domain"
 import {
   HeroSection,
   FeaturedProductsSection,
@@ -10,11 +10,12 @@ import {
 } from "../../components/desktop/sections"
 
 interface DesktopHomepageProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
+  categories: ProductCategory[]
   testimonials: any[]
 }
 
-export default function DesktopHomepage({ products, testimonials }: DesktopHomepageProps) {
+export default function DesktopHomepage({ products, categories, testimonials }: DesktopHomepageProps) {
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -22,7 +23,7 @@ export default function DesktopHomepage({ products, testimonials }: DesktopHomep
 
       {/* Quick Categories */}
       <div className="mt-12">
-        <QuickCategoriesSection />
+        <QuickCategoriesSection categories={categories} />
       </div>
 
       {/* Featured Products */}

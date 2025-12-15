@@ -1,11 +1,11 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import { Package } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface CategoryCardProps {
-  category: HttpTypes.StoreProductCategory
+  category: ProductCategory
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {

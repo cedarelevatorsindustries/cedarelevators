@@ -1,10 +1,10 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import CategoryCard from "./category-card"
 
 interface CategoryGridProps {
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
 }
 
 export default function CategoryGrid({ categories }: CategoryGridProps) {

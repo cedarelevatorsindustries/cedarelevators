@@ -9,7 +9,6 @@ import { headers } from 'next/headers'
 import ProductDetailPage from '@/modules/products/templates/desktop-pdp-page'
 import MobileProductDetailPage from '@/modules/products/templates/mobile-pdp-page'
 import { getProductByHandle, listProducts } from '@/lib/data/products'
-import { getDemoPDPData } from '@/lib/data/demo-pdp-data'
 
 interface ProductPageProps {
   params: Promise<{
@@ -25,21 +24,6 @@ interface ProductPageProps {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params
-  
-  // Use demo data for metadata if handle is 'demo' or starts with 'demo-'
-  if (handle === 'demo' || handle.startsWith('demo-')) {
-    const demoData = getDemoPDPData()
-    return {
-      title: `${demoData.product.title} - Cedar Elevators | Premium Elevator Components`,
-      description: demoData.product.description || '',
-      openGraph: {
-        title: demoData.product.title || '',
-        description: demoData.product.description || '',
-        images: demoData.product.thumbnail ? [demoData.product.thumbnail] : [],
-        type: 'website'
-      }
-    }
-  }
   
   const product = await getProductByHandle(handle)
   
@@ -69,31 +53,6 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
   const headersList = await headers()
   const userAgent = headersList.get('user-agent') || ''
   const isMobile = /mobile|android|iphone|ipad|phone/i.test(userAgent)
-  
-  // Use demo data if handle is 'demo' or starts with 'demo-'
-  if (handle === 'demo' || handle.startsWith('demo-')) {
-    const demoData = getDemoPDPData()
-    
-    if (isMobile) {
-      return (
-        <MobileProductDetailPage
-          product={demoData.product as any}
-          relatedProducts={demoData.relatedProducts as any}
-          bundleProducts={demoData.bundleProducts as any}
-          catalogContext={catalogContext}
-        />
-      )
-    }
-    
-    return (
-      <ProductDetailPage
-        product={demoData.product as any}
-        relatedProducts={demoData.relatedProducts as any}
-        bundleProducts={demoData.bundleProducts as any}
-        catalogContext={catalogContext}
-      />
-    )
-  }
   
   // Get product from Medusa
   const product = await getProductByHandle(handle)

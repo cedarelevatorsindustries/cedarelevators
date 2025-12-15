@@ -19,17 +19,16 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
 
   // Check if user is logged in via Clerk
   const isLoggedIn = await isAuthenticated()
-  
+
   // Get user type (guest, individual, or business)
   const userType = await getUserType()
-  
+
   // Get company name for business users
   const companyName = await getCompanyName()
 
   return (
     <div className="min-h-screen flex flex-col">
       <Layout
-        regions={[]}
         categories={categories}
         customConfig={customConfig}
         isLoggedIn={isLoggedIn}
@@ -39,20 +38,20 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
       <main className="flex-1 profile-page-main">
         {children}
       </main>
-      
+
       {/* Desktop Footer - Hidden on mobile */}
       <div className="hidden md:block">
         <Footer />
       </div>
-      
+
       {/* Mobile Footer - Hidden on desktop */}
       <div className="md:hidden">
         <AboutSectionMobile />
         <FooterLite />
       </div>
-      
+
       {/* Floating Action Buttons */}
-      <FloatingActionCard 
+      <FloatingActionCard
         whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}
         showSurvey={false}
       />

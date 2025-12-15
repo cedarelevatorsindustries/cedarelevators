@@ -1,4 +1,4 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroGuestMobile as HeroSection,
   FeaturedProductsSection,
@@ -9,15 +9,15 @@ import {
 } from "../../components/mobile"
 
 interface MobileHomepageGuestProps {
-  products: HttpTypes.StoreProduct[]
-  categories: HttpTypes.StoreProductCategory[]
+  products: Product[]
+  categories: ProductCategory[]
   testimonials: any[]
 }
 
-export default function MobileHomepageGuest({ 
-  products, 
+export default function MobileHomepageGuest({
+  products,
   categories,
-  testimonials 
+  testimonials
 }: MobileHomepageGuestProps) {
   return (
     <div className="w-full">

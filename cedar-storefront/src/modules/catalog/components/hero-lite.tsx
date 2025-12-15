@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-import { HttpTypes } from "@medusajs/types"
 
 interface HeroLiteProps {
   type: "category" | "application"
@@ -37,7 +36,7 @@ export function HeroLite({ type, title, description, subcategories, metadata }: 
             {type === "category" ? "Category" : "Application"}
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">{title}</h1>
-          
+
           {description && (
             <p className="text-gray-300 text-lg mb-6">{description}</p>
           )}

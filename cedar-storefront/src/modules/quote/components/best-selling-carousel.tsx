@@ -1,11 +1,11 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import Link from "next/link"
 import Image from "next/image"
 
 interface BestSellingCarouselProps {
-    products: HttpTypes.StoreProduct[]
+    products: Product[]
 }
 
 export const BestSellingCarousel = ({ products }: BestSellingCarouselProps) => {

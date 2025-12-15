@@ -1,9 +1,9 @@
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface FeaturedProductsSectionProps {
-  products: HttpTypes.StoreProduct[]
+  products: Product[]
 }
 
 export default function FeaturedProductsSection({ products }: FeaturedProductsSectionProps) {
@@ -28,9 +28,9 @@ export default function FeaturedProductsSection({ products }: FeaturedProductsSe
           View All →
         </LocalizedClientLink>
       </div>
-      
+
       {/* Product Cards - Horizontal Scrollable */}
-      <div 
+      <div
         className="overflow-x-auto overflow-y-hidden [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >

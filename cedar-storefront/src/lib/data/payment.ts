@@ -1,4 +1,3 @@
-import { sdk } from "@/lib/config/medusa-client"
 
 export type SavedPaymentMethod = {
   id: string
@@ -24,17 +23,6 @@ export type SavedPaymentMethodsResponse = {
 export async function getSavedPaymentMethods(
   accountHolderId: string
 ): Promise<SavedPaymentMethodsResponse> {
-  return sdk.client
-    .fetch<SavedPaymentMethodsResponse>(
-      `/store/payment-methods/${accountHolderId}`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    )
-    .then((res: SavedPaymentMethodsResponse) => res)
-    .catch((error: unknown) => {
-      console.error("Error fetching saved payment methods:", error)
-      return { payment_methods: [] }
-    })
+  // TODO: Implement Payment Methods in Supabase if needed (e.g. stripe_customers table)
+  return { payment_methods: [] }
 }

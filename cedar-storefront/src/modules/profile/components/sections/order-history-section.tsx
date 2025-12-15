@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useMemo } from 'react'
-import { HttpTypes } from "@medusajs/types"
-import { 
-  Package, 
-  Search, 
-  Download, 
-  Eye, 
-  FileText, 
-  RotateCcw, 
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import {
+  Package,
+  Search,
+  Download,
+  Eye,
+  FileText,
+  RotateCcw,
   Truck,
   X,
   ShoppingCart,
@@ -35,7 +35,7 @@ import {
 } from '@/lib/utils/orders/helpers'
 
 interface OrderHistorySectionProps {
-  orders: HttpTypes.StoreOrder[]
+  orders: Order[]
   accountType: 'guest' | 'individual' | 'business'
 }
 
@@ -145,41 +145,37 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              statusFilter === 'all'
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'all'
                 ? 'bg-[#F97316] text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+              }`}
           >
             All Orders
           </button>
           <button
             onClick={() => setStatusFilter('delivered')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              statusFilter === 'delivered'
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'delivered'
                 ? 'bg-green-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+              }`}
           >
             Delivered
           </button>
           <button
             onClick={() => setStatusFilter('shipped')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              statusFilter === 'shipped'
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'shipped'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+              }`}
           >
             In Transit
           </button>
           <button
             onClick={() => setStatusFilter('cancelled')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              statusFilter === 'cancelled'
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'cancelled'
                 ? 'bg-red-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
+              }`}
           >
             Cancelled
           </button>
@@ -334,7 +330,7 @@ function OrderTableRow({
   isSelected,
   onToggleSelect,
 }: {
-  order: HttpTypes.StoreOrder
+  order: Order
   isBusinessUser: boolean
   isSelected: boolean
   onToggleSelect: () => void
@@ -415,7 +411,7 @@ function OrderMobileCard({
   isSelected,
   onToggleSelect,
 }: {
-  order: HttpTypes.StoreOrder
+  order: Order
   isBusinessUser: boolean
   isSelected: boolean
   onToggleSelect: () => void

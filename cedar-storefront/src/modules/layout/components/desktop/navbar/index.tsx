@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { HttpTypes } from "@medusajs/types"
+import { ProductCategory } from "@/lib/types/domain"
 import { getNavbarVariant, mergeNavbarConfig, navbarConfig, type NavbarConfig } from "./config"
 import {
   NavbarLogo,
@@ -16,13 +16,12 @@ import {
 } from "./components"
 
 interface DesktopNavbarProps {
-  regions: HttpTypes.StoreRegion[]
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
   customConfig?: Partial<NavbarConfig>
   isLoggedIn?: boolean
 }
 
-export default function DesktopNavbar({ regions, categories, customConfig, isLoggedIn = false }: DesktopNavbarProps) {
+export default function DesktopNavbar({ categories, customConfig, isLoggedIn = false }: DesktopNavbarProps) {
   const pathname = usePathname()
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)

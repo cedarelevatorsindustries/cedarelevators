@@ -1,6 +1,6 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import FavoritesSection from "./sections/favorites-section"
 import RecentlyViewedSection from "./sections/recently-viewed-section"
 import RecommendedSection from "./sections/recommended-section"
@@ -9,7 +9,7 @@ import NewArrivalsSection from "./sections/new-arrivals-section"
 import HelpSection from "./sections/help-section"
 
 interface ProductsTabProps {
-  products?: HttpTypes.StoreProduct[]
+  products?: Product[]
 }
 
 export default function ProductsTab({ products = [] }: ProductsTabProps) {

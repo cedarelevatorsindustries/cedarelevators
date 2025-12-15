@@ -1,6 +1,6 @@
 "use client"
 
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
@@ -13,8 +13,8 @@ interface CatalogContext {
 }
 
 interface RelatedRecentlyViewedSectionProps {
-  relatedProducts: HttpTypes.StoreProduct[]
-  recentlyViewedProducts?: HttpTypes.StoreProduct[]
+  relatedProducts: Product[]
+  recentlyViewedProducts?: Product[]
   catalogContext?: CatalogContext
   isMobile?: boolean
 }
@@ -52,7 +52,7 @@ export default function RelatedRecentlyViewedSection({
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-          
+
           {isMobile ? (
             // Mobile: Horizontal Scroll with mobile variant cards
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
@@ -86,7 +86,7 @@ export default function RelatedRecentlyViewedSection({
           <div className="flex items-center justify-between mb-4">
             <h2 className={`font-bold text-gray-900 ${isMobile ? 'text-lg' : 'text-2xl'}`}>Recently Viewed</h2>
           </div>
-          
+
           {isMobile ? (
             // Mobile: Horizontal Scroll
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">

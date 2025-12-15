@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import Tabs from "../../components/mobile/tabs"
 import ProductsTabTemplate from "./products-tab-template"
 import CategoriesTabTemplate from "./categories-tab-template"
 
 interface MobileCatalogTemplateProps {
-  products: HttpTypes.StoreProduct[]
-  categories: HttpTypes.StoreProductCategory[]
+  products: Product[]
+  categories: ProductCategory[]
 }
 
 const tabs = [
@@ -16,8 +16,8 @@ const tabs = [
   { id: "categories", label: "Categories" }
 ]
 
-export default function MobileCatalogTemplate({ 
-  products, 
+export default function MobileCatalogTemplate({
+  products,
   categories
 }: MobileCatalogTemplateProps) {
   const [activeTab, setActiveTab] = useState("products")
@@ -33,7 +33,7 @@ export default function MobileCatalogTemplate({
       )}
 
       {activeTab === "categories" && (
-        <CategoriesTabTemplate 
+        <CategoriesTabTemplate
           categories={categories}
           products={products}
         />

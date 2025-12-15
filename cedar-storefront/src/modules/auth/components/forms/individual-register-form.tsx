@@ -50,7 +50,7 @@ export default function IndividualRegisterForm() {
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/",
+        redirectUrl: "/sso-callback",
         redirectUrlComplete: "/",
       })
     } catch (err: any) {

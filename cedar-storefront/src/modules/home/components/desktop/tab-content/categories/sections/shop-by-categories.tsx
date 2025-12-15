@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import {
   ChevronLeft,
@@ -25,7 +25,7 @@ import {
 } from "lucide-react"
 
 interface ShopByCategoriesProps {
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
 }
 
 // Component categories (not lift types)
@@ -85,7 +85,7 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
           </button>
         </div>
       </div>
-      
+
       {/* 2-line horizontal scroll - 8 categories per row */}
       <div
         ref={scrollContainerRef}
@@ -113,7 +113,7 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
               )
             })}
           </div>
-          
+
           {/* Second Row - 8 categories */}
           <div className="flex gap-6">
             {componentCategories.slice(8, 16).map((category) => {

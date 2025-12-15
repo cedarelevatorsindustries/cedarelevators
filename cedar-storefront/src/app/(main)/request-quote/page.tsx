@@ -23,7 +23,7 @@ export default async function RequestQuotePage() {
     })
     products = response.products
   } catch (error) {
-    console.log("Using demo data - Medusa backend not available")
+    console.error("Error fetching products:", error)
   }
 
   // Render based on user type

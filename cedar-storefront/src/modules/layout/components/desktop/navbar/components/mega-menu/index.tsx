@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { ProductCategory } from "@/lib/types/domain"
 import { MegaMenuTrigger } from "./mega-menu-trigger"
 import { MegaMenuPanel } from "./mega-menu-panel"
 
 interface MegaMenuProps {
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
   isScrolled?: boolean
   onOpenChange?: (isOpen: boolean) => void
 }
@@ -14,7 +14,7 @@ interface MegaMenuProps {
 export function MegaMenu({ categories, isScrolled = false, onOpenChange }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("")
-  
+
   const updateIsOpen = (newIsOpen: boolean) => {
     setIsOpen(newIsOpen)
     onOpenChange?.(newIsOpen)
@@ -29,7 +29,7 @@ export function MegaMenu({ categories, isScrolled = false, onOpenChange }: MegaM
     }
 
     window.addEventListener('scroll', handleGlobalScroll, { passive: true })
-    
+
     return () => {
       window.removeEventListener('scroll', handleGlobalScroll)
     }
@@ -37,11 +37,11 @@ export function MegaMenu({ categories, isScrolled = false, onOpenChange }: MegaM
 
   return (
     <div className="relative">
-      <MegaMenuTrigger 
+      <MegaMenuTrigger
         isScrolled={isScrolled}
         onMouseEnter={() => updateIsOpen(true)}
       />
-      
+
       {isOpen && (
         <MegaMenuPanel
           isScrolled={isScrolled}

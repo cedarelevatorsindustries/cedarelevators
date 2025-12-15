@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { HttpTypes } from "@medusajs/types"
+import { ProductCategory } from "@/lib/types/domain"
 import { useUser } from "@clerk/nextjs"
 import DesktopNavbar from "./components/desktop/navbar"
 import MobileTopBar from "./components/mobile/top-bar"
@@ -13,18 +13,16 @@ import type { NavbarConfig } from "./components/desktop/navbar/config"
 import type { UserType } from "@/lib/auth/server"
 
 interface LayoutProps {
-  regions: HttpTypes.StoreRegion[]
-  categories: HttpTypes.StoreProductCategory[]
+  categories: ProductCategory[]
   customConfig?: Partial<NavbarConfig>
   isLoggedIn?: boolean
   userType?: UserType
   companyName?: string | null
 }
 
-function LayoutContent({ 
-  regions, 
-  categories, 
-  customConfig, 
+function LayoutContent({
+  categories,
+  customConfig,
   isLoggedIn = false,
   userType = "guest",
   companyName = null
@@ -34,7 +32,7 @@ function LayoutContent({
   const [userName, setUserName] = useState("John Doe") // TODO: Get from user context
   const [notificationCount, setNotificationCount] = useState(3)
   const { isOpen: isNotificationOpen, closeSidebar } = useNotificationSidebar()
-  
+
   const isBusiness = userType === "business"
   const customerId = user?.id || null
 
@@ -54,15 +52,14 @@ function LayoutContent({
   return (
     <>
       {/* Desktop Navbar */}
-      <DesktopNavbar 
-        regions={regions} 
+      <DesktopNavbar
         categories={categories}
         customConfig={customConfig}
         isLoggedIn={isLoggedIn}
       />
 
       {/* Mobile Top Bar */}
-      <MobileTopBar 
+      <MobileTopBar
         onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         notificationCount={notificationCount}
         customConfig={customConfig}

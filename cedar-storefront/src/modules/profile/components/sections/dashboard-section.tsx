@@ -1,7 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/lib/types/profile'
-import { 
+import {
   FileText, Package, Heart, Clock,
   CheckCircle, AlertCircle, ArrowRight,
   Truck, HelpCircle, MessageCircle, MessageSquare
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
-import { HttpTypes } from '@medusajs/types'
+import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import RecommendedProducts from '../recommended-products'
 
 interface DashboardSectionProps {
@@ -25,7 +25,7 @@ interface DashboardSectionProps {
     quotesValue: number
     savedItems: number
   }
-  recentOrders: HttpTypes.StoreOrder[]
+  recentOrders: Order[]
   recentQuotes: any[]
   recentActivity: any[]
   wishlistItems: any[]
@@ -58,11 +58,11 @@ export default function DashboardSection({
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString
     const now = new Date()
     const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    
+
     if (diffInDays === 0) return 'Today'
     if (diffInDays === 1) return 'Yesterday'
     if (diffInDays < 7) return `${diffInDays} days ago`
-    
+
     return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
   }
 
@@ -123,7 +123,7 @@ export default function DashboardSection({
             <div className="flex items-center gap-2 mt-2">
               <span className={cn(
                 'px-3 py-1 rounded-full text-sm font-medium',
-                accountType === 'business' 
+                accountType === 'business'
                   ? 'bg-purple-100 text-purple-700'
                   : 'bg-blue-100 text-blue-700'
               )}>
@@ -151,20 +151,20 @@ export default function DashboardSection({
       {needsVerification && (
         <div className={cn(
           'rounded-lg p-6 border',
-          verificationStatus === 'pending' 
+          verificationStatus === 'pending'
             ? 'bg-orange-50 border-orange-200'
             : 'bg-red-50 border-red-200'
         )}>
           <div className="flex flex-col md:flex-row items-center gap-6">
             {/* Illustration */}
             <div className="flex-shrink-0">
-              <img 
-                src="/images/verification/verification_illustration.png" 
-                alt={verificationStatus === 'pending' ? 'Verification in progress' : 'Action required'} 
+              <img
+                src="/images/verification/verification_illustration.png"
+                alt={verificationStatus === 'pending' ? 'Verification in progress' : 'Action required'}
                 className="w-24 h-24 md:w-32 md:h-32 object-contain"
               />
             </div>
-            
+
             {/* Content */}
             <div className="flex-1 text-center md:text-left">
               {verificationStatus !== 'pending' && (
@@ -174,7 +174,7 @@ export default function DashboardSection({
                 </div>
               )}
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {verificationStatus === 'pending' 
+                {verificationStatus === 'pending'
                   ? 'Verification in Progress'
                   : 'Complete Business Verification'
                 }
@@ -221,7 +221,7 @@ export default function DashboardSection({
           {quickActions.map((action) => {
             const Icon = action.icon
             const isDisabled = !action.enabled
-            
+
             const content = (
               <div className={cn(
                 'p-6 rounded-lg text-white transition-all',
@@ -284,7 +284,7 @@ export default function DashboardSection({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            <button 
+            <button
               onClick={() => onSectionChange('order_history')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >
@@ -347,7 +347,7 @@ export default function DashboardSection({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Active Quotes</h2>
-            <button 
+            <button
               onClick={() => onSectionChange('quotes')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >
@@ -414,7 +414,7 @@ export default function DashboardSection({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Saved Items</h2>
-            <button 
+            <button
               onClick={() => onSectionChange('wishlists')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >

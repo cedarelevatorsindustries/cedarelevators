@@ -1,9 +1,11 @@
 "use client"
 
-import { demoBusinessAnalytics } from "@/lib/data/demo-data"
-
 export default function AnalyticsCard() {
-  const { totalOrders, pendingQuotes, monthlyRevenue, activeProducts } = demoBusinessAnalytics
+  // TODO: Fetch from Medusa orders and quotes
+  const totalOrders = 0
+  const pendingQuotes = 0
+  const monthlyRevenue = 0
+  const activeProducts = 0
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
