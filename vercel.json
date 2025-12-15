@@ -3,10 +3,5 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "pnpm install",
-  "devCommand": "pnpm run dev",
-  "functions": {
-    "api/**/*.js": {
-      "excludeFiles": "{node_modules/@next/swc-*/**,node_modules/lightningcss-*/**,node_modules/@tailwindcss/oxide-*/**}"
-    }
-  }
+  "devCommand": "pnpm run dev"
 }

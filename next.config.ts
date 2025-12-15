@@ -25,25 +25,23 @@ const nextConfig: NextConfig = {
   },
   // Externalize large native packages to reduce serverless function size
   serverExternalPackages: [
-    '@next/swc-linux-x64-gnu',
-    '@next/swc-linux-x64-musl',
-    'lightningcss',
-    'lightningcss-linux-x64-gnu',
-    'lightningcss-linux-x64-musl',
-    '@tailwindcss/oxide',
-    '@tailwindcss/oxide-linux-x64-gnu',
-    '@tailwindcss/oxide-linux-x64-musl',
     'sharp',
   ],
-  // Exclude unnecessary files from the trace
+  // Exclude unnecessary files from serverless function traces
+  // This targets all API routes and pages to exclude large native binaries
   outputFileTracingExcludes: {
-    '*': [
-      'node_modules/@next/swc-*',
-      'node_modules/lightningcss-*',
-      'node_modules/@tailwindcss/oxide-*',
-      'node_modules/@unrs/*',
+    '/**': [
+      'node_modules/@next/swc-linux-x64-gnu/**',
+      'node_modules/@next/swc-linux-x64-musl/**',
+      'node_modules/lightningcss-linux-x64-gnu/**',
+      'node_modules/lightningcss-linux-x64-musl/**',
+      'node_modules/@tailwindcss/oxide-linux-x64-gnu/**',
+      'node_modules/@tailwindcss/oxide-linux-x64-musl/**',
+      'node_modules/@unrs/**',
     ],
   },
 };
 
 export default nextConfig;
+
+
