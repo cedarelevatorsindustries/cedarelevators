@@ -33,8 +33,8 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
   const stats = [
     { label: "Total Orders", value: "156", change: "+12%" },
     { label: "Pending Quotes", value: "3", change: "" },
-    { label: "This Month", value: "$24,500", change: "+8%" },
-    { label: "Credit Limit", value: "$50,000", change: "" },
+    { label: "This Month", value: "₹24,500", change: "+8%" },
+    { label: "Credit Limit", value: "₹50,000", change: "" },
   ]
 
   return (

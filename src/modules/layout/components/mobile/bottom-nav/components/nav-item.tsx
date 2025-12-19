@@ -1,6 +1,6 @@
 "use client"
 
-import LocalizedClientLink from "@components/ui/localized-client-link"
+import Link from "next/link"
 
 interface NavItemProps {
   href: string
@@ -11,7 +11,7 @@ interface NavItemProps {
 
 export function NavItem({ href, icon: Icon, label, isActive }: NavItemProps) {
   return (
-    <LocalizedClientLink
+    <Link
       href={href}
       className={`flex flex-col items-center justify-center transition-colors ${
         isActive ? "text-[#ff3705]" : "text-gray-600"
@@ -19,6 +19,6 @@ export function NavItem({ href, icon: Icon, label, isActive }: NavItemProps) {
     >
       <Icon size={20} />
       <span className={`text-xs mt-1 ${isActive ? "font-bold" : ""}`}>{label}</span>
-    </LocalizedClientLink>
+    </Link>
   )
 }

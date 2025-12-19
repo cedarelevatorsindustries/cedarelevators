@@ -1,6 +1,6 @@
 "use client"
 
-import LocalizedClientLink from "@components/ui/localized-client-link"
+import Link from "next/link"
 import type { MenuItem } from "../../../common"
 
 interface SidebarSectionProps {
@@ -20,7 +20,7 @@ export function SidebarSection({ title, icon, items, onItemClick }: SidebarSecti
         </span>
       </div>
       {items.map((item) => (
-        <LocalizedClientLink
+        <Link
           key={item.label}
           href={item.href}
           className="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -33,7 +33,7 @@ export function SidebarSection({ title, icon, items, onItemClick }: SidebarSecti
               {item.badge}
             </span>
           )}
-        </LocalizedClientLink>
+        </Link>
       ))}
     </div>
   )

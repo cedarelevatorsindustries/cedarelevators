@@ -1,7 +1,7 @@
 "use client"
 
 import { Menu, Bell, Heart, ChevronLeft } from "lucide-react"
-import LocalizedClientLink from "@components/ui/localized-client-link"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 interface TopBarHeaderProps {
@@ -90,13 +90,13 @@ export function TopBarHeader({
       {/* Center: Website Title / Page Name */}
       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 text-center flex justify-center">
         {pathname === '/' ? (
-          <LocalizedClientLink
+          <Link
             href="/"
             className={`font-bold leading-tight tracking-[-0.015em] truncate text-lg ${isTransparent ? 'text-white' : 'text-gray-900'
               }`}
           >
             {getPageTitle()}
-          </LocalizedClientLink>
+          </Link>
         ) : (
           <h2 className={`font-bold leading-tight tracking-[-0.015em] truncate text-base ${isTransparent ? 'text-white' : 'text-gray-900'
             }`}>
@@ -108,17 +108,17 @@ export function TopBarHeader({
       {/* Right: Icons (Like + Notification) */}
       <div className="flex items-center justify-end gap-1">
         {/* Wishlist/Like Icon - Always Show */}
-        <LocalizedClientLink
+        <Link
           href="/saved"
           className={`flex items-center justify-center h-10 w-10 transition-colors ${iconColorClass}`}
           aria-label="View wishlist"
         >
           <Heart size={24} />
-        </LocalizedClientLink>
+        </Link>
 
         {/* Notification Icon - Only if logged in */}
         {showNotifications && (
-          <LocalizedClientLink
+          <Link
             href="/notifications"
             className={`flex items-center justify-center h-10 w-10 relative transition-colors ${iconColorClass}`}
             aria-label="View notifications"
@@ -129,7 +129,7 @@ export function TopBarHeader({
                 {notificationCount > 99 ? '99+' : notificationCount}
               </span>
             )}
-          </LocalizedClientLink>
+          </Link>
         )}
       </div>
     </nav>

@@ -1,22 +1,21 @@
-# Role Sync System - Clerk to Neon DB
+# Role Sync System - Clerk to Supabase
 
-This document explains how the role synchronization system works between Clerk authentication and Neon database.
+This document explains how the role synchronization system works between Clerk authentication and Supabase database.
 
 ## Overview
 
 The system keeps user roles (individual/business) synchronized between:
 1. **Clerk** - `unsafeMetadata.accountType` (for UI & auth logic)
-2. **Neon DB** - `customer_meta` table (for Medusa backend logic)
+2. **Supabase** - `customer_meta` table (for backend logic)
 
 ## Database Schema
 
-The `customer_meta` table in Neon DB:
+The `customer_meta` table in Supabase:
 
 ```sql
 CREATE TABLE customer_meta (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_id VARCHAR(255) UNIQUE NOT NULL,  -- Medusa customer.id
-  clerk_user_id VARCHAR(255) UNIQUE,         -- Clerk userId
+  clerk_user_id VARCHAR(255) UNIQUE NOT NULL,  -- Clerk userId
   account_type TEXT NOT NULL CHECK (account_type IN ('individual', 'business')),
   company_name TEXT,
   tax_id TEXT,
@@ -25,7 +24,6 @@ CREATE TABLE customer_meta (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_customer_meta_customer_id ON customer_meta(customer_id);
 CREATE INDEX idx_customer_meta_clerk_user_id ON customer_meta(clerk_user_id);
 ```
 
@@ -41,32 +39,26 @@ CREATE INDEX idx_customer_meta_clerk_user_id ON customer_meta(clerk_user_id);
 - On every login, `useRoleSync()` hook automatically calls `/api/sync-role`
 - The API route:
   1. Gets user data from Clerk
-  2. Creates/retrieves Medusa customer
-  3. Syncs role to `customer_meta` table in Neon
+  2. Syncs role to `customer_meta` table in Supabase
 
-### 3. Usage in Medusa Backend
+### 3. Usage in Backend
 
-Now Medusa can query the user's role directly:
+Now the backend can query the user's role directly:
 
 ```sql
 SELECT cm.account_type, cm.company_name, cm.is_verified
 FROM customer_meta cm
-WHERE cm.customer_id = 'cus_123'
+WHERE cm.clerk_user_id = 'user_123'
 ```
 
 ## Files Created
 
 ### Database Layer
-- `src/lib/db/index.ts` - Neon client setup
+- `src/lib/db/index.ts` - Supabase client setup
 - `src/lib/db/customer-meta.ts` - Database queries for customer_meta table
 
-### Medusa Integration
-- `src/lib/medusa/client.ts` - Medusa JS SDK client
-- `src/lib/medusa/types.ts` - TypeScript types
-- `src/lib/medusa/index.ts` - Exports
-
 ### API Routes
-- `src/app/api/sync-role/route.ts` - POST endpoint to sync role from Clerk to Neon
+- `src/app/api/sync-role/route.ts` - POST endpoint to sync role from Clerk to Supabase
 
 ### Client Hooks
 - `src/lib/hooks/use-role-sync.ts` - React hook for automatic sync
@@ -77,12 +69,10 @@ WHERE cm.customer_id = 'cus_123'
 Add to `.env.local`:
 
 ```bash
-# Neon Database
-DATABASE_URL=postgresql://user:password@host/database
-
-# Medusa Backend
-NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 # Clerk (already configured)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
@@ -93,7 +83,7 @@ CLERK_SECRET_KEY=sk_...
 
 ### 1. Show Different Pricing
 ```sql
--- In Medusa backend
+-- In backend
 SELECT 
   p.price,
   CASE 
@@ -101,7 +91,7 @@ SELECT
     ELSE p.retail_price
   END as final_price
 FROM products p
-JOIN customer_meta cm ON cm.customer_id = $1
+JOIN customer_meta cm ON cm.clerk_user_id = $1
 ```
 
 ### 2. Allow/Deny Bulk Orders
@@ -109,7 +99,7 @@ JOIN customer_meta cm ON cm.customer_id = $1
 -- Check if user can place bulk orders
 SELECT account_type = 'business' as can_bulk_order
 FROM customer_meta
-WHERE customer_id = $1
+WHERE clerk_user_id = $1
 ```
 
 ### 3. Generate Tax Invoices
@@ -117,7 +107,7 @@ WHERE customer_id = $1
 -- Get company details for invoice
 SELECT company_name, tax_id, is_verified
 FROM customer_meta
-WHERE customer_id = $1 AND account_type = 'business'
+WHERE clerk_user_id = $1 AND account_type = 'business'
 ```
 
 ### 4. Filter Analytics
@@ -131,8 +121,8 @@ WHERE account_type = 'business'
 ## Testing
 
 1. Sign up as a business user
-2. Check browser console for: `✅ Role synced successfully to Neon DB`
-3. Query Neon DB:
+2. Check browser console for: `✅ Role synced successfully to Supabase`
+3. Query Supabase:
 ```sql
 SELECT * FROM customer_meta WHERE clerk_user_id = 'user_xxx';
 ```
@@ -141,15 +131,11 @@ SELECT * FROM customer_meta WHERE clerk_user_id = 'user_xxx';
 
 ### Sync fails silently
 - Check browser console for errors
-- Verify `DATABASE_URL` is set correctly
-- Ensure `customer_meta` table exists in Neon
-
-### Customer not created in Medusa
-- Verify `NEXT_PUBLIC_MEDUSA_BACKEND_URL` is correct
-- Check Medusa backend is running
-- Verify `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` is set
+- Verify Supabase environment variables are set correctly
+- Ensure `customer_meta` table exists in Supabase
 
 ### Role not syncing
 - Clear browser cache and re-login
 - Check `/api/sync-role` endpoint directly
 - Verify Clerk metadata contains `accountType`
+- Check Supabase RLS policies allow inserts/updates

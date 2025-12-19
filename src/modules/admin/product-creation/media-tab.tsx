@@ -1,0 +1,229 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Upload, X, Image as ImageIcon, Star } from "lucide-react"
+
+interface ProductImage {
+  id: string
+  url: string
+  alt: string
+  isPrimary: boolean
+}
+
+interface MediaTabProps {
+  images: ProductImage[]
+  onImagesChange: (images: ProductImage[]) => void
+}
+
+export function MediaTab({ images, onImagesChange }: MediaTabProps) {
+  const [dragOver, setDragOver] = useState(false)
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) return
+    
+    // In a real app, you'd upload to your storage service here
+    // For now, we'll create placeholder URLs
+    const newImages: ProductImage[] = Array.from(files).map((file, index) => ({
+      id: `temp-${Date.now()}-${index}`,
+      url: URL.createObjectURL(file),
+      alt: file.name,
+      isPrimary: images.length === 0 && index === 0 // First image is primary if no images exist
+    }))
+    
+    onImagesChange([...images, ...newImages])
+  }
+
+  const removeImage = (imageId: string) => {
+    const updatedImages = images.filter(img => img.id !== imageId)
+    // If we removed the primary image, make the first remaining image primary
+    if (updatedImages.length > 0 && !updatedImages.some(img => img.isPrimary)) {
+      updatedImages[0].isPrimary = true
+    }
+    onImagesChange(updatedImages)
+  }
+
+  const setPrimaryImage = (imageId: string) => {
+    const updatedImages = images.map(img => ({
+      ...img,
+      isPrimary: img.id === imageId
+    }))
+    onImagesChange(updatedImages)
+  }
+
+  const updateAltText = (imageId: string, alt: string) => {
+    const updatedImages = images.map(img => 
+      img.id === imageId ? { ...img, alt } : img
+    )
+    onImagesChange(updatedImages)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Upload Area */}
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900">Product Images</CardTitle>
+          <CardDescription className="text-gray-600">
+            Upload high-quality images to showcase your product
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragOver 
+                ? 'border-red-400 bg-red-50' 
+                : 'border-gray-300 hover:border-red-300 hover:bg-red-50/50'
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragOver(true)
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setDragOver(false)
+              handleFileUpload(e.dataTransfer.files)
+            }}
+          >
+            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <div className="space-y-2">
+              <p className="text-lg font-medium text-gray-900">
+                Drop images here or click to upload
+              </p>
+              <p className="text-sm text-gray-600">
+                PNG, JPG, GIF up to 10MB each. Recommended: 1200x1200px
+              </p>
+            </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.multiple = true
+                input.accept = 'image/*'
+                input.onchange = (e) => {
+                  const target = e.target as HTMLInputElement
+                  handleFileUpload(target.files)
+                }
+                input.click()
+              }}
+            >
+              Choose Files
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Image Gallery */}
+      {images.length > 0 && (
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-900">Image Gallery</CardTitle>
+            <CardDescription className="text-gray-600">
+              Manage your product images and set the primary image
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {images.map((image) => (
+                <div key={image.id} className="relative group">
+                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                    <img
+                      src={image.url}
+                      alt={image.alt}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  {/* Image Controls */}
+                  <div className="absolute top-2 right-2 flex space-x-1">
+                    {image.isPrimary && (
+                      <Badge className="bg-yellow-500 text-white">
+                        <Star className="w-3 h-3 mr-1" />
+                        Primary
+                      </Badge>
+                    )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => removeImage(image.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Primary Image Button */}
+                  {!image.isPrimary && (
+                    <div className="absolute bottom-2 left-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setPrimaryImage(image.id)}
+                      >
+                        <Star className="w-3 h-3 mr-1" />
+                        Set Primary
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Alt Text */}
+                  <div className="mt-2">
+                    <Label htmlFor={`alt-${image.id}`} className="text-sm font-medium">
+                      Alt Text
+                    </Label>
+                    <Input
+                      id={`alt-${image.id}`}
+                      placeholder="Describe this image..."
+                      value={image.alt}
+                      onChange={(e) => updateAltText(image.id, e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Image Guidelines */}
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 border-blue-100/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold text-gray-900">Image Guidelines</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Best Practices</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Use high-resolution images (1200x1200px minimum)</li>
+                <li>• Show product from multiple angles</li>
+                <li>• Include lifestyle and detail shots</li>
+                <li>• Use consistent lighting and background</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">Technical Requirements</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Formats: JPG, PNG, GIF</li>
+                <li>• Max file size: 10MB per image</li>
+                <li>• Square aspect ratio recommended</li>
+                <li>• Alt text for accessibility</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

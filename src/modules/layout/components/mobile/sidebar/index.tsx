@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { User } from "lucide-react"
-import LocalizedClientLink from "@components/ui/localized-client-link"
+import Link from "next/link"
 import { SidebarHeader } from "./components/sidebar-header"
 import { SidebarSection } from "./components/sidebar-section"
 import { 

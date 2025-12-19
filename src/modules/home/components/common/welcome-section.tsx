@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { MessageSquare } from "lucide-react"
-import LocalizedClientLink from "@/components/ui/localized-client-link"
+import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
 
 interface WelcomeSectionProps {
@@ -33,13 +33,13 @@ export function WelcomeSection({ userType }: WelcomeSectionProps) {
                     </div>
 
                     {/* Right: Request Quote Button */}
-                    <LocalizedClientLink
+                    <Link
                         href="/request-quote"
                         className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
                     >
                         <MessageSquare className="w-4 h-4" />
                         Request for Quotation
-                    </LocalizedClientLink>
+                    </Link>
                 </div>
             </div>
         </div>

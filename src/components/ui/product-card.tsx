@@ -2,7 +2,7 @@
 
 import { Product } from "@/lib/types/domain"
 import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
-import LocalizedClientLink from "@/components/ui/localized-client-link"
+import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
 import { useState } from "react"
 
@@ -73,7 +73,7 @@ export default function ProductCard({
     return (
       <div className="group relative bg-gray-50 rounded-xl p-2 hover:shadow-xl transition-all duration-300">
         {/* Image Section */}
-        <LocalizedClientLink href={`/products/${product.handle}`}>
+        <Link href={`/products/${product.handle}`}>
           <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-2 shadow-sm">
             {product.thumbnail ? (
               <img
@@ -104,11 +104,11 @@ export default function ProductCard({
               />
             </button>
           </div>
-        </LocalizedClientLink>
+        </Link>
 
         {/* Content Section */}
         <div className="space-y-1.5">
-          <LocalizedClientLink href={`/products/${product.handle}`}>
+          <Link href={`/products/${product.handle}`}>
             {/* Title - Truncated to 1 line */}
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors leading-tight">
               {product.title}
@@ -120,7 +120,7 @@ export default function ProductCard({
                 {product.description}
               </p>
             )}
-          </LocalizedClientLink>
+          </Link>
 
           {/* Price Section - Role-based Display (Same as Desktop) */}
           {showPrice && formattedPrice ? (
@@ -195,7 +195,7 @@ export default function ProductCard({
     return (
       <div className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
         {/* Square Image with Badge */}
-        <LocalizedClientLink href={`/products/${product.handle}`} className="block relative aspect-square overflow-hidden bg-gray-50">
+        <Link href={`/products/${product.handle}`} className="block relative aspect-square overflow-hidden bg-gray-50">
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -222,11 +222,11 @@ export default function ProductCard({
               className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
             />
           </button>
-        </LocalizedClientLink>
+        </Link>
 
         {/* Content Outside Image */}
         <div className="p-3 flex flex-col flex-1 gap-2">
-          <LocalizedClientLink href={`/products/${product.handle}`} className="flex-1">
+          <Link href={`/products/${product.handle}`} className="flex-1">
             {/* Title */}
             <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight mb-1 group-hover:text-blue-600 transition-colors">
               {product.title}
@@ -238,7 +238,7 @@ export default function ProductCard({
                 {product.description}
               </p>
             )}
-          </LocalizedClientLink>
+          </Link>
 
           {/* Price & Actions Row */}
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
@@ -281,7 +281,7 @@ export default function ProductCard({
   return (
     <div className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-xl transition-all duration-300">
       {/* Image Section - Separate with Rounded Corners */}
-      <LocalizedClientLink href={`/products/${product.handle}`}>
+      <Link href={`/products/${product.handle}`}>
         <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm">
           {product.thumbnail ? (
             <img
@@ -312,11 +312,11 @@ export default function ProductCard({
             />
           </button>
         </div>
-      </LocalizedClientLink>
+      </Link>
 
       {/* Content Section - Direct on Background */}
       <div className="space-y-2">
-        <LocalizedClientLink href={`/products/${product.handle}`}>
+        <Link href={`/products/${product.handle}`}>
           {/* Title - Truncated */}
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
             {product.title}
@@ -328,7 +328,7 @@ export default function ProductCard({
               {product.description}
             </p>
           )}
-        </LocalizedClientLink>
+        </Link>
 
         {/* Price Section - Role-based Display */}
         {showPrice && formattedPrice ? (
