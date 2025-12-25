@@ -52,8 +52,8 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="flex items-center gap-3">
           <img
-            src="/logo/typography-logo.png"
-            alt="Dude Mens Wear"
+            src="/logo/cedar-logo.png"
+            alt="Cedar Elevators"
             className="h-6 lg:h-8 w-auto"
           />
         </div>

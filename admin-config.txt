@@ -1,0 +1,19 @@
+Cedar Elevators - Admin Authentication Configuration
+Generated: 2025-12-25T08:05:00.255Z
+
+ADMIN_SETUP_KEY=CEADM-2025-QS5R-LASU-FRBS-WHLS-BR23-3JBY
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+⚠️  CRITICAL SECURITY NOTES:
+1. Never commit these keys to version control
+2. Store the ADMIN_SETUP_KEY securely
+3. The SUPABASE_SERVICE_ROLE_KEY has full database access
+4. The recovery key (generated during setup) is shown only once
+
+Next Steps:
+1. Add these keys to your .env file
+2. Replace 'your_service_role_key_here' with actual service role key
+3. Navigate to http://localhost:3000/admin/setup
+4. Complete the super admin setup
+5. Save the recovery key generated during setup
+6. Delete this file after setup is complete

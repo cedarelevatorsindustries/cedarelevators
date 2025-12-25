@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Sidebar } from "@/modules/admin/common/sidebar"
-import { Header } from "@/modules/admin/common/header"
+import { Sidebar } from "@/components/common/sidebar"
+import { Header } from "@/components/common/header"
 import { Sheet, SheetContent } from "@/components/ui/admin-ui/sheet"
 
 function LoadingScreen() {
@@ -39,7 +39,7 @@ export default function AdminLayout({
   // Auth routes that don't need the admin layout
   const authRoutes = ['/admin/login', '/admin/setup', '/admin/recover', '/admin/pending', '/admin/logout']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
-  
+
   // Settings routes that have their own complete layout
   const isSettingsRoute = pathname.startsWith('/admin/settings')
 
@@ -55,7 +55,7 @@ export default function AdminLayout({
 
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         router.push('/admin/login')
         return
@@ -65,14 +65,14 @@ export default function AdminLayout({
     }
 
     checkAuth()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
   // If it's an auth route, just render the children without the admin layout
   if (isAuthRoute) {
     return <>{children}</>
   }
-  
+
   // If it's a settings route, render children without the admin layout wrapper
   // Settings has its own complete layout
   if (isSettingsRoute) {
@@ -103,8 +103,8 @@ export default function AdminLayout({
 
       <div className="flex-1 flex flex-col overflow-hidden p-3 lg:p-6 gap-3 lg:gap-6">
         <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg border border-orange-100/50 backdrop-blur-sm">
-          <Header 
-            sidebarCollapsed={sidebarCollapsed} 
+          <Header
+            sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
             mobileMenuOpen={mobileMenuOpen}
             onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}

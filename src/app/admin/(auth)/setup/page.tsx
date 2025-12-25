@@ -80,7 +80,7 @@ export default function AdminSetupPage() {
 
   const handleDownloadKey = () => {
     const blob = new Blob(
-      [`Dude Men's Wears - Admin Recovery Key\n\n${recoveryKey}\n\nStore this key securely. You will need it to recover super admin access.\nThis key will never be shown again.`],
+      [`Cedar Elevators - Admin Recovery Key\n\n${recoveryKey}\n\nStore this key securely. You will need it to recover super admin access.\nThis key will never be shown again.`],
       { type: 'text/plain' }
     )
     const url = URL.createObjectURL(blob)
