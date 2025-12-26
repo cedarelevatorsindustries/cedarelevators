@@ -40,7 +40,7 @@ export default function StoreLocationsPage() {
             Manage warehouse and fulfillment locations
           </p>
         </div>
-        <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25">
+        <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
           <Plus className="mr-2 h-4 w-4" />
           Add Location
         </Button>
@@ -131,7 +131,7 @@ export default function StoreLocationsPage() {
             <Input id="locationAddress" placeholder="Enter complete address with pincode" />
           </div>
           <div className="flex justify-end">
-            <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25">
+            <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
               <Plus className="mr-2 h-4 w-4" />
               Add Location
             </Button>

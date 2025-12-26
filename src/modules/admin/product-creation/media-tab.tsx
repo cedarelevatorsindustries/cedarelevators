@@ -65,7 +65,7 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
   return (
     <div className="space-y-6">
       {/* Upload Area */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Product Images</CardTitle>
           <CardDescription className="text-gray-600">
@@ -76,8 +76,8 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragOver 
-                ? 'border-red-400 bg-red-50' 
-                : 'border-gray-300 hover:border-red-300 hover:bg-red-50/50'
+                ? 'border-orange-400 bg-orange-50' 
+                : 'border-gray-300 hover:border-orange-300 hover:bg-orange-50/50'
             }`}
             onDragOver={(e) => {
               e.preventDefault()
@@ -123,7 +123,7 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
 
       {/* Image Gallery */}
       {images.length > 0 && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">Image Gallery</CardTitle>
             <CardDescription className="text-gray-600">

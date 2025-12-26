@@ -27,7 +27,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Edit, AlertTriangle } from 'lucide-react'
-import { VirtualizedTable } from '@/components/common/virtualized-table'
+import { VirtualizedTable } from '@/modules/admin/common/virtualized-table'
 
 interface InventoryTableProps {
   inventory: InventoryItem[]
@@ -131,7 +131,7 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
                 {item.quantity || 0}
               </span>
               {stockStatus.icon && (
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               )}
             </div>
           </TableCell>
@@ -149,13 +149,12 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
         return (
           <TableCell>
             <Badge
-              className={`font-medium ${
-                stockStatus.color === 'destructive'
-                  ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+              className={`font-medium ${stockStatus.color === 'destructive'
+                  ? 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
                   : stockStatus.color === 'secondary'
-                  ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
-                  : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
-              }`}
+                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
+                    : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
+                }`}
             >
               {stockStatus.label}
             </Badge>

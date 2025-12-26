@@ -263,7 +263,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
   return (
     <div className="space-y-6">
       {/* Enhanced Variant Options Setup */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Product Variants</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -273,14 +273,14 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
         <CardContent>
           <TabsProvider defaultValue="current">
             <div className="w-full mb-6">
-              <div className="flex items-center w-full dark:bg-red-950/30 bg-red-50 p-1 dark:text-white text-black rounded-md border border-red-100/50 dark:border-red-900/20">
-                <TabsBtn value="current" className="flex-1 text-red-600/70 dark:text-red-300/70">
+              <div className="flex items-center w-full dark:bg-orange-950/30 bg-orange-50 p-1 dark:text-white text-black rounded-md border border-orange-100/50 dark:border-orange-900/20">
+                <TabsBtn value="current" className="flex-1 text-orange-600/70 dark:text-orange-300/70">
                   <span className="relative z-2 uppercase text-xs font-semibold">Current Options</span>
                 </TabsBtn>
-                <TabsBtn value="color" className="flex-1 text-red-600/70 dark:text-red-300/70">
+                <TabsBtn value="color" className="flex-1 text-orange-600/70 dark:text-orange-300/70">
                   <span className="relative z-2 uppercase text-xs font-semibold">Color Variants</span>
                 </TabsBtn>
-                <TabsBtn value="size" className="flex-1 text-red-600/70 dark:text-red-300/70">
+                <TabsBtn value="size" className="flex-1 text-orange-600/70 dark:text-orange-300/70">
                   <span className="relative z-2 uppercase text-xs font-semibold">Size Variants</span>
                 </TabsBtn>
               </div>
@@ -336,7 +336,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                           variant="ghost"
                           size="sm"
                           onClick={() => removeOption(option.id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-orange-600 hover:text-orange-700"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -367,7 +367,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeOptionValue(option.id, value.id)}
-                                className="text-red-600 hover:text-red-700"
+                                className="text-orange-600 hover:text-orange-700"
                               >
                                 <X className="h-3 w-3" />
                               </Button>
@@ -390,7 +390,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                   {options.length > 0 && options.every(opt => opt.name && opt.values.length > 0) && (
                     <Button
                       onClick={generateVariants}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                     >
                       Generate Variants ({options.reduce((total, opt) => total * opt.values.length, 1)} combinations)
                     </Button>
@@ -424,7 +424,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                         variant="ghost"
                         size="sm"
                         onClick={() => removeOption(option.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-orange-600 hover:text-orange-700"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -448,7 +448,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                             variant="ghost"
                             size="sm"
                             onClick={() => removeOptionValue(option.id, value.id)}
-                            className="w-full text-red-600 hover:text-red-700"
+                            className="w-full text-orange-600 hover:text-orange-700"
                           >
                             <X className="h-3 w-3 mr-1" />
                             Remove
@@ -503,7 +503,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                         variant="ghost"
                         size="sm"
                         onClick={() => removeOption(option.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-orange-600 hover:text-orange-700"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -547,7 +547,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                               variant="ghost"
                               size="sm"
                               onClick={() => removeOptionValue(option.id, value.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-orange-600 hover:text-orange-700"
                             >
                               <X className="h-3 w-3" />
                             </Button>
@@ -582,7 +582,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
 
       {/* Variant Matrix */}
       {variants.length > 0 && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
               Variant Matrix ({variants.length} variants)
@@ -712,7 +712,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                           className="w-full min-w-[100px]"
                         />
                         <div
-                          className="absolute bottom-0 right-0 w-2 h-2 bg-red-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute bottom-0 right-0 w-2 h-2 bg-orange-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
                           draggable
                           onDragStart={() => setDraggedCell({ rowId: variant.id, field: 'price' })}
                           onDragEnd={(e) => {
@@ -738,7 +738,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                           className="w-full min-w-[100px]"
                         />
                         <div
-                          className="absolute bottom-0 right-0 w-2 h-2 bg-red-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute bottom-0 right-0 w-2 h-2 bg-orange-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
                           draggable
                           onDragStart={() => setDraggedCell({ rowId: variant.id, field: 'mrp' })}
                           onDragEnd={(e) => {
@@ -763,7 +763,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                           className="w-full min-w-[80px]"
                         />
                         <div
-                          className="absolute bottom-0 right-0 w-2 h-2 bg-red-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute bottom-0 right-0 w-2 h-2 bg-orange-600 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
                           draggable
                           onDragStart={() => setDraggedCell({ rowId: variant.id, field: 'stock' })}
                           onDragEnd={(e) => {

@@ -96,7 +96,7 @@ export default function AccountSettingsPage() {
               <DialogTrigger asChild>
                 <Button
                   disabled={!newEmail || newEmail === currentEmail}
-                  className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+                  className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Update Email
@@ -167,7 +167,7 @@ export default function AccountSettingsPage() {
               <DialogTrigger asChild>
                 <Button
                   disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
-                  className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+                  className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Update Password
@@ -195,22 +195,22 @@ export default function AccountSettingsPage() {
       <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-xl font-bold">
-            <Trash2 className="h-5 w-5 text-red-500" />
-            <span className="text-red-600">Delete Account</span>
+            <Trash2 className="h-5 w-5 text-orange-500" />
+            <span className="text-orange-600">Delete Account</span>
           </CardTitle>
           <CardDescription className="text-gray-600">
             Permanently delete your account and all associated data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 border border-red-200 rounded-xl bg-red-50">
+          <div className="p-4 border border-orange-200 rounded-xl bg-orange-50">
             <div className="space-y-3">
               <div>
-                <p className="font-medium text-red-800">Warning: This action cannot be undone</p>
-                <p className="text-sm text-red-600 mt-1">
+                <p className="font-medium text-orange-800">Warning: This action cannot be undone</p>
+                <p className="text-sm text-orange-600 mt-1">
                   Deleting your account will permanently remove all your data, including:
                 </p>
-                <ul className="text-sm text-red-600 mt-2 ml-4 list-disc">
+                <ul className="text-sm text-orange-600 mt-2 ml-4 list-disc">
                   <li>Store settings and configuration</li>
                   <li>Product catalog and inventory</li>
                   <li>Order history and customer data</li>
@@ -220,14 +220,14 @@ export default function AccountSettingsPage() {
               <div className="flex justify-end">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
+                    <Button variant="destructive" className="bg-orange-600 hover:bg-orange-700">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete Account
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+                      <DialogTitle className="text-orange-600">Delete Account</DialogTitle>
                       <DialogDescription>
                         This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
                         <br /><br />

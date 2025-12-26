@@ -145,17 +145,17 @@ export default function InventoryPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 hover:shadow-md transition-all duration-200">
+            <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 hover:shadow-md transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Out of Stock
                 </CardTitle>
-                <div className="p-2 rounded-xl bg-red-100 dark:bg-red-950">
-                  <PackageX className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-950">
+                  <PackageX className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
                   {stats?.outOfStock || 0}
                 </div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">Currently unavailable</p>

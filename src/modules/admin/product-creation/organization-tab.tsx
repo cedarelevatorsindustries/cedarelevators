@@ -109,7 +109,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
   return (
     <div className="space-y-6">
       {/* Categories */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Categories</CardTitle>
           <CardDescription className="text-gray-600">
@@ -129,7 +129,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                   onClick={() => toggleCategory(category.id)}
                   className={`p-3 text-left rounded-lg border-2 transition-all ${
                     organizationData.categories.includes(category.id)
-                      ? "border-red-500 bg-red-50 text-red-700"
+                      ? "border-orange-500 bg-orange-50 text-orange-700"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -158,7 +158,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
       </Card>
 
       {/* Collections */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Collections</CardTitle>
           <CardDescription className="text-gray-600">
@@ -178,7 +178,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                   onClick={() => toggleCollection(collection.id)}
                   className={`p-3 text-left rounded-lg border-2 transition-all ${
                     organizationData.collections.includes(collection.id)
-                      ? "border-red-500 bg-red-50 text-red-700"
+                      ? "border-orange-500 bg-orange-50 text-orange-700"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -207,7 +207,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
       </Card>
 
       {/* Tags */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Tags</CardTitle>
           <CardDescription className="text-gray-600">
@@ -237,7 +237,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                     <span>{tag}</span>
                     <button
                       onClick={() => removeTag(tag)}
-                      className="ml-1 hover:text-red-600"
+                      className="ml-1 hover:text-orange-600"
                     >
                       <X className="h-3 w-3" />
                     </button>

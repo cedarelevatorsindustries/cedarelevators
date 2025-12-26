@@ -16,11 +16,11 @@ interface GlobalTaxSettingsProps {
 
 export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSettingsProps) {
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-            <Calculator className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Global Tax Settings</CardTitle>
@@ -66,14 +66,14 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
                 <div
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     taxSettings.price_includes_tax
-                      ? 'border-red-500 bg-red-50 dark:bg-red-950/30'
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                   onClick={() => setTaxSettings({ ...taxSettings, price_includes_tax: true })}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded-full border-2 ${
-                      taxSettings.price_includes_tax ? 'border-red-500 bg-red-500' : 'border-gray-400'
+                      taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
                     }`}>
                       {taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">
@@ -90,14 +90,14 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
                 <div
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     !taxSettings.price_includes_tax
-                      ? 'border-red-500 bg-red-50 dark:bg-red-950/30'
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                   onClick={() => setTaxSettings({ ...taxSettings, price_includes_tax: false })}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded-full border-2 ${
-                      !taxSettings.price_includes_tax ? 'border-red-500 bg-red-500' : 'border-gray-400'
+                      !taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
                     }`}>
                       {!taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">

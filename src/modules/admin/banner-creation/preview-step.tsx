@@ -43,7 +43,7 @@ const getActionLabel = (actionType: ActionType): string => {
 export function PreviewStep({ formData }: PreviewStepProps) {
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
             <Eye className="h-5 w-5" />
@@ -68,7 +68,7 @@ export function PreviewStep({ formData }: PreviewStepProps) {
                   </div>
                 </div>
                 {formData.ctaText && (
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
                     {formData.ctaText}
                   </Button>
                 )}

@@ -115,7 +115,7 @@ export default function EditBannerPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }
@@ -341,7 +341,7 @@ export default function EditBannerPage() {
             </Button>
             <Button 
               type="submit" 
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
               disabled={saving}
             >
               {saving ? (

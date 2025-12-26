@@ -44,8 +44,8 @@ export function TopProducts() {
           <div className="space-y-4">
             {products.map((product, index) => (
               <div key={product.id} className="flex items-center space-x-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-semibold text-red-600">#{index + 1}</span>
+                <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-semibold text-orange-600">#{index + 1}</span>
                 </div>
                 {product.image_url && (
                   <img 

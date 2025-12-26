@@ -114,7 +114,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 Archive Product
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-orange-600">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Product
               </DropdownMenuItem>

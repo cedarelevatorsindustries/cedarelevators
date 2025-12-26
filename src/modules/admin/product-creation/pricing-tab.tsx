@@ -40,7 +40,7 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
   return (
     <div className="space-y-6">
       {/* Pricing Mode */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Pricing Mode</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -78,7 +78,7 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
 
       {/* Single Price Mode */}
       {pricingData.mode === "single" && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Product Pricing</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -158,7 +158,7 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
 
       {/* Variant Pricing Mode */}
       {pricingData.mode === "variant" && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Variant-Based Pricing</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">

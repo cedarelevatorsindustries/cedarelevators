@@ -41,7 +41,7 @@ export function ProductPreview({
     : 0
 
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200 sticky top-4">
+    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200 sticky top-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">Product Preview</CardTitle>
       </CardHeader>
@@ -140,7 +140,7 @@ export function ProductPreview({
             <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(24 reviews)</span>
           </div>
           
-          <Button className="w-full bg-red-600 hover:bg-red-700 text-white" disabled>
+          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled>
             <ShoppingCart className="mr-2 h-4 w-4" />
             Add to Cart
           </Button>

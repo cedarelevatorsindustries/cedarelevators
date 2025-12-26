@@ -167,7 +167,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-red-600" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-600" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function ProfilePage() {
             <div className="relative">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
-                <AvatarFallback className="bg-red-100 text-red-700 text-lg font-semibold">
+                <AvatarFallback className="bg-orange-100 text-orange-700 text-lg font-semibold">
                   {getInitials(profile.full_name)}
                 </AvatarFallback>
               </Avatar>
@@ -265,7 +265,7 @@ export default function ProfilePage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-orange-600 hover:bg-orange-700"
             >
               {saving ? (
                 <>

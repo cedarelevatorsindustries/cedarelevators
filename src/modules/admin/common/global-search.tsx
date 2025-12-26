@@ -230,8 +230,8 @@ export function GlobalSearch() {
                       onSelect={() => handleSelect(item.href)}
                       className="flex items-center space-x-3 p-3 cursor-pointer"
                     >
-                      <div className="p-2 rounded-lg bg-red-100">
-                        <Icon className="h-4 w-4 text-red-600" />
+                      <div className="p-2 rounded-lg bg-orange-100">
+                        <Icon className="h-4 w-4 text-orange-600" />
                       </div>
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">

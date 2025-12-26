@@ -27,7 +27,7 @@ function getNotificationIcon(type: NotificationType) {
 function getPriorityColor(priority: 'low' | 'medium' | 'high') {
   switch (priority) {
     case 'high':
-      return 'bg-red-100 text-red-700 border-red-200'
+      return 'bg-orange-100 text-orange-700 border-orange-200'
     case 'medium':
       return 'bg-yellow-100 text-yellow-700 border-yellow-200'
     case 'low':
@@ -48,7 +48,7 @@ export function NotificationCenter() {
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-600 border-white"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-orange-600 border-white"
               variant="destructive"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -107,7 +107,7 @@ export function NotificationCenter() {
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-red-600 rounded-full ml-2 mt-1.5" />
+                          <div className="w-2 h-2 bg-orange-600 rounded-full ml-2 mt-1.5" />
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-2">

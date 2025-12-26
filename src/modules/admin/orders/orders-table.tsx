@@ -43,7 +43,7 @@ import {
 import { formatDistanceToNow } from "date-fns"
 import { toast } from "sonner"
 import Link from "next/link"
-import { VirtualizedTable } from "@/components/common/virtualized-table"
+import { VirtualizedTable } from "@/modules/admin/common/virtualized-table"
 
 interface OrdersTableProps {
   orders: OrderWithDetails[]
@@ -326,7 +326,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               <DropdownMenuSeparator />
               {order.order_status !== 'cancelled' && order.order_status !== 'delivered' && (
                 <DropdownMenuItem
-                  className="text-red-600"
+                  className="text-orange-600"
                   onClick={() => setCancelDialog({ open: true, orderId: order.id })}
                 >
                   <X className="mr-2 h-4 w-4" />
@@ -347,7 +347,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
   return (
     <div className="space-y-4" data-testid="orders-table">
       {selectedOrders.length > 0 && (
-        <div className="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-200/50">
+        <div className="flex items-center justify-between p-4 bg-orange-50/50 rounded-xl border border-orange-200/50">
           <span className="text-sm font-semibold text-gray-900">
             {selectedOrders.length} order(s) selected
           </span>
@@ -355,7 +355,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
             <Button
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               onClick={() => handleBulkAction('processing')}
             >
               <Package className="mr-2 h-4 w-4" />
@@ -364,7 +364,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
             <Button
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               onClick={() => handleBulkAction('shipped')}
             >
               <Truck className="mr-2 h-4 w-4" />
@@ -373,7 +373,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
             <Button
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               onClick={() => handleBulkAction('cancelled')}
             >
               <X className="mr-2 h-4 w-4" />

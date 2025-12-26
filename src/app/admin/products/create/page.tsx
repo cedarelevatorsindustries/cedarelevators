@@ -239,7 +239,7 @@ export default function CreateProductPage() {
               Save as Draft
             </Button>
             <Button
-              className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
               onClick={() => handleSubmit(false)}
               disabled={isLoading || !canPublish()}
             >

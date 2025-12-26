@@ -156,23 +156,23 @@ export default function ProductImportPage() {
 
       {/* Progress Indicator */}
       <div className="flex items-center justify-center space-x-4">
-        <div className={`flex items-center space-x-2 ${currentStep === 'upload' ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'upload' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}>1</div>
+        <div className={`flex items-center space-x-2 ${currentStep === 'upload' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'upload' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>1</div>
           <span>Upload</span>
         </div>
         <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'preview' ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'preview' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}>2</div>
+        <div className={`flex items-center space-x-2 ${currentStep === 'preview' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'preview' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>2</div>
           <span>Preview</span>
         </div>
         <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'confirm' ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'confirm' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}>3</div>
+        <div className={`flex items-center space-x-2 ${currentStep === 'confirm' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'confirm' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>3</div>
           <span>Confirm</span>
         </div>
         <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'results' ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'results' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}>4</div>
+        <div className={`flex items-center space-x-2 ${currentStep === 'results' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'results' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>4</div>
           <span>Results</span>
         </div>
       </div>
@@ -186,10 +186,10 @@ export default function ProductImportPage() {
               <CardDescription>Select a CSV file to import products and variants</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-red-400 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-400 transition-colors">
                 <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <label htmlFor="csv-upload" className="cursor-pointer">
-                  <span className="text-red-600 hover:text-red-700 font-medium">
+                  <span className="text-orange-600 hover:text-orange-700 font-medium">
                     Choose a CSV file
                   </span>
                   <input
@@ -211,7 +211,7 @@ export default function ProductImportPage() {
                 <Button
                   onClick={handlePreview}
                   disabled={!file || loading}
-                  className="w-full bg-red-600 hover:bg-red-700"
+                  className="w-full bg-orange-600 hover:bg-orange-700"
                   data-testid="preview-button"
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -283,7 +283,7 @@ export default function ProductImportPage() {
             </Card>
             <Card>
               <CardContent className="p-6">
-                <div className="text-2xl font-bold text-red-600">{previewData.blockingErrors.length}</div>
+                <div className="text-2xl font-bold text-orange-600">{previewData.blockingErrors.length}</div>
                 <div className="text-sm text-gray-600">Errors</div>
               </CardContent>
             </Card>
@@ -297,25 +297,25 @@ export default function ProductImportPage() {
 
           {/* Errors */}
           {previewData.blockingErrors.length > 0 && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-orange-200 bg-orange-50">
               <CardHeader>
-                <CardTitle className="flex items-center text-red-900">
+                <CardTitle className="flex items-center text-orange-900">
                   <XCircle className="mr-2 h-5 w-5" />
                   Blocking Errors ({previewData.blockingErrors.length})
                 </CardTitle>
-                <CardDescription className="text-red-700">
+                <CardDescription className="text-orange-700">
                   These errors must be fixed before importing
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="max-h-60 overflow-y-auto space-y-2">
                   {previewData.blockingErrors.slice(0, 10).map((error, index) => (
-                    <div key={index} className="text-sm text-red-800 bg-white p-2 rounded">
+                    <div key={index} className="text-sm text-orange-800 bg-white p-2 rounded">
                       <strong>Row {error.row}</strong> - {error.field}: {error.message}
                     </div>
                   ))}
                   {previewData.blockingErrors.length > 10 && (
-                    <div className="text-sm text-red-700 italic">
+                    <div className="text-sm text-orange-700 italic">
                       ... and {previewData.blockingErrors.length - 10} more errors
                     </div>
                   )}
@@ -375,7 +375,7 @@ export default function ProductImportPage() {
                       </div>
                     </div>
                     {group.errors.length > 0 && (
-                      <div className="text-xs text-red-600 mb-2">
+                      <div className="text-xs text-orange-600 mb-2">
                         ⚠️ {group.errors.length} error(s)
                       </div>
                     )}
@@ -414,7 +414,7 @@ export default function ProductImportPage() {
               <Button
                 onClick={() => setCurrentStep('confirm')}
                 disabled={previewData.blockingErrors.length > 0}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
                 Continue to Confirm
               </Button>
@@ -424,7 +424,7 @@ export default function ProductImportPage() {
               <Button
                 onClick={handleImport}
                 disabled={loading || previewData.blockingErrors.length > 0}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-orange-600 hover:bg-orange-700"
                 data-testid="confirm-import-button"
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -510,10 +510,10 @@ export default function ProductImportPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-red-600">{importResults.failed}</div>
+                    <div className="text-2xl font-bold text-orange-600">{importResults.failed}</div>
                     <div className="text-sm text-gray-600">Failed</div>
                   </div>
-                  <XCircle className="h-8 w-8 text-red-600" />
+                  <XCircle className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>
@@ -521,9 +521,9 @@ export default function ProductImportPage() {
 
           {/* Error Details */}
           {importResults.errors && importResults.errors.length > 0 && (
-            <Card className="border-red-200">
+            <Card className="border-orange-200">
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-red-900">
+                <CardTitle className="flex items-center justify-between text-orange-900">
                   <span className="flex items-center">
                     <XCircle className="mr-2 h-5 w-5" />
                     Import Errors ({importResults.errors.length})
@@ -532,7 +532,7 @@ export default function ProductImportPage() {
                     variant="outline"
                     size="sm"
                     onClick={downloadErrorReport}
-                    className="text-red-700 border-red-300"
+                    className="text-orange-700 border-orange-300"
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Download Error Report
@@ -542,13 +542,13 @@ export default function ProductImportPage() {
               <CardContent>
                 <div className="max-h-96 overflow-y-auto space-y-2">
                   {importResults.errors.map((error, index) => (
-                    <div key={index} className="text-sm bg-red-50 p-3 rounded border border-red-200">
-                      <div className="font-medium text-red-900">
+                    <div key={index} className="text-sm bg-orange-50 p-3 rounded border border-orange-200">
+                      <div className="font-medium text-orange-900">
                         {error.productHandle} {error.variantSku && `(${error.variantSku})`}
                       </div>
-                      <div className="text-red-700">{error.message}</div>
+                      <div className="text-orange-700">{error.message}</div>
                       {error.details && (
-                        <div className="text-red-600 text-xs mt-1">{error.details}</div>
+                        <div className="text-orange-600 text-xs mt-1">{error.details}</div>
                       )}
                     </div>
                   ))}
@@ -571,7 +571,7 @@ export default function ProductImportPage() {
               Import Another File
             </Button>
             <Link href="/admin/products">
-              <Button className="bg-red-600 hover:bg-red-700" data-testid="view-products-button">
+              <Button className="bg-orange-600 hover:bg-orange-700" data-testid="view-products-button">
                 View Products
               </Button>
             </Link>

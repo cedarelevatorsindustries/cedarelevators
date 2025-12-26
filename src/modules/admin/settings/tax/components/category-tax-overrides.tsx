@@ -167,7 +167,7 @@ export function CategoryTaxOverrides({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                           onClick={() => deleteCategoryRule(rule.id)}
                         >
                           <Trash2 className="w-4 h-4" />

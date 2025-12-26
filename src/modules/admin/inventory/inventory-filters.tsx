@@ -77,7 +77,7 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
               <Button 
                 variant="outline" 
                 onClick={clearFilters}
-                className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30"
+                className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950/30"
               >
                 <X className="mr-2 h-4 w-4" />
                 Clear Filters

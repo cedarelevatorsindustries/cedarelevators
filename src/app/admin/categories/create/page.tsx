@@ -240,7 +240,7 @@ export default function CreateCategoryPage() {
                         <Upload className="mx-auto h-12 w-12 text-gray-400" />
                         <div className="mt-4">
                           <Label htmlFor="image-upload" className="cursor-pointer">
-                            <span className="text-red-600 hover:text-red-700">Upload an image</span>
+                            <span className="text-orange-600 hover:text-orange-700">Upload an image</span>
                             <input
                               id="image-upload"
                               type="file"
@@ -284,7 +284,7 @@ export default function CreateCategoryPage() {
           <Link href="/admin/categories">
             <Button type="button" variant="outline">Cancel</Button>
           </Link>
-          <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700">
+          <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Category
           </Button>

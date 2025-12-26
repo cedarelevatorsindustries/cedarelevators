@@ -21,8 +21,8 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="flex items-center space-x-2">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
             </div>
             <div>
               <span className="text-lg font-semibold text-gray-900">Low Stock Alerts</span>
@@ -66,7 +66,7 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
           <p className="text-center text-gray-500 py-4">No low stock alerts at this time</p>
           <Button 
             variant="outline" 
-            className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300" 
+            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
             asChild
           >
             <Link href="/admin/inventory">
@@ -82,15 +82,15 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
     <Card className="border-0 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="flex items-center space-x-2">
-          <div className="p-2 bg-red-100 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+          <div className="p-2 bg-orange-100 rounded-lg">
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
           </div>
           <div>
             <span className="text-lg font-semibold text-gray-900">Low Stock Alerts</span>
             <p className="text-sm text-gray-600 font-normal">Items running low</p>
           </div>
         </CardTitle>
-        <Badge className="bg-red-100 text-red-700 border-red-200 font-semibold">
+        <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-semibold">
           {items.length}
         </Badge>
       </CardHeader>
@@ -109,7 +109,7 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
                 variant={item.status === "out_of_stock" ? "destructive" : "secondary"}
                 className={`${
                   item.status === "out_of_stock" 
-                    ? 'bg-red-100 text-red-700 border-red-200' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
                     : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                 } font-medium`}
               >
@@ -128,7 +128,7 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
         ))}
         <Button 
           variant="outline" 
-          className="w-full mt-4 border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300" 
+          className="w-full mt-4 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
           asChild
         >
           <Link href="/admin/inventory">

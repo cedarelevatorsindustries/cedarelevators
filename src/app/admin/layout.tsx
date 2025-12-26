@@ -6,19 +6,20 @@ import { createClient } from "@/lib/supabase/client"
 import { Sidebar } from "@/components/common/sidebar"
 import { Header } from "@/components/common/header"
 import { Sheet, SheetContent } from "@/components/ui/admin-ui/sheet"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen items-center justify-center bg-white">
+    <div className="flex h-screen items-center justify-center bg-slate-950">
       <div className="text-center">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-100 border-t-orange-600 mx-auto mb-6"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-800 border-t-orange-500 mx-auto mb-6"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 bg-orange-600 rounded-full animate-pulse"></div>
+            <div className="w-6 h-6 bg-orange-500 rounded-full animate-pulse"></div>
           </div>
         </div>
-        <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">Admin Portal</h3>
-        <p className="text-gray-600">Verifying authentication...</p>
+        <h3 className="font-heading text-xl font-bold text-white mb-2">Admin Portal</h3>
+        <p className="text-blue-200">Verifying authentication...</p>
       </div>
     </div>
   )
@@ -75,11 +76,11 @@ export default function AdminLayout({
 
   // If it's a settings route, render children without the admin layout wrapper
   // Settings has its own complete layout
-  if (isSettingsRoute) {
+  if (pathname.startsWith('/admin/settings')) {
     if (isCheckingAuth) {
       return <LoadingScreen />
     }
-    return <>{children}</>
+    return <QueryProvider>{children}</QueryProvider>
   }
 
   // Show loading state while checking auth
@@ -88,36 +89,44 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-orange-50/30">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <Sidebar collapsed={sidebarCollapsed} />
-      </div>
-
-      {/* Mobile Sidebar Sheet */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="p-0 w-64 bg-white border-r border-orange-100">
-          <Sidebar collapsed={false} />
-        </SheetContent>
-      </Sheet>
-
-      <div className="flex-1 flex flex-col overflow-hidden p-3 lg:p-6 gap-3 lg:gap-6">
-        <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg border border-orange-100/50 backdrop-blur-sm">
-          <Header
-            sidebarCollapsed={sidebarCollapsed}
-            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-            mobileMenuOpen={mobileMenuOpen}
-            onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-          />
+    <QueryProvider>
+      <div className="flex h-screen bg-slate-950">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <Sidebar collapsed={sidebarCollapsed} />
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-xl lg:rounded-2xl shadow-lg border border-orange-100/50 backdrop-blur-sm">
-          <div className="p-6 lg:p-10 w-full max-w-full">
-            <div className="max-w-7xl mx-auto w-full min-w-0">
-              {children}
+
+        {/* Mobile Sidebar Sheet */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-r border-blue-800">
+            <Sidebar collapsed={false} />
+          </SheetContent>
+        </Sheet>
+
+        {/* Merged Single Card - Header + Content */}
+        <div className="flex-1 flex flex-col overflow-hidden p-1.5 lg:p-2">
+          <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl lg:rounded-2xl shadow-2xl border border-blue-200/20">
+            {/* Header inside the card */}
+            <div className="border-b border-gray-100 flex-shrink-0">
+              <Header
+                sidebarCollapsed={sidebarCollapsed}
+                onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileMenuOpen={mobileMenuOpen}
+                onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+              />
             </div>
+
+            {/* Main content area */}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
+              <div className="p-6 lg:p-10 w-full max-w-full">
+                <div className="max-w-7xl mx-auto w-full min-w-0">
+                  {children}
+                </div>
+              </div>
+            </main>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </QueryProvider>
   )
 }

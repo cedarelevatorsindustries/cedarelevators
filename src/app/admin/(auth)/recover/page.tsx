@@ -53,7 +53,7 @@ export default function AdminRecoverPage() {
       <div className="w-full max-w-md">
         {/* Header Badge */}
         <div className="flex justify-center mb-6">
-          <div className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
+          <div className="bg-orange-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
             <Shield className="w-5 h-5" />
             <span className="font-semibold">Admin Account Recovery</span>
           </div>
@@ -88,9 +88,9 @@ export default function AdminRecoverPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-6">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2 mb-6">
+                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-orange-800">{error}</p>
               </div>
             )}
 
@@ -109,7 +109,7 @@ export default function AdminRecoverPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="admin@example.com"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                     required
                     disabled={isLoading}
                     data-testid="admin-recover-email"
@@ -130,7 +130,7 @@ export default function AdminRecoverPage() {
                     value={formData.recoveryKey}
                     onChange={(e) => setFormData({ ...formData, recoveryKey: e.target.value })}
                     placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent font-mono"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent font-mono"
                     required
                     disabled={isLoading}
                     data-testid="admin-recover-key"
@@ -145,7 +145,7 @@ export default function AdminRecoverPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 data-testid="admin-recover-submit"
               >
                 {isLoading ? (
@@ -178,7 +178,7 @@ export default function AdminRecoverPage() {
             <div className="mt-6 pt-6 border-t border-gray-200 text-center">
               <Link
                 href="/admin/login"
-                className="text-sm text-red-600 hover:text-red-700 font-medium hover:underline"
+                className="text-sm text-orange-600 hover:text-orange-700 font-medium hover:underline"
               >
                 ← Back to Login
               </Link>
@@ -209,7 +209,7 @@ export default function AdminRecoverPage() {
             {/* Reset Button */}
             <button
               onClick={handleGoToReset}
-              className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl mb-4"
+              className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors shadow-lg hover:shadow-xl mb-4"
               data-testid="go-to-reset-button"
             >
               Reset Password Now
@@ -229,7 +229,7 @@ export default function AdminRecoverPage() {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="text-sm text-gray-600 hover:text-red-600 transition-colors"
+            className="text-sm text-gray-600 hover:text-orange-600 transition-colors"
           >
             ← Back to Store
           </Link>

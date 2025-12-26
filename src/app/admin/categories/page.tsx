@@ -82,7 +82,7 @@ export default function CategoriesPage() {
             Refresh
           </Button>
           <Link href="/admin/categories/create">
-            <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25">
+            <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
               <Plus className="mr-2 h-4 w-4" />
               Create Category
             </Button>
@@ -92,7 +92,7 @@ export default function CategoriesPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Categories
@@ -107,7 +107,7 @@ export default function CategoriesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Products
@@ -122,7 +122,7 @@ export default function CategoriesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Active Categories
@@ -150,7 +150,7 @@ export default function CategoriesPage() {
               <h3 className="mt-4 text-lg font-semibold text-gray-900">No categories yet</h3>
               <p className="mt-2 text-sm text-gray-500">Get started by creating your first category</p>
               <Link href="/admin/categories/create">
-                <Button className="mt-4 bg-red-600 hover:bg-red-700">
+                <Button className="mt-4 bg-orange-600 hover:bg-orange-700">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Category
                 </Button>
@@ -201,7 +201,7 @@ export default function CategoriesPage() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 hover:bg-red-100 text-red-600"
+                          className="h-8 w-8 hover:bg-orange-100 text-orange-600"
                           onClick={() => setDeleteId(category.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -233,7 +233,7 @@ export default function CategoriesPage() {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-6 w-6 hover:bg-red-100 text-red-600"
+                                className="h-6 w-6 hover:bg-orange-100 text-orange-600"
                                 onClick={() => setDeleteId(child.id)}
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -265,7 +265,7 @@ export default function CategoriesPage() {
             <AlertDialogAction 
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-orange-600 hover:bg-orange-700"
             >
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete

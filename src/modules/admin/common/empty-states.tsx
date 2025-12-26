@@ -7,8 +7,8 @@ import Link from "next/link"
 export function ProductsEmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="mx-auto w-24 h-24 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-6">
-        <Package className="w-12 h-12 text-red-600 dark:text-red-400" />
+      <div className="mx-auto w-24 h-24 bg-orange-50 dark:bg-orange-950/20 rounded-full flex items-center justify-center mb-6">
+        <Package className="w-12 h-12 text-orange-600 dark:text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         No products yet
@@ -17,13 +17,13 @@ export function ProductsEmptyState() {
         Get started by creating your first product or importing products from a CSV file.
       </p>
       <div className="flex items-center justify-center space-x-4">
-        <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25" asChild>
+        <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25" asChild>
           <Link href="/admin/products/create">
             <Plus className="mr-2 h-4 w-4" />
             Add Product
           </Link>
         </Button>
-        <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30" asChild>
+        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950/30" asChild>
           <Link href="/admin/products/import">
             <Upload className="mr-2 h-4 w-4" />
             Import Products
@@ -37,8 +37,8 @@ export function ProductsEmptyState() {
 export function OrdersEmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="mx-auto w-24 h-24 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-6">
-        <Package className="w-12 h-12 text-red-600 dark:text-red-400" />
+      <div className="mx-auto w-24 h-24 bg-orange-50 dark:bg-orange-950/20 rounded-full flex items-center justify-center mb-6">
+        <Package className="w-12 h-12 text-orange-600 dark:text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         No orders yet
@@ -53,8 +53,8 @@ export function OrdersEmptyState() {
 export function CustomersEmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="mx-auto w-24 h-24 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-6">
-        <Package className="w-12 h-12 text-red-600 dark:text-red-400" />
+      <div className="mx-auto w-24 h-24 bg-orange-50 dark:bg-orange-950/20 rounded-full flex items-center justify-center mb-6">
+        <Package className="w-12 h-12 text-orange-600 dark:text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         No customers yet
@@ -69,8 +69,8 @@ export function CustomersEmptyState() {
 export function InventoryEmptyState() {
   return (
     <div className="text-center py-16">
-      <div className="mx-auto w-24 h-24 bg-red-50 dark:bg-red-950/20 rounded-full flex items-center justify-center mb-6">
-        <Package className="w-12 h-12 text-red-600 dark:text-red-400" />
+      <div className="mx-auto w-24 h-24 bg-orange-50 dark:bg-orange-950/20 rounded-full flex items-center justify-center mb-6">
+        <Package className="w-12 h-12 text-orange-600 dark:text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
         No inventory items yet
@@ -79,13 +79,13 @@ export function InventoryEmptyState() {
         Inventory items will appear here when products are added to your store. Start by creating your first product to begin tracking inventory.
       </p>
       <div className="flex items-center justify-center space-x-4">
-        <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25" asChild>
+        <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25" asChild>
           <Link href="/admin/products/create">
             <Plus className="mr-2 h-4 w-4" />
             Add Product
           </Link>
         </Button>
-        <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/30" asChild>
+        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950/30" asChild>
           <Link href="/admin/products/import">
             <Upload className="mr-2 h-4 w-4" />
             Import Products

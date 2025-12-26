@@ -30,7 +30,7 @@ export function TaxSettingsForm() {
     <TooltipProvider>
       {isFetching ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-full overflow-x-hidden">
@@ -58,7 +58,7 @@ export function TaxSettingsForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
             >
               <Save className="mr-2 h-4 w-4" />
               {isLoading ? "Saving..." : "Save Tax Settings"}

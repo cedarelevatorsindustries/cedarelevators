@@ -160,7 +160,7 @@ export default function CreateBannerPage() {
                   Save as Draft
                 </Button>
                 <Button 
-                  className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+                  className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
                   onClick={() => handleSubmit(false)}
                   disabled={isLoading}
                 >
@@ -218,7 +218,7 @@ export default function CreateBannerPage() {
           <Button 
             onClick={() => setCurrentStep(Math.min(4, currentStep + 1))}
             disabled={!canProceedToStep(currentStep + 1) || currentStep === 4}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-orange-600 hover:bg-orange-700 text-white"
           >
             Next
           </Button>

@@ -45,7 +45,7 @@ export function ContentStep({ placement, formData, onFormDataChange }: ContentSt
   return (
     <div className="space-y-6">
       {/* Common Fields */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Banner Content</CardTitle>
           <CardDescription className="text-gray-600">
@@ -102,7 +102,7 @@ export function ContentStep({ placement, formData, onFormDataChange }: ContentSt
 
       {/* Placement-Specific Fields */}
       {(placement === "homepage-carousel" || placement === "product-listing-carousel") && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">Carousel Settings</CardTitle>
             <CardDescription className="text-gray-600">
@@ -142,7 +142,7 @@ export function ContentStep({ placement, formData, onFormDataChange }: ContentSt
       )}
 
       {placement === "category-banner" && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">Category Settings</CardTitle>
             <CardDescription className="text-gray-600">
@@ -173,7 +173,7 @@ export function ContentStep({ placement, formData, onFormDataChange }: ContentSt
       )}
 
       {/* Scheduling Section */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Schedule (Optional)</CardTitle>
           <CardDescription className="text-gray-600">

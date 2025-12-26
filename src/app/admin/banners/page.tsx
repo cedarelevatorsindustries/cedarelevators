@@ -37,7 +37,7 @@ const getStatusColor = (status: string): string => {
     case "expired":
       return "bg-gray-100 text-gray-700 border-gray-200"
     case "disabled":
-      return "bg-red-100 text-red-700 border-red-200"
+      return "bg-orange-100 text-orange-700 border-orange-200"
     default:
       return "bg-gray-100 text-gray-700 border-gray-200"
   }
@@ -134,7 +134,7 @@ export default function BannersPage() {
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button asChild className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25 flex-shrink-0">
+            <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25 flex-shrink-0">
               <Link href="/admin/banners/create">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Banner
@@ -145,7 +145,7 @@ export default function BannersPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">
                 Active Banners
@@ -160,7 +160,7 @@ export default function BannersPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">
                 Total Banners
@@ -175,7 +175,7 @@ export default function BannersPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
+          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">
                 Scheduled
@@ -275,7 +275,7 @@ export default function BannersPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
               </div>
             ) : banners.length === 0 ? (
               <div className="text-center py-12">
@@ -286,7 +286,7 @@ export default function BannersPage() {
                     ? "Try adjusting your filters to see more results."
                     : "Get started by creating your first banner."}
                 </p>
-                <Button asChild className="bg-red-600 hover:bg-red-700 text-white">
+                <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white">
                   <Link href="/admin/banners/create">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Banner
@@ -378,7 +378,7 @@ export default function BannersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-red-100 text-red-600"
+                          className="h-8 w-8 hover:bg-orange-100 text-orange-600"
                           onClick={() => handleDeleteBanner(banner.id)}
                         >
                           <Trash2 className="h-4 w-4" />

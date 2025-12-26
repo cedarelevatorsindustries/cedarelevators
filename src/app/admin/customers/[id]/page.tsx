@@ -67,7 +67,7 @@ export default function CustomerDetailPage() {
       processing: 'bg-blue-100 text-blue-700 border-blue-200',
       shipped: 'bg-purple-100 text-purple-700 border-purple-200',
       delivered: 'bg-green-100 text-green-700 border-green-200',
-      cancelled: 'bg-red-100 text-red-700 border-red-200',
+      cancelled: 'bg-orange-100 text-orange-700 border-orange-200',
     }
 
     return (
@@ -81,7 +81,7 @@ export default function CustomerDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading customer details...</p>
         </div>
       </div>

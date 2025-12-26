@@ -109,7 +109,7 @@ export default function CollectionsPage() {
     return (
       <div className="space-y-8">
         <div className="flex items-center justify-center p-12">
-          <RefreshCw className="h-8 w-8 animate-spin text-red-600" />
+          <RefreshCw className="h-8 w-8 animate-spin text-orange-600" />
         </div>
       </div>
     )
@@ -134,7 +134,7 @@ export default function CollectionsPage() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25" data-testid="create-collection-button">
+          <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25" data-testid="create-collection-button">
             <Plus className="mr-2 h-4 w-4" />
             Create Collection
           </Button>
@@ -143,7 +143,7 @@ export default function CollectionsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Collections
@@ -158,7 +158,7 @@ export default function CollectionsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Active Collections
@@ -173,7 +173,7 @@ export default function CollectionsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Products
@@ -200,7 +200,7 @@ export default function CollectionsPage() {
               <Layers className="h-12 w-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No collections yet</h3>
               <p className="text-gray-600 mb-4">Create your first collection to organize your products</p>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
+              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Collection
               </Button>
@@ -270,7 +270,7 @@ export default function CollectionsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 hover:bg-red-100 text-red-600"
+                        className="h-8 w-8 hover:bg-orange-100 text-orange-600"
                         onClick={() => handleDelete(collection.id)}
                         data-testid={`delete-collection-${collection.slug}`}
                       >

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Eye, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { VirtualizedTable } from '@/components/common/virtualized-table'
+import { VirtualizedTable } from '@/modules/admin/common/virtualized-table'
 
 interface CustomersTableProps {
   customers: CustomerWithStats[]

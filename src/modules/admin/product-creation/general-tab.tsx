@@ -66,7 +66,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
   return (
     <div className="space-y-6">
       {/* Product Identity */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Product Identity</CardTitle>
           <CardDescription className="text-gray-600">
@@ -120,7 +120,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
       </Card>
 
       {/* Product Highlights */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Product Highlights</CardTitle>
           <CardDescription className="text-gray-600">
@@ -142,7 +142,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeHighlight(index)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -162,7 +162,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
       </Card>
 
       {/* Product Status */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Product Status</CardTitle>
           <CardDescription className="text-gray-600">
@@ -287,7 +287,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                 Archive Product
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-orange-600">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Product
               </DropdownMenuItem>

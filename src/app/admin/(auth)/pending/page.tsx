@@ -95,7 +95,7 @@ export default function AdminPendingPage() {
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3 rounded-lg font-heading font-bold text-sm tracking-wide hover:from-red-700 hover:to-red-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 rounded-lg font-heading font-bold text-sm tracking-wide hover:from-orange-700 hover:to-orange-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                 data-testid="logout-button"
               >
                 <LogOut className="w-4 h-4" />

@@ -444,9 +444,9 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
 
       {/* Danger Zone */}
       {!isUsedInOrders && (
-        <Card className="border-red-200 dark:border-red-800">
+        <Card className="border-orange-200 dark:border-orange-800">
           <CardHeader>
-            <CardTitle className="text-red-600 dark:text-red-400">Danger Zone</CardTitle>
+            <CardTitle className="text-orange-600 dark:text-orange-400">Danger Zone</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">

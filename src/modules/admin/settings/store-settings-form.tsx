@@ -95,7 +95,7 @@ export function StoreSettingsForm() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }
@@ -103,7 +103,7 @@ export function StoreSettingsForm() {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <form onSubmit={handleSubmit} className="space-y-8 w-full">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Store Identity</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -160,7 +160,7 @@ export function StoreSettingsForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Contact Information</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -194,7 +194,7 @@ export function StoreSettingsForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 dark:from-gray-900 dark:to-red-950/20 border-red-100/50 dark:border-red-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Business Information</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -257,7 +257,7 @@ export function StoreSettingsForm() {
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading} className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25">
+          <Button type="submit" disabled={isLoading} className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
             <Save className="mr-2 h-4 w-4" />
             {isLoading ? "Saving..." : "Save Changes"}
           </Button>

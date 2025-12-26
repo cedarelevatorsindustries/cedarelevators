@@ -54,7 +54,7 @@ export function SettingsHeader({
           <Button
             variant="outline"
             size="sm"
-            className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 hidden md:flex"
+            className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 hidden md:flex"
           >
             <Save className="mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Save All Changes</span>
@@ -67,7 +67,7 @@ export function SettingsHeader({
             className="relative h-8 w-8 lg:h-10 lg:w-10 rounded-lg hover:bg-gray-100"
           >
             <Bell className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 lg:h-3 lg:w-3 bg-red-500 rounded-full border-2 border-white"></span>
+            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 lg:h-3 lg:w-3 bg-orange-500 rounded-full border-2 border-white"></span>
           </Button>
         </div>
       </div>

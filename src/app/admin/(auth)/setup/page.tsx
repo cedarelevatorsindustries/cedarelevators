@@ -101,7 +101,7 @@ export default function AdminSetupPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-gray-900 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p>Checking setup status...</p>
         </div>
       </div>
@@ -113,7 +113,7 @@ export default function AdminSetupPage() {
       <div className="w-full max-w-2xl">
         {/* Header Badge */}
         <div className="flex justify-center mb-6">
-          <div className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
+          <div className="bg-orange-600 text-white px-4 py-2 rounded-full flex items-center gap-2">
             <Shield className="w-5 h-5" />
             <span className="font-semibold">First-Time Admin Setup</span>
           </div>
@@ -149,9 +149,9 @@ export default function AdminSetupPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-6">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2 mb-6">
+                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-orange-800">{error}</p>
               </div>
             )}
 
@@ -160,7 +160,7 @@ export default function AdminSetupPage() {
               {/* Setup Key */}
               <div>
                 <label htmlFor="setupKey" className="block text-sm font-medium text-gray-700 mb-2">
-                  Setup Key <span className="text-red-600">*</span>
+                  Setup Key <span className="text-orange-600">*</span>
                 </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -170,7 +170,7 @@ export default function AdminSetupPage() {
                     value={formData.setupKey}
                     onChange={(e) => setFormData({ ...formData, setupKey: e.target.value })}
                     placeholder="Enter setup key from .env"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                     required
                     disabled={isLoading}
                     data-testid="admin-setup-key"
@@ -184,7 +184,7 @@ export default function AdminSetupPage() {
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Super Admin Email <span className="text-red-600">*</span>
+                  Super Admin Email <span className="text-orange-600">*</span>
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -194,7 +194,7 @@ export default function AdminSetupPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="admin@example.com"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                     required
                     disabled={isLoading}
                     data-testid="admin-setup-email"
@@ -205,7 +205,7 @@ export default function AdminSetupPage() {
               {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password <span className="text-red-600">*</span>
+                  Password <span className="text-orange-600">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -215,7 +215,7 @@ export default function AdminSetupPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Create a strong password"
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                     required
                     disabled={isLoading}
                     data-testid="admin-setup-password"
@@ -237,7 +237,7 @@ export default function AdminSetupPage() {
               {/* Confirm Password */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password <span className="text-red-600">*</span>
+                  Confirm Password <span className="text-orange-600">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -247,7 +247,7 @@ export default function AdminSetupPage() {
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     placeholder="Re-enter password"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                     required
                     disabled={isLoading}
                     data-testid="admin-setup-confirm-password"
@@ -259,7 +259,7 @@ export default function AdminSetupPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 data-testid="admin-setup-submit"
               >
                 {isLoading ? (
@@ -304,21 +304,21 @@ export default function AdminSetupPage() {
             </div>
 
             {/* Recovery Key Section */}
-            <div className="bg-red-50 border-2 border-red-600 rounded-lg p-6 mb-6">
+            <div className="bg-orange-50 border-2 border-orange-600 rounded-lg p-6 mb-6">
               <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
+                <AlertCircle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="font-bold text-red-900 text-lg mb-1">
+                  <h3 className="font-bold text-orange-900 text-lg mb-1">
                     Save Your Recovery Key
                   </h3>
-                  <p className="text-sm text-red-800">
+                  <p className="text-sm text-orange-800">
                     This key is required to recover your super admin account if you forget your password.{' '}
                     <strong>It will never be shown again.</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white border border-red-300 rounded-lg p-4 mb-4">
+              <div className="bg-white border border-orange-300 rounded-lg p-4 mb-4">
                 <div
                   className="font-mono text-lg text-center text-gray-900 break-all select-all"
                   data-testid="recovery-key-display"
@@ -330,7 +330,7 @@ export default function AdminSetupPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleCopyKey}
-                  className="flex-1 bg-white border-2 border-red-600 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-white border-2 border-orange-600 text-orange-600 py-3 rounded-lg font-semibold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
                   data-testid="copy-recovery-key"
                 >
                   {keyCopied ? (
@@ -347,7 +347,7 @@ export default function AdminSetupPage() {
                 </button>
                 <button
                   onClick={handleDownloadKey}
-                  className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center gap-2"
                   data-testid="download-recovery-key"
                 >
                   <Download className="w-5 h-5" />

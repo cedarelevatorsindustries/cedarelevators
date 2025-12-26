@@ -73,7 +73,7 @@ export function OrdersFilters({ filters, onFiltersChange, totalOrders }: OrdersF
           </SelectContent>
         </Select>
         
-        <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300">
+        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300">
           <Filter className="mr-2 h-4 w-4" />
           More Filters
         </Button>
@@ -84,28 +84,28 @@ export function OrdersFilters({ filters, onFiltersChange, totalOrders }: OrdersF
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">Active filters:</span>
           {filters.status !== 'all' && (
-            <Badge className="flex items-center space-x-1 bg-red-100 text-red-700 border-red-200">
+            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
               <span>Status: {filters.status}</span>
               <X 
-                className="h-3 w-3 cursor-pointer hover:text-red-800" 
+                className="h-3 w-3 cursor-pointer hover:text-orange-800" 
                 onClick={() => onFiltersChange({ ...filters, status: 'all' })}
               />
             </Badge>
           )}
           {filters.paymentStatus !== 'all' && (
-            <Badge className="flex items-center space-x-1 bg-red-100 text-red-700 border-red-200">
+            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
               <span>Payment: {filters.paymentStatus}</span>
               <X 
-                className="h-3 w-3 cursor-pointer hover:text-red-800" 
+                className="h-3 w-3 cursor-pointer hover:text-orange-800" 
                 onClick={() => onFiltersChange({ ...filters, paymentStatus: 'all' })}
               />
             </Badge>
           )}
           {filters.search && (
-            <Badge className="flex items-center space-x-1 bg-red-100 text-red-700 border-red-200">
+            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
               <span>Search: {filters.search}</span>
               <X 
-                className="h-3 w-3 cursor-pointer hover:text-red-800" 
+                className="h-3 w-3 cursor-pointer hover:text-orange-800" 
                 onClick={() => onFiltersChange({ ...filters, search: '' })}
               />
             </Badge>
@@ -113,7 +113,7 @@ export function OrdersFilters({ filters, onFiltersChange, totalOrders }: OrdersF
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
             onClick={() => onFiltersChange({ search: '', status: 'all', paymentStatus: 'all', dateFrom: '', dateTo: '', customer: '' })}
           >
             Clear all

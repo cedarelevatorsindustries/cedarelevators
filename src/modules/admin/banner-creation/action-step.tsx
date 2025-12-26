@@ -33,7 +33,7 @@ const actionOptions = [
 export function ActionStep({ actionType, actionTarget, actionName, onActionTypeChange, onActionTargetChange, onActionNameChange }: ActionStepProps) {
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Where does the banner go?</CardTitle>
           <CardDescription className="text-gray-600">
@@ -49,7 +49,7 @@ export function ActionStep({ actionType, actionTarget, actionName, onActionTypeC
                   key={option.id}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     actionType === option.id
-                      ? "border-red-500 bg-red-50"
+                      ? "border-orange-500 bg-orange-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                   onClick={() => {
@@ -60,12 +60,12 @@ export function ActionStep({ actionType, actionTarget, actionName, onActionTypeC
                   <div className="text-center">
                     <div className={`inline-flex p-3 rounded-lg mb-3 ${
                       actionType === option.id
-                        ? "bg-red-100"
+                        ? "bg-orange-100"
                         : "bg-gray-100"
                     }`}>
                       <Icon className={`h-6 w-6 ${
                         actionType === option.id
-                          ? "text-red-600"
+                          ? "text-orange-600"
                           : "text-gray-600"
                       }`} />
                     </div>

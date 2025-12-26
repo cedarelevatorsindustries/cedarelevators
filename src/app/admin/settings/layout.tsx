@@ -4,6 +4,7 @@ import { useState } from "react"
 import { SettingsSidebar } from "@/modules/admin/settings/settings-sidebar"
 import { SettingsHeader } from "@/modules/admin/settings/settings-header"
 import { Sheet, SheetContent } from "@/components/ui/admin-ui/sheet"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 export default function SettingsLayout({
   children,
@@ -15,40 +16,44 @@ export default function SettingsLayout({
 
   // This layout completely replaces the admin layout for settings pages
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="flex h-full min-h-0 w-full">
-        {/* Desktop Settings Sidebar */}
-        <div className="hidden lg:block">
-          <SettingsSidebar collapsed={sidebarCollapsed} />
-        </div>
-
-        {/* Mobile Settings Sidebar Sheet */}
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="p-0 w-64 bg-gray-50">
-            <SettingsSidebar collapsed={false} />
-          </SheetContent>
-        </Sheet>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-2 lg:p-4 gap-2 lg:gap-4">
-          <div className="bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200/60">
-            <SettingsHeader
-              sidebarCollapsed={sidebarCollapsed}
-              onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-              mobileMenuOpen={mobileMenuOpen}
-              onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-            />
+    <QueryProvider>
+      <div className="flex h-screen bg-slate-950">
+        <div className="flex h-full min-h-0 w-full">
+          {/* Desktop Settings Sidebar */}
+          <div className="hidden lg:block">
+            <SettingsSidebar collapsed={sidebarCollapsed} />
           </div>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-lg lg:rounded-xl shadow-sm border border-gray-200/60">
-            <div className="p-4 lg:p-8 w-full max-w-full">
-              <div className="max-w-7xl mx-auto w-full min-w-0">
-                {children}
+          {/* Mobile Settings Sidebar Sheet */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetContent side="left" className="p-0 w-64 bg-slate-950">
+              <SettingsSidebar collapsed={false} />
+            </SheetContent>
+          </Sheet>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-1.5 lg:p-2">
+            <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl lg:rounded-2xl shadow-2xl border border-blue-200/20">
+              <div className="border-b border-gray-100 flex-shrink-0">
+                <SettingsHeader
+                  sidebarCollapsed={sidebarCollapsed}
+                  onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  mobileMenuOpen={mobileMenuOpen}
+                  onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+                />
               </div>
+
+              <main className="flex-1 overflow-y-auto overflow-x-hidden">
+                <div className="p-4 lg:p-8 w-full max-w-full">
+                  <div className="max-w-7xl mx-auto w-full min-w-0">
+                    {children}
+                  </div>
+                </div>
+              </main>
             </div>
-          </main>
+          </div>
         </div>
       </div>
-    </div>
+    </QueryProvider>
   )
 }

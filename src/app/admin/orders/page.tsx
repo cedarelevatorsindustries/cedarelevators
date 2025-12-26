@@ -85,7 +85,7 @@ export default function OrdersPage() {
               size="sm"
               onClick={handleRefresh}
               disabled={isLoading || isLoadingStats}
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+              className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               data-testid="refresh-orders-button"
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${(isLoading || isLoadingStats) ? 'animate-spin' : ''}`} />
@@ -94,14 +94,14 @@ export default function OrdersPage() {
           )}
           <Button 
             variant="outline"
-            className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+            className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
             onClick={handleExport}
           >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           <Button 
-            className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25"
+            className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
             onClick={handleCreateOrder}
           >
             <Plus className="mr-2 h-4 w-4" />

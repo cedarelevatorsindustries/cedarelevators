@@ -19,7 +19,7 @@ const statusColors = {
 
 const iconColors = {
   new: "text-blue-500",
-  warning: "text-red-500",
+  warning: "text-orange-500",
   success: "text-green-500",
   info: "text-gray-500",
 } as const
@@ -119,13 +119,13 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
               >
                 <div className={`p-2 rounded-xl ${
                   status === 'new' ? 'bg-blue-100' :
-                  status === 'warning' ? 'bg-red-100' :
+                  status === 'warning' ? 'bg-orange-100' :
                   status === 'success' ? 'bg-green-100' :
                   'bg-gray-100'
                 }`}>
                   <ActivityIcon className={`h-4 w-4 ${
                     status === 'new' ? 'text-blue-600' :
-                    status === 'warning' ? 'text-red-600' :
+                    status === 'warning' ? 'text-orange-600' :
                     status === 'success' ? 'text-green-600' :
                     'text-gray-600'
                   }`} />
@@ -138,7 +138,7 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
                     </p>
                     <Badge className={`text-xs font-medium ${
                       status === 'new' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                      status === 'warning' ? 'bg-red-100 text-red-700 border-red-200' :
+                      status === 'warning' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                       status === 'success' ? 'bg-green-100 text-green-700 border-green-200' :
                       'bg-gray-100 text-gray-700 border-gray-200'
                     }`}>

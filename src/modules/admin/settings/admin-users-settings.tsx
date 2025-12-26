@@ -146,7 +146,7 @@ export function AdminUsersSettings() {
       case 'super_admin':
         return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'admin':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'manager':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'staff':
@@ -174,7 +174,7 @@ export function AdminUsersSettings() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+          className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
           data-testid="create-admin-button"
         >
           <UserPlus className="w-4 h-4" />
@@ -186,7 +186,7 @@ export function AdminUsersSettings() {
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
             <p className="text-gray-600 mt-2">Loading admin users...</p>
           </div>
         ) : adminUsers.length === 0 ? (
@@ -221,8 +221,8 @@ export function AdminUsersSettings() {
                   <tr key={user.id} data-testid={`admin-user-row-${user.id}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <Shield className="h-5 w-5 text-red-600" />
+                        <div className="flex-shrink-0 h-10 w-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Shield className="h-5 w-5 text-orange-600" />
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
@@ -269,7 +269,7 @@ export function AdminUsersSettings() {
                           ) : (
                             <button
                               onClick={() => handleRevoke(user.user_id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-orange-600 hover:text-orange-900"
                               data-testid={`revoke-admin-${user.id}`}
                             >
                               <XCircle className="w-5 h-5" />
@@ -295,9 +295,9 @@ export function AdminUsersSettings() {
             </h3>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-4">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2 mb-4">
+                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-orange-800">{error}</p>
               </div>
             )}
 
@@ -314,7 +314,7 @@ export function AdminUsersSettings() {
                     value={createForm.email}
                     onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                     placeholder="admin@example.com"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600"
                     required
                     disabled={isCreating}
                     data-testid="create-admin-email"
@@ -330,7 +330,7 @@ export function AdminUsersSettings() {
                 <select
                   value={createForm.role}
                   onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as AdminRole })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600"
                   disabled={isCreating}
                   data-testid="create-admin-role"
                 >
@@ -352,7 +352,7 @@ export function AdminUsersSettings() {
                     value={createForm.temporaryPassword}
                     onChange={(e) => setCreateForm({ ...createForm, temporaryPassword: e.target.value })}
                     placeholder="Generate a secure password"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600"
                     required
                     disabled={isCreating}
                     data-testid="create-admin-password"
@@ -380,7 +380,7 @@ export function AdminUsersSettings() {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
                   data-testid="create-admin-submit"
                 >
                   {isCreating ? 'Creating...' : 'Create Admin'}

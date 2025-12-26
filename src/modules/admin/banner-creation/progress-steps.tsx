@@ -24,7 +24,7 @@ export function ProgressSteps({ currentStep, totalSteps }: ProgressStepsProps) {
               <div className="flex items-center w-full">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mx-auto ${
                   step === currentStep 
-                    ? "bg-red-600 text-white" 
+                    ? "bg-orange-600 text-white" 
                     : step < currentStep 
                       ? "bg-green-600 text-white" 
                       : "bg-gray-200 text-gray-600"
@@ -45,7 +45,7 @@ export function ProgressSteps({ currentStep, totalSteps }: ProgressStepsProps) {
             <div key={index} className="flex-1 text-center">
               <span className={`text-sm ${
                 index + 1 === currentStep 
-                  ? "font-medium text-red-600" 
+                  ? "font-medium text-orange-600" 
                   : "text-gray-500"
               }`}>
                 {title}

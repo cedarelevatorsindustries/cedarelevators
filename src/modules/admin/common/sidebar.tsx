@@ -116,7 +116,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
           "flex items-center",
           collapsed ? "justify-center" : "space-x-2 lg:space-x-3"
         )}>
-          <div className="w-7 h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-gradient-to-br from-red-500 to-red-600 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg shadow-red-500/25 flex-shrink-0">
+          <div className="w-7 h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
             <Store className="w-3.5 h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
           </div>
           {!collapsed && (
@@ -146,7 +146,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                     "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
                     collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
                     pathname === item.href 
-                      ? "bg-red-50 text-red-700 border border-red-200/50 shadow-sm hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800/50 dark:hover:bg-red-900/30" 
+                      ? "bg-orange-50 text-orange-700 border border-orange-200/50 shadow-sm hover:bg-orange-100 dark:bg-orange-950/50 dark:text-orange-300 dark:border-orange-800/50 dark:hover:bg-orange-900/30" 
                       : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
                   )}
                   asChild
@@ -157,7 +157,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                       "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                       collapsed ? "" : "mr-2 lg:mr-3",
                       pathname === item.href 
-                        ? "text-red-600 dark:text-red-400" 
+                        ? "text-orange-600 dark:text-orange-400" 
                         : "text-gray-500 dark:text-gray-400"
                     )} />
                     {!collapsed && <span className="truncate">{item.title}</span>}
@@ -181,7 +181,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                   "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
                   collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
                   pathname.startsWith(item.href)
-                    ? "bg-red-50 text-red-700 border border-red-200/50 shadow-sm hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800/50 dark:hover:bg-red-900/30" 
+                    ? "bg-orange-50 text-orange-700 border border-orange-200/50 shadow-sm hover:bg-orange-100 dark:bg-orange-950/50 dark:text-orange-300 dark:border-orange-800/50 dark:hover:bg-orange-900/30" 
                     : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
                 )}
                 asChild
@@ -192,7 +192,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                     "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                     collapsed ? "" : "mr-2 lg:mr-3",
                     pathname.startsWith(item.href)
-                      ? "text-red-600 dark:text-red-400" 
+                      ? "text-orange-600 dark:text-orange-400" 
                       : "text-gray-500 dark:text-gray-400"
                   )} />
                   {!collapsed && <span className="truncate">{item.title}</span>}
@@ -204,7 +204,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             <Button
               variant="ghost"
               className={cn(
-                "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
+                "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/50 dark:hover:text-orange-300",
                 collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3"
               )}
               onClick={handleLogout}

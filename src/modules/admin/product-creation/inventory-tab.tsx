@@ -24,7 +24,7 @@ export function InventoryTab({ inventoryData, onInventoryDataChange, hasVariants
   return (
     <div className="space-y-6">
       {/* Inventory Mode */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Inventory Control</CardTitle>
           <CardDescription className="text-gray-600">
@@ -62,7 +62,7 @@ export function InventoryTab({ inventoryData, onInventoryDataChange, hasVariants
 
       {/* Stock Management */}
       {inventoryData.trackInventory && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">Stock Management</CardTitle>
             <CardDescription className="text-gray-600">
@@ -140,7 +140,7 @@ export function InventoryTab({ inventoryData, onInventoryDataChange, hasVariants
       )}
 
       {/* Inventory Rules */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-red-50 border-red-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900">Inventory Rules</CardTitle>
           <CardDescription className="text-gray-600">
