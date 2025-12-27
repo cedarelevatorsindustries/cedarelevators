@@ -72,12 +72,12 @@ export default function AdminRecoverPage() {
             </div>
 
             {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-900">
+                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-orange-900">
                   <p className="font-medium mb-1">Recovery Requirements:</p>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800">
+                  <ul className="list-disc list-inside space-y-1 text-orange-800">
                     <li>Your super admin email address</li>
                     <li>The recovery key generated during initial setup</li>
                     <li>This feature is only available for super admin accounts</li>
@@ -200,8 +200,8 @@ export default function AdminRecoverPage() {
             </div>
 
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-900">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-orange-900">
                 Click the button below to reset your password. You'll be redirected to a secure password reset page.
               </p>
             </div>

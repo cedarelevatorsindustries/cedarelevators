@@ -113,10 +113,10 @@ export default function OrdersPage() {
       {/* Order Statistics */}
       {stats && (
         <div className="grid gap-6 md:grid-cols-5">
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 border-blue-100/50">
+          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">Total Orders</CardTitle>
-              <Package className="h-4 w-4 text-blue-600" />
+              <Package className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-2xl font-bold text-gray-900">{stats.total || 0}</div>
@@ -143,10 +143,10 @@ export default function OrdersPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 border-blue-100/50">
+          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">Shipped</CardTitle>
-              <Truck className="h-4 w-4 text-blue-600" />
+              <Truck className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-2xl font-bold text-gray-900">{stats.shipped || 0}</div>

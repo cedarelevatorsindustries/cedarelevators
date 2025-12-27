@@ -87,7 +87,7 @@ export function ShippingSettingsForm() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800">
                         {rule.zone}
                       </Badge>
                       <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">

@@ -109,13 +109,13 @@ export default function InventoryPage() {
         <>
           {/* Stats Cards */}
           <div className="grid gap-6 md:grid-cols-4">
-            <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-blue-950/20 hover:shadow-md transition-all duration-200">
+            <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 hover:shadow-md transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Total Items
                 </CardTitle>
-                <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950">
-                  <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 rounded-xl bg-orange-100 dark:bg-orange-950">
+                  <Package className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
               </CardHeader>
               <CardContent className="pt-0">

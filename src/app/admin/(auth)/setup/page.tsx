@@ -132,12 +132,12 @@ export default function AdminSetupPage() {
             </div>
 
             {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-900">
+                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-orange-900">
                   <p className="font-medium mb-1">Important:</p>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800">
+                  <ul className="list-disc list-inside space-y-1 text-orange-800">
                     <li>You'll need the setup key from your environment configuration</li>
                     <li>A recovery key will be generated for account recovery</li>
                     <li>Store the recovery key securely - it's shown only once</li>

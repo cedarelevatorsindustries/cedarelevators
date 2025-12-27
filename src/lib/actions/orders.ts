@@ -1,7 +1,48 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
-import { OrderWithDetails } from '@/lib/types/orders'
+import type { OrderWithDetails } from '@/lib/types/orders'
+
+// Re-export OrderWithDetails for use in other modules
+export type { OrderWithDetails }
+
+/**
+ * Get a single order by ID
+ */
+export async function getOrder(orderId: string): Promise<{ success: boolean; order?: OrderWithDetails; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        const { data, error } = await supabase
+            .from('orders')
+            .select(`
+                *,
+                order_items (
+                    id,
+                    product_id,
+                    variant_id,
+                    quantity,
+                    unit_price,
+                    total_price,
+                    product_name,
+                    variant_name,
+                    variant_sku
+                )
+            `)
+            .eq('id', orderId)
+            .single()
+
+        if (error) {
+            console.error('Error fetching order:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, order: data as OrderWithDetails }
+    } catch (error: any) {
+        console.error('Error in getOrder:', error)
+        return { success: false, error: error.message || 'Failed to fetch order' }
+    }
+}
 
 /**
  * Update order status

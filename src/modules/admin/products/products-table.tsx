@@ -175,7 +175,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                 )}
               </div>
               <div>
-                <div className="font-semibold text-gray-900 hover:text-blue-600">{product.title}</div>
+                <div className="font-semibold text-gray-900 hover:text-orange-600">{product.title}</div>
                 <div className="text-sm text-gray-600">{product.slug}</div>
               </div>
             </Link>

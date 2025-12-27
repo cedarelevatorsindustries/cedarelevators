@@ -14,16 +14,16 @@ export function getCatalogVariantConfig(
   switch (variantType) {
     case 'browse':
       return getBrowseAllConfig()
-    
+
     case 'category':
       return getCategoryConfig(contextData.category || '')
-    
+
     case 'application':
       return getApplicationConfig(contextData.application || '')
-    
+
     case 'search':
       return getSearchConfig(contextData.searchQuery || '')
-    
+
     default:
       return getBrowseAllConfig()
   }
@@ -42,7 +42,7 @@ function getBrowseAllConfig(): CatalogVariantConfig {
     fallbackToAll: false,
     variantType: 'browse',
     contextData: {},
-    
+
     heroLite: {
       show: false,
       height: 0,
@@ -51,14 +51,14 @@ function getBrowseAllConfig(): CatalogVariantConfig {
       subtitle: '',
       quickFilters: [],
     },
-    
+
     carousel: {
       show: true,
       type: 'general',
       height: 400,
       promoCount: 3,
     },
-    
+
     navigation: {
       breadcrumb: [
         { label: 'Home', href: '/' },
@@ -68,7 +68,7 @@ function getBrowseAllConfig(): CatalogVariantConfig {
       showRelatedSearches: false,
       relatedKeywords: [],
     },
-    
+
     filters: {
       sidebarType: 'full',
       showSecondaryBar: true,
@@ -83,20 +83,20 @@ function getBrowseAllConfig(): CatalogVariantConfig {
         'special-offers',
       ],
     },
-    
+
     content: {
       showBuyingGuide: false,
       showCategoryDescription: false,
       showApplicationTips: false,
       showSearchSuggestions: false,
     },
-    
+
     ctas: {
       showRequestQuote: true,
       quoteType: 'floating',
       showBulkOrder: true,
     },
-    
+
     products: {
       source: 'all',
       defaultSort: 'best-sellers',
@@ -110,7 +110,7 @@ function getBrowseAllConfig(): CatalogVariantConfig {
  */
 function getCategoryConfig(category: string): CatalogVariantConfig {
   const categoryData = getCategoryMetadata(category)
-  
+
   return {
     type: 'category',
     title: categoryData.displayName,
@@ -121,7 +121,7 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
     fallbackToAll: false,
     variantType: 'category',
     contextData: { category },
-    
+
     heroLite: {
       show: true,
       height: 150,
@@ -131,14 +131,14 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
       subtitle: '',
       quickFilters: ['Clear Grade', '12ft Length', 'In Stock'],
     },
-    
+
     carousel: {
       show: true,
       type: 'category-specific',
       height: 350,
       promoCount: 3,
     },
-    
+
     navigation: {
       breadcrumb: [
         { label: 'Home', href: '/' },
@@ -149,7 +149,7 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
       showRelatedSearches: false,
       relatedKeywords: [],
     },
-    
+
     filters: {
       sidebarType: 'category-specific',
       showSecondaryBar: true,
@@ -163,20 +163,20 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
         'availability',
       ],
     },
-    
+
     content: {
       showBuyingGuide: false,
       showCategoryDescription: true,
       showApplicationTips: false,
       showSearchSuggestions: false,
     },
-    
+
     ctas: {
       showRequestQuote: true,
       quoteType: 'both',
       showBulkOrder: true,
     },
-    
+
     products: {
       source: 'category-filtered',
       defaultSort: 'best-sellers',
@@ -191,7 +191,7 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
  */
 function getApplicationConfig(application: string): CatalogVariantConfig {
   const appData = getApplicationMetadata(application)
-  
+
   return {
     type: 'application',
     title: appData.displayName,
@@ -202,7 +202,7 @@ function getApplicationConfig(application: string): CatalogVariantConfig {
     fallbackToAll: false,
     variantType: 'application',
     contextData: { application },
-    
+
     heroLite: {
       show: true,
       height: 150,
@@ -212,25 +212,25 @@ function getApplicationConfig(application: string): CatalogVariantConfig {
       subtitle: appData.subtitle,
       quickFilters: ['Budget-Friendly', 'Professional Grade'],
     },
-    
+
     carousel: {
       show: true,
       type: 'application-specific',
       height: 350,
       promoCount: 3,
     },
-    
+
     navigation: {
       breadcrumb: [
         { label: 'Home', href: '/' },
-        { label: 'Shop by Application', href: '/catalog' },
+        { label: 'Shop by Elevator Type', href: '/catalog' },
         { label: appData.displayName, href: `/catalog?application=${application}` },
       ],
       showCategoryBar: false,
       showRelatedSearches: false,
       relatedKeywords: [],
     },
-    
+
     filters: {
       sidebarType: 'cross-category',
       showSecondaryBar: true,
@@ -244,20 +244,20 @@ function getApplicationConfig(application: string): CatalogVariantConfig {
         'availability',
       ],
     },
-    
+
     content: {
       showBuyingGuide: true,
       showCategoryDescription: false,
       showApplicationTips: true,
       showSearchSuggestions: false,
     },
-    
+
     ctas: {
       showRequestQuote: true,
       quoteType: 'both',
       showBulkOrder: true,
     },
-    
+
     products: {
       source: 'application-filtered',
       defaultSort: 'relevance',
@@ -280,7 +280,7 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
     fallbackToAll: false,
     variantType: 'search',
     contextData: { searchQuery },
-    
+
     heroLite: {
       show: false,
       height: 0,
@@ -289,14 +289,14 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
       subtitle: '',
       quickFilters: [],
     },
-    
+
     carousel: {
       show: true,
       type: 'general',
       height: 300,
       promoCount: 3,
     },
-    
+
     navigation: {
       breadcrumb: [
         { label: 'Home', href: '/' },
@@ -306,7 +306,7 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
       showRelatedSearches: true,
       relatedKeywords: generateRelatedSearches(searchQuery),
     },
-    
+
     filters: {
       sidebarType: 'full',
       showSecondaryBar: true,
@@ -321,20 +321,20 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
         'match-type',
       ],
     },
-    
+
     content: {
       showBuyingGuide: false,
       showCategoryDescription: false,
       showApplicationTips: false,
       showSearchSuggestions: true,
     },
-    
+
     ctas: {
       showRequestQuote: true,
       quoteType: 'both',
       showBulkOrder: true,
     },
-    
+
     products: {
       source: 'search-results',
       defaultSort: 'relevance',
@@ -362,7 +362,7 @@ function getCategoryMetadata(category: string) {
       heroImage: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1400&h=300&fit=crop',
     },
   }
-  
+
   return categories[category] || {
     displayName: category.charAt(0).toUpperCase() + category.slice(1),
     heroImage: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop',
@@ -390,7 +390,7 @@ function getApplicationMetadata(application: string) {
       heroImage: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1400&h=300&fit=crop',
     },
   }
-  
+
   return applications[application] || {
     displayName: application.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     subtitle: 'Quality cedar products for your project',
@@ -404,7 +404,7 @@ function getApplicationMetadata(application: string) {
 function generateRelatedSearches(query: string): string[] {
   // Simple related search generation - can be enhanced with ML/AI
   const baseTerms = query.toLowerCase().split(' ')
-  
+
   return [
     `${query} premium`,
     `${query} bulk`,

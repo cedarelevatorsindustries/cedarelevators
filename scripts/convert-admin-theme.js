@@ -1,24 +1,24 @@
 /**
  * Theme Converter Script
- * Converts admin panel from red theme to orange theme
+ * Converts admin panel from orange theme to blue theme
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// Color mapping from red to orange
+// Color mapping from orange to blue
 const colorMap = {
-    'red-50': 'orange-50',
-    'red-100': 'orange-100',
-    'red-200': 'orange-200',
-    'red-300': 'orange-300',
-    'red-400': 'orange-400',
-    'red-500': 'orange-500',
-    'red-600': 'orange-600',
-    'red-700': 'orange-700',
-    'red-800': 'orange-800',
-    'red-900': 'orange-900',
-    'red-950': 'orange-950',
+    'orange-50': 'blue-50',
+    'orange-100': 'blue-100',
+    'orange-200': 'blue-200',
+    'orange-300': 'blue-300',
+    'orange-400': 'blue-400',
+    'orange-500': 'blue-500',
+    'orange-600': 'blue-600',
+    'orange-700': 'blue-700',
+    'orange-800': 'blue-800',
+    'orange-900': 'blue-900',
+    'orange-950': 'blue-950',
 };
 
 // Directories to process
@@ -37,12 +37,12 @@ function processFile(filePath) {
     let content = fs.readFileSync(filePath, 'utf8');
     let modified = false;
 
-    // Replace all red color references with orange
-    Object.entries(colorMap).forEach(([red, orange]) => {
-        const regex = new RegExp(red, 'g');
+    // Replace all orange color references with blue
+    Object.entries(colorMap).forEach(([orange, blue]) => {
+        const regex = new RegExp(orange, 'g');
         const matches = content.match(regex);
         if (matches) {
-            content = content.replace(regex, orange);
+            content = content.replace(regex, blue);
             replacements += matches.length;
             modified = true;
         }
@@ -70,7 +70,7 @@ function processDirectory(dir) {
     });
 }
 
-console.log('🎨 Converting admin theme from red to orange...\n');
+console.log('🎨 Converting admin theme from orange to blue...\n');
 
 directories.forEach(dir => {
     if (fs.existsSync(dir)) {

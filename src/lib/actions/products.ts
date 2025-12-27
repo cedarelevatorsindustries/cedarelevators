@@ -2,29 +2,31 @@
 
 import { createServerSupabase } from '@/lib/supabase/server'
 
+interface Category {
+    id: string
+    name: string
+    slug: string
+}
+
 /**
  * Get all product categories
  */
-export async function getCategories(): Promise<{ success: boolean; categories?: string[]; error?: string }> {
+export async function getCategories(): Promise<{ success: boolean; data?: Category[]; error?: string }> {
     try {
         const supabase = await createServerSupabase()
 
-        // Get distinct categories from products table
+        // Get categories from categories table
         const { data, error } = await supabase
-            .from('products')
-            .select('category')
-            .not('category', 'is', null)
-            .order('category')
+            .from('categories')
+            .select('id, name, slug')
+            .order('name')
 
         if (error) {
             console.error('Error fetching categories:', error)
             return { success: false, error: error.message }
         }
 
-        // Extract unique categories
-        const categories = [...new Set(data.map(item => item.category).filter(Boolean))] as string[]
-
-        return { success: true, categories }
+        return { success: true, data: data as Category[] }
     } catch (error: any) {
         console.error('Error in getCategories:', error)
         return { success: false, error: error.message || 'Failed to fetch categories' }
@@ -204,3 +206,8 @@ export async function fetchProducts(filters?: {
         return { success: false, error: error.message || 'Failed to fetch products' }
     }
 }
+
+// Alias exports for consistency
+export const getProduct = getProductById
+export const getCollections = async () => ({ success: true, data: [] })
+export const getTags = async () => ({ success: true, data: [] })

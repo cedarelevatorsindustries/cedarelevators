@@ -1,7 +1,11 @@
-// hello-ngrok/index.js
 const path = require('path');
+// Try .env.local
 require('dotenv').config({
-  path: path.resolve(__dirname, '..', '.env.local')  // ← GO UP ONE FOLDER
+  path: path.resolve(__dirname, '..', '.env.local')
+});
+// Also try .env (fallback)
+require('dotenv').config({
+  path: path.resolve(__dirname, '..', '.env')
 });
 
 const ngrok = require('@ngrok/ngrok');

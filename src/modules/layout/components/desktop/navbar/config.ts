@@ -5,7 +5,7 @@
  * Each page type has its own configuration defining behavior and appearance.
  */
 
-export type NavbarVariant = 
+export type NavbarVariant =
   | 'homepage'
   | 'category-hero'
   | 'category-standard'
@@ -25,7 +25,7 @@ export interface NavbarConfig {
     initial: number
     scrolled: number
   }
-  
+
   // Desktop Elements
   showMegaMenu: boolean
   showBrowseProducts: boolean
@@ -33,7 +33,7 @@ export interface NavbarConfig {
   showSecondaryFilterBar: boolean
   showStickyProductBar: boolean
   showCategoryHero: boolean
-  
+
   // Mobile Elements
   mobile: {
     showLogo: boolean
@@ -42,19 +42,19 @@ export interface NavbarConfig {
     showBottomNav: boolean
     showSidebar: boolean
   }
-  
+
   // Search variant
   searchVariant: 'full' | 'compact' | 'hidden'
-  
+
   // Scroll threshold (px)
   scrollThreshold: number
-  
+
   // Z-index
   zIndex: {
     initial: number
     scrolled: number
   }
-  
+
   // Simplified mode (for checkout)
   simplified?: boolean
   showOnlyEssentials?: Array<'logo' | 'search' | 'cart' | 'help' | 'profile'>
@@ -158,7 +158,7 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
     scrollBehavior: 'sticky',
     showMegaMenu: false,
     showBrowseProducts: true,
-    showBreadcrumb: true,
+    showBreadcrumb: false,
     showSecondaryFilterBar: true,
     showStickyProductBar: false,
     showCategoryHero: false,
@@ -340,46 +340,46 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
 export function getNavbarVariant(pathname: string): NavbarVariant {
   // Homepage
   if (pathname === '/') return 'homepage'
-  
+
   // Checkout
   if (pathname.startsWith('/checkout')) return 'checkout'
-  
+
   // Catalog - Show page title with solid topbar
   if (pathname === '/catalog' || pathname.startsWith('/catalog/')) return 'browse-products'
-  
+
   // Quote - Show page title
   if (pathname === '/request-quote' || pathname.startsWith('/request-quote')) return 'account'
-  
+
   // Cart - Show page title
   if (pathname === '/cart') return 'account'
-  
+
   // Profile/My Cedar - Show page title
   if (pathname === '/profile' || pathname.startsWith('/profile/')) return 'account'
-  
+
   // Account/Dashboard
   if (pathname.startsWith('/account')) return 'account'
-  
+
   // Product Detail
   if (pathname.match(/^\/products\/[^/]+$/)) return 'product-detail'
-  
+
   // Browse All Products
   if (pathname === '/products' || pathname === '/store') return 'browse-products'
-  
+
   // Search Results
   if (pathname.startsWith('/search')) return 'search-results'
-  
+
   // Categories - Use category-hero for featured categories, category-standard for others
   if (pathname.startsWith('/categories/')) {
     // You can add logic here to determine if a category should have a hero
     // For now, default to category-hero
     return 'category-hero'
   }
-  
+
   // Collections - Similar to categories
   if (pathname.startsWith('/collections/')) {
     return 'category-hero'
   }
-  
+
   // Content Pages
   if (
     pathname.startsWith('/about') ||
@@ -391,7 +391,7 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   ) {
     return 'content-pages'
   }
-  
+
   // Default to content-pages for unknown routes
   return 'content-pages'
 }

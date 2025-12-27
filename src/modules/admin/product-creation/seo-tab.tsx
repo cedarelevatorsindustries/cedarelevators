@@ -151,10 +151,10 @@ export function SEOTab({ seoData, onSEODataChange, productName, productDescripti
         <CardContent className="space-y-4">
           <div className="p-4 border border-gray-200 rounded-lg bg-white">
             <div className="space-y-1">
-              <div className="text-blue-600 text-sm">
+              <div className="text-orange-600 text-sm">
                 yourstore.com/products/{seoData.urlHandle || "product-url"}
               </div>
-              <div className="text-lg text-blue-600 hover:underline cursor-pointer">
+              <div className="text-lg text-orange-600 hover:underline cursor-pointer">
                 {seoData.metaTitle || productName || "Product Title"}
               </div>
               <div className="text-sm text-gray-600">

@@ -257,7 +257,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                       className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div>
-                        <p className="font-medium hover:text-blue-600 dark:hover:text-blue-400">{variant.name || 'Default Variant'}</p>
+                        <p className="font-medium hover:text-orange-600 dark:hover:text-orange-400">{variant.name || 'Default Variant'}</p>
                         <p className="text-sm text-gray-500">{variant.sku}</p>
                       </div>
                       <div className="text-right">

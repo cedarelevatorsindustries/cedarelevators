@@ -74,9 +74,9 @@ export function InventoryTab({ inventoryData, onInventoryDataChange, hasVariants
           </CardHeader>
           <CardContent className="space-y-4">
             {hasVariants ? (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-900 mb-2">Variant Stock Management</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <h4 className="font-medium text-orange-900 mb-2">Variant Stock Management</h4>
+                <ul className="text-sm text-orange-800 space-y-1">
                   <li>• Stock is tracked individually for each variant</li>
                   <li>• Set stock levels in the Variants tab</li>
                   <li>• Low stock alerts apply to each variant separately</li>

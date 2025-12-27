@@ -237,7 +237,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                         href={`/admin/products/${product.id}/variants/${variant.id}`}
                         className="block hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
                       >
-                        <div className="font-medium hover:text-blue-600 dark:hover:text-blue-400">
+                        <div className="font-medium hover:text-orange-600 dark:hover:text-orange-400">
                           {variant.name || 'Default Variant'}
                         </div>
                         <div className="flex items-center space-x-2 mt-1">

@@ -164,8 +164,8 @@ export default function CouponsPage() {
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Usage
             </CardTitle>
-            <div className="p-2 rounded-xl bg-blue-100">
-              <Users className="h-4 w-4 text-blue-600" />
+            <div className="p-2 rounded-xl bg-orange-100">
+              <Users className="h-4 w-4 text-orange-600" />
             </div>
           </CardHeader>
           <CardContent className="pt-0">

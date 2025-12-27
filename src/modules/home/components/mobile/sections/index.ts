@@ -9,7 +9,7 @@ export { default as QuickAccessCategoriesSection } from "./QuickAccessCategories
 export { default as CategoryBlocksSection } from "./CategoryBlocksSection"
 
 // Product sections
-export { default as ApplicationsMobile } from "./applications-mobile"
+export { default as ElevatorTypesMobile } from "./elevator-types-mobile"
 export { default as ProductSectionMobile } from "./product-section-mobile"
 export { default as FeaturedProductsSection } from "./FeaturedProductsSection"
 

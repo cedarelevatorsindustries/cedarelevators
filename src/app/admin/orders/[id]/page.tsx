@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { 
-  ArrowLeft, 
-  Package, 
-  Truck, 
-  MapPin, 
-  User, 
-  CreditCard, 
+import {
+  ArrowLeft,
+  Package,
+  Truck,
+  MapPin,
+  User,
+  CreditCard,
   Calendar,
   Phone,
   Mail,
@@ -56,9 +56,9 @@ export default function OrderDetailPage() {
     try {
       setIsLoading(true)
       const result = await getOrder(orderId)
-      
-      if (result.success && result.data) {
-        setOrder(result.data)
+
+      if (result.success && result.order) {
+        setOrder(result.order)
       } else {
         toast.error(result.error || 'Failed to fetch order')
         router.push('/admin/orders')
@@ -213,17 +213,17 @@ export default function OrderDetailPage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Order {getOrderNumber(order)}
+              Order {getOrderNumber(order.id)}
             </h1>
             <p className="text-gray-600 mt-1">
               Placed {order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : 'Unknown'}
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           {order.order_status === 'pending' && (
-            <Button 
+            <Button
               variant="outline"
               onClick={() => handleStatusUpdate('processing')}
               disabled={isUpdating}
@@ -233,7 +233,7 @@ export default function OrderDetailPage() {
             </Button>
           )}
           {(order.order_status === 'pending' || order.order_status === 'processing') && (
-            <Button 
+            <Button
               variant="outline"
               onClick={() => setTrackingDialog(true)}
               disabled={isUpdating}
@@ -243,7 +243,7 @@ export default function OrderDetailPage() {
             </Button>
           )}
           {order.order_status === 'shipped' && (
-            <Button 
+            <Button
               variant="outline"
               onClick={() => handleStatusUpdate('delivered')}
               disabled={isUpdating}
@@ -253,7 +253,7 @@ export default function OrderDetailPage() {
             </Button>
           )}
           {order.order_status !== 'cancelled' && order.order_status !== 'delivered' && order.order_status !== 'completed' && (
-            <Button 
+            <Button
               variant="destructive"
               onClick={() => setCancelDialog(true)}
               disabled={isUpdating}
@@ -278,7 +278,7 @@ export default function OrderDetailPage() {
             <Badge className={`${getStatusColor(order.order_status)} font-medium text-sm px-3 py-1`}>
               {order.order_status || 'pending'}
             </Badge>
-            
+
             {order.shipping_tracking_number && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">Tracking Information</p>
@@ -288,7 +288,7 @@ export default function OrderDetailPage() {
                 </div>
               </div>
             )}
-            
+
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-700">Timeline</p>
               <div className="text-sm text-gray-600 space-y-1">
@@ -313,7 +313,7 @@ export default function OrderDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="font-medium text-gray-900">{getCustomerName(order)}</p>
+              <p className="font-medium text-gray-900">{getCustomerName(order.guest_name, order.guest_email)}</p>
               <div className="text-sm text-gray-600 space-y-1 mt-2">
                 {order.guest_email && (
                   <div className="flex items-center space-x-2">
@@ -338,7 +338,7 @@ export default function OrderDetailPage() {
             <Badge className={`${getPaymentStatusColor(order.payment_status)} font-medium text-sm px-3 py-1`}>
               {order.payment_status || 'pending'}
             </Badge>
-            
+
             <div className="space-y-2">
               {order.shipping_amount && (
                 <div className="flex justify-between text-sm">
@@ -367,8 +367,8 @@ export default function OrderDetailPage() {
               {order.order_items?.map((item, index) => (
                 <div key={item.id || index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{getProductTitle(item)}</p>
-                    <p className="text-sm text-gray-600">{getVariantName(item)}</p>
+                    <p className="font-medium text-gray-900">{getProductTitle(item.product_name)}</p>
+                    <p className="text-sm text-gray-600">{getVariantName(item.variant_name)}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
                   <div className="text-right">
@@ -379,8 +379,8 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
               )) || (
-                <p className="text-gray-500">No items found</p>
-              )}
+                  <p className="text-gray-500">No items found</p>
+                )}
             </div>
           </CardContent>
         </Card>

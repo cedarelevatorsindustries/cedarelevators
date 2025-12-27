@@ -3,11 +3,12 @@ import {
   HeroSection,
   FeaturedProductsSection,
   QuickCategoriesSection,
-  ShopByApplicationSection,
   WhyChooseCedarSection,
   TestimonialsSection,
   BulkOrderSection
 } from "../../components/desktop/sections"
+import { ApplicationsSection } from "@/components/store/applications-section"
+import ShopByTypeSection from "@/components/store/shop-by-type-section"
 
 interface DesktopHomepageProps {
   products: Product[]
@@ -21,6 +22,9 @@ export default function DesktopHomepage({ products, categories, testimonials }: 
       {/* Hero Section */}
       <HeroSection />
 
+      {/* Shop by Application - Work stages (Erection, Testing, Service, Others) */}
+      <ApplicationsSection />
+
       {/* Quick Categories */}
       <div className="mt-12">
         <QuickCategoriesSection categories={categories} />
@@ -33,9 +37,9 @@ export default function DesktopHomepage({ products, categories, testimonials }: 
         </div>
       )}
 
-      {/* Shop by Application */}
+      {/* Shop by Type - Elevator Type categorization */}
       <div className="mt-12">
-        <ShopByApplicationSection hasProducts={products.length > 0} />
+        <ShopByTypeSection hasProducts={products.length > 0} />
       </div>
 
       {/* Why Choose Cedar */}

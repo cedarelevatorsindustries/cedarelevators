@@ -3,9 +3,9 @@
 import { ArrowRight } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
-// Static application categories for marketing purposes
+// Static elevator type categories for marketing purposes
 // These are use cases, not product categories from backend
-const applications = [
+const elevatorTypes = [
   {
     id: "residential-elevators",
     title: "Build Your Dream Home Elevator",
@@ -50,29 +50,29 @@ const applications = [
   }
 ]
 
-export default function ApplicationsMobile() {
+export default function ElevatorTypesMobile() {
   return (
     <section className="bg-white py-6">
       <div className="px-4">
         {/* Section Header */}
         <div className="mb-4">
           <h2 className="text-lg font-bold text-gray-900 mb-1">
-            Shop by Application
+            Shop by Elevator Type
           </h2>
           <p className="text-gray-600 text-xs">
-            Browse our premium elevator selection organized by common building projects
+            Browse our premium elevator selection organized by elevator type
           </p>
         </div>
 
-        {/* Applications Grid - Vertical Cards */}
+        {/* Elevator Types Grid - Vertical Cards */}
         <div className="grid grid-cols-2 gap-3">
-          {applications.map((app) => (
-            <div key={app.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+          {elevatorTypes.map((type) => (
+            <div key={type.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
               {/* Image */}
               <div className="relative aspect-square overflow-hidden">
                 <img
-                  src={app.image}
-                  alt={app.title}
+                  src={type.image}
+                  alt={type.title}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -81,17 +81,17 @@ export default function ApplicationsMobile() {
               <div className="p-3 flex flex-col gap-2">
                 {/* Title */}
                 <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">
-                  {app.title}
+                  {type.title}
                 </h3>
-                
+
                 {/* Description - Single line truncate */}
                 <p className="text-gray-600 text-[10px] leading-relaxed truncate">
-                  {app.description}
+                  {type.description}
                 </p>
-                
+
                 {/* Shop Now Button */}
                 <LocalizedClientLink
-                  href={app.href}
+                  href={type.href}
                   className="flex items-center justify-center text-white font-medium text-xs bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-md py-2 transition-colors"
                 >
                   <span className="mr-1">Shop Now</span>

@@ -1,14 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import Tabs from "../../components/mobile/tabs"
 import ProductsTabTemplate from "./products-tab-template"
 import CategoriesTabTemplate from "./categories-tab-template"
+import { CategoryHeroGrid } from "@/components/store/category-hero-grid"
 
 interface MobileCatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
+  tab?: string
+  app?: string
 }
 
 const tabs = [
@@ -18,9 +21,18 @@ const tabs = [
 
 export default function MobileCatalogTemplate({
   products,
-  categories
+  categories,
+  tab,
+  app
 }: MobileCatalogTemplateProps) {
-  const [activeTab, setActiveTab] = useState("products")
+  const [activeTab, setActiveTab] = useState(tab || "products")
+
+  // Update active tab when tab prop changes
+  useEffect(() => {
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [tab])
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14">
@@ -33,10 +45,17 @@ export default function MobileCatalogTemplate({
       )}
 
       {activeTab === "categories" && (
-        <CategoriesTabTemplate
-          categories={categories}
-          products={products}
-        />
+        <>
+          {/* Category Hero Grid - When coming from application */}
+          {app ? (
+            <CategoryHeroGrid applicationSlug={app} categories={categories} />
+          ) : (
+            <CategoriesTabTemplate
+              categories={categories}
+              products={products}
+            />
+          )}
+        </>
       )}
     </div>
   )

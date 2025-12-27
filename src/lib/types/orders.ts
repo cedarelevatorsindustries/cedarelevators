@@ -22,6 +22,8 @@ export interface OrderWithDetails {
     tracking_number: string | null
     tracking_carrier: string | null
     tracking_url: string | null
+    shipping_tracking_number: string | null
+    shipping_provider: string | null
     notes: string | null
     cancellation_reason: string | null
     created_at: string
@@ -60,6 +62,7 @@ export interface OrderItem {
     quantity: number
     unit_price: number
     total_price: number
+    price: number
     product_name: string
     variant_name?: string
     variant_sku?: string

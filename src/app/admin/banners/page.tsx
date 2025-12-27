@@ -33,7 +33,7 @@ const getStatusColor = (status: string): string => {
     case "active":
       return "bg-green-100 text-green-700 border-green-200"
     case "scheduled":
-      return "bg-blue-100 text-blue-700 border-blue-200"
+      return "bg-orange-100 text-orange-700 border-orange-200"
     case "expired":
       return "bg-gray-100 text-gray-700 border-gray-200"
     case "disabled":
@@ -165,8 +165,8 @@ export default function BannersPage() {
               <CardTitle className="text-sm font-semibold text-gray-700">
                 Total Banners
               </CardTitle>
-              <div className="p-2 rounded-xl bg-blue-100">
-                <Image className="h-4 w-4 text-blue-600" />
+              <div className="p-2 rounded-xl bg-orange-100">
+                <Image className="h-4 w-4 text-orange-600" />
               </div>
             </CardHeader>
             <CardContent className="pt-0">

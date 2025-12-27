@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { toast } from 'sonner'
 import { ArrowLeft, Upload, Download, Loader2, CheckCircle, XCircle, AlertTriangle, FileWarning } from 'lucide-react'
 import Link from 'next/link'
-import type { PreviewResult, ProductGroup, ImportResult } from '@/types/csv-import.types'
+import type { PreviewResult, ProductGroup, ImportResult, ValidationError, ProductVariant, ImportError } from '@/types/csv-import.types'
 
 type Step = 'upload' | 'preview' | 'confirm' | 'results'
 
@@ -119,7 +119,7 @@ export default function ProductImportPage() {
 
     const errorsCsv = [
       ['Product Handle', 'Variant SKU', 'Error Message', 'Details'],
-      ...importResults.errors.map(err => [
+      ...importResults.errors.map((err: ImportError) => [
         err.productHandle,
         err.variantSku || '',
         err.message,
@@ -227,9 +227,9 @@ export default function ProductImportPage() {
               <CardDescription>Download the template to see the required format</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-sm text-blue-900 mb-2">⚠️ Important Rules:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ Important Rules:</h4>
+                <ul className="text-sm text-orange-800 space-y-1">
                   <li>• <strong>One row = one variant</strong></li>
                   <li>• Group variants by <code>product_handle</code></li>
                   <li>• Preview before importing (mandatory)</li>
@@ -309,7 +309,7 @@ export default function ProductImportPage() {
               </CardHeader>
               <CardContent>
                 <div className="max-h-60 overflow-y-auto space-y-2">
-                  {previewData.blockingErrors.slice(0, 10).map((error, index) => (
+                  {previewData.blockingErrors.slice(0, 10).map((error: ValidationError, index: number) => (
                     <div key={index} className="text-sm text-orange-800 bg-white p-2 rounded">
                       <strong>Row {error.row}</strong> - {error.field}: {error.message}
                     </div>
@@ -338,7 +338,7 @@ export default function ProductImportPage() {
               </CardHeader>
               <CardContent>
                 <div className="max-h-60 overflow-y-auto space-y-2">
-                  {previewData.warnings.slice(0, 10).map((warning, index) => (
+                  {previewData.warnings.slice(0, 10).map((warning: ValidationError, index: number) => (
                     <div key={index} className="text-sm text-yellow-800 bg-white p-2 rounded">
                       <strong>Row {warning.row}</strong> - {warning.field}: {warning.message}
                     </div>
@@ -363,7 +363,7 @@ export default function ProductImportPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
-                {previewData.productGroups.slice(0, 20).map((group, index) => (
+                {previewData.productGroups.slice(0, 20).map((group: ProductGroup, index: number) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
@@ -380,7 +380,7 @@ export default function ProductImportPage() {
                       </div>
                     )}
                     <div className="space-y-1">
-                      {group.variants.map((variant, vIdx) => (
+                      {group.variants.map((variant: ProductVariant, vIdx: number) => (
                         <div key={vIdx} className="text-sm text-gray-700 flex justify-between bg-gray-50 p-2 rounded">
                           <span>{variant.title} - {variant.sku}</span>
                           <span className="font-medium">₹{variant.price}</span>
@@ -477,10 +477,10 @@ export default function ProductImportPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">{importResults.productsUpdated}</div>
+                    <div className="text-2xl font-bold text-orange-600">{importResults.productsUpdated}</div>
                     <div className="text-sm text-gray-600">Products Updated</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-blue-600" />
+                  <CheckCircle className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>
@@ -499,10 +499,10 @@ export default function ProductImportPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">{importResults.variantsUpdated}</div>
+                    <div className="text-2xl font-bold text-orange-600">{importResults.variantsUpdated}</div>
                     <div className="text-sm text-gray-600">Variants Updated</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-blue-600" />
+                  <CheckCircle className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>
@@ -541,7 +541,7 @@ export default function ProductImportPage() {
               </CardHeader>
               <CardContent>
                 <div className="max-h-96 overflow-y-auto space-y-2">
-                  {importResults.errors.map((error, index) => (
+                  {importResults.errors.map((error: ImportError, index: number) => (
                     <div key={index} className="text-sm bg-orange-50 p-3 rounded border border-orange-200">
                       <div className="font-medium text-orange-900">
                         {error.productHandle} {error.variantSku && `(${error.variantSku})`}

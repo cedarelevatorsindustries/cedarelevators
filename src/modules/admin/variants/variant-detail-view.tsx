@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { 
+import {
   ArrowLeft,
   Save,
   Package,
@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Trash2
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase/supabase'
+import { createServerSupabase } from '@/lib/supabase/server'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -33,7 +33,7 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isEditing, setIsEditing] = useState(false)
-  
+
   // Form state for variant editing
   const [formData, setFormData] = useState({
     sku: variant.sku,
@@ -52,7 +52,7 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
   const inventoryItem = variant.inventory_items?.[0]
   const availableStock = inventoryItem?.available_quantity ?? variant.stock
   const reservedStock = inventoryItem?.reserved_quantity ?? 0
-  
+
   const getStockStatus = () => {
     if (formData.stock === 0) return { label: 'Out of Stock', color: 'destructive' as const }
     if (formData.stock < formData.low_stock_threshold) return { label: 'Low Stock', color: 'secondary' as const }
@@ -76,6 +76,8 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
   const handleSave = async () => {
     startTransition(async () => {
       try {
+        const supabase = await createServerSupabase()
+
         // Update inventory (backend handles validation and business logic)
         const { data: inventoryResult } = await supabase
           .from('product_variants')
@@ -85,9 +87,9 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
             allow_backorders: formData.allow_backorders,
             low_stock_threshold: formData.low_stock_threshold,
             cost: formData.cost ? parseFloat(formData.cost.toString()) : undefined,
-          sku: formData.sku,
-          barcode: formData.barcode || undefined,
-        })
+            sku: formData.sku,
+            barcode: formData.barcode || undefined,
+          })
 
         if (!inventoryResult) {
           throw new Error('Failed to update variant stock')
@@ -156,7 +158,7 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {isEditing ? (
             <>
@@ -219,7 +221,7 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
                   {options.map((option: any, index: number) => (
                     <div key={index} className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
                       {option.hexColor && (
-                        <div 
+                        <div
                           className="w-4 h-4 rounded-full border border-gray-300"
                           style={{ backgroundColor: option.hexColor }}
                         />

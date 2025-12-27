@@ -16,6 +16,8 @@ interface CatalogPageProps {
     application?: string
     search?: string
     view?: string
+    tab?: string
+    app?: string
   }>
 }
 
@@ -24,11 +26,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   // Build query params based on search params
   const queryParams: any = { limit: 100 }
-  
+
   if (params.search) {
     queryParams.q = params.search
   }
-  
+
   if (params.category) {
     queryParams.category_id = [params.category]
   }
@@ -36,10 +38,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   // Fetch from Medusa
   const { response } = await listProducts({ queryParams })
   const products = response.products
-  
-  const categories = await listCategories({ 
+
+  const categories = await listCategories({
     parent_category_id: null,
-    include_descendants_tree: true 
+    include_descendants_tree: true
   })
 
   return (
@@ -50,6 +52,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           products={products}
           categories={categories}
           searchParams={params}
+          tab={params.tab}
+          app={params.app}
         />
       </div>
 
@@ -58,6 +62,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <MobileCatalogTemplate
           products={products}
           categories={categories}
+          tab={params.tab}
+          app={params.app}
         />
       </div>
     </>

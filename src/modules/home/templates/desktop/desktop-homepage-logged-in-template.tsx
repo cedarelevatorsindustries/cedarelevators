@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import HeroLite from "../../components/common/hero-lite"
 import { WelcomeSection } from "../../components/common/welcome-section"
 import ProductsTab from "../../components/desktop/tab-content/product"
 import CategoriesTab from "../../components/desktop/tab-content/categories"
 import BusinessHubTab from "../../components/desktop/tab-content/business-hub"
+import { ApplicationsSection } from "@/components/store/applications-section"
 
 interface DesktopHomepageLoggedInProps {
   products: Product[]
@@ -21,7 +23,21 @@ export default function DesktopHomepageLoggedIn({
   userType,
   categories
 }: DesktopHomepageLoggedInProps) {
+  const searchParams = useSearchParams()
+  const app = searchParams.get('app')
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "business-hub">("products")
+
+  // Auto-switch to categories tab when app parameter is present
+  useEffect(() => {
+    if (app) {
+      setActiveTab("categories")
+      // Scroll to tab content to ensure user sees the change
+      const tabContent = document.getElementById('tab-content-container')
+      if (tabContent) {
+        tabContent.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  }, [app])
 
   // Listen to tab changes from HeroLite
   useEffect(() => {
@@ -44,8 +60,14 @@ export default function DesktopHomepageLoggedIn({
       <WelcomeSection userType={userType} />
 
       {/* Tab Content - Controlled by HeroLite tabs */}
-      <div className="w-full">
-        {activeTab === "products" && <ProductsTab products={products} />}
+      <div id="tab-content-container" className="w-full">
+        {activeTab === "products" && (
+          <>
+            {/* Shop by Application - Only show on Products tab */}
+            <ApplicationsSection />
+            <ProductsTab products={products} />
+          </>
+        )}
         {activeTab === "categories" && <CategoriesTab categories={categories} />}
         {activeTab === "business-hub" && userType === "business" && <BusinessHubTab />}
       </div>

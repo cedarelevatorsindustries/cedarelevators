@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Package } from "lucide-react"
-import ApplicationsMobile from "@/modules/home/components/mobile/sections/applications-mobile"
+import ElevatorTypesMobile from "@/modules/home/components/mobile/sections/elevator-types-mobile"
 import ProductCard from "@/components/ui/product-card"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 
@@ -178,8 +178,8 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
         </div>
       </div>
 
-      {/* 3. Shop by Applications - Reused Component */}
-      <ApplicationsMobile />
+      {/* 3. Shop by Elevator Type - Reused Component */}
+      <ElevatorTypesMobile />
 
       {/* 4. Top Applications - Horizontal Scroll Elevator Types */}
       <div className="bg-white py-6">

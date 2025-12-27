@@ -97,8 +97,8 @@ export default function CategoriesPage() {
             <CardTitle className="text-sm font-semibold text-gray-700">
               Total Categories
             </CardTitle>
-            <div className="p-2 rounded-xl bg-blue-100">
-              <FolderTree className="h-4 w-4 text-blue-600" />
+            <div className="p-2 rounded-xl bg-orange-100">
+              <FolderTree className="h-4 w-4 text-orange-600" />
             </div>
           </CardHeader>
           <CardContent className="pt-0">

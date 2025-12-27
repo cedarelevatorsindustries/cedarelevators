@@ -197,7 +197,7 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
       )}
 
       {/* Image Guidelines */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 border-blue-100/50">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50">
         <CardHeader>
           <CardTitle className="text-lg font-bold text-gray-900">Image Guidelines</CardTitle>
         </CardHeader>

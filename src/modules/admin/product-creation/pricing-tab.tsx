@@ -166,9 +166,9 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Variant Pricing</h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+              <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Variant Pricing</h4>
+              <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1">
                 <li>• Each variant can have its own price and MRP</li>
                 <li>• Discounts are calculated automatically per variant</li>
                 <li>• Go to the Variants tab to set individual prices</li>

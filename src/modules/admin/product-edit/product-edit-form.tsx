@@ -240,7 +240,7 @@ export function ProductEditForm({ product, categories, collections, tags }: Prod
                       value={status}
                       checked={formData.status === status}
                       onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                      className="text-blue-600"
+                      className="text-orange-600"
                     />
                     <span className="capitalize">{status}</span>
                   </label>

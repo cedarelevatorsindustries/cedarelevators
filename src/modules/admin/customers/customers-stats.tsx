@@ -52,8 +52,8 @@ export function CustomersStats({ stats, isLoading }: CustomersStatsProps) {
       title: 'Total Customers',
       value: (stats.total || 0).toLocaleString(),
       icon: Users,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-100 dark:bg-blue-950',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-950',
       testId: 'total-customers-stat',
     },
     {

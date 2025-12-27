@@ -10,16 +10,16 @@ import { QueryProvider } from "@/components/providers/query-provider"
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen items-center justify-center bg-slate-950">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100/50">
       <div className="text-center">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-800 border-t-orange-500 mx-auto mb-6"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-600 mx-auto mb-6"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 bg-orange-500 rounded-full animate-pulse"></div>
+            <div className="w-6 h-6 bg-orange-600 rounded-full animate-pulse"></div>
           </div>
         </div>
-        <h3 className="font-heading text-xl font-bold text-white mb-2">Admin Portal</h3>
-        <p className="text-blue-200">Verifying authentication...</p>
+        <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">Admin Portal</h3>
+        <p className="text-gray-500">Verifying authentication...</p>
       </div>
     </div>
   )
@@ -90,7 +90,7 @@ export default function AdminLayout({
 
   return (
     <QueryProvider>
-      <div className="flex h-screen bg-slate-950">
+      <div className="flex h-screen bg-gradient-to-br from-orange-50/50 to-orange-100/30">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <Sidebar collapsed={sidebarCollapsed} />
@@ -98,14 +98,14 @@ export default function AdminLayout({
 
         {/* Mobile Sidebar Sheet */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-r border-blue-800">
+          <SheetContent side="left" className="p-0 w-64 bg-white border-r border-orange-100">
             <Sidebar collapsed={false} />
           </SheetContent>
         </Sheet>
 
         {/* Merged Single Card - Header + Content */}
         <div className="flex-1 flex flex-col overflow-hidden p-1.5 lg:p-2">
-          <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl lg:rounded-2xl shadow-2xl border border-blue-200/20">
+          <div className="flex-1 flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl border border-orange-100/50">
             {/* Header inside the card */}
             <div className="border-b border-gray-100 flex-shrink-0">
               <Header

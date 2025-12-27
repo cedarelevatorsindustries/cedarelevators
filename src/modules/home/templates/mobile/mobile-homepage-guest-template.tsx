@@ -5,7 +5,7 @@ import {
   WhyCedarSection,
   CustomerReviewsSection,
   CategoriesMobile,
-  ApplicationsMobile
+  ElevatorTypesMobile
 } from "../../components/mobile"
 
 interface MobileHomepageGuestProps {
@@ -32,8 +32,8 @@ export default function MobileHomepageGuest({
         <FeaturedProductsSection products={products} />
       )}
 
-      {/* Shop by Application - 6 cards, 2 per row */}
-      <ApplicationsMobile />
+      {/* Shop by Elevator Type - 6 cards, 2 per row */}
+      <ElevatorTypesMobile />
 
       {/* Why Cedar */}
       <WhyCedarSection />

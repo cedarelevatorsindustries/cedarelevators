@@ -6,9 +6,11 @@ import ProductCard from "@/components/ui/product-card"
 import { Pagination, ResultsHeader, FilterSidebar } from "@/modules/catalog/sections"
 import { BannerCarousel } from "@/modules/catalog/components/banner-carousel"
 import { HeroLite } from "@/modules/catalog/components/hero-lite"
+import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
 import type { ViewMode } from "@/modules/catalog/sections"
 import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
+import { getApplicationConfig, getCategoriesForApplication } from "@/lib/config/applications"
 
 interface CatalogTemplateProps {
   products: Product[]
@@ -20,6 +22,8 @@ interface CatalogTemplateProps {
     search?: string
     view?: string
   }
+  tab?: string
+  app?: string
 }
 
 type SortOption = "relevance" | "name" | "price-low" | "price-high" | "newest"
@@ -84,6 +88,18 @@ export default function CatalogTemplate({
     }
     return null
   }, [catalogType, searchParams.category, categories])
+
+  // Get application config and categories
+  const applicationData = useMemo(() => {
+    if (searchParams.application) {
+      const appConfig = getApplicationConfig(searchParams.application)
+      if (appConfig) {
+        const appCategories = getCategoriesForApplication(searchParams.application, categories)
+        return { config: appConfig, categories: appCategories }
+      }
+    }
+    return null
+  }, [searchParams.application, categories])
 
   // Categories for sidebar
   const sidebarCategories = useMemo(() => {
@@ -177,37 +193,40 @@ export default function CatalogTemplate({
 
   const getGridColumns = () => {
     if (viewMode === "list") return "grid-cols-1"
-    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1400px] mx-auto px-8 py-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <a href="/" className="hover:text-orange-600">Home</a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{config.title}</span>
-          </div>
-        </div>
-      </div>
+
+      {/* Application Banner - Full Width */}
+      {applicationData && (
+        <CatalogBanner
+          title={applicationData.config.name}
+          subtitle={applicationData.config.subtitle}
+          backgroundImage={applicationData.config.backgroundImage}
+          categories={applicationData.categories}
+          type="application"
+          slug={applicationData.config.slug}
+        />
+      )}
+
+      {/* Category Banner - Full Width */}
+      {!applicationData && currentCategory && (
+        <CatalogBanner
+          title={currentCategory.name || ""}
+          subtitle={currentCategory.description || undefined}
+          backgroundImage={(currentCategory.metadata?.banner as string) || "https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop"}
+          categories={currentCategory.category_children || []}
+          type="category"
+          slug={currentCategory.handle || currentCategory.id}
+        />
+      )}
 
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-8 py-8">
         {/* Banner Carousel - Only for browse-all */}
-        {config.showBanner && <BannerCarousel />}
-
-        {/* Hero Lite - For category and application */}
-        {config.showHeroLite && currentCategory && (
-          <HeroLite
-            type={config.heroLiteType!}
-            title={currentCategory.name || ""}
-            description={currentCategory.description || undefined}
-            subcategories={currentCategory.category_children}
-            metadata={currentCategory.metadata || undefined}
-          />
-        )}
+        {!applicationData && !currentCategory && config.showBanner && <BannerCarousel />}
 
         {/* Search Keywords */}
         {catalogType === "search" && relatedKeywords.length > 0 && (
@@ -227,16 +246,11 @@ export default function CatalogTemplate({
           </div>
         )}
 
-        {/* Two Column Layout */}
-        <div className="flex gap-8">
-          {/* Left Sidebar - Filters */}
-          <FilterSidebar
-            onFilterChange={handleFilterChange}
-          />
-
-          {/* Right Column - Products */}
-          <div className="flex-1">
-            {/* Results Header - Hidden on mobile */}
+        {/* Conditional Layout - Centered for application/category, Two-column for browse-all */}
+        {applicationData || currentCategory ? (
+          /* Centered Single Column Layout for Application/Category */
+          <div className="max-w-5xl mx-auto">
+            {/* Results Header */}
             <div className="hidden md:block">
               <ResultsHeader
                 totalProducts={allDisplayProducts.length}
@@ -278,14 +292,6 @@ export default function CatalogTemplate({
                   })}
                 </div>
 
-                {/* Fallback Section Divider */}
-                {showFallbackSection && showPrimarySection && currentPage === 1 && (
-                  <div className="my-12 border-t border-gray-300 pt-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">More Products</h2>
-                    <p className="text-gray-600 text-sm">Explore our full catalog</p>
-                  </div>
-                )}
-
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <Pagination
@@ -314,7 +320,96 @@ export default function CatalogTemplate({
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          /* Two Column Layout for Browse All */
+          <div className="flex gap-8">
+            {/* Left Sidebar - Filters */}
+            <FilterSidebar
+              onFilterChange={handleFilterChange}
+            />
+
+            {/* Right Column - Products */}
+            <div className="flex-1">
+              {/* Results Header */}
+              <div className="hidden md:block">
+                <ResultsHeader
+                  totalProducts={allDisplayProducts.length}
+                  currentView={viewMode}
+                  onViewChange={setViewMode}
+                  onSortChange={(sort) => setSortBy(sort as SortOption)}
+                  currentPage={currentPage}
+                />
+              </div>
+
+              {/* Primary Section Header */}
+              {showPrimarySection && (
+                <div className="mt-6 mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">{config.title}</h2>
+                  <p className="text-gray-600 text-sm mt-1">{primaryCount} products</p>
+                </div>
+              )}
+
+              {/* Product Grid */}
+              {paginatedProducts.length > 0 ? (
+                <>
+                  <div className={`mt-6 grid ${getGridColumns()}`}>
+                    {paginatedProducts.map((product) => {
+                      const tag = getProductTag(product, catalogType)
+                      return (
+                        <div key={product.id} className="relative">
+                          <ProductCard
+                            product={product}
+                            variant="default"
+                            badge={getProductBadge(product)}
+                          />
+                          {tag && (
+                            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                              {tag}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Fallback Section Divider */}
+                  {showFallbackSection && showPrimarySection && currentPage === 1 && (
+                    <div className="my-12 border-t border-gray-300 pt-8">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">More Products</h2>
+                      <p className="text-gray-600 text-sm">Explore our full catalog</p>
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-20">
+                  <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                  <p className="text-gray-600 mb-6">
+                    Try adjusting your search or filter criteria
+                  </p>
+                  <button
+                    onClick={() => {
+                      setActiveFilters({})
+                      setSearchQuery("")
+                    }}
+                    className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

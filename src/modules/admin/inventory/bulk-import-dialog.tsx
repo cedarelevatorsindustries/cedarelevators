@@ -121,19 +121,19 @@ export function BulkImportDialog({ onSuccess }: BulkImportDialogProps) {
 
         <div className="space-y-4 py-4">
           {/* Download Template */}
-          <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
-            <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+          <div className="flex items-start space-x-3 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-900">
+            <FileText className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+              <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
                 Download CSV Template
               </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+              <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
                 Start with our template to ensure proper formatting
               </p>
               <Button
                 type="button"
                 variant="link"
-                className="h-auto p-0 text-blue-600 dark:text-blue-400 mt-1"
+                className="h-auto p-0 text-orange-600 dark:text-orange-400 mt-1"
                 onClick={handleDownloadTemplate}
               >
                 <Download className="h-3 w-3 mr-1" />

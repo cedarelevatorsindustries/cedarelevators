@@ -16,11 +16,11 @@ export function StoreLocationSettings({ taxSettings, setTaxSettings }: StoreLoca
   if (!taxSettings.tax_enabled) return null
 
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-blue-950/20 border-blue-100/50 dark:border-blue-900/20 hover:shadow-md transition-all duration-200">
+    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <Building2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Store Location & Tax Type</CardTitle>
@@ -51,8 +51,8 @@ export function StoreLocationSettings({ taxSettings, setTaxSettings }: StoreLoca
         </div>
 
         {/* Tax Type Information */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h4 className="font-medium text-blue-900 dark:text-blue-100 flex items-center gap-2 mb-3">
+        <div className="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+          <h4 className="font-medium text-orange-900 dark:text-orange-100 flex items-center gap-2 mb-3">
             <Info className="w-4 h-4" />
             How GST is Applied Based on Delivery Location
           </h4>

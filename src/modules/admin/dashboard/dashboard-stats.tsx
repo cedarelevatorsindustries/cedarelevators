@@ -75,13 +75,13 @@ export function DashboardStats({ stats, isLoading, hasError }: DashboardStatsPro
                 </CardTitle>
                 <div className={`p-2 rounded-xl ${
                   stat.color === "green" ? "bg-green-100" :
-                  stat.color === "blue" ? "bg-blue-100" :
+                  stat.color === "blue" ? "bg-orange-100" :
                   stat.color === "purple" ? "bg-purple-100" :
                   "bg-orange-100"
                 }`}>
                   <stat.icon className={`h-4 w-4 ${
                     stat.color === "green" ? "text-green-600" :
-                    stat.color === "blue" ? "text-blue-600" :
+                    stat.color === "blue" ? "text-orange-600" :
                     stat.color === "purple" ? "text-purple-600" :
                     "text-orange-600"
                   }`} />
@@ -152,13 +152,13 @@ export function DashboardStats({ stats, isLoading, hasError }: DashboardStatsPro
             </CardTitle>
             <div className={`p-2 rounded-xl ${
               stat.title === "Revenue" ? "bg-green-100" :
-              stat.title === "Orders" ? "bg-blue-100" :
+              stat.title === "Orders" ? "bg-orange-100" :
               stat.title === "AOV" ? "bg-purple-100" :
               "bg-orange-100"
             }`}>
               <stat.icon className={`h-4 w-4 ${
                 stat.title === "Revenue" ? "text-green-600" :
-                stat.title === "Orders" ? "text-blue-600" :
+                stat.title === "Orders" ? "text-orange-600" :
                 stat.title === "AOV" ? "text-purple-600" :
                 "text-orange-600"
               }`} />

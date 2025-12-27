@@ -17,7 +17,7 @@ export default function SettingsLayout({
   // This layout completely replaces the admin layout for settings pages
   return (
     <QueryProvider>
-      <div className="flex h-screen bg-slate-950">
+      <div className="flex h-screen bg-gradient-to-br from-orange-50/50 to-orange-100/30">
         <div className="flex h-full min-h-0 w-full">
           {/* Desktop Settings Sidebar */}
           <div className="hidden lg:block">
@@ -26,14 +26,14 @@ export default function SettingsLayout({
 
           {/* Mobile Settings Sidebar Sheet */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetContent side="left" className="p-0 w-64 bg-slate-950">
+            <SheetContent side="left" className="p-0 w-64 bg-white border-r border-orange-100">
               <SettingsSidebar collapsed={false} />
             </SheetContent>
           </Sheet>
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-1.5 lg:p-2">
-            <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl lg:rounded-2xl shadow-2xl border border-blue-200/20">
+            <div className="flex-1 flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl border border-orange-100/50">
               <div className="border-b border-gray-100 flex-shrink-0">
                 <SettingsHeader
                   sidebarCollapsed={sidebarCollapsed}
