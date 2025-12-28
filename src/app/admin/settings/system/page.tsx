@@ -56,8 +56,26 @@ export default function SystemSettingsPage() {
   }
 
   const loadSettings = async () => {
-    // TODO: Load from database or API
-    // For now using local state
+    try {
+      const result = await SettingsService.getSystemSettings()
+      if (result.success && result.data) {
+        setFeatureFlags({
+          bulk_operations_enabled: result.data.bulk_operations_enabled,
+          advanced_analytics_enabled: result.data.advanced_analytics_enabled,
+          experimental_features_enabled: result.data.experimental_features_enabled,
+        })
+        setMaintenanceMode({
+          enabled: result.data.maintenance_mode_enabled,
+          message: result.data.maintenance_message,
+        })
+        setDebugSettings({
+          debug_logging_enabled: result.data.debug_logging_enabled,
+          show_detailed_errors: result.data.show_detailed_errors,
+        })
+      }
+    } catch (error) {
+      console.error('Error loading system settings:', error)
+    }
   }
 
   const handleSave = async (e: React.FormEvent) => {
