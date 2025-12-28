@@ -11,29 +11,30 @@
 
 ## 🔄 CURRENT PHASE - Phase 2: Product Selection Enhancement (January 2025)
 
-**Status**: 🔄 IN PROGRESS
+**Status**: 🔄 IN PROGRESS (70% Complete)
 
 ### New Feature: Product Selection in Admin Categories & Collections
 
 **Objective**: Enable admins to select products when creating/editing categories and collections, with warnings when no products exist.
 
 #### Tasks:
-- [ ] **1.1 Create Reusable Components**
-  - [ ] Create `ProductSelector.tsx` - Multi-select product picker with search
-  - [ ] Create `NoProductsWarning.tsx` - Warning component for empty product list
-  - [ ] Create `useProducts.tsx` hook for fetching products
+- [x] **1.1 Create Reusable Components** ✅ COMPLETE
+  - [x] Create `ProductSelector.tsx` - Multi-select product picker with search
+  - [x] Create `NoProductsWarning.tsx` - Warning component for empty product list
+  - [x] Create `useProducts.tsx` hook for fetching products
 
-- [ ] **1.2 Update Category Management**
-  - [ ] Update `/admin/categories/create/page.tsx` - Add product selection
-  - [ ] Create `/admin/categories/[id]/edit/page.tsx` - Add product selection
-  - [ ] Update category actions to handle product associations
-  - [ ] Add "No products" warning display
+- [x] **1.2 Update Category Management** ✅ COMPLETE
+  - [x] Update `/admin/categories/create/page.tsx` - Add product selection
+  - [x] Create `/admin/categories/[id]/edit/page.tsx` - Add product selection
+  - [x] Update category actions to handle product associations
+  - [x] Add "No products" warning display
 
-- [ ] **1.3 Create Collection Management Pages**
+- [ ] **1.3 Create Collection Management Pages** 🔄 IN PROGRESS
+  - [ ] Install `react-beautiful-dnd` dependency
   - [ ] Create `/admin/collections/create/page.tsx` - Full create flow
   - [ ] Create `/admin/collections/[id]/edit/page.tsx` - Full edit flow
   - [ ] Implement product multi-select with drag-to-reorder
-  - [ ] Update collection actions for product junction table
+  - [x] Update collection actions for product junction table ✅ (Already exists)
   - [ ] Add "No products" warning display
 
 **Technical Implementation**:
