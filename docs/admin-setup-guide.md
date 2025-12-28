@@ -133,10 +133,55 @@ Once logged in as super admin, you can:
 
 ## Role Hierarchy
 
-- **Super Admin**: Full access to everything, including user management
-- **Admin**: Full access except super admin settings
-- **Manager**: Can manage products, orders, and customers
-- **Staff**: Read-only access to most features
+- **Super Admin**: Full access to everything, including critical Tier-1 settings
+- **Admin**: Full operational access, including Tier-2 settings
+- **Manager**: Can manage products, orders, customers, and Tier-2 settings
+- **Staff**: Read-only access to most features, can view Tier-2 settings
+
+## Settings Access Control (2-Tier System)
+
+Cedar Elevators implements a **2-tier access control system** for admin settings to ensure platform security and operational stability.
+
+### 🔴 Tier-1: Critical Settings (Super Admin ONLY)
+
+Settings that can break payments, affect taxes, or impact business trust:
+
+- **Pricing Rules**: Control global pricing behavior
+- **Payment Settings**: Payment method configuration  
+- **Tax (GST) Settings**: GST rates and tax rules
+- **Admin Users**: Manage admin access and permissions
+- **System Settings**: Feature flags and maintenance mode (hidden route)
+
+**Access**: Only Super Admin can view and modify these settings.
+
+### 🟡 Tier-2: Operational Settings (All Roles)
+
+Settings that can be adjusted safely during operations:
+
+- **Store & Branding**: Identity & contact information
+- **Shipping Settings**: Fulfillment and delivery configuration
+
+**Access**: Super Admin, Admin, Manager, and Staff can view and modify these settings.
+
+### Settings Module Structure
+
+```
+/admin/settings (landing page - simple section list)
+├── /store (Tier-2: Store & Branding)
+├── /pricing-rules (Tier-1: Pricing Rules) 
+├── /payments (Tier-1: Payment toggles)
+├── /tax (Tier-1: GST configuration)
+├── /shipping (Tier-2: Shipping & fulfillment)
+├── /users (Tier-1: Admin Users management)
+└── /system (Tier-1: Hidden route - Feature flags)
+```
+
+### Accessing Settings
+
+1. Navigate to **Settings** from the admin dashboard
+2. You'll see all modules you have access to based on your role
+3. Restricted modules will show a 🔒 lock icon and be grayed out
+4. Clicking on a restricted module shows an "Access Restricted" message
 
 ## Security Features
 
