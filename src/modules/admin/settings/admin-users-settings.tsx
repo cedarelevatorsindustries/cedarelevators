@@ -6,6 +6,16 @@ import { createAdminUserAction, approveAdminAction, revokeAdminAction } from '@/
 import { AdminRole } from '@/lib/admin-auth'
 import { Shield, UserPlus, Mail, Lock, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface AdminUser {
   id: string
@@ -29,6 +39,19 @@ export function AdminUsersSettings() {
   })
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState('')
+  
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    type: 'approve' | 'revoke' | 'role_change' | 'super_admin_warning' | null
+    userId?: string
+    userName?: string
+    currentRole?: AdminRole
+    newRole?: AdminRole
+  }>({
+    open: false,
+    type: null
+  })
 
   const supabase = createClient()
 
@@ -81,6 +104,21 @@ export function AdminUsersSettings() {
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check for Super Admin warning
+    if (createForm.role === 'super_admin') {
+      setConfirmDialog({
+        open: true,
+        type: 'super_admin_warning',
+        newRole: createForm.role
+      })
+      return
+    }
+    
+    await executeCreateAdmin()
+  }
+  
+  const executeCreateAdmin = async () => {
     setIsCreating(true)
     setError('')
 
@@ -109,7 +147,19 @@ export function AdminUsersSettings() {
     }
   }
 
-  const handleApprove = async (userId: string) => {
+  const handleApprove = async (userId: string, userName?: string) => {
+    setConfirmDialog({
+      open: true,
+      type: 'approve',
+      userId,
+      userName
+    })
+  }
+  
+  const executeApprove = async () => {
+    const userId = confirmDialog.userId
+    if (!userId) return
+    
     try {
       const result = await approveAdminAction(userId)
       if (!result.success) {
@@ -120,13 +170,23 @@ export function AdminUsersSettings() {
       loadAdminUsers()
     } catch (error) {
       toast.error('An unexpected error occurred')
+    } finally {
+      setConfirmDialog({ open: false, type: null })
     }
   }
 
-  const handleRevoke = async (userId: string) => {
-    if (!confirm('Are you sure you want to revoke this admin\'s access?')) {
-      return
-    }
+  const handleRevoke = async (userId: string, userName?: string) => {
+    setConfirmDialog({
+      open: true,
+      type: 'revoke',
+      userId,
+      userName
+    })
+  }
+  
+  const executeRevoke = async () => {
+    const userId = confirmDialog.userId
+    if (!userId) return
 
     try {
       const result = await revokeAdminAction(userId)
@@ -138,6 +198,8 @@ export function AdminUsersSettings() {
       loadAdminUsers()
     } catch (error) {
       toast.error('An unexpected error occurred')
+    } finally {
+      setConfirmDialog({ open: false, type: null })
     }
   }
 
