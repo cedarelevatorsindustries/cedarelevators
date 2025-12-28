@@ -208,54 +208,40 @@ CREATE POLICY "Users can upload own documents"
   TO authenticated
   WITH CHECK (user_id = get_current_user_id());
 
--- ===== PRODUCTS POLICIES =====
+-- =====================================================
+-- NOTE: Additional RLS policies for orders, order_items, 
+-- and products are defined in migration 002
+-- We add supplementary policies here for RBAC integration
+-- =====================================================
 
-CREATE POLICY "Service role full access products"
-  ON products FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Public can view active products"
-  ON products FOR SELECT
-  TO anon, authenticated
-  USING (status = 'active');
-
--- ===== ORDERS POLICIES =====
-
-CREATE POLICY "Service role full access orders"
-  ON orders FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Users can view own orders"
+-- Enhanced Orders Policies (supplement migration 002)
+DROP POLICY IF EXISTS "RBAC - Business users can view own orders" ON orders;
+CREATE POLICY "RBAC - Business users can view own orders"
   ON orders FOR SELECT
   TO authenticated
-  USING (user_id = get_current_user_id());
-
-CREATE POLICY "Authenticated users can create orders"
-  ON orders FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    user_id = get_current_user_id() AND
-    is_authenticated()
+  USING (
+    clerk_user_id = get_current_user_id() AND
+    get_user_role() = 'business' AND
+    get_verification_status() = 'verified'
   );
 
--- ===== ORDER ITEMS POLICIES =====
+DROP POLICY IF EXISTS "RBAC - Individual users can view own orders" ON orders;
+CREATE POLICY "RBAC - Individual users can view own orders"
+  ON orders FOR SELECT
+  TO authenticated
+  USING (
+    clerk_user_id = get_current_user_id() AND
+    get_user_role() = 'individual'
+  );
 
-CREATE POLICY "Service role full access order_items"
-  ON order_items FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Users can view own order items"
+-- Enhanced Order Items Policies (supplement migration 002)
+DROP POLICY IF EXISTS "RBAC - Users can view own order items" ON order_items;
+CREATE POLICY "RBAC - Users can view own order items"
   ON order_items FOR SELECT
   TO authenticated
   USING (
     order_id IN (
-      SELECT id FROM orders WHERE user_id = get_current_user_id()
+      SELECT id FROM orders WHERE clerk_user_id = get_current_user_id()
     )
   );
 
