@@ -298,9 +298,10 @@ AND tablename IN ('profiles', 'verification_documents');
 -- Show success message
 DO $$ 
 BEGIN 
-  RAISE NOTICE '✅ Migration completed successfully!';
-  RAISE NOTICE '📋 Tables created: profiles, verification_documents, orders, order_items, products';
+  RAISE NOTICE '✅ Migration 003 completed successfully!';
+  RAISE NOTICE '📋 Tables created: profiles, verification_documents';
+  RAISE NOTICE '📋 Enhanced RLS policies for: profiles, verification_documents, orders, order_items';
   RAISE NOTICE '🔒 RLS policies enabled';
-  RAISE NOTICE '🛠️ Helper functions created';
-  RAISE NOTICE '✨ Sample products inserted';
+  RAISE NOTICE '🛠️ Helper functions created for Clerk JWT integration';
+  RAISE NOTICE 'ℹ️  Note: orders, order_items, and products tables use existing schema from migration 002';
 END $$;
