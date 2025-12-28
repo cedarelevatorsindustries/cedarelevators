@@ -7,16 +7,14 @@
 // User Types
 export type UserType = 'guest' | 'individual' | 'business' | 'verified'
 
-// Quote Status
+// Quote Status - Simplified Cedar B2B Workflow
+// Flow: pending → reviewing → approved → converted (or rejected at any stage)
 export type QuoteStatus =
-  | 'pending'
-  | 'in_review'
-  | 'negotiation'
-  | 'revised'
-  | 'accepted'
-  | 'rejected'
-  | 'expired'
-  | 'converted'
+  | 'pending'      // Initial state when quote is submitted
+  | 'reviewing'    // Admin is reviewing and pricing
+  | 'approved'     // Quote approved and sent to customer
+  | 'rejected'     // Quote rejected (reason required)
+  | 'converted'    // Quote converted to order (verified business only)
 
 export type QuotePriority = 'low' | 'medium' | 'high'
 
