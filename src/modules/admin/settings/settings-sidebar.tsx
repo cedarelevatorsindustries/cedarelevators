@@ -106,31 +106,98 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
           <div className="space-y-1">
             {navItems.map((item) => {
               const IconComponent = ICON_MAP[item.icon]
+              const hasAccess = canAccessItem(item)
+              const isActive = pathname === item.href
+              
               return (
-                <Button
-                  key={item.href}
-                  variant="ghost"
-                  className={cn(
-                    "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
-                    collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
-                    pathname === item.href
-                      ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100"
-                      : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
-                  )}
-                  asChild
-                  title={collapsed ? item.title : undefined}
-                >
-                  <Link href={item.href}>
-                    {IconComponent && (
-                      <IconComponent className={cn(
-                        "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
-                        collapsed ? "" : "mr-2 lg:mr-3",
-                        pathname === item.href ? "text-orange-600" : "text-gray-400 group-hover:text-gray-500"
-                      )} />
+                <div key={item.href} className="relative">
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full h-auto rounded-lg font-medium transition-all duration-200",
+                      collapsed ? "justify-center px-2 py-3" : "justify-start px-2 lg:px-3 py-2.5",
+                      isActive
+                        ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100"
+                        : hasAccess
+                        ? "text-gray-700 hover:bg-white/50 hover:text-gray-900"
+                        : "text-gray-400 cursor-not-allowed opacity-60 hover:bg-transparent",
+                      !hasAccess && "pointer-events-none"
                     )}
-                    {!collapsed && <span className="truncate">{item.title}</span>}
-                  </Link>
-                </Button>
+                    asChild={hasAccess}
+                    title={collapsed ? item.title : undefined}
+                    disabled={!hasAccess}
+                  >
+                    {hasAccess ? (
+                      <Link href={item.href}>
+                        <div className={cn(
+                          "flex items-center w-full",
+                          collapsed ? "justify-center" : "justify-between"
+                        )}>
+                          <div className={cn(
+                            "flex items-center",
+                            collapsed ? "" : "flex-1 min-w-0"
+                          )}>
+                            {IconComponent && (
+                              <IconComponent className={cn(
+                                "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
+                                collapsed ? "" : "mr-2 lg:mr-3",
+                                isActive ? "text-orange-600" : "text-gray-400 group-hover:text-gray-500"
+                              )} />
+                            )}
+                            {!collapsed && (
+                              <span className="truncate text-xs lg:text-sm">{item.title}</span>
+                            )}
+                          </div>
+                          {!collapsed && item.tier === 'critical' && (
+                            <Badge 
+                              variant="destructive" 
+                              className="ml-2 text-[10px] px-1.5 py-0 h-4 flex-shrink-0"
+                            >
+                              🔴
+                            </Badge>
+                          )}
+                          {!collapsed && item.tier === 'operational' && (
+                            <Badge 
+                              variant="warning" 
+                              className="ml-2 text-[10px] px-1.5 py-0 h-4 flex-shrink-0"
+                            >
+                              🟡
+                            </Badge>
+                          )}
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className={cn(
+                        "flex items-center w-full",
+                        collapsed ? "justify-center" : "justify-between"
+                      )}>
+                        <div className={cn(
+                          "flex items-center",
+                          collapsed ? "" : "flex-1 min-w-0"
+                        )}>
+                          {IconComponent && (
+                            <IconComponent className={cn(
+                              "h-3.5 w-3.5 lg:h-4 lg:w-4 flex-shrink-0",
+                              collapsed ? "" : "mr-2 lg:mr-3",
+                              "text-gray-300"
+                            )} />
+                          )}
+                          {!collapsed && (
+                            <span className="truncate text-xs lg:text-sm">{item.title}</span>
+                          )}
+                        </div>
+                        {!collapsed && (
+                          <Badge 
+                            variant="outline" 
+                            className="ml-2 text-[10px] px-1.5 py-0 h-4 flex-shrink-0 border-gray-300 text-gray-400"
+                          >
+                            🔒
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </Button>
+                </div>
               )
             })}
           </div>
