@@ -229,10 +229,31 @@ export async function updateQuoteStatus(
     adminNotes?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        // Permission check
+        if (status === 'approved' || status === 'converted') {
+            const canApprove = await canApproveQuotes()
+            if (!canApprove) {
+                return { success: false, error: 'Insufficient permissions to approve quotes' }
+            }
+        }
+
         const supabase = createServerSupabaseClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
+
+        // Get current quote data for audit log
+        const { data: currentQuote, error: fetchError } = await supabase
+            .from('quotes')
+            .select('status, estimated_total, quote_number')
+            .eq('id', quoteId)
+            .single()
+
+        if (fetchError || !currentQuote) {
+            return { success: false, error: 'Quote not found' }
+        }
+
+        const adminUser = await getCurrentAdminUser()
 
         const updateData: Record<string, any> = {
             status,
@@ -244,6 +265,15 @@ export async function updateQuoteStatus(
             updateData.admin_response_at = new Date().toISOString()
         }
 
+        if (status === 'approved') {
+            updateData.approved_by = adminUser?.clerk_user_id
+            updateData.approved_at = new Date().toISOString()
+        }
+
+        if (status === 'converted') {
+            updateData.converted_at = new Date().toISOString()
+        }
+
         const { error } = await supabase
             .from('quotes')
             .update(updateData)
@@ -253,6 +283,16 @@ export async function updateQuoteStatus(
             console.error('Error updating quote status:', error)
             return { success: false, error: error.message }
         }
+
+        // Log the action
+        await logQuoteAction(quoteId, 'status_changed', {
+            oldStatus: currentQuote.status,
+            newStatus: status,
+            notes: adminNotes,
+            metadata: {
+                quote_number: currentQuote.quote_number,
+            }
+        })
 
         revalidatePath('/admin/quotes')
         revalidatePath(`/admin/quotes/${quoteId}`)
