@@ -133,17 +133,6 @@ export function StoreSettingsForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Store Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Premium men's clothing and accessories"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label>Store Logo</Label>
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
