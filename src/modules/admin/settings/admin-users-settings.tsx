@@ -452,6 +452,82 @@ export function AdminUsersSettings() {
           </div>
         </div>
       )}
+      
+      {/* Confirmation Dialogs */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ open, type: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.type === 'approve' && 'Approve Admin User'}
+              {confirmDialog.type === 'revoke' && 'Revoke Admin Access'}
+              {confirmDialog.type === 'super_admin_warning' && '⚠️ Super Admin Warning'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.type === 'approve' && (
+                <>
+                  Are you sure you want to approve <strong>{confirmDialog.userName || 'this user'}</strong> as an admin?
+                  <br /><br />
+                  This will grant them access to the admin panel with{' '}
+                  <strong className="text-orange-600">{getRoleLabel(createForm.role)}</strong> permissions.
+                </>
+              )}
+              {confirmDialog.type === 'revoke' && (
+                <>
+                  Are you sure you want to revoke admin access for <strong>{confirmDialog.userName || 'this user'}</strong>?
+                  <br /><br />
+                  <span className="text-red-600 font-semibold">This action will immediately remove their admin permissions.</span> They will no longer be able to access the admin panel.
+                </>
+              )}
+              {confirmDialog.type === 'super_admin_warning' && (
+                <>
+                  <div className="space-y-3 mt-3">
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-900 font-semibold">⚠️ Critical Action</p>
+                      <p className="text-red-800 text-sm mt-1">
+                        You are about to create a <strong>Super Admin</strong> user. This role has unrestricted access to all platform settings including:
+                      </p>
+                      <ul className="text-red-800 text-sm mt-2 ml-4 list-disc">
+                        <li>Payment configurations</li>
+                        <li>Tax settings</li>
+                        <li>Pricing rules</li>
+                        <li>Admin user management</li>
+                        <li>System settings</li>
+                      </ul>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Only create Super Admin accounts for fully trusted team members. Are you absolutely sure you want to proceed?
+                    </p>
+                  </div>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDialog.type === 'approve') {
+                  executeApprove()
+                } else if (confirmDialog.type === 'revoke') {
+                  executeRevoke()
+                } else if (confirmDialog.type === 'super_admin_warning') {
+                  setConfirmDialog({ open: false, type: null })
+                  executeCreateAdmin()
+                }
+              }}
+              className={
+                confirmDialog.type === 'revoke' || confirmDialog.type === 'super_admin_warning'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-orange-600 hover:bg-orange-700'
+              }
+            >
+              {confirmDialog.type === 'approve' && 'Yes, Approve'}
+              {confirmDialog.type === 'revoke' && 'Yes, Revoke Access'}
+              {confirmDialog.type === 'super_admin_warning' && 'Yes, Create Super Admin'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 } 
