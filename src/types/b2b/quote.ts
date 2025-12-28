@@ -229,3 +229,52 @@ export interface QuoteListResponse {
   page: number
   limit: number
 }
+
+// =====================================================
+// Quote Audit Log Types
+// =====================================================
+
+export type QuoteActionType =
+  | 'created'
+  | 'status_changed'
+  | 'priority_changed'
+  | 'pricing_updated'
+  | 'item_pricing_updated'
+  | 'approved'
+  | 'rejected'
+  | 'converted'
+  | 'message_sent'
+  | 'clarification_requested'
+
+export type AdminRole = 'staff' | 'manager' | 'admin' | 'super_admin'
+
+export interface QuoteAuditLog {
+  id: string
+  quote_id: string
+  action_type: QuoteActionType
+  old_status?: QuoteStatus
+  new_status?: QuoteStatus
+  old_priority?: QuotePriority
+  new_priority?: QuotePriority
+  pricing_changed: boolean
+  old_total?: number
+  new_total?: number
+  admin_clerk_id?: string
+  admin_name?: string
+  admin_role?: AdminRole
+  notes?: string
+  metadata?: Record<string, any>
+  created_at: string
+}
+
+export interface AdminUser {
+  id: string
+  clerk_user_id: string
+  email: string
+  full_name?: string
+  role: AdminRole
+  is_active: boolean
+  last_login_at?: string
+  created_at: string
+  updated_at: string
+}
