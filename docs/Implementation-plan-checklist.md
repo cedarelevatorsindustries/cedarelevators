@@ -170,26 +170,8 @@ RESEND_FROM_EMAIL=Cedar Elevators <noreply@cedarelevators.com>
 
 ## ⚠️ Partially Implemented Features
 
-### 1. Shopping Cart System
-**Status**: UI Complete, Backend Incomplete
-
-- [x] Cart page UI and layout
-- [x] Cart context provider
-- [x] Add/remove/update cart items (client-side)
-- [ ] **TODO**: Server action implementations
-- [ ] **TODO**: Database persistence for cart items
-- [ ] **TODO**: Cart sync across sessions
-- [ ] **TODO**: Guest cart to user cart migration
-- [ ] **TODO**: Cart item validation with inventory
-
-**Files to Update**:
-- `/app/src/lib/actions/cart-actions.ts` (has TODOs)
-- Create `/app/src/lib/supabase/queries/cart.ts`
-
----
-
-### 2. Product Catalog
-**Status**: Works with Demo Data
+### 1. Product Catalog
+**Status**: Works with Demo Data - Needs Backend Completion
 
 - [x] Product listing UI
 - [x] Product detail pages
