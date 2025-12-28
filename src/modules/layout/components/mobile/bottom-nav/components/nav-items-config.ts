@@ -9,23 +9,17 @@ export interface NavItemConfig {
 export const navItems: NavItemConfig[] = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/catalog", icon: ShoppingBag, label: "Catalog" },
-  { href: "/request-quote", icon: FileText, label: "Quote" },
+  { href: "/quotes", icon: FileText, label: "Quote" },
   { href: "/cart", icon: ShoppingCart, label: "Cart" },
   { href: "/profile", icon: User, label: "My Cedar" }
 ]
 
 /**
  * Get intelligent quote tab label based on user type
+ * Single entry point principle: /quotes for all users
  */
 export function getQuoteTabLabel(userType: "guest" | "individual" | "business"): string {
-  switch (userType) {
-    case "guest":
-      return "Get Quote"
-    case "individual":
-      return "My Quotes"
-    case "business":
-      return "Business"
-    default:
-      return "Quote"
-  }
+  // Guest: "Get Quote" - encourages lead capture
+  // All logged-in users: "Quotes" - simple and consistent
+  return userType === "guest" ? "Get Quote" : "Quotes"
 }
