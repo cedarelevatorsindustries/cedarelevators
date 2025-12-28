@@ -376,11 +376,12 @@ const settingsNavItems = [
 
 ---
 
-### Phase 12: Create Role Utilities
+### Phase 12: Create Role Utilities ✅
 
-#### 12.1 Create Access Control Helper
+#### 12.1 Create Access Control Helper ✅
 File: `/app/src/lib/admin/settings-access.ts`
 
+**IMPLEMENTED:**
 ```typescript
 // Check if user can access Tier-1 settings
 export function canAccessTier1(role: string): boolean
@@ -392,10 +393,13 @@ export function canAccessTier2(role: string): boolean
 export function getAccessibleSettings(role: string): SettingsModule[]
 ```
 
-#### 12.2 Create Role Guard Components
-- [ ] `<Tier1Guard>` component
-- [ ] `<Tier2Guard>` component
-- [ ] `<RestrictedAccess>` fallback component
+#### 12.2 Create Role Guard Components ✅
+File: `/app/src/components/admin/settings-guards.tsx`
+
+- [x] `<Tier1Guard>` component - Super Admin only
+- [x] `<Tier2Guard>` component - Admin, Manager, Staff
+- [x] `<RestrictedAccess>` fallback component with helpful messaging
+- [x] Applied guards to all settings pages (store, shipping, pricing, payment, tax, users, system)
 
 ---
 
