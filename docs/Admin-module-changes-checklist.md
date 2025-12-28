@@ -20,16 +20,16 @@
 **Priority:** HIGHEST | **Status:** ⏳ In Progress
 
 ### Database Schema Changes
-- [ ] Create Supabase migration for quote statuses simplification
-- [ ] Add `quote_audit_log` table for tracking changes
-- [ ] Update quotes table indexes for performance
-- [ ] Add role-based access control columns
+- [x] Create Supabase migration for quote statuses simplification
+- [x] Add `quote_audit_log` table for tracking changes
+- [x] Update quotes table indexes for performance
+- [x] Add role-based access control columns
 
 ### Type Definitions
-- [ ] Update QuoteStatus type (remove excess statuses)
-- [ ] Add QuoteAuditLog type
-- [ ] Add role permission types (Staff, Manager, Admin, Super Admin)
-- [ ] Update Quote interface with new fields
+- [x] Update QuoteStatus type (remove excess statuses)
+- [x] Add QuoteAuditLog type
+- [x] Add role permission types (Staff, Manager, Admin, Super Admin)
+- [x] Update Quote interface with new fields
 
 ### Backend (Server Actions)
 - [ ] Update `getAdminQuotes` with new filter logic
