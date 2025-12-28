@@ -187,10 +187,12 @@ Settings that can be adjusted safely during operations:
 
 ✅ **Row Level Security (RLS)**: Database-level access control  
 ✅ **Role-based Access Control**: Hierarchical permission system  
+✅ **2-Tier Settings Access**: Critical settings restricted to Super Admin only  
 ✅ **Approval Workflow**: New admins require approval  
 ✅ **Recovery Key**: Super admin account recovery mechanism  
 ✅ **Session Management**: Secure authentication with Supabase Auth  
 ✅ **Audit Trail**: Track who approved admins and when  
+✅ **Settings Guards**: Component-level access protection for settings pages  
 
 ## Troubleshooting
 
