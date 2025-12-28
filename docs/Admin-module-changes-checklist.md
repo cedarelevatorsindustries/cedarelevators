@@ -32,28 +32,30 @@
 - [x] Update Quote interface with new fields
 
 ### Backend (Server Actions)
-- [ ] Update `getAdminQuotes` with new filter logic
-- [ ] Update `updateQuoteStatus` with audit logging
-- [ ] Add `approveQuote` action (Manager+)
-- [ ] Add `convertQuoteToOrder` action (verified business only)
-- [ ] Add `getQuoteAuditLog` action
-- [ ] Update `updateQuotePricing` with validation
-- [ ] Add quote summary validation before approval
+- [x] Update `getAdminQuotes` with new filter logic
+- [x] Update `updateQuoteStatus` with audit logging
+- [x] Add `approveQuote` action (Manager+)
+- [x] Add `convertQuoteToOrder` action (verified business only)
+- [x] Add `getQuoteAuditLog` action
+- [x] Update `updateQuotePricing` with validation
+- [x] Add quote summary validation before approval
+- [x] Add `rejectQuote` action with reason requirement
+- [x] Create admin role utilities with permission checks
 
 ### Quotes List Page (`/admin/quotes/page.tsx`)
-- [ ] **Simplify table columns:**
-  - [ ] Quote ID
-  - [ ] Customer (name + contact)
-  - [ ] User Type (with icon)
-  - [ ] Items Count
-  - [ ] Priority badge
-  - [ ] Status badge
-  - [ ] Submitted Date
-  - [ ] Actions column
-- [ ] Remove revenue/totals from list view
-- [ ] Update filters (status, priority, user type, date range)
-- [ ] Add quick "Start Review" action for pending quotes
-- [ ] Update stats cards (Total, Pending, In Review, Accepted, Business)
+- [x] **Simplify table columns:**
+  - [x] Quote ID
+  - [x] Customer (name + contact)
+  - [x] User Type (with icon)
+  - [x] Items Count
+  - [x] Priority badge
+  - [x] Status badge
+  - [x] Submitted Date
+  - [x] Actions column
+- [x] Remove revenue/totals from list view (already clean)
+- [x] Update filters (status, priority, user type, date range)
+- [x] Add quick "Start Review" action for pending quotes
+- [x] Update stats cards (Total, Pending, Reviewing, Approved, Business)
 
 ### Quote Detail Page (`/admin/quotes/[id]/page.tsx`)
 - [ ] **A. Sticky Quote Header**
