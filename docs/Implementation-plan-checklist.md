@@ -29,13 +29,13 @@
   - [x] Update category actions to handle product associations
   - [x] Add "No products" warning display
 
-- [ ] **1.3 Create Collection Management Pages** 🔄 IN PROGRESS
-  - [ ] Install `react-beautiful-dnd` dependency
-  - [ ] Create `/admin/collections/create/page.tsx` - Full create flow
-  - [ ] Create `/admin/collections/[id]/edit/page.tsx` - Full edit flow
-  - [ ] Implement product multi-select with drag-to-reorder
+- [x] **1.3 Create Collection Management Pages** ✅ COMPLETE
+  - [x] Install `react-beautiful-dnd` dependency ✅ (Already installed)
+  - [x] Create `/admin/collections/create/page.tsx` - Full create flow
+  - [x] Create `/admin/collections/[id]/edit/page.tsx` - Full edit flow
+  - [x] Implement product multi-select with drag-to-reorder
   - [x] Update collection actions for product junction table ✅ (Already exists)
-  - [ ] Add "No products" warning display
+  - [x] Add "No products" warning display
 
 **Technical Implementation**:
 - Categories: Direct relationship via `products.category` field
