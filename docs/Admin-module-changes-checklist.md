@@ -95,16 +95,20 @@
   - [x] Convert to order (verified only)
 
 ### Quote → Order Conversion
-- [ ] Create conversion validation checks
-- [ ] Verify quote is approved
-- [ ] Verify customer is Business Verified
-- [ ] Add conversion flow UI:
-  - [ ] Confirm pricing
-  - [ ] Confirm address
-  - [ ] Confirm delivery method
-  - [ ] Create order
-- [ ] No auto-conversion (manual only)
-- [ ] Add conversion audit trail
+- [x] Create conversion validation checks
+- [x] Verify quote is approved
+- [x] Verify customer is Business Verified
+- [x] Add conversion flow UI:
+  - [x] Confirm pricing
+  - [x] Confirm address (uses default or fallback)
+  - [x] Confirm delivery method
+  - [x] Create order with proper order number
+- [x] Manual conversion only (admin-initiated)
+- [x] Add conversion audit trail
+- [x] Create order record in orders table
+- [x] Copy quote items to order_items table
+- [x] Decrement inventory for order items
+- [x] Update quote status to 'converted'
 
 ### Role-Based Access Control
 - [ ] Implement Clerk-based role checking
