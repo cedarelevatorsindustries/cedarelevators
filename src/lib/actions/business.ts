@@ -290,9 +290,25 @@ export async function verifyBusiness(
       return { success: false, error: error.message }
     }
     
-    // TODO: Send email notification to business owner
-    // Get user email from Clerk and send verification status email
-    // await sendVerificationStatus(userEmail, status, profile.company_name, notes)
+    // Send email notification to business owner
+    try {
+      // Import Clerk to get user email
+      const { clerkClient } = await import('@clerk/nextjs/server')
+      const user = await (await clerkClient()).users.getUser(profile.clerk_user_id)
+      
+      if (user.primaryEmailAddress?.emailAddress) {
+        const { sendVerificationStatus } = await import('@/lib/services/email')
+        await sendVerificationStatus(
+          user.primaryEmailAddress.emailAddress,
+          status === 'verified' ? 'approved' : 'rejected',
+          profile.company_name,
+          notes
+        )
+      }
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError)
+      // Don't fail the verification if email fails
+    }
     
     return { success: true, profile }
   } catch (error: any) {
