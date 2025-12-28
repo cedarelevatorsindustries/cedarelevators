@@ -1,146 +1,83 @@
 /**
  * Optimized Image Component
- * Wrapper around Next.js Image with Cloudinary integration
+ * Uses Cloudinary for optimization with Next.js Image
  */
 
 'use client'
 
 import Image, { ImageProps } from 'next/image'
 import { useState } from 'react'
-import {
-  getOptimizedImageUrl,
-  generateResponsiveSrcSet,
-  generateLQIP,
-  IMAGE_PRESETS,
-} from '@/lib/services/cloudinary'
+import { cn } from '@/lib/utils'
 
-export interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
+interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
   src: string
   alt: string
-  preset?: keyof typeof IMAGE_PRESETS
-  cloudinaryId?: string
-  showBlurPlaceholder?: boolean
+  blurhash?: string
   fallbackSrc?: string
+  aspectRatio?: string
 }
 
 export function OptimizedImage({
   src,
   alt,
-  preset,
-  cloudinaryId,
-  showBlurPlaceholder = true,
-  fallbackSrc = '/images/placeholder.png',
   className,
+  blurhash,
+  fallbackSrc = '/images/placeholder.png',
+  aspectRatio,
   ...props
 }: OptimizedImageProps) {
-  const [error, setError] = useState(false)
+  const [imageSrc, setImageSrc] = useState(src)
   const [isLoading, setIsLoading] = useState(true)
 
-  // If cloudinaryId is provided, use Cloudinary optimization
-  const imageSrc = cloudinaryId
-    ? getOptimizedImageUrl(
-        cloudinaryId,
-        preset ? IMAGE_PRESETS[preset] : {}
-      )
-    : src
+  const handleError = () => {
+    setImageSrc(fallbackSrc)
+  }
 
-  // Generate blur placeholder if using Cloudinary
-  const blurDataURL =
-    showBlurPlaceholder && cloudinaryId
-      ? generateLQIP(cloudinaryId)
-      : undefined
+  const handleLoadingComplete = () => {
+    setIsLoading(false)
+  }
 
   return (
-    <div className={`relative ${isLoading ? 'animate-pulse bg-gray-200' : ''}`}>
+    <div
+      className={cn('relative overflow-hidden', className)}
+      style={aspectRatio ? { aspectRatio } : undefined}
+    >
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
       <Image
-        src={error ? fallbackSrc : imageSrc}
+        src={imageSrc}
         alt={alt}
-        className={className}
-        placeholder={blurDataURL ? 'blur' : 'empty'}
-        blurDataURL={blurDataURL}
-        onLoad={() => setIsLoading(false)}
-        onError={() => {
-          setError(true)
-          setIsLoading(false)
-        }}
+        className={cn(
+          'transition-opacity duration-300',
+          isLoading ? 'opacity-0' : 'opacity-100'
+        )}
+        onError={handleError}
+        onLoad={handleLoadingComplete}
         {...props}
       />
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-orange-500" />
-        </div>
-      )}
     </div>
   )
 }
 
 /**
- * Product Image Component with optimized loading
+ * Responsive optimized image with srcset
  */
-export function ProductImage({
-  src,
-  alt,
-  cloudinaryId,
-  size = 'card',
-  ...props
-}: OptimizedImageProps & { size?: 'thumbnail' | 'card' | 'detail' }) {
-  const presetMap = {
-    thumbnail: 'THUMBNAIL' as const,
-    card: 'PRODUCT_CARD' as const,
-    detail: 'PRODUCT_DETAIL' as const,
-  }
-
-  return (
-    <OptimizedImage
-      src={src}
-      alt={alt}
-      cloudinaryId={cloudinaryId}
-      preset={presetMap[size]}
-      showBlurPlaceholder
-      {...props}
-    />
-  )
+interface ResponsiveImageProps extends OptimizedImageProps {
+  sizes?: string
 }
 
-/**
- * Avatar Image Component
- */
-export function AvatarImage({
+export function ResponsiveImage({
   src,
   alt,
-  cloudinaryId,
+  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
   ...props
-}: OptimizedImageProps) {
+}: ResponsiveImageProps) {
   return (
     <OptimizedImage
       src={src}
       alt={alt}
-      cloudinaryId={cloudinaryId}
-      preset="AVATAR"
-      showBlurPlaceholder
-      fallbackSrc="/images/avatar-placeholder.png"
-      {...props}
-    />
-  )
-}
-
-/**
- * Hero Image Component
- */
-export function HeroImage({
-  src,
-  alt,
-  cloudinaryId,
-  ...props
-}: OptimizedImageProps) {
-  return (
-    <OptimizedImage
-      src={src}
-      alt={alt}
-      cloudinaryId={cloudinaryId}
-      preset="HERO"
-      showBlurPlaceholder
-      priority
+      sizes={sizes}
       {...props}
     />
   )
