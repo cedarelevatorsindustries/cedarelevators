@@ -11,8 +11,13 @@ import { Save, Upload, ArrowLeft, Loader2, Layers, FolderTree, FileType, Box, Ta
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
+import { useProducts } from "@/hooks/queries/useProducts"
+import { updateProduct } from "@/lib/actions/products"
+import { ProductSelector } from "@/components/admin/ProductSelector"
+import { NoProductsWarning } from "@/components/admin/NoProductsWarning"
 import type { CategoryFormData, CategoryLevel, Category } from "@/lib/types/categories"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 export default function CreateCategoryPage() {
   const router = useRouter()
@@ -30,6 +35,10 @@ export default function CreateCategoryPage() {
   // Get existing categories for parent selection
   const { data } = useCategories()
   const allCategories = data?.categories || []
+
+  // Get all products for product selection
+  const { data: productsData, isLoading: productsLoading } = useProducts({}, 1, 1000)
+  const allProducts = productsData?.products || []
 
   // Derive available parents
   const applications = useMemo(() =>
@@ -52,6 +61,9 @@ export default function CreateCategoryPage() {
     meta_title: "",
     meta_description: ""
   })
+
+  // Product selection state
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
 
   // Temporary state for cascaded selection for subcategory
   const [selectedAppForSubcat, setSelectedAppForSubcat] = useState<string>("")
@@ -88,6 +100,12 @@ export default function CreateCategoryPage() {
   }
 
   const handleTypeSelect = (type: 'application' | 'category' | 'elevator-type') => {
+    // Check if products exist before proceeding to step 2
+    if (allProducts.length === 0) {
+      toast.error("Please create products first before creating categories")
+      return
+    }
+
     setCreationType(type)
     setFormData(prev => ({
       ...prev,
@@ -101,17 +119,17 @@ export default function CreateCategoryPage() {
   const handleSubmit = async () => {
     try {
       if (!formData.name || !formData.slug) {
-        alert('Please fill in required fields')
+        toast.error('Please fill in required fields')
         return
       }
 
       if (creationType === 'category') {
         if (categoryMode === 'main' && !formData.parent_id) {
-          alert('Please select a Parent Application')
+          toast.error('Please select a Parent Application')
           return
         }
         if (categoryMode === 'sub' && !formData.parent_id) {
-          alert('Please select a Parent Category')
+          toast.error('Please select a Parent Category')
           return
         }
       }
@@ -142,16 +160,35 @@ export default function CreateCategoryPage() {
         image_url: imageUrl
       })
 
-      if (result.success) {
+      if (result.success && result.category) {
+        // Update selected products to assign this category
+        if (selectedProductIds.length > 0) {
+          toast.loading(`Assigning ${selectedProductIds.length} products to category...`)
+          
+          const updatePromises = selectedProductIds.map(productId =>
+            updateProduct(productId, { category: result.category!.id })
+          )
+          
+          await Promise.all(updatePromises)
+          toast.dismiss()
+          toast.success(`Category created and ${selectedProductIds.length} products assigned!`)
+        } else {
+          toast.success('Category created successfully!')
+        }
+
         router.push('/admin/categories')
       }
     } catch (error) {
       console.error('Error creating category:', error)
+      toast.error('Failed to create category')
       setIsUploading(false)
     }
   }
 
   const isLoading = createMutation.isPending || isUploading
+
+  // Check if products exist
+  const hasProducts = allProducts.length > 0
 
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
@@ -176,41 +213,48 @@ export default function CreateCategoryPage() {
             </Button>
           </div>
 
+          {/* No Products Warning */}
+          {!hasProducts && !productsLoading && (
+            <NoProductsWarning />
+          )}
+
           {/* Stepper / Tabs */}
-          <div className="flex items-center space-x-4 border-b border-gray-200">
-            <button
-              onClick={() => setCurrentStep(1)}
-              className={cn(
-                "flex items-center pb-3 px-1 border-b-2 transition-colors text-sm font-medium",
-                currentStep === 1
-                  ? "border-orange-600 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              )}
-            >
-              <span className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs mr-2 relative">
-                {currentStep === 1 ? '1' : <Check className="h-3 w-3" />}
-                {currentStep === 1 && <span className="absolute inset-0 rounded-full border border-orange-600"></span>}
-              </span>
-              Select Type
-            </button>
-            <div className="h-4 w-[1px] bg-gray-300 rotate-12 mb-3"></div>
-            <button
-              disabled={currentStep === 1}
-              className={cn(
-                "flex items-center pb-3 px-1 border-b-2 transition-colors text-sm font-medium",
-                currentStep === 2
-                  ? "border-orange-600 text-orange-600"
-                  : "border-transparent text-gray-400 cursor-not-allowed"
-              )}
-            >
-              <span className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs mr-2">2</span>
-              Details Form
-            </button>
-          </div>
+          {hasProducts && (
+            <div className="flex items-center space-x-4 border-b border-gray-200">
+              <button
+                onClick={() => setCurrentStep(1)}
+                className={cn(
+                  "flex items-center pb-3 px-1 border-b-2 transition-colors text-sm font-medium",
+                  currentStep === 1
+                    ? "border-orange-600 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                )}
+              >
+                <span className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs mr-2 relative">
+                  {currentStep === 1 ? '1' : <Check className="h-3 w-3" />}
+                  {currentStep === 1 && <span className="absolute inset-0 rounded-full border border-orange-600"></span>}
+                </span>
+                Select Type
+              </button>
+              <div className="h-4 w-[1px] bg-gray-300 rotate-12 mb-3"></div>
+              <button
+                disabled={currentStep === 1}
+                className={cn(
+                  "flex items-center pb-3 px-1 border-b-2 transition-colors text-sm font-medium",
+                  currentStep === 2
+                    ? "border-orange-600 text-orange-600"
+                    : "border-transparent text-gray-400 cursor-not-allowed"
+                )}
+              >
+                <span className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs mr-2">2</span>
+                Details Form
+              </button>
+            </div>
+          )}
         </div>
 
         {/* STEP 1: Type Selection */}
-        {currentStep === 1 && (
+        {currentStep === 1 && hasProducts && (
           <div className="grid gap-6 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card
               className="cursor-pointer hover:border-orange-500 hover:shadow-md transition-all group relative overflow-hidden"
@@ -269,7 +313,7 @@ export default function CreateCategoryPage() {
         )}
 
         {/* STEP 2: Details Form */}
-        {currentStep === 2 && (
+        {currentStep === 2 && hasProducts && (
           <div className="grid gap-8 lg:grid-cols-12 animate-in fade-in slide-in-from-right-4 duration-500">
 
             {/* Main Form */}
@@ -445,6 +489,33 @@ export default function CreateCategoryPage() {
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={4}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Product Selection Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Product Assignment (Optional)</CardTitle>
+                  <CardDescription>
+                    Select products to assign to this category. You can also assign products later.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Label>Select Products</Label>
+                    <ProductSelector
+                      products={allProducts}
+                      selectedProductIds={selectedProductIds}
+                      onSelectionChange={setSelectedProductIds}
+                      placeholder="Select products to assign to this category..."
+                      multiple={true}
+                    />
+                    {selectedProductIds.length > 0 && (
+                      <p className="text-xs text-gray-500">
+                        {selectedProductIds.length} product{selectedProductIds.length !== 1 ? 's' : ''} will be assigned to this category
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
