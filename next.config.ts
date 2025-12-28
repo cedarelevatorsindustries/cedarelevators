@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Bundle Analyzer (enable with ANALYZE=true)
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -22,6 +27,9 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   // Externalize large native packages to reduce serverless function size
   serverExternalPackages: [
@@ -40,8 +48,25 @@ const nextConfig: NextConfig = {
       'node_modules/@unrs/**',
     ],
   },
+  // Webpack optimization
+  webpack: (config, { isServer }) => {
+    // Tree shaking for lucide-react
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'lucide-react': 'lucide-react/dist/esm/icons',
+    }
+    return config
+  },
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
+  // Experimental features
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
 
 
