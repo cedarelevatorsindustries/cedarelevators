@@ -42,14 +42,10 @@ const getStatusConfig = (status: QuoteStatus) => {
     switch (status) {
         case 'pending':
             return { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: 'Pending' }
-        case 'in_review':
-            return { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Eye, label: 'In Review' }
-        case 'negotiation':
-            return { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: MessageSquare, label: 'Negotiation' }
-        case 'revised':
-            return { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: FileText, label: 'Revised' }
-        case 'accepted':
-            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Accepted' }
+        case 'reviewing':
+            return { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Eye, label: 'Reviewing' }
+        case 'approved':
+            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Approved' }
         case 'rejected':
             return { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Rejected' }
         case 'converted':
