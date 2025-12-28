@@ -69,14 +69,15 @@ CREATE TABLE IF NOT EXISTS verification_documents (
 );
 
 -- Add foreign key constraint if it doesn't exist
+-- Note: This references profiles(user_id) which is TEXT, not UUID
 DO $$ 
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint 
-    WHERE conname = 'verification_documents_user_id_fkey'
+    WHERE conname = 'verification_documents_profile_user_id_fkey'
   ) THEN
     ALTER TABLE verification_documents 
-    ADD CONSTRAINT verification_documents_user_id_fkey 
+    ADD CONSTRAINT verification_documents_profile_user_id_fkey 
     FOREIGN KEY (user_id) REFERENCES profiles(user_id) ON DELETE CASCADE;
   END IF;
 END $$;
