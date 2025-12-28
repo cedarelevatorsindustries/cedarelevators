@@ -190,7 +190,7 @@ RESEND_FROM_EMAIL=Cedar Elevators <noreply@cedarelevators.com>
 
 ---
 
-### 3. Real-time Notifications
+### 2. Real-time Notifications
 **Status**: Pusher Setup Done, Limited Usage
 
 - [x] Pusher client configuration
