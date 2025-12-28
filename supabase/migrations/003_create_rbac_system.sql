@@ -281,12 +281,12 @@ CREATE TRIGGER update_profiles_updated_at
 -- Check if tables were created
 SELECT table_name FROM information_schema.tables 
 WHERE table_schema = 'public' 
-AND table_name IN ('profiles', 'verification_documents', 'orders', 'order_items', 'products');
+AND table_name IN ('profiles', 'verification_documents');
 
 -- Check if RLS is enabled
 SELECT tablename, rowsecurity FROM pg_tables 
 WHERE schemaname = 'public' 
-AND tablename IN ('profiles', 'orders', 'products');
+AND tablename IN ('profiles', 'verification_documents');
 
 -- Test JWT helper functions (run after logging in via Clerk)
 -- SELECT auth.jwt() ->> 'sub' as user_id;
