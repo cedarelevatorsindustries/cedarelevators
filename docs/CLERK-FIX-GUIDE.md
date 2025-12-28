@@ -1,4 +1,4 @@
-# 🔧 Clerk Loading Error - Quick Fix Guide
+# 🔧 Clerk Loading Error - Quick Fix Guide (2025 Native Integration)
 
 ## Problem
 
@@ -15,226 +15,308 @@ ClerkRuntimeError: Clerk: Failed to load Clerk
 
 ## Root Cause
 
-The error occurs because Clerk is trying to load from your custom domain `clerk.cedarelevator.com`, but there's a configuration issue. This can happen due to:
+The error occurs because Clerk is trying to load from your custom domain `clerk.cedarelevator.com`, but there's a configuration issue. Common causes:
 
 1. Custom domain not fully configured in Clerk Dashboard
 2. DNS CNAME record not pointing correctly
 3. Missing or incorrect environment variables
-4. Clerk frontend API not properly set
+4. SSL certificate not provisioned yet
 
 ## ✅ Quick Fix (Already Applied)
 
-I've already fixed the issue in your code by:
+I've already fixed the issue in your code:
 
 1. **Updated `/app/src/app/layout.tsx`**:
    - Added `dynamic={true}` prop to ClerkProvider
    - Added explicit `publishableKey` prop
-   - This allows Clerk to auto-detect the correct domain
+   - Allows Clerk to auto-detect the correct domain
 
 2. **Created `/app/middleware.ts`**:
    - Implements proper route protection
    - Protects `/checkout` routes (requires authentication)
-   - Allows public routes like products, sign-in, sign-up
+   - Allows public routes
 
-3. **Created `.env.example`**:
-   - Shows required environment variables
-   - Documents custom domain configuration
+3. **Updated `/app/src/lib/supabase/server.ts`**:
+   - Uses native integration (no JWT templates)
+   - Standard `getToken()` instead of deprecated template method
+   - Faster and more secure
 
 ## 🚀 What You Need to Do
 
-### Step 1: Verify Your Environment Variables
+### Step 1: Verify Environment Variables
 
 Check your `.env.local` file has these variables:
 
 ```bash
-# Required - Get from Clerk Dashboard
+# Required - Get from Clerk Dashboard → API Keys
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
+
+# Supabase (Get from Supabase Dashboard → Settings → API)
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
+SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 
 # Optional - Only if using custom domain
 # NEXT_PUBLIC_CLERK_FRONTEND_API=clerk.cedarelevator.com
 ```
 
-**Important**: If you're using a custom domain, make sure:
-- The custom domain is fully configured in Clerk Dashboard → Domains
-- DNS CNAME record points to Clerk's servers
-- SSL certificate is active
+**Common Mistakes:**
+- ❌ Copying "Secret Key" instead of "Publishable Key"
+- ❌ File named `.env.local.txt` instead of `.env.local`
+- ❌ File in wrong directory (must be in `/app/.env.local`)
+- ❌ Forgetting to restart server after changes
 
-### Step 2: Configure Custom Domain in Clerk (If Using)
+### Step 2: Configure Custom Domain (If Using)
 
-1. Go to **Clerk Dashboard** → Your Application
-2. Navigate to **Domains** in sidebar
-3. Click **Add domain**
-4. Enter: `clerk.cedarelevator.com`
-5. Follow Clerk's instructions to:
-   - Add DNS CNAME record
+**Option A: Use Custom Domain**
+
+If you want `clerk.cedarelevator.com`:
+
+1. Go to **Clerk Dashboard** → **Domains**
+2. Click **"Add domain"**
+3. Enter: `clerk.cedarelevator.com`
+4. Follow instructions:
+   - Add DNS CNAME record: `clerk.cedarelevator.com` → `clerk.prod.accounts.dev`
+   - Wait for SSL certificate (can take up to 24 hours)
    - Verify domain ownership
-   - Wait for SSL certificate provisioning (can take up to 24 hours)
-
-6. Once verified, add to `.env.local`:
+5. Once verified, add to `.env.local`:
    ```bash
    NEXT_PUBLIC_CLERK_FRONTEND_API=clerk.cedarelevator.com
    ```
 
-### Step 3: Restart Development Server
+**Option B: Use Default Domain (Recommended for Development)**
 
-After updating environment variables:
+Just use Clerk's default domain - no extra setup needed!
+
+1. **Don't** add `NEXT_PUBLIC_CLERK_FRONTEND_API` to `.env.local`
+2. Clerk will automatically use: `[your-app].clerk.accounts.dev`
+3. Works immediately, no DNS wait time
+
+### Step 3: Set Up Native Supabase Integration (No JWT Templates!)
+
+**This is the NEW way - official and supported:**
+
+#### 3.1 Configure Session Tokens in Clerk
+
+1. Go to **Clerk Dashboard** → **Customize Session Token**
+2. Add custom claims:
+
+```json
+[
+  {
+    "app_metadata": {
+      "provider": "clerk"
+    }
+  },
+  {
+    "aud": "authenticated"
+  },
+  {
+    "email": "{{user.primary_email_address}}"
+  },
+  {
+    "role": "authenticated"
+  },
+  {
+    "user_metadata": {
+      "account_type": "{{user.public_metadata.account_type}}",
+      "verification_status": "{{user.public_metadata.verification_status}}",
+      "business_name": "{{user.public_metadata.business_name}}"
+    }
+  }
+]
+```
+
+3. **Save**
+
+#### 3.2 Enable Native Integration
+
+1. Go to **Clerk Dashboard** → **Integrations**
+2. Search for **"Supabase"**
+3. Click **"Activate"**
+4. Note your Clerk domain
+
+#### 3.3 Configure Supabase
+
+1. Go to **Supabase Dashboard** → **Authentication** → **Providers** → **Third-Party**
+2. Click **"Add Integration"** → **"Clerk"**
+3. Enter Clerk domain: `https://clerk.cedarelevator.com`
+4. **Save**
+
+### Step 4: Restart Development Server
+
+**CRITICAL:** Next.js only reads `.env.local` on startup!
 
 ```bash
-# Stop the current server (Ctrl+C)
-# Then restart
+# Stop the server (Ctrl+C)
+
+# Restart
 pnpm dev
 ```
 
-**Important**: Next.js only reads `.env.local` on server start, so you MUST restart after changes.
+### Step 5: Clear Browser Cache
 
-### Step 4: Clear Browser Cache
-
-The old Clerk script might be cached:
+Old Clerk scripts might be cached:
 
 1. Open DevTools (F12)
-2. Go to **Application** tab (Chrome) or **Storage** tab (Firefox)
-3. Click **Clear storage** or **Clear site data**
-4. Refresh the page (Cmd/Ctrl + Shift + R for hard refresh)
+2. Go to **Application** tab → **Storage**
+3. Click **"Clear site data"**
+4. Hard refresh: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
 
 ## 🔍 Verify the Fix
 
-### Test 1: Check Clerk Loads Successfully
+### Test 1: Check Clerk Loads
 
-1. Open your app in browser
-2. Open DevTools Console (F12 → Console tab)
-3. You should see Clerk loading without errors
+1. Open app in browser
+2. Open DevTools Console (F12)
+3. Should see NO Clerk loading errors
 4. Check Network tab - look for successful Clerk script loads
 
-### Test 2: Test Authentication
+### Test 2: Sign In Flow
 
-1. Click "Sign In" button
-2. Clerk sign-in modal should open smoothly
-3. Sign in with test credentials
-4. Should redirect to dashboard without errors
+1. Click "Sign In"
+2. Clerk modal should open smoothly
+3. Sign in with test account
+4. Should redirect without errors
 
-### Test 3: Check Middleware Protection
+### Test 3: Token Validation
 
-1. While logged out, try to access: `http://localhost:3000/checkout`
-2. Should redirect to sign-in page
-3. Sign in, then access `/checkout` again
-4. Should now allow access
+After signing in, run in Supabase SQL Editor:
+
+```sql
+-- Should show your Clerk user ID
+SELECT auth.jwt() ->> 'sub' as user_id;
+
+-- Should show custom metadata
+SELECT auth.jwt() -> 'user_metadata' as metadata;
+```
 
 ## 🐛 Still Having Issues?
 
-### Issue: Still seeing loading errors
+### Issue: Clerk still not loading
 
 **Try these in order:**
 
-1. **Double-check environment variables**:
+1. **Verify publishable key:**
    ```bash
-   # In terminal, check if variables are set
+   # In terminal
    node -e "console.log(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)"
    ```
-   - If it returns `undefined`, your `.env.local` is not loaded
-   - Make sure file is named exactly `.env.local` (not `.env.local.txt`)
-   - Make sure it's in the root directory `/app/.env.local`
+   - Should output your key (starting with `pk_test_` or `pk_live_`)
+   - If `undefined`, check `.env.local` exists and is in the right location
 
-2. **Remove custom domain temporarily**:
-   - Comment out or remove `NEXT_PUBLIC_CLERK_FRONTEND_API` from `.env.local`
+2. **Check Clerk Dashboard status:**
+   - Go to Clerk Dashboard → Status page
+   - Verify no ongoing incidents
+
+3. **Temporarily remove custom domain:**
+   - Comment out `NEXT_PUBLIC_CLERK_FRONTEND_API` in `.env.local`
    - Restart server
-   - This will use Clerk's default domain
+   - This uses Clerk's default domain
 
-3. **Check Clerk Dashboard status**:
-   - Go to Clerk Dashboard → Status
-   - Make sure there are no ongoing incidents
-   - Check your app's status
-
-4. **Verify publishable key**:
-   - Go to Clerk Dashboard → API Keys
-   - Copy the **Publishable Key** (starts with `pk_test_` or `pk_live_`)
-   - Make sure it matches exactly in `.env.local`
-   - **Common mistake**: Copying "Secret Key" instead of "Publishable Key"
-
-### Issue: Middleware not protecting routes
-
-**Check these:**
-
-1. Make sure `/app/middleware.ts` exists (I created it)
-2. Restart dev server
-3. Clear Next.js cache:
+4. **Clear everything:**
    ```bash
-   rm -rf .next
+   rm -rf .next node_modules
+   pnpm install
    pnpm dev
    ```
 
-### Issue: "Clerk is not defined" error
+### Issue: "Invalid JWT" in Supabase
 
-**Solution:**
-1. The `dynamic={true}` prop should fix this
-2. If not, try updating Clerk packages:
-   ```bash
-   pnpm update @clerk/nextjs
-   ```
+**Cause:** Native integration not configured
+
+**Fix:**
+1. Verify Session Token customization in Clerk
+2. Check Third-Party integration in Supabase
+3. Ensure Clerk domain matches exactly
+4. Wait 5-10 minutes for propagation
+5. Sign out and sign back in
+
+### Issue: RLS policies not working
+
+**Cause:** JWT structure changed with native integration
+
+**Fix:**
+1. Run updated migration: `/app/supabase/migrations/003_create_rbac_system.sql`
+2. This updates helper functions to use `auth.jwt()`
+3. Test: `SELECT get_current_user_id();` should return your user ID
 
 ## 📋 Custom Domain Setup Checklist
 
-If you want to use `clerk.cedarelevator.com`:
+If using `clerk.cedarelevator.com`:
 
 - [ ] Domain added in Clerk Dashboard
-- [ ] DNS CNAME record created: `clerk.cedarelevator.com` → `clerk.prod.accounts.dev`
-- [ ] DNS propagated (check with `nslookup clerk.cedarelevator.com`)
-- [ ] SSL certificate active in Clerk Dashboard
+- [ ] DNS CNAME record created
+- [ ] DNS propagated (test: `nslookup clerk.cedarelevator.com`)
+- [ ] SSL certificate active (shows green lock in Clerk Dashboard)
 - [ ] Environment variable `NEXT_PUBLIC_CLERK_FRONTEND_API` set
 - [ ] Dev server restarted
 - [ ] Browser cache cleared
-- [ ] Test authentication flow works
+- [ ] Sign-in flow tested
 
-## 🎯 Recommended Approach for Development
+## 🎯 Recommended for Development
 
-For development and testing, I recommend **NOT using custom domain**:
+**Don't use custom domain for local development:**
 
-1. Use Clerk's default domain (automatic with the fix I applied)
+1. Use Clerk's default domain (automatic)
 2. Only set these in `.env.local`:
    ```bash
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
    CLERK_SECRET_KEY=sk_test_...
    ```
-3. Configure custom domain only for production deployment
+3. Add custom domain only in production
 
-## ✅ Summary of Changes Made
+**Why?**
+- Faster setup (no DNS wait)
+- Easier debugging
+- No SSL certificate issues
+- Works immediately
 
-1. ✅ Fixed `layout.tsx` - Added `dynamic={true}` and explicit `publishableKey`
-2. ✅ Created `middleware.ts` - Route protection with Clerk
-3. ✅ Created `.env.example` - Documentation for env variables
-4. ✅ Created comprehensive RBAC setup guide
-5. ✅ Created this quick fix guide
+## ✅ Summary of Fixes Applied
+
+1. ✅ **layout.tsx** - Added `dynamic={true}` and explicit `publishableKey`
+2. ✅ **middleware.ts** - Route protection for `/checkout`
+3. ✅ **supabase/server.ts** - Uses native integration (no JWT templates)
+4. ✅ **Migration SQL** - Updated RLS helper functions for native integration
+5. ✅ **Documentation** - Complete native integration setup guide
 
 ## 🆘 Emergency Fallback
 
-If nothing works, try this minimal configuration:
+If nothing works:
 
-1. Create a fresh `.env.local`:
+1. Create minimal `.env.local`:
    ```bash
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
    CLERK_SECRET_KEY=sk_test_your_secret_here
    ```
 
-2. Temporarily disable custom domain in Clerk Dashboard
+2. Disable custom domain in Clerk Dashboard
 
-3. Restart everything:
+3. Nuclear reset:
    ```bash
    rm -rf .next node_modules pnpm-lock.yaml
    pnpm install
    pnpm dev
    ```
 
-4. Test basic sign-in flow
+4. Test basic sign-in
 
-5. Once working, gradually add back other configurations
+5. Once working, gradually add back other features
 
 ## 📞 Next Steps
 
-1. Follow the steps above to verify the fix
-2. Once Clerk loads successfully, proceed with JWT template setup (see RBAC-SETUP-GUIDE.md)
-3. Run database migrations
-4. Test the complete RBAC system
+1. ✅ Follow steps above to fix Clerk loading
+2. ✅ Configure native Supabase integration
+3. ✅ Run database migration
+4. ✅ Test RBAC system
+
+## 📚 Documentation
+
+- **Native Integration Setup**: `/app/docs/RBAC-SETUP-GUIDE-NATIVE.md`
+- **Migration from JWT Templates**: `/app/docs/MIGRATION-JWT-TO-NATIVE.md`
+- **See also**: Clerk docs on native integrations
 
 ---
 
-**Note**: The code fixes are already applied. You just need to verify your environment variables and optionally configure the custom domain in Clerk Dashboard.
+**Note:** All code fixes are applied. You just need to verify environment variables and configure the native integration. The new method is simpler, faster, and officially supported! 🚀
