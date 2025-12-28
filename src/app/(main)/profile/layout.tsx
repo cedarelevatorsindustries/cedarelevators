@@ -91,11 +91,9 @@ export default function ProfileLayout({
   // Handle Guest Mobile View
   if (!user) {
     if (isMobile) {
-      // Add padding top to account for fixed header if needed, usually managed by main layout
-      // But adding PT ensures content isn't hidden behind header
       return (
         <div className="min-h-screen bg-white pt-16 lg:pt-0">
-          <GuestProfileMobile />
+          <ProfileMobileNew />
         </div>
       )
     }
@@ -123,16 +121,7 @@ export default function ProfileLayout({
   if (isMobile) {
     return (
       <div className="min-h-screen bg-white pt-16 lg:pt-0">
-        <LoggedInProfileMobile 
-          user={userProfile}
-          accountType={accountType}
-          verificationStatus={userProfile.verification_status}
-          stats={{
-            totalOrders: 0,
-            totalSpent: 0,
-            savedItems: 0,
-          }}
-        />
+        <ProfileMobileNew />
       </div>
     )
   }
