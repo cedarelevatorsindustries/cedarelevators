@@ -1,11 +1,11 @@
-import DashboardSectionWrapper from '@/modules/profile/components/sections/dashboard-section-wrapper'
+import AccountOverviewWrapper from '@/modules/profile/components/sections/account-overview-wrapper'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard | Cedar B2B Storefront',
-  description: 'Your profile dashboard overview',
+  title: 'Account Overview | Cedar Elevators',
+  description: 'Manage your account information and settings',
 }
 
 export default function ProfilePage() {
-  return <DashboardSectionWrapper />
+  return <AccountOverviewWrapper />
 }
