@@ -193,6 +193,10 @@ export default function CatalogTemplate({
 
   const getGridColumns = () => {
     if (viewMode === "list") return "grid-cols-1"
+    // 4 columns when filters are shown, 5 columns when filters are hidden
+    if (config.showFilters) {
+      return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+    }
     return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
   }
 
@@ -200,7 +204,7 @@ export default function CatalogTemplate({
     <div className="min-h-screen bg-gray-50">
 
       {/* Application Banner - Full Width */}
-      {applicationData && (
+      {config.showBanner && applicationData && (
         <CatalogBanner
           title={applicationData.config.name}
           subtitle={applicationData.config.subtitle}
@@ -208,11 +212,12 @@ export default function CatalogTemplate({
           categories={applicationData.categories}
           type="application"
           slug={applicationData.config.slug}
+          variant={config.bannerVariant || "full"}
         />
       )}
 
       {/* Category Banner - Full Width */}
-      {!applicationData && currentCategory && (
+      {config.showBanner && !applicationData && currentCategory && (
         <CatalogBanner
           title={currentCategory.name || ""}
           subtitle={currentCategory.description || undefined}
@@ -220,14 +225,25 @@ export default function CatalogTemplate({
           categories={currentCategory.category_children || []}
           type="category"
           slug={currentCategory.handle || currentCategory.id}
+          variant={config.bannerVariant || "full"}
+        />
+      )}
+
+      {/* Browse All Banner - Full Width (Only for browse-all type) */}
+      {config.showBanner && !applicationData && !currentCategory && catalogType === "browse-all" && (
+        <CatalogBanner
+          title="Premium Elevator Components"
+          subtitle="ISO Certified Quality | Pan-India Delivery"
+          backgroundImage="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop"
+          categories={categories.slice(0, 10)}
+          type="category"
+          slug="all"
+          variant={config.bannerVariant || "simple"}
         />
       )}
 
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-8 py-8">
-        {/* Banner Carousel - Only for browse-all */}
-        {!applicationData && !currentCategory && config.showBanner && <BannerCarousel />}
-
         {/* Search Keywords */}
         {catalogType === "search" && relatedKeywords.length > 0 && (
           <div className="mb-6">
@@ -246,101 +262,17 @@ export default function CatalogTemplate({
           </div>
         )}
 
-        {/* Conditional Layout - Centered for application/category, Two-column for browse-all */}
-        {applicationData || currentCategory ? (
-          /* Centered Single Column Layout for Application/Category */
-          <div className="max-w-5xl mx-auto">
-            {/* Results Header */}
-            <div className="hidden md:block">
-              <ResultsHeader
-                totalProducts={allDisplayProducts.length}
-                currentView={viewMode}
-                onViewChange={setViewMode}
-                onSortChange={(sort) => setSortBy(sort as SortOption)}
-                currentPage={currentPage}
-              />
-            </div>
-
-            {/* Primary Section Header */}
-            {showPrimarySection && (
-              <div className="mt-6 mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">{config.title}</h2>
-                <p className="text-gray-600 text-sm mt-1">{primaryCount} products</p>
-              </div>
-            )}
-
-            {/* Product Grid */}
-            {paginatedProducts.length > 0 ? (
-              <>
-                <div className={`mt-6 grid ${getGridColumns()}`}>
-                  {paginatedProducts.map((product) => {
-                    const tag = getProductTag(product, catalogType)
-                    return (
-                      <div key={product.id} className="relative">
-                        <ProductCard
-                          product={product}
-                          variant="default"
-                          badge={getProductBadge(product)}
-                        />
-                        {tag && (
-                          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
-                            {tag}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="text-center py-20">
-                <div className="text-gray-400 text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                <p className="text-gray-600 mb-6">
-                  Try adjusting your search or filter criteria
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveFilters({})
-                    setSearchQuery("")
-                  }}
-                  className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Two Column Layout for Browse All */
+        {/* Conditional Layout Based on showFilters */}
+        {config.showFilters ? (
+          /* Two-Column Layout with Filters */
           <div className="flex gap-8">
-            {/* Left Sidebar - Filters */}
+            {/* Filter Sidebar */}
             <FilterSidebar
               onFilterChange={handleFilterChange}
             />
 
-            {/* Right Column - Products */}
+            {/* Products Column */}
             <div className="flex-1">
-              {/* Results Header */}
-              <div className="hidden md:block">
-                <ResultsHeader
-                  totalProducts={allDisplayProducts.length}
-                  currentView={viewMode}
-                  onViewChange={setViewMode}
-                  onSortChange={(sort) => setSortBy(sort as SortOption)}
-                  currentPage={currentPage}
-                />
-              </div>
-
               {/* Primary Section Header */}
               {showPrimarySection && (
                 <div className="mt-6 mb-4">
@@ -408,6 +340,69 @@ export default function CatalogTemplate({
                 </div>
               )}
             </div>
+          </div>
+        ) : (
+          /* Full Width Layout without Filters */
+          <div className="w-full">
+
+            {/* Primary Section Header */}
+            {showPrimarySection && (
+              <div className="mt-6 mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">{config.title}</h2>
+                <p className="text-gray-600 text-sm mt-1">{primaryCount} products</p>
+              </div>
+            )}
+
+            {/* Product Grid */}
+            {paginatedProducts.length > 0 ? (
+              <>
+                <div className={`mt-6 grid ${getGridColumns()}`}>
+                  {paginatedProducts.map((product) => {
+                    const tag = getProductTag(product, catalogType)
+                    return (
+                      <div key={product.id} className="relative">
+                        <ProductCard
+                          product={product}
+                          variant="default"
+                          badge={getProductBadge(product)}
+                        />
+                        {tag && (
+                          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                            {tag}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="text-center py-20">
+                <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                <p className="text-gray-600 mb-6">
+                  Try adjusting your search or filter criteria
+                </p>
+                <button
+                  onClick={() => {
+                    setActiveFilters({})
+                    setSearchQuery("")
+                  }}
+                  className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

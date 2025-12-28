@@ -22,7 +22,7 @@ const FeaturedProductsSection = ({ products }: FeaturedProductsSectionProps) => 
           Top Selling Components
         </h2>
         <LocalizedClientLink
-          href="/catalog?sort=best-selling&from=top-selling"
+          href="/catalog?type=top-choice&sort=best-selling"
           className="text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
           View All →

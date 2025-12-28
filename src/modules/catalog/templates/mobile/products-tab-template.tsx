@@ -121,22 +121,7 @@ export default function ProductsTabTemplate({ products }: ProductsTabProps) {
           <h2 className="text-base font-bold text-gray-900 mb-3">All Products</h2>
 
           {/* Filter Bar */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowFilters(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-            >
-              <SlidersHorizontal size={16} />
-              Filter
-            </button>
-            <button
-              onClick={() => setShowSort(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
-            >
-              <ArrowUpDown size={16} />
-              Sort
-            </button>
-          </div>
+
         </div>
 
         <div className="grid grid-cols-2 gap-3 px-4 py-4">

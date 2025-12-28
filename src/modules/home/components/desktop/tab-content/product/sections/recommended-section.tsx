@@ -16,7 +16,7 @@ export default function RecommendedSection({ products }: RecommendedSectionProps
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-gray-900">Recommended for You</h2>
         <LocalizedClientLink
-          href="/catalog?recommended=true&from=recommended"
+          href="/catalog?type=recommended"
           className="text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
           View All →

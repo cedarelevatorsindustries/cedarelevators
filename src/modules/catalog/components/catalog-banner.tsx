@@ -12,6 +12,7 @@ interface CatalogBannerProps {
     categories?: ProductCategory[]
     type: "application" | "category"
     slug?: string
+    variant?: "full" | "simple"
 }
 
 // Stock images for categories
@@ -31,13 +32,32 @@ const getCategoryImage = (categoryName: string) => {
     return images[categoryName] || "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=100&h=100&fit=crop"
 }
 
+// Stock banner images for different types
+const getBannerImage = (type: "application" | "category", name: string) => {
+    const bannerImages: Record<string, string> = {
+        // Application banners
+        "Commercial Elevators": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop",
+        "Home Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&h=360&fit=crop",
+        "Hospital Lifts": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1400&h=360&fit=crop",
+        "Goods Lifts": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&h=360&fit=crop",
+        "Hydraulic Lifts": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1400&h=360&fit=crop",
+        "Dumbwaiters": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=360&fit=crop",
+        "Parking Lifts": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1400&h=360&fit=crop",
+        "Escalators": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1400&h=360&fit=crop",
+        "Safety Elevators": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=360&fit=crop",
+        "Luxury Elevators": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1400&h=360&fit=crop",
+    }
+    return bannerImages[name] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop"
+}
+
 export function CatalogBanner({
     title,
     subtitle,
     backgroundImage,
     categories = [],
     type,
-    slug
+    slug,
+    variant = "full"
 }: CatalogBannerProps) {
     const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -51,20 +71,49 @@ export function CatalogBanner({
         }
     }
 
+    // Simple variant - compact rounded banner without category bar
+    if (variant === "simple") {
+        return (
+            <div className="w-full mt-[70px]">
+                <div
+                    className="relative h-[240px] rounded-2xl mx-8 overflow-hidden"
+                    style={{
+                        backgroundImage: `url(${backgroundImage || getBannerImage(type, title)})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                    }}
+                >
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-black/40" />
+
+                    {/* Content - Centered */}
+                    <div className="relative h-full flex flex-col items-center justify-center text-center px-8">
+                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                            {title}
+                        </h1>
+                        {subtitle && (
+                            <p className="text-white/90 text-sm md:text-base max-w-2xl">
+                                {subtitle}
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <div className="h-8" />
+            </div>
+        )
+    }
+
+    // Full variant - with horizontal category bar
     return (
-        <div className="w-full">
+        <div className="w-full mt-[70px]">
             {/* Banner Section */}
             <div
                 className="relative h-[320px] md:h-[360px] bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 overflow-visible"
-                style={
-                    backgroundImage
-                        ? {
-                            backgroundImage: `url(${backgroundImage})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                        }
-                        : undefined
-                }
+                style={{
+                    backgroundImage: `url(${backgroundImage || getBannerImage(type, title)})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                }}
             >
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/40" />

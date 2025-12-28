@@ -22,7 +22,7 @@ export default function FeaturedProductsSection({ products }: FeaturedProductsSe
           Featured Products
         </h3>
         <LocalizedClientLink
-          href="/catalog?sort=best-selling&from=featured"
+          href="/catalog?type=top-choice&sort=best-selling"
           className="text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
           View All →

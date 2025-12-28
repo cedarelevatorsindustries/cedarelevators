@@ -93,15 +93,15 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
 
   // 2. Category Hero - Alibaba-style with mini category banner
   'category-hero': {
-    position: 'absolute',
-    transparent: true,
-    scrollBehavior: 'hero-fade',
+    position: 'fixed',
+    transparent: false,
+    scrollBehavior: 'sticky',
     showMegaMenu: false,
     showBrowseProducts: true,
-    showBreadcrumb: true,
-    showSecondaryFilterBar: true,
+    showBreadcrumb: false,
+    showSecondaryFilterBar: false,
     showStickyProductBar: false,
-    showCategoryHero: true,
+    showCategoryHero: false,
     searchVariant: 'full',
     scrollThreshold: 150,
     height: {
@@ -159,7 +159,7 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
     showMegaMenu: false,
     showBrowseProducts: true,
     showBreadcrumb: false,
-    showSecondaryFilterBar: true,
+    showSecondaryFilterBar: false,
     showStickyProductBar: false,
     showCategoryHero: false,
     searchVariant: 'full',

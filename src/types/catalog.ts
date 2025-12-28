@@ -1,5 +1,5 @@
 // Catalog type definitions
-export type CatalogType = 
+export type CatalogType =
   | "browse-all"
   | "search"
   | "category"
@@ -18,8 +18,10 @@ export interface CatalogConfig {
   type: CatalogType
   title: string
   showBanner: boolean
+  bannerVariant?: "full" | "simple"
   showHeroLite: boolean
   heroLiteType?: "category" | "application"
+  showFilters: boolean
   filterPrimaryProducts: boolean
   fallbackToAll: boolean
 }
@@ -67,7 +69,9 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     type: "browse-all",
     title: "All Products",
     showBanner: true,
+    bannerVariant: "simple",
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
   },
@@ -76,24 +80,27 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Search Results",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
   },
   "category": {
     type: "category",
     title: "Category",
-    showBanner: false,
-    showHeroLite: true,
-    heroLiteType: "category",
+    showBanner: true,
+    bannerVariant: "full",
+    showHeroLite: false,
+    showFilters: false,
     filterPrimaryProducts: false,
     fallbackToAll: false,
   },
   "application": {
     type: "application",
     title: "Application",
-    showBanner: false,
-    showHeroLite: true,
-    heroLiteType: "application",
+    showBanner: true,
+    bannerVariant: "full",
+    showHeroLite: false,
+    showFilters: false,
     filterPrimaryProducts: false,
     fallbackToAll: false,
   },
@@ -102,6 +109,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Recently Viewed",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -110,6 +118,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Recommended For You",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -118,6 +127,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Top Choice This Month",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -126,6 +136,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "New Arrivals",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -134,6 +145,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Trending Collections",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -142,6 +154,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Top Applications",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
@@ -150,6 +163,7 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     title: "Exclusive to Business",
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: true,
     fallbackToAll: true,
   },
