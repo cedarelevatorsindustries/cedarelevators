@@ -5,6 +5,7 @@ import { auth } from '@clerk/nextjs/server'
 import { getCart, clearCart } from './cart'
 import { validateCartInventory, getCartSummary } from './cart-extended'
 import { sendOrderConfirmation } from '@/lib/services/email'
+import { sendOrderNotification } from './notifications'
 import type { OrderWithDetails } from '@/lib/types/orders'
 
 interface ShippingAddress {
