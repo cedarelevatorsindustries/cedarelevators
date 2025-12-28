@@ -46,7 +46,6 @@ export function StoreSettingsForm() {
         setFormData({
           store_name: result.data.store_name,
           legal_name: result.data.legal_name || "",
-          description: result.data.description || "",
           support_email: result.data.support_email || "",
           support_phone: result.data.support_phone || "",
           gst_number: result.data.gst_number || "",
