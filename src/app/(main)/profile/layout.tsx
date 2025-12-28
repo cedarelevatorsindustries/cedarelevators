@@ -5,8 +5,7 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import ProfileTopbar from '@/modules/profile/components/profile-topbar'
 import ProfileSidebarWrapper from '@/modules/profile/components/profile-sidebar-wrapper'
-import GuestProfileMobile from '@/modules/profile/components/guest-profile-mobile'
-import LoggedInProfileMobile from '@/modules/profile/components/logged-in-profile-mobile'
+import ProfileMobileNew from '@/modules/profile/templates/profile-mobile-new'
 
 type AccountType = 'individual' | 'business'
 
