@@ -14,23 +14,34 @@ interface MobileBottomNavigationProps {
 export default function MobileBottomNavigation({ className = "", customConfig }: MobileBottomNavigationProps) {
   const pathname = usePathname()
   const [quoteLabel, setQuoteLabel] = useState("Quote")
+  const [showVerifiedBadge, setShowVerifiedBadge] = useState(false)
   
   // Get variant-based configuration
   const variant = getNavbarVariant(pathname)
   const config = mergeNavbarConfig(variant, customConfig)
   
-  // Fetch user type and update quote label
+  // Fetch user type and verification status
   useEffect(() => {
-    async function fetchUserType() {
+    async function fetchUserStatus() {
       try {
         const response = await fetch('/api/auth/user-type')
         const data = await response.json()
-        setQuoteLabel(getQuoteTabLabel(data.userType || 'guest'))
+        
+        const userType = data.userType || 'guest'
+        setQuoteLabel(getQuoteTabLabel(userType))
+        
+        // Show green badge only for verified business users
+        if (userType === 'business' && data.isVerified === true) {
+          setShowVerifiedBadge(true)
+        } else {
+          setShowVerifiedBadge(false)
+        }
       } catch (error) {
         setQuoteLabel(getQuoteTabLabel('guest'))
+        setShowVerifiedBadge(false)
       }
     }
-    fetchUserType()
+    fetchUserStatus()
   }, [])
   
   // Hide bottom nav if config says so (e.g., checkout page)
@@ -51,8 +62,9 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
             key={item.href}
             href={item.href}
             icon={item.icon}
-            label={item.href === "/request-quote" ? quoteLabel : item.label}
+            label={item.href === "/quotes" ? quoteLabel : item.label}
             isActive={isActive(item.href)}
+            showBadge={item.href === "/quotes" && showVerifiedBadge}
           />
         ))}
       </div>
