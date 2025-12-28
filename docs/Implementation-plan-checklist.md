@@ -307,7 +307,7 @@ CREATE TABLE business_documents (
 - [ ] Email service setup (Resend)
 - [ ] Transactional email templates
 - [ ] Order confirmation emails
-- [ ] Quote status emails
+- [ ] ~~Quote status emails~~ ⏸️ **ON HOLD**
 - [ ] Verification emails
 - [ ] Password reset emails
 - [ ] Welcome emails
