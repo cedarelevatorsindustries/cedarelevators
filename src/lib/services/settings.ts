@@ -1,11 +1,22 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
-import { StoreSettings, UpdateStoreSettingsData } from '@/lib/types/settings'
+import { 
+    StoreSettings, 
+    UpdateStoreSettingsData,
+    PaymentSettings,
+    UpdatePaymentSettingsData,
+    TaxSettings,
+    UpdateTaxSettingsData,
+    ShippingSettings,
+    UpdateShippingSettingsData,
+    SystemSettings,
+    UpdateSystemSettingsData
+} from '@/lib/types/settings'
 
 /**
  * Settings Service - Server Actions
- * Individual async functions for managing store settings
+ * Individual async functions for managing all admin settings modules
  */
 
 /**
