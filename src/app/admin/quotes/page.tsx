@@ -257,9 +257,8 @@ export default function AdminQuotesPage() {
                         >
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
-                            <option value="in_review">In Review</option>
-                            <option value="negotiation">Negotiation</option>
-                            <option value="accepted">Accepted</option>
+                            <option value="reviewing">Reviewing</option>
+                            <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                             <option value="converted">Converted</option>
                         </select>
