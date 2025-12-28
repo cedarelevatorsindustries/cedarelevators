@@ -337,8 +337,8 @@ RESEND_API_KEY=re_xxxxxxxxxxxxx
 1. Welcome email
 2. Order confirmation
 3. Order shipped
-4. Quote submitted
-5. Quote approved/rejected
+4. ~~Quote submitted~~ ⏸️ **DEFERRED**
+5. ~~Quote approved/rejected~~ ⏸️ **DEFERRED**
 6. Business verification status
 7. Password reset
 
