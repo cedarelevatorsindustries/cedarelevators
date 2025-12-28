@@ -192,6 +192,10 @@ export interface Quote {
   responded_by?: string
   valid_until: string
   converted_order_id?: string
+  converted_at?: string
+  approved_by?: string
+  approved_at?: string
+  rejected_reason?: string
   created_at: string
   updated_at: string
   // Relations
