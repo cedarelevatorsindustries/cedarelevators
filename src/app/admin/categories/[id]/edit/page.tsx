@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,6 +11,10 @@ import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCategory, useUpdateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
+import { useProducts } from "@/hooks/queries/useProducts"
+import { updateProduct } from "@/lib/actions/products"
+import { ProductSelector } from "@/components/admin/ProductSelector"
+import { toast } from "sonner"
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -21,6 +25,15 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
   const category = categoryData?.category
   const existingCategories = categoriesData?.categories?.filter((c: any) => c.id !== params.id) || []
+
+  // Get all products
+  const { data: productsData } = useProducts({}, 1, 1000)
+  const allProducts = productsData?.products || []
+
+  // Get products currently in this category
+  const categoryProducts = useMemo(() => {
+    return allProducts.filter(p => p.category === params.id)
+  }, [allProducts, params.id])
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,6 +50,10 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     meta_title: "",
     meta_description: ""
   })
+
+  // Product selection state
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
+  const [originalProductIds, setOriginalProductIds] = useState<string[]>([])
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
@@ -64,6 +81,14 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       }
     }
   }, [category])
+
+  useEffect(() => {
+    if (categoryProducts.length > 0) {
+      const productIds = categoryProducts.map(p => p.id)
+      setSelectedProductIds(productIds)
+      setOriginalProductIds(productIds)
+    }
+  }, [categoryProducts])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -99,10 +124,43 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       })
 
       if (result.success) {
+        // Update product assignments
+        const addedProducts = selectedProductIds.filter(id => !originalProductIds.includes(id))
+        const removedProducts = originalProductIds.filter(id => !selectedProductIds.includes(id))
+
+        if (addedProducts.length > 0 || removedProducts.length > 0) {
+          toast.loading('Updating product assignments...')
+
+          const updatePromises = [
+            ...addedProducts.map(productId =>
+              updateProduct(productId, { category: params.id })
+            ),
+            ...removedProducts.map(productId =>
+              updateProduct(productId, { category: undefined })
+            )
+          ]
+
+          await Promise.all(updatePromises)
+          toast.dismiss()
+          
+          if (addedProducts.length > 0 && removedProducts.length > 0) {
+            toast.success(`Category updated! ${addedProducts.length} products added, ${removedProducts.length} removed`)
+          } else if (addedProducts.length > 0) {
+            toast.success(`Category updated! ${addedProducts.length} products assigned`)
+          } else if (removedProducts.length > 0) {
+            toast.success(`Category updated! ${removedProducts.length} products unassigned`)
+          } else {
+            toast.success('Category updated successfully!')
+          }
+        } else {
+          toast.success('Category updated successfully!')
+        }
+
         router.push('/admin/categories')
       }
     } catch (error) {
       console.error('Error updating category:', error)
+      toast.error('Failed to update category')
       setIsUploading(false)
     }
   }
@@ -126,7 +184,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
               Edit Category
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              Update category information
+              Update category information and product assignments
             </p>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
@@ -189,6 +247,38 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Assignment Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Assignment</CardTitle>
+                <CardDescription>
+                  Manage which products belong to this category
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Label>Assigned Products</Label>
+                  <ProductSelector
+                    products={allProducts}
+                    selectedProductIds={selectedProductIds}
+                    onSelectionChange={setSelectedProductIds}
+                    placeholder="Select products to assign to this category..."
+                    multiple={true}
+                  />
+                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
+                    <span>
+                      {selectedProductIds.length} product{selectedProductIds.length !== 1 ? 's' : ''} assigned
+                    </span>
+                    {(selectedProductIds.length !== originalProductIds.length) && (
+                      <span className="text-orange-600 font-medium">
+                        Changes will be saved
+                      </span>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
