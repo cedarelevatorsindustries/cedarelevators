@@ -403,7 +403,7 @@ export default function AdminQuotesPage() {
                                                             variant="ghost"
                                                             size="sm"
                                                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                            onClick={() => handleQuickStatusUpdate(quote.id, 'in_review')}
+                                                            onClick={() => handleQuickStatusUpdate(quote.id, 'reviewing')}
                                                         >
                                                             Start Review
                                                         </Button>
