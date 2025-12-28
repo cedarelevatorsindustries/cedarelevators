@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, Clock, Package, CreditCard } from "lucide-react"
+import { AlertCircle, Clock, CheckCircle } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface Alert {
@@ -17,7 +17,9 @@ interface Alert {
   bgColor: string
 }
 
-export default function SmartAlerts() {
+export default function ActionAlerts() {
+  // TODO: Fetch real alerts from backend
+  // Only show actionable alerts (max 3)
   const alerts: Alert[] = [
     {
       id: "1",
@@ -26,7 +28,7 @@ export default function SmartAlerts() {
       title: "Quote Expiring Soon",
       message: "Quote #Q-2345 expires in 2 days. Convert to order now.",
       action: {
-        label: "Convert Now",
+        label: "View Quote",
         href: "/profile/quotes/Q-2345"
       },
       color: "text-red-600",
@@ -36,11 +38,11 @@ export default function SmartAlerts() {
       id: "2",
       type: "warning",
       icon: AlertCircle,
-      title: "Pending Approval",
-      message: "2 quotes are awaiting approval from CEDAR team.",
+      title: "Verification Pending",
+      message: "Your business verification is under review. We'll notify you once approved.",
       action: {
-        label: "View Quotes",
-        href: "/profile/quotes?status=pending"
+        label: "View Status",
+        href: "/profile/business"
       },
       color: "text-orange-600",
       bgColor: "bg-orange-50"
@@ -48,26 +50,29 @@ export default function SmartAlerts() {
     {
       id: "3",
       type: "info",
-      icon: Package,
-      title: "Low Stock Alert",
-      message: "3 items in your wishlist are running low on stock.",
+      icon: CheckCircle,
+      title: "Quote Approved",
+      message: "Quote #Q-2301 has been approved. Ready to convert to order.",
       action: {
-        label: "View Items",
-        href: "/profile/wishlists"
+        label: "Convert Now",
+        href: "/profile/quotes?status=accepted"
       },
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      color: "text-green-600",
+      bgColor: "bg-green-50"
     }
   ]
 
-  // Only show if there are alerts
-  if (alerts.length === 0) return null
+  // Limit to max 3 alerts and only show actionable ones
+  const actionableAlerts = alerts.slice(0, 3)
+
+  // Hide section if no alerts
+  if (actionableAlerts.length === 0) return null
 
   return (
     <section>
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Smart Alerts</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Action Needed</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {alerts.map((alert) => (
+        {actionableAlerts.map((alert) => (
           <div
             key={alert.id}
             className={`${alert.bgColor} border-2 ${alert.color.replace('text-', 'border-')} rounded-lg p-5`}
