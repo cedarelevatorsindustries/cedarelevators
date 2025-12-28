@@ -152,12 +152,9 @@ $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 -- ROW LEVEL SECURITY POLICIES
 -- =====================================================
 
--- Enable RLS
+-- Enable RLS on new tables only (orders, order_items, products already have RLS from migration 002)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE verification_documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist (for clean re-run)
 DROP POLICY IF EXISTS "Service role full access profiles" ON profiles;
