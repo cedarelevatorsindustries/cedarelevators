@@ -27,6 +27,8 @@ export default function RootLayout({
       }}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
+      dynamic={true}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <html lang="en">
         <body className={spaceGrotesk.variable}>
