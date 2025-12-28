@@ -47,7 +47,7 @@ export async function getOrder(orderId: string): Promise<{ success: boolean; ord
 }
 
 /**
- * Update order status
+ * Update order status with notifications
  */
 export async function updateOrderStatus(
     orderId: string,
@@ -55,6 +55,13 @@ export async function updateOrderStatus(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         const supabase = await createServerSupabase()
+
+        // Get order details first
+        const { data: order } = await supabase
+            .from('orders')
+            .select('clerk_user_id, order_number')
+            .eq('id', orderId)
+            .single()
 
         const { error } = await supabase
             .from('orders')
@@ -67,6 +74,21 @@ export async function updateOrderStatus(
         if (error) {
             console.error('Error updating order status:', error)
             return { success: false, error: error.message }
+        }
+
+        // Send notification if user is logged in
+        if (order?.clerk_user_id) {
+            try {
+                await sendOrderNotification(
+                    order.clerk_user_id,
+                    order.order_number,
+                    status,
+                    orderId
+                )
+            } catch (notifError) {
+                console.error('Error sending order notification:', notifError)
+                // Don't fail the status update if notification fails
+            }
         }
 
         return { success: true }
