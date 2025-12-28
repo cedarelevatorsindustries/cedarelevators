@@ -7,17 +7,23 @@ interface NavItemProps {
   icon: React.ComponentType<{ size?: number }>
   label: string
   isActive: boolean
+  showBadge?: boolean // Green dot indicator for verified business users
 }
 
-export function NavItem({ href, icon: Icon, label, isActive }: NavItemProps) {
+export function NavItem({ href, icon: Icon, label, isActive, showBadge = false }: NavItemProps) {
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center justify-center transition-colors ${
+      className={`flex flex-col items-center justify-center transition-colors relative ${
         isActive ? "text-[#ff3705]" : "text-gray-600"
       }`}
     >
-      <Icon size={20} />
+      <div className="relative">
+        <Icon size={20} />
+        {showBadge && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full border border-white" />
+        )}
+      </div>
       <span className={`text-xs mt-1 ${isActive ? "font-bold" : ""}`}>{label}</span>
     </Link>
   )
