@@ -33,9 +33,11 @@ export function PaymentSettingsForm() {
         setSettings(result.data)
         setFormData({
           razorpay_enabled: result.data.razorpay_enabled,
-          bank_transfer_enabled: (result.data as any).bank_transfer_enabled || false,
-          credit_terms_enabled: (result.data as any).credit_terms_enabled || false,
+          bank_transfer_enabled: result.data.bank_transfer_enabled,
+          credit_terms_enabled: result.data.credit_terms_enabled,
         })
+      } else {
+        toast.error(result.error || 'Failed to load payment settings')
       }
     } catch (error) {
       console.error('Error fetching payment settings:', error)
