@@ -2,10 +2,58 @@
 
 **Project**: Cedar Elevators B2B/B2C E-commerce Platform  
 **Tech Stack**: Next.js 16 + React 19 + TypeScript + Supabase + Clerk + Pusher  
-**Current Status**: ~70% Production Ready (Phase 1 Backend Complete)  
+**Current Status**: ~75% Production Ready (Phase 1 Backend Complete, Phase 2 In Progress)  
 **Last Updated**: January 2025
 
 > **📌 IMPORTANT NOTE**: Quote Management/System is being **KEPT ON HOLD** and will be handled later. All implementation priorities and tasks below exclude Quote Management features.
+
+---
+
+## 🔄 CURRENT PHASE - Phase 2: Product Selection Enhancement (January 2025)
+
+**Status**: 🔄 IN PROGRESS
+
+### New Feature: Product Selection in Admin Categories & Collections
+
+**Objective**: Enable admins to select products when creating/editing categories and collections, with warnings when no products exist.
+
+#### Tasks:
+- [ ] **1.1 Create Reusable Components**
+  - [ ] Create `ProductSelector.tsx` - Multi-select product picker with search
+  - [ ] Create `NoProductsWarning.tsx` - Warning component for empty product list
+  - [ ] Create `useProducts.tsx` hook for fetching products
+
+- [ ] **1.2 Update Category Management**
+  - [ ] Update `/admin/categories/create/page.tsx` - Add product selection
+  - [ ] Create `/admin/categories/[id]/edit/page.tsx` - Add product selection
+  - [ ] Update category actions to handle product associations
+  - [ ] Add "No products" warning display
+
+- [ ] **1.3 Create Collection Management Pages**
+  - [ ] Create `/admin/collections/create/page.tsx` - Full create flow
+  - [ ] Create `/admin/collections/[id]/edit/page.tsx` - Full edit flow
+  - [ ] Implement product multi-select with drag-to-reorder
+  - [ ] Update collection actions for product junction table
+  - [ ] Add "No products" warning display
+
+**Technical Implementation**:
+- Categories: Direct relationship via `products.category` field
+- Collections: Many-to-many via `product_collections` junction table
+- Product selection: Multi-select component with search and filtering
+- Validation: Check product count before showing category/collection forms
+
+**Files to Create**:
+- `/app/src/components/admin/ProductSelector.tsx`
+- `/app/src/components/admin/NoProductsWarning.tsx`
+- `/app/src/app/admin/collections/create/page.tsx`
+- `/app/src/app/admin/collections/[id]/edit/page.tsx`
+- `/app/src/hooks/queries/useProducts.tsx`
+
+**Files to Modify**:
+- `/app/src/app/admin/categories/create/page.tsx`
+- `/app/src/app/admin/categories/[id]/edit/page.tsx`
+- `/app/src/lib/actions/collections.ts`
+- `/app/src/lib/actions/categories.ts`
 
 ---
 
