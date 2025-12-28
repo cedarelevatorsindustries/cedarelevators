@@ -35,14 +35,14 @@ export default function PrimaryActionBar() {
           <LocalizedClientLink
             key={index}
             href={action.href}
-            className={`${action.color} text-white rounded-lg p-5 transition-all hover:shadow-lg group flex-1`}
+            className={`${action.color} text-white rounded-lg p-3 transition-all hover:shadow-lg group flex-1`}
           >
-            <div className="flex items-start gap-3">
-              <div className="bg-white/20 rounded-lg p-2.5 group-hover:bg-white/30 transition-colors">
-                <action.icon size={20} />
+            <div className="flex items-start gap-2">
+              <div className="bg-white/20 rounded-lg p-2 group-hover:bg-white/30 transition-colors">
+                <action.icon size={18} />
               </div>
               <div>
-                <h3 className="text-base font-bold mb-0.5">{action.title}</h3>
+                <h3 className="text-sm font-bold mb-0.5">{action.title}</h3>
                 <p className="text-xs text-white/90">{action.description}</p>
               </div>
             </div>
