@@ -155,35 +155,23 @@
 
 ## 📋 PHASE 5: BUSINESS UNVERIFIED MENU (15%)
 
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ COMPLETE
 
-### 5.1 Business Unverified Menu Structure ☐
+### 5.1 Business Unverified Menu Structure ✅
 
 **Total Items**: 10
 
-**Account Section** (3 items):
-- ☐ Business Info → navigates to `/profile/business-info`
-- ☐ Verification → navigates to `/profile/verification` (with "Pending" badge)
-- ☐ Addresses → navigates to `/profile/addresses`
+**Implementation**:
+- ✅ Account section: Business Info, Verification (with "Pending" badge), Addresses
+- ✅ Activity section: Quotes, Orders
+- ✅ Settings section: Notifications, Security
+- ✅ Support & Auth section: Help Center, Contact Support, Logout
+- ✅ Account card shows "Verification Pending" status
+- ✅ [Complete Verification] CTA button prominent
+- ✅ Company name displayed
+- ✅ Orange/warning badge on Verification menu item
 
-**Activity Section** (2 items):
-- ☐ Quotes → navigates to `/profile/quotes`
-- ☐ Orders → navigates to `/profile/orders` (read-only indication)
-
-**Settings Section** (2 items):
-- ☐ Notifications → navigates to `/profile/notifications`
-- ☐ Security → navigates to `/profile/security`
-
-**Support & Auth Section** (3 items):
-- ☐ Help Center
-- ☐ Contact Support
-- ☐ Logout
-
-**Special Features**:
-- ☐ Account card shows "Verification Pending" status
-- ☐ [Complete Verification] CTA button prominent
-- ☐ Company name displayed
-- ☐ Orange/warning badge on Verification menu item
+**File**: `/app/src/modules/profile/components/mobile/business-menu.tsx`
 
 ---
 
