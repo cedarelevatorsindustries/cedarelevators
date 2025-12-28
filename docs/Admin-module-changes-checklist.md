@@ -58,41 +58,41 @@
 - [x] Update stats cards (Total, Pending, Reviewing, Approved, Business)
 
 ### Quote Detail Page (`/admin/quotes/[id]/page.tsx`)
-- [ ] **A. Sticky Quote Header**
-  - [ ] Quote ID display
-  - [ ] Status dropdown (with workflow validation)
-  - [ ] Priority badge
-  - [ ] Primary CTA (changes by state)
-- [ ] **B. Customer Context Panel**
-  - [ ] Customer name and type
-  - [ ] Account type badge
-  - [ ] Business verified indicator
-  - [ ] Link to customer profile
-- [ ] **C. Quote Items Table**
-  - [ ] Product column
-  - [ ] Requested quantity
-  - [ ] Unit price (editable for Manager+)
-  - [ ] Discount % (editable for Manager+)
-  - [ ] Auto-calculated total
-  - [ ] Validation before approve
-- [ ] **D. Quote Summary Panel**
-  - [ ] Subtotal calculation
-  - [ ] Discount total
-  - [ ] GST calculation (18%)
-  - [ ] Final total
-  - [ ] Valid until date
-  - [ ] Summary must be saved before approval
-- [ ] **E. Communication & Timeline (Merged)**
-  - [ ] Customer messages
-  - [ ] Admin replies
-  - [ ] Internal notes (private, color-coded)
-  - [ ] All in unified timeline
-- [ ] **F. Actions Panel**
-  - [ ] Message customer
-  - [ ] Request clarification
-  - [ ] Approve quote (Manager+)
-  - [ ] Reject quote (reason required)
-  - [ ] Convert to order (verified only)
+- [x] **A. Sticky Quote Header**
+  - [x] Quote ID display
+  - [x] Status display with workflow validation
+  - [x] Priority badge (editable inline)
+  - [x] Primary CTA (context-aware: Start Review → Approve → Convert)
+- [x] **B. Customer Context Panel**
+  - [x] Customer name and type
+  - [x] Account type badge
+  - [x] Business verified indicator with badge icon
+  - [x] Link to customer profile
+- [x] **C. Quote Items Table**
+  - [x] Product column with thumbnail
+  - [x] Requested quantity
+  - [x] Unit price (editable for Manager+ in edit mode)
+  - [x] Discount % (editable for Manager+ in edit mode)
+  - [x] Auto-calculated total
+  - [x] Validation before approve
+- [x] **D. Quote Summary Panel**
+  - [x] Subtotal calculation (auto-updated)
+  - [x] Discount total
+  - [x] GST calculation (18%)
+  - [x] Final total
+  - [x] Valid until date
+  - [x] Summary auto-calculates from items
+- [x] **E. Communication & Timeline (Merged)**
+  - [x] Customer messages
+  - [x] Admin replies
+  - [x] Internal notes (private, color-coded yellow)
+  - [x] All in unified timeline
+- [x] **F. Actions Panel**
+  - [x] Message customer
+  - [x] Request clarification (via messages)
+  - [x] Approve quote (Manager+)
+  - [x] Reject quote (reason required with modal)
+  - [x] Convert to order (verified only)
 
 ### Quote → Order Conversion
 - [ ] Create conversion validation checks
