@@ -596,11 +596,13 @@ pnpm add zod               # Already using in forms, ensure it's added
 - [ ] Invoice generation
 
 ### Quote Testing (B2B)
-- [ ] Submit quote request
-- [ ] View quote status
-- [ ] Admin quote approval
-- [ ] Quote to order conversion
-- [ ] Quote PDF generation
+⏸️ **ON HOLD** - Quote functionality deferred to later phase
+
+~~- [ ] Submit quote request~~
+~~- [ ] View quote status~~
+~~- [ ] Admin quote approval~~
+~~- [ ] Quote to order conversion~~
+~~- [ ] Quote PDF generation~~
 
 ### Admin Testing
 - [ ] Add/edit products
