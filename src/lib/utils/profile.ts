@@ -14,8 +14,8 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
       items: [
         {
           section: PROFILE_SECTIONS.OVERVIEW,
-          label: 'Dashboard',
-          icon: 'LayoutDashboard',
+          label: 'Account Overview',
+          icon: 'User',
         },
         {
           section: PROFILE_SECTIONS.PERSONAL_INFO,
@@ -27,26 +27,21 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           label: 'Addresses',
           icon: 'MapPin',
         },
-        {
-          section: PROFILE_SECTIONS.CHANGE_PASSWORD,
-          label: 'Change Password',
-          icon: 'Lock',
-        },
       ],
     },
     {
-      title: 'Orders & Quotes',
+      title: 'Activity',
       icon: 'Package',
       items: [
         {
-          section: PROFILE_SECTIONS.ORDER_HISTORY,
-          label: 'Order History',
-          icon: 'Package',
+          section: PROFILE_SECTIONS.QUOTES,
+          label: 'Quotes',
+          icon: 'FileText',
         },
         {
-          section: PROFILE_SECTIONS.QUOTES,
-          label: 'My Quotes',
-          icon: 'FileText',
+          section: PROFILE_SECTIONS.ORDER_HISTORY,
+          label: 'Orders',
+          icon: 'Package',
         },
         {
           section: PROFILE_SECTIONS.WISHLISTS,
@@ -60,14 +55,14 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
       icon: 'Settings',
       items: [
         {
-          section: PROFILE_SECTIONS.SECURITY,
-          label: 'Security Settings',
-          icon: 'Shield',
-        },
-        {
           section: PROFILE_SECTIONS.NOTIFICATIONS,
           label: 'Notifications',
           icon: 'Bell',
+        },
+        {
+          section: PROFILE_SECTIONS.SECURITY,
+          label: 'Security',
+          icon: 'Shield',
         },
       ],
     },
@@ -76,11 +71,15 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
   // Add business-specific navigation
   if (accountType === 'business') {
     return [
-      ...commonNavigation.slice(0, 1),
       {
-        title: 'Business',
-        icon: 'Building2',
+        title: 'Account',
+        icon: 'User',
         items: [
+          {
+            section: PROFILE_SECTIONS.OVERVIEW,
+            label: 'Account Overview',
+            icon: 'User',
+          },
           {
             section: PROFILE_SECTIONS.BUSINESS_INFO,
             label: 'Business Info',
@@ -93,14 +92,25 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             badge: 'status',
           },
           {
-            section: PROFILE_SECTIONS.BUSINESS_DOCUMENTS,
-            label: 'Business Documents',
-            icon: 'Upload',
+            section: PROFILE_SECTIONS.ADDRESSES,
+            label: 'Addresses',
+            icon: 'MapPin',
+          },
+        ],
+      },
+      {
+        title: 'Activity',
+        icon: 'Package',
+        items: [
+          {
+            section: PROFILE_SECTIONS.QUOTES,
+            label: 'Quotes',
+            icon: 'FileText',
           },
           {
-            section: PROFILE_SECTIONS.PAYMENT_METHODS,
-            label: 'Payment Methods',
-            icon: 'CreditCard',
+            section: PROFILE_SECTIONS.ORDER_HISTORY,
+            label: 'Orders',
+            icon: 'Package',
           },
           {
             section: PROFILE_SECTIONS.INVOICES,
@@ -109,7 +119,22 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           },
         ],
       },
-      ...commonNavigation.slice(1),
+      {
+        title: 'Settings',
+        icon: 'Settings',
+        items: [
+          {
+            section: PROFILE_SECTIONS.NOTIFICATIONS,
+            label: 'Notifications',
+            icon: 'Bell',
+          },
+          {
+            section: PROFILE_SECTIONS.SECURITY,
+            label: 'Security',
+            icon: 'Shield',
+          },
+        ],
+      },
     ]
   }
 
