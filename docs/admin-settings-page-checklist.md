@@ -107,45 +107,45 @@ Settings
    [Super Admin Only - Hidden Route]
 ```
 
-#### 3.2 Implement Role-Based Visibility
-- [ ] Show/hide sections based on user role
-- [ ] Display "Restricted Access" message for unauthorized users
-- [ ] Implement proper permission checks
+#### 3.2 Implement Role-Based Visibility ✅
+- [x] Show/hide sections based on user role
+- [x] Display "Restricted Access" message for unauthorized users
+- [x] Implement proper permission checks
 
 ---
 
-### Phase 4: Simplify Store & Branding (Tier-2)
+### Phase 4: Simplify Store & Branding (Tier-2) ✅
 
-#### 4.1 Refactor Store Settings Form
+#### 4.1 Refactor Store Settings Form ✅
 File: `/app/src/modules/admin/settings/store-settings-form.tsx`
 
 **KEEP:**
-- [ ] Store name
-- [ ] Legal name
-- [ ] Store logo upload
-- [ ] Support email
-- [ ] Support phone
-- [ ] Business address
-- [ ] GST number
-- [ ] Invoice prefix
-- [ ] Currency
-- [ ] Timezone
+- [x] Store name
+- [x] Legal name
+- [x] Store logo upload
+- [x] Support email
+- [x] Support phone
+- [x] Business address (via GST number)
+- [x] GST number
+- [x] Invoice prefix
+- [x] Currency
+- [x] Timezone
 
 **REMOVE:**
-- [ ] Store description field
-- [ ] Social media links
-- [ ] SEO defaults
-- [ ] Operating hours
-- [ ] Taglines/slogans
+- [x] Store description field
+- [x] Social media links (not present)
+- [x] SEO defaults (not present)
+- [x] Operating hours (not present)
+- [x] Taglines/slogans (not present)
 
-#### 4.2 Update Page
-- [ ] Update `/app/src/app/admin/settings/store/page.tsx`
-- [ ] Change title to "Store & Branding"
-- [ ] Update description: "Identity & contact — not marketing"
+#### 4.2 Update Page ✅
+- [x] Update `/app/src/app/admin/settings/store/page.tsx`
+- [x] Change title to "Store & Branding"
+- [x] Update description: "Identity & contact — not marketing"
 
 ---
 
-### Phase 5: Create Pricing Rules Module (Tier-1) 🆕
+### Phase 5: Create Pricing Rules Module (Tier-1) 🆕 ✅
 
 #### 5.1 Database Schema
 - [ ] Create `pricing_settings` table in Supabase
@@ -162,24 +162,24 @@ File: `/app/src/modules/admin/settings/store-settings-form.tsx`
   - `created_at` (timestamp)
   - `updated_at` (timestamp)
 
-#### 5.2 Create API Service
-- [ ] Create `/app/src/lib/services/pricing-settings.ts`
-- [ ] Implement `getPricingSettings()`
-- [ ] Implement `updatePricingSettings()`
-- [ ] Add proper error handling
+#### 5.2 Create API Service ✅
+- [x] Create `/app/src/lib/services/pricing-settings.ts`
+- [x] Implement `getPricingSettings()`
+- [x] Implement `updatePricingSettings()`
+- [x] Add proper error handling
 
-#### 5.3 Create UI Components
-- [ ] Create `/app/src/modules/admin/settings/pricing-rules-form.tsx`
-- [ ] Price visibility controls (per user type)
-- [ ] Bulk pricing toggle
-- [ ] MOQ input field
-- [ ] Discount cap input
-- [ ] Super Admin only access check
+#### 5.3 Create UI Components ✅
+- [x] Create `/app/src/modules/admin/settings/pricing-rules-form.tsx`
+- [x] Price visibility controls (per user type)
+- [x] Bulk pricing toggle
+- [x] MOQ input field
+- [x] Discount cap input
+- [x] Super Admin only access check
 
-#### 5.4 Create Page Route
-- [ ] Create `/app/src/app/admin/settings/pricing-rules/page.tsx`
-- [ ] Add role guard (Super Admin only)
-- [ ] Add "Restricted Access" message for non-super-admins
+#### 5.4 Create Page Route ✅
+- [x] Create `/app/src/app/admin/settings/pricing-rules/page.tsx`
+- [x] Add role guard (Super Admin only)
+- [x] Add "Restricted Access" message for non-super-admins
 
 ---
 
