@@ -27,6 +27,25 @@ interface SettingsSidebarProps {
 
 export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
   const pathname = usePathname()
+  const [navItems, setNavItems] = useState<SettingsModule[]>([])
+  const [profile, setProfile] = useState<AdminProfile | null>(null)
+
+  useEffect(() => {
+    loadUserAndNav()
+  }, [])
+
+  const loadUserAndNav = async () => {
+    try {
+      const result = await getCurrentAdmin()
+      if (result?.profile) {
+        setProfile(result.profile)
+        const items = getSettingsSidebarItems(result.profile.role)
+        setNavItems(items)
+      }
+    } catch (error) {
+      console.error('Error loading navigation:', error)
+    }
+  }
 
   return (
     <div className={cn(
