@@ -19,6 +19,12 @@ Documentation for Cedar Storefront - a **Next.js 16 B2B/B2C e-commerce platform*
 - **[Role Sync Setup](role-sync-setup.md)** - User role synchronization between Clerk and Supabase
 - **[Pusher Notifications](pusher-notifications-guide.md)** - Real-time notifications setup
 
+### Admin Settings (NEW ✨)
+- **[Admin Setup Guide](admin-setup-guide.md)** - Initial admin authentication and setup
+- **[Admin Settings Documentation](admin-settings-documentation.md)** - Complete settings module guide
+- **[Admin Settings Checklist](admin-settings-page-checklist.md)** - Implementation checklist and status
+- **[Admin Settings Completion Summary](ADMIN-SETTINGS-COMPLETION-SUMMARY.md)** - Quick reference and testing guide
+
 ---
 
 ## 🚀 Quick Start
