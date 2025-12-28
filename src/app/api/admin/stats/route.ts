@@ -140,6 +140,17 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('verification_status', 'pending')
     
+    // Get total business accounts
+    const { count: totalBusinesses } = await supabase
+      .from('business_profiles')
+      .select('*', { count: 'exact', head: true })
+    
+    // Get verified businesses count
+    const { count: verifiedBusinesses } = await supabase
+      .from('business_profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('verification_status', 'verified')
+    
     return NextResponse.json({
       success: true,
       stats: {
@@ -151,6 +162,8 @@ export async function GET(request: NextRequest) {
         activeProducts: activeProducts || 0,
         lowStockProducts: lowStockProducts || 0,
         pendingVerifications: pendingVerifications || 0,
+        totalBusinesses: totalBusinesses || 0,
+        verifiedBusinesses: verifiedBusinesses || 0,
       },
       recentOrders,
       salesTrend: Object.entries(salesByDate).map(([date, amount]) => ({
