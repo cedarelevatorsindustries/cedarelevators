@@ -338,7 +338,9 @@ ON CONFLICT (slug) DO NOTHING;
 -- WHERE schemaname = 'public' 
 -- AND tablename IN ('profiles', 'orders', 'products');
 
--- Test JWT helper functions
--- SELECT get_jwt_claim('sub');
--- SELECT get_current_user_id();
--- SELECT is_authenticated();
+-- Test JWT helper functions (run after logging in via Clerk)
+-- SELECT auth.jwt() ->> 'sub' as user_id;  -- Should show Clerk user ID
+-- SELECT get_current_user_id();  -- Should show same user ID
+-- SELECT is_authenticated();  -- Should return true
+-- SELECT get_user_role();  -- Should show 'individual' or 'business'
+-- SELECT get_verification_status();  -- Should show verification status
