@@ -271,13 +271,8 @@ CREATE TRIGGER update_profiles_updated_at
 -- SEED DATA (Optional - for testing)
 -- =====================================================
 
--- Insert sample products (only if they don't exist)
-INSERT INTO products (name, slug, description, price, stock_quantity, status)
-VALUES 
-  ('Elevator Cable', 'elevator-cable', 'High-quality elevator cable for commercial use', 5000.00, 100, 'active'),
-  ('Control Panel', 'control-panel', 'Advanced control panel with LCD display', 15000.00, 50, 'active'),
-  ('Door Motor', 'door-motor', 'Heavy-duty door motor for passenger elevators', 8000.00, 75, 'active')
-ON CONFLICT (slug) DO NOTHING;
+-- Note: Sample products are already inserted in migration 002
+-- No additional seed data needed here
 
 -- =====================================================
 -- VERIFICATION QUERIES
