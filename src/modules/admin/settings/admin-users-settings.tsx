@@ -322,7 +322,7 @@ export function AdminUsersSettings() {
                         <div className="flex items-center justify-end gap-2">
                           {!user.is_active ? (
                             <button
-                              onClick={() => handleApprove(user.user_id)}
+                              onClick={() => handleApprove(user.user_id, user.email)}
                               className="text-green-600 hover:text-green-900"
                               data-testid={`approve-admin-${user.id}`}
                             >
@@ -330,7 +330,7 @@ export function AdminUsersSettings() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleRevoke(user.user_id)}
+                              onClick={() => handleRevoke(user.user_id, user.email)}
                               className="text-orange-600 hover:text-orange-900"
                               data-testid={`revoke-admin-${user.id}`}
                             >
