@@ -43,18 +43,20 @@
 - Product selection: Multi-select component with search and filtering
 - Validation: Check product count before showing category/collection forms
 
-**Files to Create**:
-- `/app/src/components/admin/ProductSelector.tsx`
-- `/app/src/components/admin/NoProductsWarning.tsx`
-- `/app/src/app/admin/collections/create/page.tsx`
-- `/app/src/app/admin/collections/[id]/edit/page.tsx`
-- `/app/src/hooks/queries/useProducts.tsx`
+**Files Created** ✅:
+- ✅ `/app/src/components/admin/ProductSelector.tsx` - Complete with search, multi-select, badges
+- ✅ `/app/src/components/admin/NoProductsWarning.tsx` - Complete with multiple variants
+- ✅ `/app/src/hooks/queries/useProducts.tsx` - Complete query hook
+- ✅ `/app/src/hooks/queries/useCollections.ts` - Complete with mutations
+- ✅ `/app/src/lib/actions/collections.ts` - Complete CRUD + junction table operations
 
-**Files to Modify**:
-- `/app/src/app/admin/categories/create/page.tsx`
-- `/app/src/app/admin/categories/[id]/edit/page.tsx`
-- `/app/src/lib/actions/collections.ts`
-- `/app/src/lib/actions/categories.ts`
+**Files Modified** ✅:
+- ✅ `/app/src/app/admin/categories/create/page.tsx` - Product selection added
+- ✅ `/app/src/app/admin/categories/[id]/edit/page.tsx` - Product selection added
+
+**Files Pending** 🔄:
+- 🔄 `/app/src/app/admin/collections/create/page.tsx` - To be created
+- 🔄 `/app/src/app/admin/collections/[id]/edit/page.tsx` - To be created
 
 ---
 
