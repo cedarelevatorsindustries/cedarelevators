@@ -169,7 +169,25 @@ export async function cancelOrder(
             return { success: false, error: error.message }
         }
 
-        // TODO: Restore inventory for cancelled order items
+        // Restore inventory for cancelled order items
+        const { data: items } = await supabase
+            .from('order_items')
+            .select('product_id, quantity')
+            .eq('order_id', orderId)
+
+        if (items) {
+            for (const item of items) {
+                const { error: invError } = await supabase.rpc('increment_inventory', {
+                    product_id: item.product_id,
+                    quantity: item.quantity
+                })
+                
+                if (invError) {
+                    console.error('Error restoring inventory:', invError)
+                    // Continue even if inventory restoration fails
+                }
+            }
+        }
 
         return { success: true }
     } catch (error: any) {
