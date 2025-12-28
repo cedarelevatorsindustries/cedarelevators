@@ -40,12 +40,19 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
       const result = await getCurrentAdmin()
       if (result?.profile) {
         setProfile(result.profile)
-        const items = getSettingsSidebarItems(result.profile.role)
-        setNavItems(items)
+        // Get all modules (not just accessible ones) to show disabled state
+        const allModules = SETTINGS_MODULES.filter(m => !m.hidden)
+        setNavItems(allModules)
       }
     } catch (error) {
       console.error('Error loading navigation:', error)
     }
+  }
+
+  // Check if user can access a specific module
+  const canAccessItem = (item: SettingsModule) => {
+    if (!profile) return false
+    return item.allowedRoles.includes(profile.role)
   }
 
   return (
