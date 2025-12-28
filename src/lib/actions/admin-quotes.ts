@@ -251,6 +251,303 @@ export async function updateQuoteStatus(
 
         if (fetchError || !currentQuote) {
             return { success: false, error: 'Quote not found' }
+
+// =====================================================
+// APPROVE QUOTE (MANAGER+)
+// =====================================================
+
+export async function approveQuote(
+    quoteId: string,
+    options: {
+        validUntilDays?: number
+        adminNotes?: string
+    } = {}
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Permission check
+        const canApprove = await canApproveQuotes()
+        if (!canApprove) {
+            return { success: false, error: 'Insufficient permissions to approve quotes' }
+        }
+
+        const supabase = createServerSupabaseClient()
+        if (!supabase) {
+            return { success: false, error: 'Database connection failed' }
+        }
+
+        // Get quote to validate
+        const { data: quote, error: fetchError } = await supabase
+            .from('quotes')
+            .select('*, items:quote_items(*)')
+            .eq('id', quoteId)
+            .single()
+
+        if (fetchError || !quote) {
+            return { success: false, error: 'Quote not found' }
+        }
+
+        // Validation checks
+        if (quote.status !== 'reviewing') {
+            return { success: false, error: 'Quote must be in reviewing status to approve' }
+        }
+
+        // Check if all items have pricing
+        const items = quote.items || []
+        if (items.length === 0) {
+            return { success: false, error: 'Quote has no items' }
+        }
+
+        const missingPricing = items.some((item: any) => !item.unit_price || item.unit_price === 0)
+        if (missingPricing) {
+            return { success: false, error: 'All items must have pricing before approval' }
+        }
+
+        // Check if quote has valid total
+        if (!quote.estimated_total || quote.estimated_total === 0) {
+            return { success: false, error: 'Quote must have a valid total before approval' }
+        }
+
+        const adminUser = await getCurrentAdminUser()
+        const validUntil = new Date()
+        validUntil.setDate(validUntil.getDate() + (options.validUntilDays || 30))
+
+        const { error: updateError } = await supabase
+            .from('quotes')
+            .update({
+                status: 'approved',
+                approved_by: adminUser?.clerk_user_id,
+                approved_at: new Date().toISOString(),
+                valid_until: validUntil.toISOString(),
+                admin_notes: options.adminNotes || quote.admin_notes,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', quoteId)
+
+        if (updateError) {
+            return { success: false, error: updateError.message }
+        }
+
+        // Log approval
+        await logQuoteAction(quoteId, 'approved', {
+            oldStatus: quote.status,
+            newStatus: 'approved',
+            notes: options.adminNotes,
+            metadata: {
+                quote_number: quote.quote_number,
+                valid_until: validUntil.toISOString(),
+                total: quote.estimated_total
+            }
+        })
+
+        revalidatePath('/admin/quotes')
+        revalidatePath(`/admin/quotes/${quoteId}`)
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error in approveQuote:', error)
+        return { success: false, error: error.message || 'Failed to approve quote' }
+    }
+}
+
+// =====================================================
+// REJECT QUOTE (MANAGER+)
+// =====================================================
+
+export async function rejectQuote(
+    quoteId: string,
+    reason: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Permission check
+        const canApprove = await canApproveQuotes()
+        if (!canApprove) {
+            return { success: false, error: 'Insufficient permissions to reject quotes' }
+        }
+
+        if (!reason || reason.trim().length === 0) {
+            return { success: false, error: 'Rejection reason is required' }
+        }
+
+        const supabase = createServerSupabaseClient()
+        if (!supabase) {
+            return { success: false, error: 'Database connection failed' }
+        }
+
+        // Get current quote
+        const { data: quote, error: fetchError } = await supabase
+            .from('quotes')
+            .select('status, quote_number')
+            .eq('id', quoteId)
+            .single()
+
+        if (fetchError || !quote) {
+            return { success: false, error: 'Quote not found' }
+        }
+
+        const { error: updateError } = await supabase
+            .from('quotes')
+            .update({
+                status: 'rejected',
+                rejected_reason: reason,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', quoteId)
+
+        if (updateError) {
+            return { success: false, error: updateError.message }
+        }
+
+        // Log rejection
+        await logQuoteAction(quoteId, 'rejected', {
+            oldStatus: quote.status,
+            newStatus: 'rejected',
+            notes: reason,
+            metadata: {
+                quote_number: quote.quote_number,
+            }
+        })
+
+        revalidatePath('/admin/quotes')
+        revalidatePath(`/admin/quotes/${quoteId}`)
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error in rejectQuote:', error)
+        return { success: false, error: error.message || 'Failed to reject quote' }
+    }
+}
+
+// =====================================================
+// CONVERT QUOTE TO ORDER (VERIFIED BUSINESS ONLY)
+// =====================================================
+
+export async function convertQuoteToOrder(
+    quoteId: string,
+    orderDetails: {
+        shipping_address_id: string
+        delivery_method: string
+        payment_method?: string
+    }
+): Promise<{ success: boolean; orderId?: string; error?: string }> {
+    try {
+        // Permission check
+        const canConvert = await canApproveQuotes()
+        if (!canConvert) {
+            return { success: false, error: 'Insufficient permissions to convert quotes' }
+        }
+
+        const supabase = createServerSupabaseClient()
+        if (!supabase) {
+            return { success: false, error: 'Database connection failed' }
+        }
+
+        // Get quote with all details
+        const { data: quote, error: fetchError } = await supabase
+            .from('quotes')
+            .select('*, items:quote_items(*)')
+            .eq('id', quoteId)
+            .single()
+
+        if (fetchError || !quote) {
+            return { success: false, error: 'Quote not found' }
+        }
+
+        // Strict validation
+        if (quote.status !== 'approved') {
+            return { success: false, error: 'Only approved quotes can be converted to orders' }
+        }
+
+        if (quote.user_type !== 'verified') {
+            return { success: false, error: 'Only verified business accounts can convert quotes to orders' }
+        }
+
+        if (!quote.clerk_user_id) {
+            return { success: false, error: 'Quote must be associated with a registered user' }
+        }
+
+        // Check if quote is still valid
+        if (new Date(quote.valid_until) < new Date()) {
+            return { success: false, error: 'Quote has expired' }
+        }
+
+        // TODO: Create order in orders table
+        // This would involve:
+        // 1. Create order record
+        // 2. Copy quote items to order items
+        // 3. Link shipping address
+        // 4. Set delivery method
+        // 5. Reduce inventory
+        // For now, we'll just mark the quote as converted
+
+        const orderId = `ORD-${Date.now()}` // Temporary, should use proper order ID
+
+        const { error: updateError } = await supabase
+            .from('quotes')
+            .update({
+                status: 'converted',
+                converted_order_id: orderId,
+                converted_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', quoteId)
+
+        if (updateError) {
+            return { success: false, error: updateError.message }
+        }
+
+        // Log conversion
+        await logQuoteAction(quoteId, 'converted', {
+            oldStatus: quote.status,
+            newStatus: 'converted',
+            metadata: {
+                quote_number: quote.quote_number,
+                order_id: orderId,
+                total: quote.estimated_total
+            }
+        })
+
+        revalidatePath('/admin/quotes')
+        revalidatePath(`/admin/quotes/${quoteId}`)
+
+        return { success: true, orderId }
+    } catch (error: any) {
+        console.error('Error in convertQuoteToOrder:', error)
+        return { success: false, error: error.message || 'Failed to convert quote' }
+    }
+}
+
+// =====================================================
+// GET QUOTE AUDIT LOG
+// =====================================================
+
+export async function getQuoteAuditLog(quoteId: string): Promise<
+    | { success: true; logs: QuoteAuditLog[] }
+    | { success: false; error: string }
+> {
+    try {
+        const supabase = createServerSupabaseClient()
+        if (!supabase) {
+            return { success: false, error: 'Database connection failed' }
+        }
+
+        const { data: logs, error } = await supabase
+            .from('quote_audit_log')
+            .select('*')
+            .eq('quote_id', quoteId)
+            .order('created_at', { ascending: false })
+
+        if (error) {
+            console.error('Error fetching audit log:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, logs: logs as QuoteAuditLog[] }
+    } catch (error: any) {
+        console.error('Error in getQuoteAuditLog:', error)
+        return { success: false, error: error.message || 'Failed to fetch audit log' }
+    }
+}
+
         }
 
         const adminUser = await getCurrentAdminUser()
