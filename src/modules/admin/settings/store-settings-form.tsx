@@ -25,7 +25,6 @@ export function StoreSettingsForm() {
   const [formData, setFormData] = useState({
     store_name: "",
     legal_name: "",
-    description: "",
     support_email: "",
     support_phone: "",
     gst_number: "",
