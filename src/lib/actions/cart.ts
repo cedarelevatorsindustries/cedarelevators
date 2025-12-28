@@ -74,38 +74,52 @@ export async function addToCart(variantId: string, quantity: number) {
     cartId = newCart.id
   }
 
-  // 1. Fetch Product Variant to get price/details
-  // We assume a 'variants' table or we query 'products' if variants are JSON
-  // For this mock, let's assume we can get it.
-  // This part is tricky without precise schema. I'll make a best guess query.
-
-  // Try fetching from a 'product_variants' view or table
-  const { data: variant, error: varError } = await supabase
-    .from('product_variants') // Assumption: separate table for variants
-    .select('*, product:products(id, title, thumbnail)')
-    .eq('id', variantId)
-    .single()
-
-  // Fallback if variants are just in products table (simple schema)
+  // Fetch product details
+  // First try product_variants, then fall back to products table
   let productTitle = "Product"
   let unitPrice = 0
   let thumbnail = ""
-  let productId = ""
+  let productId = variantId
 
-  if (varError || !variant) {
-    // Logic if your variants are inside products jsonb
-    console.warn("Could not fetch variant from 'product_variants', checking products...")
-    // fallback logic omitted for brevity, assuming variants table exists for now or user fixes.
-    // For safety, let's insert dummy data if variant not found to prevent crash, OR throw.
-    // throw new Error("Variant not found")
+  // Try fetching from product_variants table
+  const { data: variant, error: varError } = await supabase
+    .from('product_variants')
+    .select('*, product:products(id, name, thumbnail)')
+    .eq('id', variantId)
+    .single()
 
-    // Let's assume we pass necessary info from frontend for now if DB is not set up?
-    // No, that's insecure.
-  } else {
-    productTitle = variant.product?.title || variant.title
+  if (variant && !varError) {
+    // Variant found
+    productTitle = variant.name || variant.product?.name || "Product"
     unitPrice = variant.price || 0
-    thumbnail = variant.product?.thumbnail || ""
-    productId = variant.product?.id
+    thumbnail = variant.product?.thumbnail || variant.image_url || ""
+    productId = variant.product_id || variant.product?.id
+
+    // Check inventory
+    if (variant.inventory_quantity < quantity) {
+      throw new Error(`Insufficient stock. Available: ${variant.inventory_quantity}`)
+    }
+  } else {
+    // Fallback to products table (simple schema without variants)
+    const { data: product, error: prodError } = await supabase
+      .from('products')
+      .select('id, name, thumbnail, price, stock_quantity')
+      .eq('id', variantId)
+      .single()
+
+    if (prodError || !product) {
+      throw new Error(`Product not found: ${variantId}`)
+    }
+
+    // Check inventory
+    if (product.stock_quantity < quantity) {
+      throw new Error(`Insufficient stock. Available: ${product.stock_quantity}`)
+    }
+
+    productTitle = product.name
+    unitPrice = product.price || 0
+    thumbnail = product.thumbnail || ""
+    productId = product.id
   }
 
   // 2. Insert or Update Cart Item
