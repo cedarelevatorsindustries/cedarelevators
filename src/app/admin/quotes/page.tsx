@@ -203,11 +203,11 @@ export default function AdminQuotesPage() {
 
                     <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-blue-50">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                            <CardTitle className="text-sm font-semibold text-gray-700">In Review</CardTitle>
+                            <CardTitle className="text-sm font-semibold text-gray-700">Reviewing</CardTitle>
                             <Eye className="h-4 w-4 text-blue-600" />
                         </CardHeader>
                         <CardContent className="pt-0">
-                            <div className="text-2xl font-bold text-gray-900">{stats.in_review_count}</div>
+                            <div className="text-2xl font-bold text-gray-900">{stats.reviewing_count}</div>
                         </CardContent>
                     </Card>
 
