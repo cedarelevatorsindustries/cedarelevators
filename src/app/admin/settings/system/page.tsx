@@ -61,6 +61,7 @@ export default function SystemSettingsPage() {
     try {
       const result = await SettingsService.getSystemSettings()
       if (result.success && result.data) {
+        setSettingsId(result.data.id)
         setFeatureFlags({
           bulk_operations_enabled: result.data.bulk_operations_enabled,
           advanced_analytics_enabled: result.data.advanced_analytics_enabled,
@@ -82,13 +83,28 @@ export default function SystemSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!settingsId) {
+      toast.error('Settings not loaded')
+      return
+    }
+    
     setIsSaving(true)
     
     try {
-      // TODO: Save to database or API
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      const result = await SettingsService.updateSystemSettings(settingsId, {
+        ...featureFlags,
+        maintenance_mode_enabled: maintenanceMode.enabled,
+        maintenance_message: maintenanceMode.message,
+        ...debugSettings,
+      })
       
-      toast.success('System settings updated successfully')
+      if (result.success) {
+        toast.success('System settings updated successfully')
+        loadSettings()
+      } else {
+        toast.error(result.error || 'Failed to update system settings')
+      }
     } catch (error) {
       console.error('Error saving system settings:', error)
       toast.error('Failed to update system settings')
