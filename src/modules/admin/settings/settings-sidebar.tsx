@@ -96,30 +96,35 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
           collapsed ? "px-2" : "px-2 lg:px-3 xl:px-4"
         )}>
           <div className="space-y-1">
-            {settingsNavItems.map((item) => (
-              <Button
-                key={item.href}
-                variant="ghost"
-                className={cn(
-                  "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
-                  collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
-                  pathname === item.href
-                    ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100"
-                    : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
-                )}
-                asChild
-                title={collapsed ? item.title : undefined}
-              >
-                <Link href={item.href}>
-                  <item.icon className={cn(
-                    "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
-                    collapsed ? "" : "mr-2 lg:mr-3",
-                    pathname === item.href ? "text-orange-600" : "text-gray-400 group-hover:text-gray-500"
-                  )} />
-                  {!collapsed && <span className="truncate">{item.title}</span>}
-                </Link>
-              </Button>
-            ))}
+            {navItems.map((item) => {
+              const IconComponent = ICON_MAP[item.icon]
+              return (
+                <Button
+                  key={item.href}
+                  variant="ghost"
+                  className={cn(
+                    "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
+                    collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
+                    pathname === item.href
+                      ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100"
+                      : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
+                  )}
+                  asChild
+                  title={collapsed ? item.title : undefined}
+                >
+                  <Link href={item.href}>
+                    {IconComponent && (
+                      <IconComponent className={cn(
+                        "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
+                        collapsed ? "" : "mr-2 lg:mr-3",
+                        pathname === item.href ? "text-orange-600" : "text-gray-400 group-hover:text-gray-500"
+                      )} />
+                    )}
+                    {!collapsed && <span className="truncate">{item.title}</span>}
+                  </Link>
+                </Button>
+              )
+            })}
           </div>
         </ScrollArea>
       </div>
