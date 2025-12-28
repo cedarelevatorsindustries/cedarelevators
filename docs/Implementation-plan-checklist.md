@@ -49,14 +49,21 @@
 - ✅ `/app/src/hooks/queries/useProducts.tsx` - Complete query hook
 - ✅ `/app/src/hooks/queries/useCollections.ts` - Complete with mutations
 - ✅ `/app/src/lib/actions/collections.ts` - Complete CRUD + junction table operations
+- ✅ `/app/src/app/admin/collections/create/page.tsx` - Complete with drag-to-reorder
+- ✅ `/app/src/app/admin/collections/[id]/edit/page.tsx` - Complete with product management
 
 **Files Modified** ✅:
 - ✅ `/app/src/app/admin/categories/create/page.tsx` - Product selection added
 - ✅ `/app/src/app/admin/categories/[id]/edit/page.tsx` - Product selection added
 
-**Files Pending** 🔄:
-- 🔄 `/app/src/app/admin/collections/create/page.tsx` - To be created
-- 🔄 `/app/src/app/admin/collections/[id]/edit/page.tsx` - To be created
+**Implementation Summary**:
+All tasks for Phase 2 Product Selection Enhancement have been completed successfully. The system now supports:
+- ✅ Product selection in category create/edit pages with database updates
+- ✅ Product selection in collection create/edit pages with junction table management
+- ✅ Drag-and-drop reordering using react-beautiful-dnd
+- ✅ Product count validation (prevents creation if no products exist)
+- ✅ Visual feedback with badges, thumbnails, and position indicators
+- ✅ Proper database relationships (categories via foreign key, collections via junction table)
 
 ---
 
