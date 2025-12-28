@@ -34,15 +34,16 @@ export function useAdminRole() {
 
   const fetchAdminRole = async () => {
     try {
-      // TODO: Implement API call to fetch current user's admin role
-      // For now, we'll use a placeholder
-      // const response = await fetch('/api/admin/current-role')
-      // const data = await response.json()
+      const response = await fetch('/api/admin/current-role')
       
-      // Placeholder: Assume manager role for now
-      // In production, this should fetch from Clerk metadata or database
+      if (!response.ok) {
+        throw new Error('Failed to fetch admin role')
+      }
+      
+      const data = await response.json()
+      
       setState({
-        role: 'manager', // This should come from API
+        role: data.role as AdminRole,
         isLoading: false,
         error: null,
       })
