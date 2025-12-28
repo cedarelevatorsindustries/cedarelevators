@@ -2,7 +2,8 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { Quote, QuoteStatus, QuoteStats, QuotePriority } from '@/types/b2b/quote'
+import { Quote, QuoteStatus, QuoteStats, QuotePriority, QuoteAuditLog, QuoteActionType } from '@/types/b2b/quote'
+import { getCurrentAdminUser, canApproveQuotes, canPriceQuotes } from '@/lib/auth/admin-roles'
 
 // =====================================================
 // GET ALL QUOTES (ADMIN)
