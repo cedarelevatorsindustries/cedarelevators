@@ -349,3 +349,38 @@ export async function fetchBusinessProfiles(filters?: {
     return { success: false, error: error.message || 'Failed to fetch business profiles' }
   }
 }
+
+export async function getBusinessProfileById(profileId: string) {
+  try {
+    const supabase = await createClerkSupabaseClient()
+    const { userId } = await auth()
+    
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+    
+    // TODO: Add admin role check here
+    
+    const { data: profile, error } = await supabase
+      .from('business_profiles')
+      .select(`
+        *,
+        documents:business_documents(*)
+      `)
+      .eq('id', profileId)
+      .single()
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { success: false, error: 'Business profile not found' }
+      }
+      console.error('Error fetching business profile:', error)
+      return { success: false, error: error.message }
+    }
+    
+    return { success: true, profile }
+  } catch (error: any) {
+    console.error('Error in getBusinessProfileById:', error)
+    return { success: false, error: error.message || 'Failed to fetch business profile' }
+  }
+}
