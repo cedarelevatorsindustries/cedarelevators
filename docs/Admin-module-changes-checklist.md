@@ -111,13 +111,16 @@
 - [x] Update quote status to 'converted'
 
 ### Role-Based Access Control
-- [ ] Implement Clerk-based role checking
-- [ ] Staff: View only access
-- [ ] Manager: Price quotes & approve
-- [ ] Admin: Full access
-- [ ] Super Admin: All permissions
-- [ ] Add role badges in UI
-- [ ] Disable actions based on role
+- [x] Implement Clerk-based role checking (server-side)
+- [x] Staff: View only access
+- [x] Manager: Price quotes & approve
+- [x] Admin: Full access
+- [x] Super Admin: All permissions
+- [x] Add role badges in UI (with getRoleColor and getRoleLabel helpers)
+- [x] Disable actions based on role (context-aware CTAs)
+- [x] Create useAdminRole() hook for client-side
+- [x] Create /api/admin/current-role endpoint
+- [x] Add role-based UI rendering in quote detail page
 
 ### Testing & Validation
 - [ ] Test quote status transitions
