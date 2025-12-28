@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TaxSettingsForm } from "@/modules/admin/settings/tax-settings-form"
+import { TaxSettingsFormSimplified } from "@/modules/admin/settings/tax-settings-form-simplified"
 import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
 import { Tier1Guard } from "@/components/admin/settings-guards"
 import { Loader2 } from "lucide-react"
@@ -47,12 +47,12 @@ export default function TaxSettingsPage() {
     <Tier1Guard userRole={profile.role}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Tax Settings</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Tax (GST) Settings</h1>
           <p className="text-lg text-gray-600 mt-2">
-            Configure GST rates, tax rules, and state-wise behavior for Indian compliance
+            Simplified GST configuration for Indian B2B platform — India only, no multi-country logic
           </p>
         </div>
-        <TaxSettingsForm />
+        <TaxSettingsFormSimplified />
       </div>
     </Tier1Guard>
   )
