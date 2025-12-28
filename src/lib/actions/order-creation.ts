@@ -258,7 +258,7 @@ export async function createOrderFromCart(
     
     console.log('✅ [Order Creation] Complete order fetched')
     
-    // 11. Send order confirmation email
+    // 11. Send order confirmation email and notification
     console.log('📧 [Order Creation] Step 11: Sending order confirmation email')
     
     const emailAddress = userId 
@@ -285,6 +285,23 @@ export async function createOrderFromCart(
       }
     } else {
       console.log('⚠️  [Order Creation] No email address provided, skipping email')
+    }
+    
+    // 12. Send notification to user (if logged in)
+    if (userId) {
+      try {
+        console.log('🔔 [Order Creation] Step 12: Sending order notification')
+        await sendOrderNotification(
+          userId,
+          completeOrder.order_number,
+          'pending',
+          order.id
+        )
+        console.log('✅ [Order Creation] Order notification sent')
+      } catch (notifError) {
+        console.error('⚠️  [Order Creation] Notification error (non-critical):', notifError)
+        // Don't fail order creation if notification fails
+      }
     }
     
     console.log('🎉 [Order Creation] Order creation completed successfully!')
