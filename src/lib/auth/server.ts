@@ -71,3 +71,49 @@ export async function isAuthenticated(): Promise<boolean> {
   const user = await currentUser()
   return !!user
 }
+
+/**
+ * Get business verification status for business users
+ */
+export async function getBusinessVerificationStatus(): Promise<{
+  isVerified: boolean
+  status: string | null
+}> {
+  const user = await currentUser()
+  
+  if (!user) {
+    return { isVerified: false, status: null }
+  }
+
+  // Check if user is business type
+  const accountType = (user.unsafeMetadata?.accountType as string) || 
+                      (user.publicMetadata?.accountType as string)
+  
+  if (accountType !== "business") {
+    return { isVerified: false, status: null }
+  }
+
+  try {
+    // Query business profile for verification status
+    const { createClerkSupabaseClient } = await import("@/lib/supabase/server")
+    const supabase = await createClerkSupabaseClient()
+    
+    const { data: profile } = await supabase
+      .from('business_profiles')
+      .select('verification_status')
+      .eq('clerk_user_id', user.id)
+      .single()
+    
+    if (!profile) {
+      return { isVerified: false, status: 'unverified' }
+    }
+
+    return {
+      isVerified: profile.verification_status === 'verified',
+      status: profile.verification_status
+    }
+  } catch (error) {
+    console.error('Error fetching verification status:', error)
+    return { isVerified: false, status: null }
+  }
+}
