@@ -43,6 +43,7 @@
 		"motion": "^12.23.26",
 		"next": "^16.1.1",
 		"pusher-js": "^8.4.0",
+		"razorpay": "^2.9.4",
 		"react": "^19.2.3",
 		"react-colorful": "^5.6.1",
 		"react-dom": "^19.2.3",
