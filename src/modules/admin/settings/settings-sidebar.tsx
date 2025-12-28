@@ -5,10 +5,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Store, DollarSign, Truck, CreditCard, UserCog, ArrowLeft, Settings, Receipt } from "lucide-react"
 import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
-import { getSettingsSidebarItems, SettingsModule } from "@/lib/admin/settings-access"
+import { getSettingsSidebarItems, SettingsModule, SETTINGS_MODULES } from "@/lib/admin/settings-access"
 
 // Icon mapping
 const ICON_MAP: Record<string, any> = {
