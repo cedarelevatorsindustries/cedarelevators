@@ -290,6 +290,318 @@ export async function fetchProducts(filters?: {
     }
 }
 
+/**
+ * Get product by slug
+ */
+export async function getProductBySlug(slug: string): Promise<{ success: boolean; product?: any; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        const { data, error } = await supabase
+            .from('products')
+            .select(`
+        *,
+        product_variants (*)
+      `)
+            .eq('slug', slug)
+            .single()
+
+        if (error) {
+            console.error('Error fetching product:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, product: data }
+    } catch (error: any) {
+        console.error('Error in getProductBySlug:', error)
+        return { success: false, error: error.message || 'Failed to fetch product' }
+    }
+}
+
+/**
+ * Bulk update product status
+ */
+export async function bulkUpdateProductStatus(productIds: string[], status: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        if (!productIds || productIds.length === 0) {
+            return { success: false, error: 'No product IDs provided' }
+        }
+
+        const { error } = await supabase
+            .from('products')
+            .update({ status })
+            .in('id', productIds)
+
+        if (error) {
+            console.error('Error bulk updating products:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error in bulkUpdateProductStatus:', error)
+        return { success: false, error: error.message || 'Failed to bulk update products' }
+    }
+}
+
+/**
+ * Bulk delete products
+ */
+export async function bulkDeleteProducts(productIds: string[]): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        if (!productIds || productIds.length === 0) {
+            return { success: false, error: 'No product IDs provided' }
+        }
+
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .in('id', productIds)
+
+        if (error) {
+            console.error('Error bulk deleting products:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error in bulkDeleteProducts:', error)
+        return { success: false, error: error.message || 'Failed to bulk delete products' }
+    }
+}
+
+/**
+ * Update product inventory
+ */
+export async function updateProductInventory(
+    productId: string,
+    quantity: number,
+    operation: 'set' | 'increment' | 'decrement' = 'set'
+): Promise<{ success: boolean; product?: any; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        if (operation === 'set') {
+            const { data, error } = await supabase
+                .from('products')
+                .update({ stock_quantity: quantity })
+                .eq('id', productId)
+                .select()
+                .single()
+
+            if (error) {
+                console.error('Error updating inventory:', error)
+                return { success: false, error: error.message }
+            }
+
+            return { success: true, product: data }
+        } else {
+            // For increment/decrement, fetch current value first
+            const { data: current } = await supabase
+                .from('products')
+                .select('stock_quantity')
+                .eq('id', productId)
+                .single()
+
+            if (!current) {
+                return { success: false, error: 'Product not found' }
+            }
+
+            const newQuantity = operation === 'increment'
+                ? (current.stock_quantity || 0) + quantity
+                : Math.max(0, (current.stock_quantity || 0) - quantity)
+
+            const { data, error } = await supabase
+                .from('products')
+                .update({ stock_quantity: newQuantity })
+                .eq('id', productId)
+                .select()
+                .single()
+
+            if (error) {
+                console.error('Error updating inventory:', error)
+                return { success: false, error: error.message }
+            }
+
+            return { success: true, product: data }
+        }
+    } catch (error: any) {
+        console.error('Error in updateProductInventory:', error)
+        return { success: false, error: error.message || 'Failed to update inventory' }
+    }
+}
+
+/**
+ * Get low stock products
+ */
+export async function getLowStockProducts(threshold: number = 10): Promise<{ success: boolean; products?: any[]; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        const { data, error } = await supabase
+            .from('products')
+            .select('id, name, slug, sku, stock_quantity, status')
+            .eq('status', 'active')
+            .lt('stock_quantity', threshold)
+            .order('stock_quantity')
+
+        if (error) {
+            console.error('Error fetching low stock products:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, products: data }
+    } catch (error: any) {
+        console.error('Error in getLowStockProducts:', error)
+        return { success: false, error: error.message || 'Failed to fetch low stock products' }
+    }
+}
+
+/**
+ * Advanced product search with multiple filters
+ */
+export async function advancedProductSearch(filters: {
+    search?: string
+    categories?: string[]
+    status?: string
+    priceMin?: number
+    priceMax?: number
+    inStock?: boolean
+    isFeatured?: boolean
+    tags?: string[]
+    sortBy?: 'created_at' | 'price' | 'name' | 'stock_quantity'
+    sortOrder?: 'asc' | 'desc'
+    limit?: number
+    offset?: number
+}): Promise<{ success: boolean; products?: any[]; total?: number; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        let query = supabase
+            .from('products')
+            .select('*, product_variants(count)', { count: 'exact' })
+
+        // Text search
+        if (filters.search) {
+            query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+        }
+
+        // Category filter
+        if (filters.categories && filters.categories.length > 0) {
+            query = query.in('category', filters.categories)
+        }
+
+        // Status filter
+        if (filters.status && filters.status !== 'all') {
+            query = query.eq('status', filters.status)
+        }
+
+        // Price range
+        if (filters.priceMin !== undefined) {
+            query = query.gte('price', filters.priceMin)
+        }
+        if (filters.priceMax !== undefined) {
+            query = query.lte('price', filters.priceMax)
+        }
+
+        // Stock filter
+        if (filters.inStock !== undefined) {
+            if (filters.inStock) {
+                query = query.gt('stock_quantity', 0)
+            } else {
+                query = query.eq('stock_quantity', 0)
+            }
+        }
+
+        // Featured filter
+        if (filters.isFeatured !== undefined) {
+            query = query.eq('is_featured', filters.isFeatured)
+        }
+
+        // Tags filter
+        if (filters.tags && filters.tags.length > 0) {
+            query = query.overlaps('tags', filters.tags)
+        }
+
+        // Sorting
+        const sortBy = filters.sortBy || 'created_at'
+        const sortOrder = filters.sortOrder || 'desc'
+        query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+        // Pagination
+        if (filters.offset !== undefined) {
+            query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1)
+        } else if (filters.limit) {
+            query = query.limit(filters.limit)
+        }
+
+        const { data, error, count } = await query
+
+        if (error) {
+            console.error('Error in advanced search:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, products: data, total: count || 0 }
+    } catch (error: any) {
+        console.error('Error in advancedProductSearch:', error)
+        return { success: false, error: error.message || 'Failed to search products' }
+    }
+}
+
+/**
+ * Duplicate a product
+ */
+export async function duplicateProduct(productId: string): Promise<{ success: boolean; product?: any; error?: string }> {
+    try {
+        const supabase = await createServerSupabase()
+
+        // Get the original product
+        const { data: original, error: fetchError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .single()
+
+        if (fetchError || !original) {
+            return { success: false, error: 'Product not found' }
+        }
+
+        // Create new product with modified data
+        const newProduct = {
+            ...original,
+            name: `${original.name} (Copy)`,
+            slug: `${original.slug}-copy-${Date.now()}`,
+            status: 'draft',
+        }
+
+        // Remove id and timestamps
+        delete newProduct.id
+        delete newProduct.created_at
+        delete newProduct.updated_at
+
+        const { data, error } = await supabase
+            .from('products')
+            .insert([newProduct])
+            .select()
+            .single()
+
+        if (error) {
+            console.error('Error duplicating product:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true, product: data }
+    } catch (error: any) {
+        console.error('Error in duplicateProduct:', error)
+        return { success: false, error: error.message || 'Failed to duplicate product' }
+    }
+}
+
 // Alias exports for consistency
 export const getProduct = getProductById
 export const getCollections = async () => ({ success: true, data: [] })
