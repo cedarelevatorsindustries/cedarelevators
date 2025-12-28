@@ -106,6 +106,11 @@ export default function RootLayout({
           <JsonLd data={generateOrganizationSchema()} />
           <JsonLd data={generateWebSiteSchema()} />
           
+          {/* PWA Meta Tags */}
+          <meta name="theme-color" content="#F97316" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <link rel="apple-touch-icon" href="/web-app-manifest-192x192.png" />
+          
           {/* Preconnect to external domains */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://res.cloudinary.com" />
