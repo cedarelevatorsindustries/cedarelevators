@@ -1,54 +1,25 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Store, MapPin, Truck, CreditCard, UserCog, User, ArrowLeft, Settings, Receipt } from "lucide-react"
+import { Store, DollarSign, Truck, CreditCard, UserCog, ArrowLeft, Settings, Receipt } from "lucide-react"
+import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getSettingsSidebarItems, SettingsModule } from "@/lib/admin/settings-access"
 
-const settingsNavItems = [
-  {
-    title: "Profile",
-    href: "/admin/settings/profile",
-    icon: User,
-  },
-  {
-    title: "Store Settings",
-    href: "/admin/settings/store",
-    icon: Store,
-  },
-  {
-    title: "Store Locations",
-    href: "/admin/settings/locations",
-    icon: MapPin,
-  },
-  {
-    title: "Shipping Settings",
-    href: "/admin/settings/shipping",
-    icon: Truck,
-  },
-  {
-    title: "Payment Settings",
-    href: "/admin/settings/payments",
-    icon: CreditCard,
-  },
-  {
-    title: "Tax Settings",
-    href: "/admin/settings/tax",
-    icon: Receipt,
-  },
-  {
-    title: "Admin Users",
-    href: "/admin/settings/users",
-    icon: UserCog,
-  },
-  {
-    title: "System Settings",
-    href: "/admin/settings/system",
-    icon: Settings,
-  },
-]
+// Icon mapping
+const ICON_MAP: Record<string, any> = {
+  Store,
+  DollarSign,
+  CreditCard,
+  Receipt,
+  Truck,
+  UserCog,
+  Settings
+}
 
 interface SettingsSidebarProps {
   collapsed?: boolean
