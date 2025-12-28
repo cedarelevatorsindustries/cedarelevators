@@ -29,8 +29,8 @@ export default function PrimaryActionBar() {
   ]
 
   return (
-    <section className="h-72">
-      <div className="flex flex-col gap-4 h-full">
+    <section className="h-48">
+      <div className="flex flex-col gap-3 h-full">
         {actions.map((action, index) => (
           <LocalizedClientLink
             key={index}
