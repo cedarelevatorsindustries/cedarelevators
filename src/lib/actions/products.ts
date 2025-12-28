@@ -154,19 +154,48 @@ export async function createProduct(productData: {
 }
 
 /**
- * Update product
+ * Update product with complete fields
  */
 export async function updateProduct(
     productId: string,
-    updates: {
-        name?: string
-        description?: string
-        category?: string
-        status?: string
-    }
+    updates: Partial<{
+        name: string
+        slug: string
+        description: string
+        short_description: string
+        category: string
+        status: string
+        thumbnail: string
+        images: string[]
+        price: number
+        compare_at_price: number
+        cost_per_item: number
+        stock_quantity: number
+        sku: string
+        barcode: string
+        weight: number
+        dimensions: any
+        specifications: any
+        tags: string[]
+        is_featured: boolean
+    }>
 ): Promise<{ success: boolean; product?: any; error?: string }> {
     try {
         const supabase = await createServerSupabase()
+
+        // If slug is being updated, check uniqueness
+        if (updates.slug) {
+            const { data: existing } = await supabase
+                .from('products')
+                .select('id')
+                .eq('slug', updates.slug)
+                .neq('id', productId)
+                .single()
+
+            if (existing) {
+                return { success: false, error: 'Product with this slug already exists' }
+            }
+        }
 
         const { data, error } = await supabase
             .from('products')
