@@ -84,6 +84,16 @@ export default function RootLayout({
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <html lang="en">
+        <head>
+          {/* Structured Data */}
+          <JsonLd data={generateOrganizationSchema()} />
+          <JsonLd data={generateWebSiteSchema()} />
+          
+          {/* Preconnect to external domains */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://res.cloudinary.com" />
+          <link rel="dns-prefetch" href="https://img.clerk.com" />
+        </head>
         <body className={spaceGrotesk.variable}>
           <RoleSyncProvider>
             {children}
