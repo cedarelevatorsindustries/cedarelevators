@@ -1,25 +1,38 @@
 "use client"
 
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import FavoritesSection from "./sections/favorites-section"
-import RecentlyViewedSection from "./sections/recently-viewed-section"
-import RecommendedSection from "./sections/recommended-section"
-import TopChoicesSection from "./sections/top-choices-section"
-import NewArrivalsSection from "./sections/new-arrivals-section"
+import { Product } from "@/lib/types/domain"
+import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
+import { getCollectionsByLocation, mergeUserCollections } from "@/lib/data/mockCollections"
 import HelpSection from "./sections/help-section"
 
 interface ProductsTabProps {
   products?: Product[]
+  userFavorites?: Product[]
+  recentlyViewed?: Product[]
 }
 
-export default function ProductsTab({ products = [] }: ProductsTabProps) {
+export default function ProductsTab({ 
+  products = [],
+  userFavorites = [],
+  recentlyViewed = []
+}: ProductsTabProps) {
+  // Get all collections for the "home" location
+  let collections = getCollectionsByLocation("home")
+  
+  // Merge user-specific data (favorites, recently viewed)
+  collections = mergeUserCollections(collections, userFavorites, recentlyViewed)
+  
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-12">
-      <FavoritesSection products={products} />
-      <RecentlyViewedSection products={products} />
-      <RecommendedSection products={products} />
-      <TopChoicesSection products={products} />
-      <NewArrivalsSection products={products} />
+      {/* Dynamically render all collections */}
+      {collections.map((collection) => (
+        <DynamicCollectionSection 
+          key={collection.id} 
+          collection={collection}
+        />
+      ))}
+      
+      {/* Help section remains static as it's not a product collection */}
       <HelpSection />
     </div>
   )
