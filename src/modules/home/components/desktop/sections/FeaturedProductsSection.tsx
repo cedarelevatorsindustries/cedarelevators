@@ -1,39 +1,22 @@
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import ProductCard from "@/components/ui/product-card"
-import LocalizedClientLink from "@components/ui/localized-client-link"
+"use client"
 
-interface FeaturedProductsSectionProps {
-  products: Product[]
-}
+import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
+import { getCollectionBySlug } from "@/lib/data/mockCollections"
 
-const FeaturedProductsSection = ({ products }: FeaturedProductsSectionProps) => {
-  // Don't render if no products
-  if (!products || products.length === 0) {
-    return null
-  }
-
-  // Take first 5 products as featured
-  const featuredProducts = products.slice(0, 5)
+/**
+ * Featured Products Section for Desktop
+ * Now uses the dynamic collection system with the "top-selling" collection
+ */
+const FeaturedProductsSection = () => {
+  // Get the top-selling collection from mock data
+  const featuredCollection = getCollectionBySlug("top-selling")
+  
+  // If collection doesn't exist or is inactive, don't render
+  if (!featuredCollection) return null
 
   return (
-    <section className="px-12 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          Top Selling Components
-        </h2>
-        <LocalizedClientLink
-          href="/catalog?type=top-choice&sort=best-selling"
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-        >
-          View All →
-        </LocalizedClientLink>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {featuredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+    <section className="px-12">
+      <DynamicCollectionSection collection={featuredCollection} />
     </section>
   )
 }
