@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useVerifyBusiness } from '@/hooks/queries/useBusinessVerification'
-import { getBusinessProfile } from '@/lib/actions/business'
+import { getBusinessProfileById } from '@/lib/actions/business'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -87,9 +87,9 @@ export default function BusinessVerificationDetailPage() {
       setIsLoading(true)
       
       // Fetch business profile with documents
-      const result = await getBusinessProfile()
+      const result = await getBusinessProfileById(params.id as string)
       if (!result.success || !result.profile) {
-        toast.error('Business profile not found')
+        toast.error(result.error || 'Business profile not found')
         router.push('/admin/business-verification')
         return
       }
