@@ -1,6 +1,8 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
+import { sendOrderNotification } from './notifications'
+import { sendOrderStatusUpdate } from '@/lib/services/email'
 import type { OrderWithDetails } from '@/lib/types/orders'
 
 // Re-export OrderWithDetails for use in other modules
