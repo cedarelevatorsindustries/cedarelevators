@@ -171,22 +171,43 @@ RESEND_FROM_EMAIL=Cedar Elevators <noreply@cedarelevators.com>
 ## ⚠️ Partially Implemented Features
 
 ### 1. Product Catalog
-**Status**: Works with Demo Data - Needs Backend Completion
+**Status**: Dynamic Collections Refactored ✅ - Backend Completion In Progress
 
 - [x] Product listing UI
 - [x] Product detail pages
 - [x] Category browsing
 - [x] Search UI components
 - [x] Demo data fallback system
+- [x] **COMPLETED**: Dynamic collection system with centralized mock data
+- [x] **COMPLETED**: Reusable DynamicCollectionSection component
+- [x] **COMPLETED**: Removed static collection files (trending, new-arrivals, top-choices, etc.)
 - [ ] **TODO**: Complete Supabase product queries
 - [ ] **TODO**: Advanced search implementation
 - [ ] **TODO**: Filtering backend logic
 - [ ] **TODO**: Product variants system
 - [ ] **TODO**: Inventory management integration
 
-**Files to Update**:
-- `/app/src/lib/data/products.ts`
-- `/app/src/lib/supabase/queries/products.ts`
+**Refactored Files** (Dec 28, 2024):
+- ✅ Created: `/app/src/lib/data/mockCollections.ts` - Central data source for all collections
+- ✅ Created: `/app/src/components/common/DynamicCollectionSection.tsx` - Reusable component
+- ✅ Updated: `/app/src/modules/home/components/desktop/tab-content/product/index.tsx` - Uses dynamic system
+- ✅ Updated: `/app/src/modules/home/components/desktop/tab-content/categories/index.tsx` - Uses dynamic system
+- ✅ Updated: `/app/src/modules/home/components/desktop/sections/FeaturedProductsSection.tsx` - Uses dynamic system
+- ✅ Updated: `/app/src/modules/home/components/mobile/sections/FeaturedProductsSection.tsx` - Uses dynamic system
+- ✅ Updated: `/app/src/modules/home/components/mobile/sections/product-section-mobile.tsx` - Wrapper for dynamic system
+
+**Files Ready for Deletion** (Old Static Files):
+- `/app/src/modules/home/components/desktop/tab-content/product/sections/favorites-section.tsx`
+- `/app/src/modules/home/components/desktop/tab-content/product/sections/recommended-section.tsx`
+- `/app/src/modules/home/components/desktop/tab-content/product/sections/top-choices-section.tsx`
+- `/app/src/modules/home/components/desktop/tab-content/product/sections/new-arrivals-section.tsx`
+- `/app/src/modules/home/components/desktop/tab-content/categories/sections/trending-collections.tsx`
+
+**Next Steps for Admin Integration**:
+1. Create API endpoint: `GET /api/collections` - Fetch collections from database
+2. Create API endpoint: `POST /api/admin/collections` - Admin can create/edit collections
+3. Update `mockCollections.ts` to fetch from API instead of static data
+4. Add collection management UI in Admin Panel
 
 ---
 
