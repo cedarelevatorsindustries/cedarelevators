@@ -127,62 +127,11 @@
 ## ❌ Not Implemented (High Priority)
 
 ### 1. Quote Management System
-**Status**: UI Only - All Backend Missing
+**Status**: ⏸️ **ON HOLD - WILL BE HANDLED LATER**
 
-**Critical Missing Features**:
-- [ ] Quote creation API endpoint
-- [ ] Quote submission to database
-- [ ] Quote status tracking
-- [ ] Quote approval workflow
-- [ ] Quote-to-order conversion
-- [ ] Quote PDF generation
-- [ ] Template-based quotes
-- [ ] Bulk quote upload (CSV)
-- [ ] Quote timeline tracking
-- [ ] Email notifications for quotes
+> **📌 SKIPPED FOR NOW**: Quote Management System implementation is postponed. The UI exists but backend will be implemented in a future phase. Focus on other critical features first.
 
-**Implementation Required**:
-
-#### Database Schema
-```sql
--- Create quotes table
-CREATE TABLE quotes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id VARCHAR(255) NOT NULL,
-  quote_number VARCHAR(50) UNIQUE NOT NULL,
-  status TEXT NOT NULL CHECK (status IN ('draft', 'submitted', 'pending', 'approved', 'rejected', 'converted')),
-  items JSONB NOT NULL,
-  subtotal DECIMAL(10,2) NOT NULL,
-  tax DECIMAL(10,2) DEFAULT 0,
-  total_amount DECIMAL(10,2) NOT NULL,
-  notes TEXT,
-  admin_notes TEXT,
-  valid_until TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  approved_by VARCHAR(255),
-  approved_at TIMESTAMPTZ
-);
-
-CREATE INDEX idx_quotes_user_id ON quotes(clerk_user_id);
-CREATE INDEX idx_quotes_status ON quotes(status);
-CREATE INDEX idx_quotes_created_at ON quotes(created_at);
-```
-
-#### API Endpoints to Create
-1. `POST /api/quotes/create` - Create new quote
-2. `GET /api/quotes` - List user's quotes
-3. `GET /api/quotes/[id]` - Get quote details
-4. `PATCH /api/quotes/[id]` - Update quote status
-5. `POST /api/quotes/[id]/convert` - Convert to order
-6. `GET /api/quotes/[id]/pdf` - Generate PDF
-
-#### Files to Create/Update
-- `/app/src/app/api/quotes/route.ts`
-- `/app/src/app/api/quotes/[id]/route.ts`
-- `/app/src/lib/actions/quote-actions.ts`
-- `/app/src/lib/supabase/queries/quotes.ts`
-- `/app/src/lib/services/quote-service.ts`
+**Note**: All quote-related features including quote creation, approval workflow, quote-to-order conversion, and quote PDF generation are deferred to a later implementation phase.
 
 ---
 
