@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyPaymentSignature } from '@/lib/services/razorpay'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabase } from '@/lib/supabase/server'
+import crypto from 'crypto'
 
 /**
- * Razorpay webhook handler
- * Handles payment events from Razorpay
+ * POST /api/webhooks/razorpay
+ * Handle Razorpay webhook events
+ * 
+ * Webhook events: payment.captured, payment.failed, refund.created, etc.
  */
 export async function POST(request: NextRequest) {
+  console.log('🔔 [Razorpay Webhook] Webhook received')
+  
   try {
+    // Get raw body for signature verification
     const body = await request.text()
     const signature = request.headers.get('x-razorpay-signature')
     
+    console.log('🔐 [Razorpay Webhook] Signature present:', !!signature)
+    
     if (!signature) {
+      console.log('❌ [Razorpay Webhook] No signature provided')
       return NextResponse.json(
         { error: 'Missing signature' },
         { status: 400 }
@@ -20,93 +28,164 @@ export async function POST(request: NextRequest) {
     
     // Verify webhook signature
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
-    if (webhookSecret) {
-      const crypto = require('crypto')
+    
+    if (!webhookSecret) {
+      console.warn('⚠️  [Razorpay Webhook] Webhook secret not configured, skipping verification')
+    } else {
       const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)
         .update(body)
         .digest('hex')
       
       if (expectedSignature !== signature) {
+        console.log('❌ [Razorpay Webhook] Invalid signature')
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 400 }
         )
       }
+      
+      console.log('✅ [Razorpay Webhook] Signature verified')
     }
     
+    // Parse event
     const event = JSON.parse(body)
-    const supabase = createServerSupabaseClient()
+    const eventType = event.event
+    
+    console.log('📬 [Razorpay Webhook] Event type:', eventType)
+    console.log('📬 [Razorpay Webhook] Event data:', JSON.stringify(event, null, 2))
+    
+    const supabase = await createServerSupabase()
     
     if (!supabase) {
+      console.error('❌ [Razorpay Webhook] Failed to create Supabase client')
       return NextResponse.json(
         { error: 'Database connection failed' },
         { status: 500 }
       )
     }
     
-    // Handle different webhook events
-    switch (event.event) {
+    // Handle different event types
+    switch (eventType) {
       case 'payment.captured':
-        // Payment was captured successfully
-        const paymentId = event.payload.payment.entity.id
-        const orderId = event.payload.payment.entity.notes?.order_id
+        console.log('💰 [Razorpay Webhook] Processing payment.captured')
         
-        if (orderId) {
-          await supabase
-            .from('orders')
-            .update({
-              payment_status: 'paid',
-              razorpay_payment_id: paymentId,
-              payment_id: paymentId,
-              paid_at: new Date().toISOString(),
-              order_status: 'confirmed',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', orderId)
+        const capturedPayment = event.payload.payment.entity
+        const capturedOrderId = capturedPayment.order_id
+        const capturedPaymentId = capturedPayment.id
+        
+        console.log('💰 [Razorpay Webhook] Order ID:', capturedOrderId)
+        console.log('💰 [Razorpay Webhook] Payment ID:', capturedPaymentId)
+        
+        // Update order
+        const { error: captureError } = await supabase
+          .from('orders')
+          .update({
+            payment_status: 'paid',
+            razorpay_payment_id: capturedPaymentId,
+            order_status: 'confirmed',
+            paid_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('razorpay_order_id', capturedOrderId)
+        
+        if (captureError) {
+          console.error('❌ [Razorpay Webhook] Failed to update order:', captureError)
+        } else {
+          console.log('✅ [Razorpay Webhook] Order updated successfully')
         }
         break
-      
+        
       case 'payment.failed':
-        // Payment failed
-        const failedPaymentId = event.payload.payment.entity.id
-        const failedOrderId = event.payload.payment.entity.notes?.order_id
+        console.log('❌ [Razorpay Webhook] Processing payment.failed')
         
-        if (failedOrderId) {
-          await supabase
-            .from('orders')
-            .update({
-              payment_status: 'failed',
-              razorpay_payment_id: failedPaymentId,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', failedOrderId)
+        const failedPayment = event.payload.payment.entity
+        const failedOrderId = failedPayment.order_id
+        
+        console.log('❌ [Razorpay Webhook] Failed order ID:', failedOrderId)
+        
+        // Update order
+        const { error: failError } = await supabase
+          .from('orders')
+          .update({
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('razorpay_order_id', failedOrderId)
+        
+        if (failError) {
+          console.error('❌ [Razorpay Webhook] Failed to update order:', failError)
+        } else {
+          console.log('✅ [Razorpay Webhook] Order marked as failed')
         }
         break
-      
+        
       case 'refund.created':
-        // Refund was created
-        const refundOrderId = event.payload.refund.entity.notes?.order_id
+        console.log('🔄 [Razorpay Webhook] Processing refund.created')
         
-        if (refundOrderId) {
-          await supabase
-            .from('orders')
-            .update({
-              payment_status: 'refunded',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', refundOrderId)
+        const refund = event.payload.refund.entity
+        const refundPaymentId = refund.payment_id
+        
+        console.log('🔄 [Razorpay Webhook] Refund payment ID:', refundPaymentId)
+        
+        // Update order
+        const { error: refundError } = await supabase
+          .from('orders')
+          .update({
+            payment_status: 'refunded',
+            updated_at: new Date().toISOString()
+          })
+          .eq('razorpay_payment_id', refundPaymentId)
+        
+        if (refundError) {
+          console.error('❌ [Razorpay Webhook] Failed to update order:', refundError)
+        } else {
+          console.log('✅ [Razorpay Webhook] Order marked as refunded')
         }
         break
-      
+        
+      case 'order.paid':
+        console.log('✅ [Razorpay Webhook] Processing order.paid')
+        
+        const paidOrder = event.payload.order.entity
+        const paidOrderId = paidOrder.id
+        
+        console.log('✅ [Razorpay Webhook] Paid order ID:', paidOrderId)
+        
+        // Update order
+        const { error: paidError } = await supabase
+          .from('orders')
+          .update({
+            payment_status: 'paid',
+            order_status: 'confirmed',
+            paid_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('razorpay_order_id', paidOrderId)
+        
+        if (paidError) {
+          console.error('❌ [Razorpay Webhook] Failed to update order:', paidError)
+        } else {
+          console.log('✅ [Razorpay Webhook] Order marked as paid')
+        }
+        break
+        
       default:
-        console.log('Unhandled webhook event:', event.event)
+        console.log('🔔 [Razorpay Webhook] Unhandled event type:', eventType)
+        break
     }
     
-    return NextResponse.json({ success: true })
+    console.log('🎉 [Razorpay Webhook] Webhook processed successfully')
+    
+    return NextResponse.json({
+      received: true,
+      eventType: eventType
+    })
     
   } catch (error: any) {
-    console.error('Webhook error:', error)
+    console.error('❌ [Razorpay Webhook] Error processing webhook:', error)
+    console.error('❌ [Razorpay Webhook] Error stack:', error.stack)
+    
     return NextResponse.json(
       { error: error.message || 'Webhook processing failed' },
       { status: 500 }
