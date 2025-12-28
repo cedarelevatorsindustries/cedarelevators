@@ -184,7 +184,7 @@ export async function getAdminQuoteById(quoteId: string): Promise<
 // =====================================================
 
 export async function getAdminQuoteStats(): Promise<
-    | { success: true; stats: QuoteStats & { in_review_count: number; business_count: number } }
+    | { success: true; stats: QuoteStats & { reviewing_count: number; business_count: number } }
     | { success: false; error: string }
 > {
     try {
@@ -204,11 +204,11 @@ export async function getAdminQuoteStats(): Promise<
 
         const stats = {
             total_quotes: quotes.length,
-            active_quotes: quotes.filter(q => ['pending', 'in_review', 'negotiation'].includes(q.status)).length,
+            active_quotes: quotes.filter(q => ['pending', 'reviewing', 'approved'].includes(q.status)).length,
             total_value: quotes.reduce((sum, q) => sum + (q.estimated_total || 0), 0),
             pending_count: quotes.filter(q => q.status === 'pending').length,
-            accepted_count: quotes.filter(q => q.status === 'accepted').length,
-            in_review_count: quotes.filter(q => q.status === 'in_review').length,
+            accepted_count: quotes.filter(q => q.status === 'approved').length,
+            reviewing_count: quotes.filter(q => q.status === 'reviewing').length,
             business_count: quotes.filter(q => ['business', 'verified'].includes(q.user_type)).length
         }
 
