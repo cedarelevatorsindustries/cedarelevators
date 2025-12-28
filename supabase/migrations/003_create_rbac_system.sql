@@ -115,38 +115,52 @@ CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 
 -- =====================================================
--- HELPER FUNCTIONS FOR RLS
+-- HELPER FUNCTIONS FOR RLS (Native Clerk Integration)
 -- =====================================================
 
--- Function to extract JWT claim
-CREATE OR REPLACE FUNCTION get_jwt_claim(claim text)
+-- Function to get current user ID from Clerk JWT
+CREATE OR REPLACE FUNCTION get_current_user_id()
 RETURNS text AS $$
 BEGIN
   RETURN COALESCE(
-    current_setting('request.jwt.claims', true)::json->>claim,
+    auth.jwt() ->> 'sub',
     NULL
   );
 EXCEPTION
   WHEN OTHERS THEN
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql STABLE;
-
--- Function to get current user ID from JWT
-CREATE OR REPLACE FUNCTION get_current_user_id()
-RETURNS text AS $$
-BEGIN
-  RETURN get_jwt_claim('sub');
-END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
 -- Function to check if user is authenticated
 CREATE OR REPLACE FUNCTION is_authenticated()
 RETURNS boolean AS $$
 BEGIN
-  RETURN get_current_user_id() IS NOT NULL;
+  RETURN (auth.jwt() ->> 'sub') IS NOT NULL;
 END;
-$$ LANGUAGE plpgsql STABLE;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Function to get user role from JWT
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS text AS $$
+BEGIN
+  RETURN COALESCE(
+    auth.jwt() -> 'user_metadata' ->> 'account_type',
+    'individual'
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Function to get verification status from JWT
+CREATE OR REPLACE FUNCTION get_verification_status()
+RETURNS text AS $$
+BEGIN
+  RETURN COALESCE(
+    auth.jwt() -> 'user_metadata' ->> 'verification_status',
+    'none'
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
 -- =====================================================
 -- ROW LEVEL SECURITY POLICIES
