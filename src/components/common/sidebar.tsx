@@ -14,12 +14,12 @@ import {
     FolderTree,
     Layers,
     Image,
-    Percent,
     Warehouse,
     Users,
     Settings,
     Store,
-    LogOut
+    LogOut,
+    FileText
 } from "lucide-react"
 
 const mainNavItems = [
@@ -32,6 +32,11 @@ const mainNavItems = [
         title: "Orders",
         href: "/admin/orders",
         icon: ShoppingCart,
+    },
+    {
+        title: "Quotes",
+        href: "/admin/quotes",
+        icon: FileText,
     },
     {
         title: "Products",
@@ -52,11 +57,6 @@ const mainNavItems = [
         title: "Banners",
         href: "/admin/banners",
         icon: Image,
-    },
-    {
-        title: "Coupons",
-        href: "/admin/coupons",
-        icon: Percent,
     },
     {
         title: "Inventory",
@@ -144,7 +144,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                     "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
                                     collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
                                     (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
-                                        ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100" // Active: White bg, Orange text, Subtle shadow
+                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200" // Active: Orange bg, White text
                                         : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
                                 )}
                                 asChild
@@ -155,7 +155,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                         "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                                         collapsed ? "" : "mr-2 lg:mr-3",
                                         (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
-                                            ? "text-orange-600"
+                                            ? "text-white"
                                             : "text-gray-400 group-hover:text-gray-500"
                                     )} />
                                     {!collapsed && <span className="truncate">{item.title}</span>}
@@ -179,7 +179,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                 "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
                                 collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
                                 pathname.startsWith(item.href)
-                                    ? "bg-white text-orange-600 shadow-md shadow-orange-100 border border-orange-100"
+                                    ? "bg-orange-600 text-white shadow-md shadow-orange-200"
                                     : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
                             )}
                             asChild
@@ -190,7 +190,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                     "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                                     collapsed ? "" : "mr-2 lg:mr-3",
                                     pathname.startsWith(item.href)
-                                        ? "text-orange-600"
+                                        ? "text-white"
                                         : "text-gray-400 group-hover:text-gray-500"
                                 )} />
                                 {!collapsed && <span className="truncate">{item.title}</span>}

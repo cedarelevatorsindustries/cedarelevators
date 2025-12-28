@@ -29,11 +29,14 @@ export interface Product {
     category_id?: string
     categories?: ProductCategory[]
     metadata?: Record<string, any>
-    // Price from the first variant or a calculated range
     price?: {
         amount: number
         currency_code: string
     }
+    specifications?: { key: string; value: string }[]
+    tags?: string[]
+    brand?: string
+    model?: string
     created_at?: string
 }
 

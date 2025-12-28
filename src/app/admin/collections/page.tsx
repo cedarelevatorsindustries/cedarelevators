@@ -1,289 +1,277 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Layers, Package, Eye, EyeOff, Edit, Trash2, Calendar, RefreshCw } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import { toast } from "sonner"
-
-interface Collection {
-  id: string
-  title: string
-  slug: string
-  description: string | null
-  type: string
-  is_active: boolean
-  rule_json: any
-  created_at: string
-  updated_at: string
-  product_count?: number
-}
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, Layers, Package, Eye, EyeOff, Edit, Trash2, Loader2, RefreshCw, Search, Star } from "lucide-react"
+import Link from "next/link"
+import { useCollections, useDeleteCollection, useToggleCollectionStatus } from "@/hooks/queries/useCollections"
+import type { CollectionWithProducts } from "@/lib/types/collections"
 
 export default function CollectionsPage() {
-  const [collections, setCollections] = useState<Collection[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  const fetchCollections = async () => {
-    try {
-      setIsLoading(true)
-      
-      // Fetch collections
-      const { data: collectionsData, error: collectionsError } = await supabase
-        .from('collections')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (collectionsError) throw collectionsError
-
-      // Fetch product counts for each collection
-      const collectionsWithCounts = await Promise.all(
-        (collectionsData || []).map(async (collection) => {
-          const { count, error: countError } = await supabase
-            .from('product_collections')
-            .select('*', { count: 'exact', head: true })
-            .eq('collection_id', collection.id)
-
-          if (countError) {
-            console.error('Error fetching product count:', countError)
-            return { ...collection, product_count: 0 }
-          }
-
-          return { ...collection, product_count: count || 0 }
-        })
-      )
-
-      setCollections(collectionsWithCounts)
-    } catch (error) {
-      console.error('Error fetching collections:', error)
-      toast.error('Failed to load collections')
-    } finally {
-      setIsLoading(false)
-    }
+  const filters = {
+    search: searchQuery || undefined,
+    type: typeFilter !== 'all' ? (typeFilter as 'manual' | 'automatic') : undefined,
+    is_active: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
   }
 
-  useEffect(() => {
-    fetchCollections()
-  }, [])
+  const { data, isLoading, refetch } = useCollections(filters)
+  const deleteMutation = useDeleteCollection()
+  const toggleMutation = useToggleCollectionStatus()
 
-  const activeCollections = collections.filter(c => c.is_active)
-  const totalProducts = collections.reduce((sum, c) => sum + (c.product_count || 0), 0)
+  const collections = data?.collections || []
+  const stats = data?.stats || { total: 0, active: 0, featured: 0, total_products: 0 }
 
-  const handleToggleActive = async (collection: Collection) => {
-    try {
-      const { error } = await supabase
-        .from('collections')
-        .update({ is_active: !collection.is_active })
-        .eq('id', collection.id)
-
-      if (error) throw error
-      toast.success(`Collection ${!collection.is_active ? 'activated' : 'deactivated'}`)
-      fetchCollections()
-    } catch (error) {
-      console.error('Error toggling collection:', error)
-      toast.error('Failed to update collection')
-    }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this collection?')) return
+    await deleteMutation.mutateAsync(id)
   }
 
-  const handleDelete = async (collectionId: string) => {
-    if (!confirm('Are you sure you want to delete this collection? This will not delete the products.')) return
-
-    try {
-      const { error } = await supabase
-        .from('collections')
-        .delete()
-        .eq('id', collectionId)
-
-      if (error) throw error
-      toast.success('Collection deleted successfully')
-      fetchCollections()
-    } catch (error) {
-      console.error('Error deleting collection:', error)
-      toast.error('Failed to delete collection')
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-center p-12">
-          <RefreshCw className="h-8 w-8 animate-spin text-orange-600" />
-        </div>
-      </div>
-    )
+  const handleToggleStatus = async (id: string) => {
+    await toggleMutation.mutateAsync(id)
   }
 
   return (
-    <div className="space-y-8" data-testid="collections-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Collections</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Create curated product collections for campaigns and merchandising
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={fetchCollections}
-            disabled={isLoading}
-            data-testid="refresh-collections-button"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25" data-testid="create-collection-button">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Collection
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Total Collections
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-orange-100">
-              <Layers className="h-4 w-4 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2" data-testid="total-collections-count">{collections.length}</div>
-            <p className="text-xs text-gray-600">All collections</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Active Collections
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-green-100">
-              <Eye className="h-4 w-4 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2" data-testid="active-collections-count">{activeCollections.length}</div>
-            <p className="text-xs text-gray-600">Currently active</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Total Products
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-purple-100">
-              <Package className="h-4 w-4 text-purple-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2" data-testid="total-products-count">{totalProducts}</div>
-            <p className="text-xs text-gray-600">In collections</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Collections List */}
-      <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">All Collections</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {collections.length === 0 ? (
-            <div className="text-center py-12">
-              <Layers className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No collections yet</h3>
-              <p className="text-gray-600 mb-4">Create your first collection to organize your products</p>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+    <div className="w-full max-w-full overflow-x-hidden bg-gray-50 min-h-screen p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Collections</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Create curated product collections for campaigns
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="bg-white border-gray-200 hover:bg-gray-50"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
+              <Link href="/admin/collections/create">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Collection
-              </Button>
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Collections</CardTitle>
+              <Layers className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <p className="text-xs text-gray-500 mt-1">All collections</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
+              <Eye className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.active}</div>
+              <p className="text-xs text-gray-500 mt-1">Currently active</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Featured</CardTitle>
+              <Star className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.featured}</div>
+              <p className="text-xs text-gray-500 mt-1">Featured collections</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Products</CardTitle>
+              <Package className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.total_products}</div>
+              <p className="text-xs text-gray-500 mt-1">In collections</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-gray-900">Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search collections..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Type</label>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="bg-white border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="automatic">Automatic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {collections.map((collection) => (
-                <div
-                  key={collection.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50 hover:shadow-md transition-all duration-200"
-                  data-testid={`collection-item-${collection.slug}`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <Layers className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900">{collection.title}</h3>
+          </CardContent>
+        </Card>
+
+        {/* Collections List */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-gray-900">
+              All Collections ({collections.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              </div>
+            ) : collections.length === 0 ? (
+              <div className="text-center py-12">
+                <Layers className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                <h3 className="text-base font-medium text-gray-900 mb-2">No collections found</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                    ? "Try adjusting your filters."
+                    : "Get started by creating your first collection."}
+                </p>
+                <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                  <Link href="/admin/collections/create">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Collection
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {collections.map((collection: CollectionWithProducts) => (
+                  <div
+                    key={collection.id}
+                    className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
+                  >
+                    {/* Image */}
+                    {collection.image_url ? (
+                      <img src={collection.image_url} alt={collection.title} className="w-20 h-14 rounded object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-20 h-14 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                        <Layers className="h-6 w-6 text-gray-400" />
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-gray-900 truncate">{collection.title}</h3>
+                        {collection.is_featured && (
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                        )}
                       </div>
                       {collection.description && (
-                        <p className="text-sm text-gray-600">{collection.description}</p>
+                        <p className="text-sm text-gray-500 truncate">{collection.description}</p>
                       )}
-                      <div className="flex items-center space-x-4 mt-1">
-                        <Badge variant="outline" className="text-xs">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <Badge variant="outline" className="text-xs capitalize bg-gray-50 border-gray-200">
                           {collection.type}
                         </Badge>
-                        <span className="text-xs text-gray-500">
-                          {collection.product_count || 0} products
-                        </span>
+                        <span>{collection.product_count || 0} products</span>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center space-x-6">
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-gray-900">{collection.product_count || 0}</p>
-                      <p className="text-xs text-gray-500">Products</p>
-                    </div>
-                    <Badge
-                      variant={collection.is_active ? "default" : "secondary"}
-                      className={collection.is_active
-                        ? "bg-green-100 text-green-700 border-green-200"
-                        : "bg-gray-100 text-gray-700 border-gray-200"
-                      }
-                      data-testid={`collection-status-${collection.slug}`}
-                    >
-                      {collection.is_active ? 'active' : 'inactive'}
-                    </Badge>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100" data-testid={`edit-collection-${collection.slug}`}>
-                        <Edit className="h-4 w-4" />
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        asChild
+                      >
+                        <Link href={`/admin/collections/${collection.id}/edit`}>
+                          <Edit className="h-4 w-4 text-gray-600" />
+                        </Link>
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-gray-100"
-                        onClick={() => handleToggleActive(collection)}
-                        data-testid={`toggle-collection-${collection.slug}`}
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        onClick={() => handleToggleStatus(collection.id)}
+                        disabled={toggleMutation.isPending}
                       >
                         {collection.is_active ? (
-                          <EyeOff className="h-4 w-4" />
+                          <Eye className="h-4 w-4 text-green-600" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <EyeOff className="h-4 w-4 text-gray-400" />
                         )}
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-orange-100 text-orange-600"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-red-50"
                         onClick={() => handleDelete(collection.id)}
-                        data-testid={`delete-collection-${collection.slug}`}
+                        disabled={deleteMutation.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-600" />
                       </Button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

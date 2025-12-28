@@ -165,21 +165,23 @@ export default function ProductCard({
 
           {/* CTA Buttons - Cart Icon + Quote Button */}
           <div className="flex gap-1.5 pt-1">
-            {/* Orange Cart Icon Button */}
-            <button
-              onClick={handleAddToCart}
-              className="w-8 h-8 flex-shrink-0 rounded-lg bg-orange-500 hover:bg-orange-600 transition-colors flex items-center justify-center shadow-sm"
-            >
-              <ShoppingCart className="w-4 h-4 text-white" />
-            </button>
+            {/* Cart Button - Only for Verified Business */}
+            {showPrice && (
+              <button
+                onClick={handleAddToCart}
+                className="w-8 h-8 flex-shrink-0 rounded-lg bg-orange-500 hover:bg-orange-600 transition-colors flex items-center justify-center shadow-sm"
+              >
+                <ShoppingCart className="w-4 h-4 text-white" />
+              </button>
+            )}
 
-            {/* Request Quote Button - Takes Remaining Space */}
+            {/* Request Quote Button - For Everyone */}
             <button
               onClick={handleRequestQuote}
               className="flex-1 py-1.5 rounded-lg font-medium text-xs border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              Request Quote
+              {isBusiness && !isVerified ? "Get Bulk Quote" : "Request Quote"}
             </button>
           </div>
         </div>
@@ -254,19 +256,21 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* Actions: Add to Cart (Icon) & Quote (Icon) */}
+            {/* Actions: Cart (only for verified) & Quote (for all) */}
             <div className="flex gap-1.5">
-              <button
-                onClick={handleAddToCart}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 transition-all flex items-center justify-center"
-                title="Add to Cart"
-              >
-                <ShoppingCart className="w-4 h-4" />
-              </button>
+              {showPrice && (
+                <button
+                  onClick={handleAddToCart}
+                  className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 transition-all flex items-center justify-center"
+                  title="Add to Cart"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                </button>
+              )}
               <button
                 onClick={handleRequestQuote}
                 className="w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 border border-orange-100 hover:border-orange-500 transition-all flex items-center justify-center"
-                title="Request Quote"
+                title={isBusiness && !isVerified ? "Get Bulk Quote" : "Request Quote"}
               >
                 <MessageSquare className="w-4 h-4" />
               </button>
@@ -371,24 +375,26 @@ export default function ProductCard({
           </p>
         )}
 
-        {/* CTA Buttons - Equal Size, Colorless with Hover */}
+        {/* CTA Buttons - Cart only for Verified Business */}
         <div className="flex gap-2 pt-2">
-          {/* Primary: Add to Cart */}
-          <button
-            onClick={handleAddToCart}
-            className="flex-1 py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Add to Cart
-          </button>
+          {/* Add to Cart - Only for Verified Business */}
+          {showPrice && (
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 py-2.5 rounded-lg font-medium text-sm bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </button>
+          )}
 
-          {/* Secondary: Request Quote */}
+          {/* Request Quote - For Everyone */}
           <button
             onClick={handleRequestQuote}
-            className="flex-1 py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-2"
+            className={`${showPrice ? 'flex-1' : 'w-full'} py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-2`}
           >
             <MessageSquare className="w-4 h-4" />
-            Quote
+            {isBusiness && !isVerified ? "Get Bulk Quote" : "Quote"}
           </button>
         </div>
       </div>

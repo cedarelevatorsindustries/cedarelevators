@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Save } from "lucide-react"
 import Link from "next/link"
 import { createProduct } from "@/lib/actions/products"
+import { toast } from "sonner"
 import { ProductTabs } from "@/modules/admin/product-creation/product-tabs"
 import { ProductPreview } from "@/modules/admin/product-creation/product-preview"
 
@@ -12,12 +13,12 @@ import { ProductPreview } from "@/modules/admin/product-creation/product-preview
 import { GeneralTab } from "@/modules/admin/product-creation/general-tab"
 import { MediaTab } from "@/modules/admin/product-creation/media-tab"
 import { PricingTab } from "@/modules/admin/product-creation/pricing-tab"
-import { VariantsTab } from "@/modules/admin/product-creation/variants-tab"
+import { VariantsTab, type VariantOption, type ProductVariant } from "@/modules/admin/product-creation/variants-tab"
 import { InventoryTab } from "@/modules/admin/product-creation/inventory-tab"
 import { OrganizationTab } from "@/modules/admin/product-creation/organization-tab"
 import { SEOTab } from "@/modules/admin/product-creation/seo-tab"
 
-// Types
+// Types matching local state needs
 interface ProductImage {
   id: string
   url: string
@@ -25,29 +26,7 @@ interface ProductImage {
   isPrimary: boolean
 }
 
-interface VariantOption {
-  id: string
-  name: string
-  type: 'color' | 'size' | 'custom'
-  values: {
-    id: string
-    name: string
-    hexColor?: string
-    sizeType?: 'numbers' | 'letters' | 'custom'
-  }[]
-}
-
-interface ProductVariant {
-  id: string
-  name: string
-  sku: string
-  price: string
-  mrp: string
-  stock: string
-  active: boolean
-  combinations: { [optionId: string]: string }
-}
-
+// Local form state interface
 interface ProductFormData {
   // General
   name: string
@@ -55,32 +34,32 @@ interface ProductFormData {
   description: string
   highlights: string[]
   status: "draft" | "active" | "archived"
-  
+
   // Media
   images: ProductImage[]
-  
+
   // Pricing
   pricingMode: "single" | "variant"
   price: string
   comparePrice: string
   cost: string
   taxable: boolean
-  
+
   // Variants
   options: VariantOption[]
   variants: ProductVariant[]
-  
+
   // Inventory
   trackInventory: boolean
   allowBackorders: boolean
   lowStockThreshold: string
   globalStock: string
-  
+
   // Organization
   categories: string[]
   collections: string[]
   tags: string[]
-  
+
   // SEO
   metaTitle: string
   metaDescription: string
@@ -97,32 +76,32 @@ export default function CreateProductPage() {
     description: "",
     highlights: [],
     status: "draft",
-    
+
     // Media
     images: [],
-    
+
     // Pricing
     pricingMode: "single",
     price: "",
     comparePrice: "",
     cost: "",
     taxable: false,
-    
+
     // Variants
     options: [],
     variants: [],
-    
+
     // Inventory
     trackInventory: true,
     allowBackorders: false,
     lowStockThreshold: "5",
     globalStock: "0",
-    
+
     // Organization
     categories: [],
     collections: [],
     tags: [],
-    
+
     // SEO
     metaTitle: "",
     metaDescription: "",
@@ -136,87 +115,69 @@ export default function CreateProductPage() {
   const handleSubmit = async (isDraft = false) => {
     setIsLoading(true)
     try {
-      const productData = {
-        // General
-        title: formData.name,
-        subtitle: formData.subtitle,
+      // Map local form data to API ProductFormData expected by server action
+      // We perform a loose cast with 'any' to construct the payload, 
+      // relying on the server action validation.
+      const productPayload: any = {
+        name: formData.name,
+        slug: formData.urlHandle || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
         description: formData.description,
-        highlights: formData.highlights,
-        status: isDraft ? 'draft' as const : 'active' as const,
-        
-        // Pricing
-        price: formData.pricingMode === 'single' ? parseInt(formData.price) || 0 : undefined,
-        compare_price: formData.pricingMode === 'single' ? parseInt(formData.comparePrice) || undefined : undefined,
-        cost: formData.pricingMode === 'single' ? parseInt(formData.cost) || undefined : undefined,
-        taxable: formData.taxable,
-        
-        // Inventory
-        track_inventory: formData.trackInventory,
-        allow_backorders: formData.allowBackorders,
-        low_stock_threshold: parseInt(formData.lowStockThreshold) || 5,
-        global_stock: formData.pricingMode === 'single' ? parseInt(formData.globalStock) || 0 : undefined,
-        
-        // SEO
-        meta_title: formData.metaTitle,
-        meta_description: formData.metaDescription,
-        url_handle: formData.urlHandle,
-        
-        // Images
-        images: formData.images.map(img => ({
+        short_description: formData.subtitle,
+        status: isDraft ? 'draft' : formData.status,
+
+        // Pricing (for single product mode)
+        price: formData.pricingMode === 'single' ? (parseFloat(formData.price) || 0) : 0,
+        compare_at_price: formData.pricingMode === 'single' ? (parseFloat(formData.comparePrice) || undefined) : undefined,
+        cost_per_item: formData.pricingMode === 'single' ? (parseFloat(formData.cost) || undefined) : undefined,
+        stock_quantity: formData.pricingMode === 'single' ? (parseInt(formData.globalStock) || 0) : 0,
+
+        // Map images to new structure
+        images: formData.images.map((img, index) => ({
+          id: img.id || `img-${index}`,
           url: img.url,
           alt: img.alt,
-          isPrimary: img.isPrimary
+          is_primary: img.isPrimary,
+          sort_order: index
         })),
-        
-        // Options and Variants
-        options: formData.options.map(option => ({
-          name: option.name,
-          values: option.values.map(value => ({
-            name: value.name,
-            hexColor: value.hexColor
-          }))
-        })),
-        variants: formData.variants.map(variant => ({
-          name: variant.name,
-          sku: variant.sku,
-          price: parseInt(variant.price) || 0,
-          comparePrice: parseInt(variant.mrp) || undefined,
-          stock: parseInt(variant.stock) || 0,
-          active: variant.active,
-          combinations: variant.combinations
-        })),
-        
-        // Organization
-        categoryIds: formData.categories,
-        collectionIds: formData.collections,
-        tags: formData.tags
+
+        // Defaults
+        dimensions: { unit: 'cm' },
+
+        // Map tags and highlights
+        tags: [...formData.tags, ...formData.highlights],
+        specifications: [], // Placeholder for now
+
+        is_featured: false,
+        view_count: 0
       }
 
-      const result = await createProduct(productData)
-      if (result.success) {
-        // Redirect to products list or show success message
-        window.location.href = '/admin/products'
-      } else {
-        console.error('Failed to create product:', result.error)
-        // Show error message to user
-      }
-    } catch (error) {
+      // TODO: Handle Variant creation separately or expand server action
+      // For now we create the base product. Variants require a valid product ID.
+
+      const newProduct = await createProduct(productPayload)
+
+      toast.success("Product created successfully")
+      // Redirect to products list
+      window.location.href = '/admin/products'
+
+    } catch (error: any) {
       console.error('Error creating product:', error)
+      toast.error(error.message || "Failed to create product")
     } finally {
       setIsLoading(false)
     }
   }
 
   const canPublish = () => {
-    return formData.name && 
-           formData.description && 
-           (formData.variants.length > 0 || formData.price) && 
-           formData.images.length > 0
+    return formData.name &&
+      formData.description &&
+      (formData.variants.length > 0 || formData.price) &&
+      formData.images.length > 0
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <div className="space-y-6 lg:space-y-8">
+    <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
@@ -224,17 +185,18 @@ export default function CreateProductPage() {
               Add Product
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              Create a new product for your store
+              Create a new elevator component for your catalog
             </p>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="bg-white border-gray-200 hover:bg-gray-50">
               <Link href="/admin/products">Cancel</Link>
             </Button>
             <Button
               variant="outline"
               onClick={() => handleSubmit(true)}
               disabled={isLoading}
+              className="bg-white border-gray-200 hover:bg-gray-50"
             >
               Save as Draft
             </Button>
@@ -254,7 +216,7 @@ export default function CreateProductPage() {
 
         {/* Main Content */}
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-4 w-full">
-          <div className="lg:col-span-3 min-w-0 w-full">
+          <div className="lg:col-span-3 min-w-0 w-full space-y-6">
             {activeTab === "general" && (
               <GeneralTab
                 formData={{

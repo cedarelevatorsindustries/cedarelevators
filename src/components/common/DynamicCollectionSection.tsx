@@ -4,7 +4,7 @@ import { Collection } from "@/lib/data/mockCollections"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Heart, TrendingUp, Star, Sparkles, ThumbsUp } from "lucide-react"
-import { cn } from "@/lib/utils/utils"
+import { cn } from "@/lib/utils"
 
 interface DynamicCollectionSectionProps {
   collection: Collection
@@ -46,11 +46,11 @@ export default function DynamicCollectionSection({
 }: DynamicCollectionSectionProps) {
   // Don't render if collection is inactive or has no products (unless it has an empty state message)
   if (!collection.isActive) return null
-  
+
   // Handle empty state
   if (collection.products.length === 0) {
     if (!collection.emptyStateMessage) return null
-    
+
     return (
       <section className={cn("py-8", className)}>
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">{collection.title}</h2>
@@ -85,7 +85,7 @@ export default function DynamicCollectionSection({
   // Mobile variant with horizontal scroll
   if (variant === "mobile") {
     const displayProducts = collection.products.slice(0, 5)
-    
+
     return (
       <section className={cn("pt-4 bg-white", className)}>
         <div className="flex items-center justify-between mb-4 px-4">
@@ -99,8 +99,8 @@ export default function DynamicCollectionSection({
             )}
           </div>
           {collection.showViewAll && (
-            <LocalizedClientLink 
-              href={collection.viewAllLink} 
+            <LocalizedClientLink
+              href={collection.viewAllLink}
               className="text-blue-600 text-sm font-medium"
             >
               View All →
@@ -127,7 +127,7 @@ export default function DynamicCollectionSection({
 
   // Desktop variant with different grid layouts
   const layout = collection.layout || "grid-5"
-  
+
   // Determine grid classes based on layout
   const gridClasses = {
     "grid-3": "grid grid-cols-2 md:grid-cols-3 gap-4",
@@ -153,12 +153,12 @@ export default function DynamicCollectionSection({
             (() => {
               const Icon = iconMap[collection.icon]
               if (!Icon) return null
-              
+
               // Special styling for trending icon
               if (collection.icon === "trending") {
                 return <Icon className="w-6 h-6 text-green-600" />
               }
-              
+
               return <Icon className="w-6 h-6 text-gray-600" />
             })()
           )}
@@ -179,8 +179,8 @@ export default function DynamicCollectionSection({
 
       <div className={gridClasses[layout]}>
         {displayProducts.map((product) => (
-          <ProductCard 
-            key={product.id} 
+          <ProductCard
+            key={product.id}
             product={product}
             variant={cardVariant}
           />

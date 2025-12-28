@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Package, ShoppingCart, Users, BarChart3, Settings, FolderTree } from "lucide-react"
+import { Plus, Package, ShoppingCart, Users, BarChart3, Settings, FolderTree, FileText } from "lucide-react"
 import Link from "next/link"
 
 // Simple placeholder stats
 const quickStats = [
   { title: "Total Products", value: "—", icon: Package, href: "/admin/products" },
   { title: "Total Orders", value: "—", icon: ShoppingCart, href: "/admin/orders" },
+  { title: "Quote Requests", value: "—", icon: FileText, href: "/admin/quotes" },
   { title: "Categories", value: "—", icon: FolderTree, href: "/admin/categories" },
   { title: "Customers", value: "—", icon: Users, href: "/admin/customers" },
 ]
@@ -16,7 +17,7 @@ const quickStats = [
 const quickActions = [
   { title: "Add Product", href: "/admin/products/create", icon: Plus, primary: true },
   { title: "View Orders", href: "/admin/orders", icon: ShoppingCart },
-  { title: "Categories", href: "/admin/categories", icon: FolderTree },
+  { title: "View Quotes", href: "/admin/quotes", icon: FileText },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ]
 

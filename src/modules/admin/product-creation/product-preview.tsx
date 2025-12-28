@@ -23,25 +23,25 @@ interface ProductPreviewProps {
   variantCount: number
 }
 
-export function ProductPreview({ 
-  productName, 
-  productSubtitle, 
-  price, 
-  comparePrice, 
-  images, 
+export function ProductPreview({
+  productName,
+  productSubtitle,
+  price,
+  comparePrice,
+  images,
   status,
   hasVariants,
-  variantCount 
+  variantCount
 }: ProductPreviewProps) {
   const primaryImage = images.find(img => img.isPrimary)
   const displayPrice = parseFloat(price) || 0
   const displayComparePrice = parseFloat(comparePrice) || 0
-  const discount = displayComparePrice > displayPrice 
+  const discount = displayComparePrice > displayPrice
     ? Math.round(((displayComparePrice - displayPrice) / displayComparePrice) * 100)
     : 0
 
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200 sticky top-4">
+    <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 sticky top-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">Product Preview</CardTitle>
       </CardHeader>
@@ -117,14 +117,14 @@ export function ProductPreview({
         {/* Status */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
-          <Badge 
+          <Badge
             variant={status === "active" ? "default" : status === "draft" ? "secondary" : "outline"}
             className={
-              status === "active" 
-                ? "bg-green-100 text-green-700 border-green-200" 
+              status === "active"
+                ? "bg-green-100 text-green-700 border-green-200"
                 : status === "draft"
-                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                : "bg-gray-100 text-gray-700 border-gray-200"
+                  ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                  : "bg-gray-100 text-gray-700 border-gray-200"
             }
           >
             {status}
@@ -139,12 +139,12 @@ export function ProductPreview({
             ))}
             <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(24 reviews)</span>
           </div>
-          
+
           <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled>
             <ShoppingCart className="mr-2 h-4 w-4" />
             Add to Cart
           </Button>
-          
+
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
             Preview only - not functional
           </p>

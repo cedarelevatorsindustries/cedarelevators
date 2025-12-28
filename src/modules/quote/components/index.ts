@@ -8,9 +8,12 @@ export * from "./quick-reorder"
 export * from "./exclusive-section"
 export * from "./mini-analytics"
 export * from "./guest-quote-form"
+export * from "./individual-quote-form"
+export * from "./business-quote-form"
 export * from "./bottom-cta"
 // New Quote Features
 export { default as QuoteTemplates } from "./quote-templates"
 export { default as TawkChat, TawkSetupInstructions } from "./tawk-chat"
 export { default as QuoteToOrder } from "./quote-to-order"
 export { default as BulkQuoteHistory } from "./bulk-quote-history"
+

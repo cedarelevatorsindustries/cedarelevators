@@ -1,85 +1,75 @@
-'use client'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { getProducts, getProduct, createProduct, updateProduct, deleteProduct, getProductStats } from "@/lib/actions/products"
+import type { Product, ProductFormData, ProductFilters } from "@/lib/types/products"
+import { toast } from "sonner"
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
-
-/**
- * Product interface
- */
-export interface Product {
-    id: string
-    name: string
-    description?: string
-    category?: string
-    status: string
-    created_at: string
-    updated_at: string
-    variants_count?: number
-    total_inventory?: number
-}
-
-/**
- * Fetch products from API
- */
-async function fetchProducts(filters: {
-    search?: string
-    category?: string
-    status?: string
-} = {}): Promise<Product[]> {
-    const params = new URLSearchParams()
-
-    if (filters.search) params.append('search', filters.search)
-    if (filters.category && filters.category !== 'all') params.append('category', filters.category)
-    if (filters.status && filters.status !== 'all') params.append('status', filters.status)
-
-    const queryString = params.toString()
-    const url = queryString ? `/api/admin/products?${queryString}` : '/api/admin/products'
-
-    const response = await fetch(url)
-
-    if (!response.ok) {
-        throw new Error('Failed to fetch products')
-    }
-
-    const data = await response.json()
-    return data.products || []
-}
-
-/**
- * Hook to fetch products with filters
- */
-export function useProducts(filters: {
-    search?: string
-    category?: string
-    status?: string
-} = {}): UseQueryResult<Product[], Error> {
+export function useProducts(filters: ProductFilters = {}, page = 1) {
     return useQuery({
-        queryKey: ['products', filters],
-        queryFn: () => fetchProducts(filters),
-        staleTime: 30000, // 30 seconds
-        refetchOnWindowFocus: false,
+        queryKey: ['products', filters, page],
+        queryFn: () => getProducts(filters, page),
     })
 }
 
-/**
- * Hook to fetch a single product by ID
- */
-export function useProduct(productId: string | null): UseQueryResult<Product, Error> {
+export function useProduct(id: string) {
     return useQuery({
-        queryKey: ['product', productId],
-        queryFn: async () => {
-            if (!productId) throw new Error('Product ID is required')
+        queryKey: ['product', id],
+        queryFn: () => getProduct(id),
+        enabled: !!id,
+    })
+}
 
-            const response = await fetch(`/api/admin/products/${productId}`)
+export function useProductStats() {
+    return useQuery({
+        queryKey: ['products-stats'],
+        queryFn: () => getProductStats(),
+    })
+}
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch product')
-            }
+export function useCreateProduct() {
+    const queryClient = useQueryClient()
 
-            const data = await response.json()
-            return data.product
+    return useMutation({
+        mutationFn: (data: ProductFormData) => createProduct(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['products-stats'] })
+            toast.success("Product created successfully")
         },
-        enabled: !!productId,
-        staleTime: 30000,
-        refetchOnWindowFocus: false,
+        onError: (error) => {
+            toast.error(`Failed to create product: ${error.message}`)
+        },
+    })
+}
+
+export function useUpdateProduct() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<ProductFormData> }) => updateProduct(id, data),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['product', data.id] })
+            queryClient.invalidateQueries({ queryKey: ['products-stats'] })
+            toast.success("Product updated successfully")
+        },
+        onError: (error) => {
+            toast.error(`Failed to update product: ${error.message}`)
+        },
+    })
+}
+
+export function useDeleteProduct() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (id: string) => deleteProduct(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] })
+            queryClient.invalidateQueries({ queryKey: ['products-stats'] })
+            toast.success("Product deleted successfully")
+        },
+        onError: (error) => {
+            toast.error(`Failed to delete product: ${error.message}`)
+        },
     })
 }

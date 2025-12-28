@@ -17,12 +17,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Edit, 
-  ExternalLink, 
-  Package, 
-  DollarSign, 
-  Warehouse, 
+import {
+  Edit,
+  ExternalLink,
+  Package,
+  DollarSign,
+  Warehouse,
   Image as ImageIcon,
   List,
   MoreHorizontal,
@@ -66,65 +66,65 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
   return (
     <div className="space-y-6">
       {/* Product Identity */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Product Identity</CardTitle>
-          <CardDescription className="text-gray-600">
-            Define what the product is and how it's described
+          <CardTitle className="text-xl font-bold text-gray-900">Component Details</CardTitle>
+          <CardDescription className="text-gray-500">
+            Define the core product information for your elevator component
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Product Name *</Label>
+            <Label htmlFor="name">Component Name *</Label>
             <Input
               id="name"
-              placeholder="e.g., Oversized Cotton Hoodie"
+              placeholder="e.g., Monarch NICE 3000+ Integrated Controller"
               value={formData.name}
               onChange={(e) => onFormDataChange({ name: e.target.value })}
               className="w-full"
             />
             <p className="text-xs text-gray-500">
-              Used everywhere - keep it clear and descriptive
+              The official technical name of the component
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="subtitle">Product Subtitle</Label>
+            <Label htmlFor="subtitle">Model / Series / Compatibility</Label>
             <Input
               id="subtitle"
-              placeholder="e.g., Winter essential, relaxed fit"
+              placeholder="e.g., Compatible with Otis Gen2 / NICE 3000 Series"
               value={formData.subtitle}
               onChange={(e) => onFormDataChange({ subtitle: e.target.value })}
               className="w-full"
             />
             <p className="text-xs text-gray-500">
-              Short tagline used in cards and banners
+              Key compatibility info or model series displayed on cards
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">Technical Description *</Label>
             <Textarea
               id="description"
-              placeholder="Describe your product - fit, fabric, wash care, return notes..."
+              placeholder="Detailed technical specifications, installation requirements, and features..."
               value={formData.description}
               onChange={(e) => onFormDataChange({ description: e.target.value })}
               rows={6}
               className="w-full"
             />
             <p className="text-xs text-gray-500">
-              Rich text editor will be added here for bold, lists, paragraphs
+              Full product documentation and details
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Product Highlights */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Product Highlights</CardTitle>
-          <CardDescription className="text-gray-600">
-            Key features for PDP highlights, SEO snippets, and mobile UX
+          <CardTitle className="text-xl font-bold text-gray-900">Key Features</CardTitle>
+          <CardDescription className="text-gray-500">
+            Bulleted highlights for quick scanning (e.g. Voltage, Protocol, Warranty)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -132,7 +132,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
             {formData.highlights.map((highlight, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Input
-                  placeholder="e.g., 100% Cotton, Pre-shrunk, Made in India"
+                  placeholder="e.g., 380V AC Input, Parallel Interface, 1 Year Warranty"
                   value={highlight}
                   onChange={(e) => updateHighlight(index, e.target.value)}
                   className="flex-1"
@@ -142,7 +142,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeHighlight(index)}
-                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                  className="text-gray-500 hover:text-red-600 hover:bg-red-50"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -152,21 +152,21 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
               type="button"
               variant="outline"
               onClick={addHighlight}
-              className="w-full"
+              className="w-full border-dashed"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Highlight
+              Add Feature Highlight
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Product Status */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">Product Status</CardTitle>
-          <CardDescription className="text-gray-600">
-            Control product visibility and availability
+          <CardTitle className="text-xl font-bold text-gray-900">Availability Status</CardTitle>
+          <CardDescription className="text-gray-500">
+            Control component visibility in the catalog
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,14 +177,11 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="draft">Draft (Hidden)</SelectItem>
+                <SelectItem value="active">Active (Visible)</SelectItem>
+                <SelectItem value="archived">Archived (Discontinued)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
-              Default is Draft - publish when ready
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -207,26 +204,26 @@ interface GeneralTabProps {
 
 export function ProductDetailView({ product }: ProductDetailViewProps) {
   // FRONTEND RESPONSIBILITY: Display state, navigation, read-only calculations
-  
+
   // Calculate display values (read-only, no business logic)
   const primaryImage = product.product_images?.find((img: any) => img.is_primary) || product.product_images?.[0]
   const totalStock = product.product_variants?.reduce((sum: number, variant: any) => sum + (variant.stock || 0), 0) || 0
   const variantCount = product.product_variants?.length || 0
   const categoryName = product.product_categories?.[0]?.categories?.name || 'Uncategorized'
   const collectionNames = product.product_collections?.map((pc: any) => pc.collections?.title).filter(Boolean) || []
-  
+
   // Price range calculation (display only)
   const prices = product.product_variants?.map((v: any) => v.price) || [product.price]
   const minPrice = Math.min(...prices)
   const maxPrice = Math.max(...prices)
-  
+
   // Stock status (display only)
   const getStockStatus = () => {
     if (totalStock === 0) return { label: 'Out of Stock', color: 'destructive' as const }
     if (totalStock < 10) return { label: 'Low Stock', color: 'secondary' as const }
     return { label: 'In Stock', color: 'default' as const }
   }
-  
+
   const stockStatus = getStockStatus()
 
   return (
@@ -250,7 +247,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{product.title}</h1>
             <div className="flex items-center space-x-2 mt-1">
-              <Badge 
+              <Badge
                 variant={product.status === 'active' ? 'default' : 'secondary'}
                 className="capitalize"
               >
@@ -260,7 +257,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button variant="outline" asChild>
             <Link href={`/products/${product.slug}`}>
@@ -328,14 +325,14 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                   </Badge>
                 </div>
               </div>
-              
+
               {product.subtitle && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Subtitle</label>
                   <p className="text-gray-900 dark:text-white">{product.subtitle}</p>
                 </div>
               )}
-              
+
               {collectionNames.length > 0 && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Collections</label>
@@ -346,7 +343,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                   </div>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-500">Created:</span>
@@ -424,8 +421,8 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
               {variantCount > 0 ? (
                 <div className="space-y-3">
                   {product.product_variants?.slice(0, 3).map((variant: any) => (
-                    <Link 
-                      key={variant.id} 
+                    <Link
+                      key={variant.id}
                       href={`/admin/products/${product.id}/variants/${variant.id}`}
                       className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
@@ -470,23 +467,23 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                   <Badge variant={stockStatus.color}>{stockStatus.label}</Badge>
                 </div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Track Inventory</span>
                 <Badge variant={product.track_inventory ? 'default' : 'secondary'}>
                   {product.track_inventory ? 'ON' : 'OFF'}
                 </Badge>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Backorders</span>
                 <Badge variant={product.allow_backorders ? 'default' : 'secondary'}>
                   {product.allow_backorders ? 'Allowed' : 'Not Allowed'}
                 </Badge>
               </div>
-              
+
               <Separator />
-              
+
               <div className="space-y-2">
                 <Button variant="outline" className="w-full" asChild>
                   <Link href="/admin/inventory">

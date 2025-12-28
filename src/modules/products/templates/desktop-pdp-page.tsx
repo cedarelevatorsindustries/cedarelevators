@@ -57,13 +57,37 @@ export default function ProductDetailPage({
 
   // Extract metadata
   const badges = product.metadata?.badges as any[] || []
-  const specifications = product.metadata?.specifications as any[] || [
+  const specifications = product.specifications?.map(s => ({ label: s.key, value: s.value })) || [
     { label: "SKU", value: product.id },
     { label: "Category", value: product.category_id || "N/A" }
   ]
   const reviews = product.metadata?.reviews as any[] || []
-  const features = product.metadata?.features as string[] || []
-  const variants = product.metadata?.variants as any[] || []
+  const features = product.tags || []
+  // Transform variants for selector
+  const variants = product.variants ? (() => {
+    const groups: Record<string, Set<string>> = {}
+
+    // Collect all unique option values
+    product.variants.forEach(v => {
+      if (v.options) {
+        Object.entries(v.options).forEach(([key, value]) => {
+          if (!groups[key]) groups[key] = new Set()
+          groups[key].add(value)
+        })
+      }
+    })
+
+    // Convert to selector format
+    return Object.entries(groups).map(([type, values]) => ({
+      type,
+      options: Array.from(values).map(val => ({
+        id: val,
+        name: val,
+        value: val,
+        inStock: true // Simplified logic
+      }))
+    }))
+  })() : []
 
   // Back URL
   const getBackUrl = () => {

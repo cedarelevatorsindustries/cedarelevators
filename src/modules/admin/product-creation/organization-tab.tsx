@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { X, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getCategories, getCollections } from "@/lib/actions/products"
+import { getCategories } from "@/lib/actions/categories"
+import { getCollections } from "@/lib/actions/collections"
+import type { Category } from "@/lib/types/categories"
+import type { Collection } from "@/lib/types/collections"
 
 interface OrganizationData {
   categories: string[]
@@ -18,20 +21,6 @@ interface OrganizationData {
 interface OrganizationTabProps {
   organizationData: OrganizationData
   onOrganizationDataChange: (updates: Partial<OrganizationData>) => void
-}
-
-interface Category {
-  id: string
-  name: string
-  slug: string
-  parent_id: string | null
-}
-
-interface Collection {
-  id: string
-  title: string
-  slug: string
-  type: string
 }
 
 export function OrganizationTab({ organizationData, onOrganizationDataChange }: OrganizationTabProps) {
@@ -48,12 +37,12 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
           getCollections()
         ])
 
-        if (categoriesResult.success && categoriesResult.data) {
-          setAvailableCategories(categoriesResult.data)
+        if (categoriesResult.success && categoriesResult.categories) {
+          setAvailableCategories(categoriesResult.categories)
         }
 
-        if (collectionsResult.success && collectionsResult.data) {
-          setAvailableCollections(collectionsResult.data)
+        if (collectionsResult.success && collectionsResult.collections) {
+          setAvailableCollections(collectionsResult.collections)
         }
       } catch (error) {
         console.error('Error loading categories and collections:', error)
@@ -127,11 +116,10 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                 <button
                   key={category.id}
                   onClick={() => toggleCategory(category.id)}
-                  className={`p-3 text-left rounded-lg border-2 transition-all ${
-                    organizationData.categories.includes(category.id)
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`p-3 text-left rounded-lg border-2 transition-all ${organizationData.categories.includes(category.id)
+                    ? "border-orange-500 bg-orange-50 text-orange-700"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   <div className="font-medium">{category.name}</div>
                 </button>
@@ -176,11 +164,10 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                 <button
                   key={collection.id}
                   onClick={() => toggleCollection(collection.id)}
-                  className={`p-3 text-left rounded-lg border-2 transition-all ${
-                    organizationData.collections.includes(collection.id)
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`p-3 text-left rounded-lg border-2 transition-all ${organizationData.collections.includes(collection.id)
+                    ? "border-orange-500 bg-orange-50 text-orange-700"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   <div className="font-medium">{collection.title}</div>
                 </button>

@@ -1,320 +1,335 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { CategoryService } from '@/lib/services/categories'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { toast } from 'sonner'
-import { ArrowLeft, Upload, Loader2 } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useCategory, useUpdateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
 
-export default function EditCategoryPage() {
+export default function EditCategoryPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const params = useParams()
-  const categoryId = params.id as string
+  const { data: categoryData, isLoading: isLoadingCategory } = useCategory(params.id)
+  const { data: categoriesData } = useCategories()
+  const updateMutation = useUpdateCategory()
+  const uploadMutation = useUploadCategoryImage()
 
-  const [loading, setLoading] = useState(false)
-  const [fetchingCategory, setFetchingCategory] = useState(true)
-  const [uploadingImage, setUploadingImage] = useState(false)
+  const category = categoryData?.category
+  const existingCategories = categoriesData?.categories?.filter((c: any) => c.id !== params.id) || []
 
   const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    parent_id: '',
-    image_url: '',
-    icon_url: '',
-    meta_title: '',
-    meta_description: '',
-    status: 'active' as 'active' | 'inactive',
-    display_order: 0
+    name: "",
+    slug: "",
+    description: "",
+    parent_id: null as string | null,
+    image_url: "",
+    image_alt: "",
+    icon: "",
+    sort_order: 0,
+    is_active: true,
+    status: "active" as "active" | "inactive",
+    application: "",
+    meta_title: "",
+    meta_description: ""
   })
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [isUploading, setIsUploading] = useState(false)
+
   useEffect(() => {
-    fetchCategory()
-  }, [categoryId])
-
-  const fetchCategory = async () => {
-    try {
-      const result = await CategoryService.getCategory(categoryId)
-      if (result.success && result.data) {
-        setFormData({
-          name: result.data.name,
-          slug: result.data.slug,
-          description: result.data.description || '',
-          parent_id: result.data.parent_id || '',
-          image_url: result.data.image_url || '',
-          icon_url: result.data.icon_url || '',
-          meta_title: result.data.meta_title || '',
-          meta_description: result.data.meta_description || '',
-          status: result.data.status,
-          display_order: result.data.display_order || 0
-        })
-      } else {
-        toast.error('Category not found')
-        router.push('/admin/categories')
+    if (category) {
+      setFormData({
+        name: category.name || "",
+        slug: category.slug || "",
+        description: category.description || "",
+        parent_id: category.parent_id || null,
+        image_url: category.image_url || "",
+        image_alt: category.image_alt || "",
+        icon: category.icon || "",
+        sort_order: category.sort_order || 0,
+        is_active: category.is_active ?? true,
+        status: category.status || "active",
+        application: category.application || "",
+        meta_title: category.meta_title || "",
+        meta_description: category.meta_description || ""
+      })
+      if (category.image_url) {
+        setImagePreview(category.image_url)
       }
-    } catch (error) {
-      toast.error('Failed to fetch category')
-      router.push('/admin/categories')
-    } finally {
-      setFetchingCategory(false)
     }
-  }
+  }, [category])
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'icon') => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingImage(true)
-
-    try {
-      const result = await CategoryService.uploadImage(file, type)
-      if (result.success && result.url) {
-        setFormData(prev => ({
-          ...prev,
-          [type === 'image' ? 'image_url' : 'icon_url']: result.url
-        }))
-        toast.success(`${type === 'image' ? 'Image' : 'Icon'} uploaded successfully`)
-      } else {
-        toast.error(result.error || 'Failed to upload')
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
       }
-    } catch (error) {
-      toast.error('Failed to upload file')
-    } finally {
-      setUploadingImage(false)
+      reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+  const handleSubmit = async () => {
     try {
-      const result = await CategoryService.updateCategory(categoryId, {
-        ...formData,
-        parent_id: formData.parent_id || null
+      let imageUrl = formData.image_url
+
+      if (imageFile) {
+        setIsUploading(true)
+        const result = await uploadMutation.mutateAsync(imageFile)
+        if (result.success && result.url) {
+          imageUrl = result.url
+        }
+        setIsUploading(false)
+      }
+
+      const result = await updateMutation.mutateAsync({
+        id: params.id,
+        data: {
+          ...formData,
+          image_url: imageUrl
+        }
       })
 
       if (result.success) {
-        toast.success('Category updated successfully')
         router.push('/admin/categories')
-      } else {
-        toast.error(result.error || 'Failed to update category')
       }
     } catch (error) {
       console.error('Error updating category:', error)
-      toast.error('Failed to update category')
-    } finally {
-      setLoading(false)
+      setIsUploading(false)
     }
   }
 
-  if (fetchingCategory) {
+  if (isLoadingCategory) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }
 
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Link href="/admin/categories">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Edit Category</h1>
-          <p className="text-lg text-gray-600 mt-2">Update category information</p>
-        </div>
-      </div>
+  const isLoading = updateMutation.isPending || isUploading
 
-      <form onSubmit={handleSubmit}>
+  return (
+    <div className="w-full max-w-full overflow-x-hidden">
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
+              Edit Category
+            </h1>
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
+              Update category information
+            </p>
+          </div>
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <Button variant="outline" asChild>
+              <Link href="/admin/categories">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Cancel
+              </Link>
+            </Button>
+            <Button
+              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {isUploading ? 'Uploading...' : 'Saving...'}
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="name">Category Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., T-Shirts"
-                    required
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="slug">URL Slug *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug *</Label>
                   <Input
                     id="slug"
                     value={formData.slug}
-                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                    placeholder="e.g., t-shirts"
-                    required
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   />
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Describe this category..."
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* SEO Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>SEO Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="meta_title">Meta Title</Label>
-                  <Input
-                    id="meta_title"
-                    value={formData.meta_title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
-                    placeholder="SEO title for this category"
-                    maxLength={60}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{formData.meta_title.length}/60 characters</p>
-                </div>
-
-                <div>
-                  <Label htmlFor="meta_description">Meta Description</Label>
-                  <Textarea
-                    id="meta_description"
-                    value={formData.meta_description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-                    placeholder="SEO description for this category"
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    maxLength={160}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">{formData.meta_description.length}/160 characters</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="status">Active</Label>
-                  <Switch
-                    id="status"
-                    checked={formData.status === 'active'}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, status: checked ? 'active' : 'inactive' }))
-                    }
                   />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Images */}
             <Card>
               <CardHeader>
                 <CardTitle>Category Image</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="image">Main Image</Label>
-                  <div className="mt-2">
-                    {formData.image_url ? (
-                      <div className="relative">
-                        <img src={formData.image_url} alt="Category" className="w-full h-48 object-cover rounded-lg" />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2"
-                          onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="mt-4">
-                          <Label htmlFor="image-upload" className="cursor-pointer">
-                            <span className="text-orange-600 hover:text-orange-700">Upload an image</span>
-                            <input
-                              id="image-upload"
-                              type="file"
-                              className="hidden"
-                              accept="image/*"
-                              onChange={(e) => handleImageUpload(e, 'image')}
-                              disabled={uploadingImage}
-                            />
-                          </Label>
-                        </div>
-                        {uploadingImage && <Loader2 className="mx-auto h-6 w-6 animate-spin mt-2" />}
-                      </div>
-                    )}
+                <div className="space-y-2">
+                  <Label htmlFor="image">Upload New Image</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </div>
+
+                {imagePreview && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img src={imagePreview} alt="Preview" className="w-full h-auto" />
                   </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="image_alt">Image Alt Text</Label>
+                  <Input
+                    id="image_alt"
+                    value={formData.image_alt}
+                    onChange={(e) => setFormData({ ...formData, image_alt: e.target.value })}
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Display Order */}
             <Card>
               <CardHeader>
-                <CardTitle>Display Order</CardTitle>
+                <CardTitle>SEO Settings</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Label htmlFor="display_order">Order</Label>
-                <Input
-                  id="display_order"
-                  type="number"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
-                  min={0}
-                />
-                <p className="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="meta_title">Meta Title</Label>
+                  <Input
+                    id="meta_title"
+                    value={formData.meta_title}
+                    onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="meta_description">Meta Description</Label>
+                  <Textarea
+                    id="meta_description"
+                    value={formData.meta_description}
+                    onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Category Hierarchy</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Parent Category</Label>
+                  <Select
+                    value={formData.parent_id || "none"}
+                    onValueChange={(value) => setFormData({ ...formData, parent_id: value === "none" ? null : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None (Top Level)</SelectItem>
+                      {existingCategories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {!formData.parent_id && (
+                  <div className="space-y-2">
+                    <Label htmlFor="application">Application Type</Label>
+                    <Input
+                      id="application"
+                      value={formData.application}
+                      onChange={(e) => setFormData({ ...formData, application: e.target.value })}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sort_order">Sort Order</Label>
+                  <Input
+                    id="sort_order"
+                    type="number"
+                    value={formData.sort_order}
+                    onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="icon">Icon</Label>
+                  <Input
+                    id="icon"
+                    value={formData.icon}
+                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked, status: e.target.checked ? 'active' : 'inactive' })}
+                    className="rounded"
+                  />
+                  <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="mt-6 flex items-center justify-end space-x-4">
-          <Link href="/admin/categories">
-            <Button type="button" variant="outline">Cancel</Button>
-          </Link>
-          <Button type="submit" disabled={loading} className="bg-orange-600 hover:bg-orange-700">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Update Category
-          </Button>
-        </div>
-      </form>
+      </div>
     </div>
   )
 }

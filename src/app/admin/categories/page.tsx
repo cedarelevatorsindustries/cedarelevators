@@ -1,278 +1,335 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, Loader2, RefreshCw } from "lucide-react"
-import { toast } from 'sonner'
-import Link from 'next/link'
-import { useCategories, useCategoryStats } from '@/hooks/queries/useCategories'
-import { CategoryService, CategoryWithChildren } from '@/lib/services/categories'
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, Loader2, RefreshCw, Search } from "lucide-react"
+import Link from "next/link"
+import { useCategories, useCategoryStats, useDeleteCategory } from "@/hooks/queries/useCategories"
+import type { CategoryWithChildren } from "@/lib/types/categories"
 
 export default function CategoriesPage() {
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  // React Query hooks
-  const { 
-    data: categories = [], 
-    isLoading,
-    refetch: refetchCategories 
-  } = useCategories()
-  
-  const { 
-    data: stats,
-    isLoading: isLoadingStats,
-    refetch: refetchStats 
-  } = useCategoryStats()
-
-  const handleRefresh = async () => {
-    await Promise.all([refetchCategories(), refetchStats()])
-    toast.success('Categories refreshed')
+  const filters = {
+    search: searchQuery || undefined,
+    status: statusFilter !== 'all' ? (statusFilter as 'active' | 'inactive') : undefined,
   }
 
-  const handleDelete = async () => {
-    if (!deleteId) return
+  const { data, isLoading, refetch } = useCategories(filters)
+  const { data: statsData } = useCategoryStats()
+  const deleteMutation = useDeleteCategory()
 
-    setDeleting(true)
-    try {
-      const result = await CategoryService.deleteCategory(deleteId)
-      if (result.success) {
-        toast.success('Category deleted successfully')
-        refetchCategories()
-        refetchStats()
-      } else {
-        toast.error(result.error || 'Failed to delete category')
-      }
-    } catch (error) {
-      toast.error('Failed to delete category')
-    } finally {
-      setDeleting(false)
-      setDeleteId(null)
-    }
-  }
+  const categories = data?.categories || []
+  const stats = statsData || { total: 0, active: 0, applications: 0, categories: 0, subcategories: 0, total_products: 0 }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    )
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this category?')) return
+    await deleteMutation.mutateAsync(id)
   }
 
   return (
-    <div className="space-y-8" data-testid="categories-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Categories</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Organize your products with categories and subcategories
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isLoading || isLoadingStats}
-            data-testid="refresh-categories-button"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${(isLoading || isLoadingStats) ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Link href="/admin/categories/create">
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Category
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Total Categories
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-orange-100">
-              <FolderTree className="h-4 w-4 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats?.total || 0}</div>
-            <p className="text-xs text-gray-600">Main categories</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Total Products
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-green-100">
-              <Package className="h-4 w-4 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats?.total_products || 0}</div>
-            <p className="text-xs text-gray-600">Across all categories</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Active Categories
-            </CardTitle>
-            <div className="p-2 rounded-xl bg-purple-100">
-              <Eye className="h-4 w-4 text-purple-600" />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-3xl font-bold text-gray-900 mb-2">{stats?.active || 0}</div>
-            <p className="text-xs text-gray-600">Currently visible</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Categories List */}
-      <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900">All Categories</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {categories.length === 0 ? (
-            <div className="text-center py-12">
-              <FolderTree className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-semibold text-gray-900">No categories yet</h3>
-              <p className="mt-2 text-sm text-gray-500">Get started by creating your first category</p>
-              <Link href="/admin/categories/create">
-                <Button className="mt-4 bg-orange-600 hover:bg-orange-700">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Category
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {categories.map((category: CategoryWithChildren) => (
-                <div key={category.id} className="space-y-2">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center space-x-4">
-                      {category.image_url ? (
-                        <img src={category.image_url} alt={category.name} className="w-12 h-12 rounded-lg object-cover" />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <FolderTree className="h-6 w-6 text-gray-400" />
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{category.name}</h3>
-                        <p className="text-sm text-gray-600">{category.description}</p>
-                        <p className="text-xs text-gray-500">/{category.slug}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-6">
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-gray-900">{category.product_count || 0}</p>
-                        <p className="text-xs text-gray-500">Products</p>
-                      </div>
-
-                      <Badge 
-                        variant={category.status === "active" ? "default" : "secondary"}
-                        className={category.status === "active" 
-                          ? "bg-green-100 text-green-700 border-green-200" 
-                          : "bg-gray-100 text-gray-700 border-gray-200"
-                        }
-                      >
-                        {category.status}
-                      </Badge>
-
-                      <div className="flex items-center space-x-2">
-                        <Link href={`/admin/categories/${category.id}/edit`}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 hover:bg-orange-100 text-orange-600"
-                          onClick={() => setDeleteId(category.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Subcategories */}
-                  {category.children && category.children.length > 0 && (
-                    <div className="ml-8 space-y-2">
-                      {category.children.map((child) => (
-                        <div key={child.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50/60 border border-gray-100">
-                          <div className="flex items-center space-x-3">
-                            <ChevronRight className="h-4 w-4 text-gray-400" />
-                            <div>
-                              <h4 className="font-medium text-gray-800">{child.name}</h4>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-600">{child.product_count || 0} products</span>
-                            <div className="flex items-center space-x-1">
-                              <Link href={`/admin/categories/${child.id}/edit`}>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-gray-100">
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </Link>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6 hover:bg-orange-100 text-orange-600"
-                                onClick={() => setDeleteId(child.id)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the category.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-orange-600 hover:bg-orange-700"
+    <div className="w-full max-w-full overflow-x-hidden bg-gray-50 min-h-screen p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage your 3-layer category structure
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="bg-white border-gray-200 hover:bg-gray-50"
             >
-              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
+              <Link href="/admin/categories/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Category
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-5">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Applications</CardTitle>
+              <FolderTree className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.applications}</div>
+              <p className="text-xs text-gray-500 mt-1">Top level</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Categories</CardTitle>
+              <FolderTree className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.categories}</div>
+              <p className="text-xs text-gray-500 mt-1">Mid level</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Subcategories</CardTitle>
+              <FolderTree className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.subcategories}</div>
+              <p className="text-xs text-gray-500 mt-1">Bottom level</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
+              <Eye className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <p className="text-xs text-gray-500 mt-1">All categories</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Products</CardTitle>
+              <Package className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.total_products}</div>
+              <p className="text-xs text-gray-500 mt-1">Total products</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-gray-900">Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search categories..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Categories List */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-gray-900">
+              All Categories ({categories.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-12">
+                <FolderTree className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                <h3 className="text-base font-medium text-gray-900 mb-2">No categories found</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {searchQuery || statusFilter !== "all"
+                    ? "Try adjusting your filters."
+                    : "Get started by creating your first category."}
+                </p>
+                <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                  <Link href="/admin/categories/create">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Category
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {categories.map((application: CategoryWithChildren) => (
+                  <div key={application.id} className="space-y-2">
+                    {/* Application Level */}
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        {application.image_url ? (
+                          <img src={application.image_url} alt={application.name} className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-12 h-12 bg-orange-50 rounded flex items-center justify-center flex-shrink-0">
+                            <FolderTree className="h-6 w-6 text-orange-500" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-gray-900">{application.name}</h3>
+                            <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                              Application
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-500 truncate">{application.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-gray-900">{application.product_count || 0}</p>
+                          <p className="text-xs text-gray-500">Products</p>
+                        </div>
+
+                        <Badge
+                          variant="outline"
+                          className={application.status === "active"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-gray-50 text-gray-700 border-gray-200"}
+                        >
+                          {application.status}
+                        </Badge>
+
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" asChild>
+                            <Link href={`/admin/categories/${application.id}/edit`}>
+                              <Edit className="h-4 w-4 text-gray-600" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-red-50"
+                            onClick={() => handleDelete(application.id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Categories & Subcategories */}
+                    {application.children && application.children.length > 0 && (
+                      <div className="ml-8 space-y-2">
+                        {application.children.map((category) => (
+                          <div key={category.id} className="space-y-2">
+                            {/* Category Level */}
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50/50 border border-blue-100">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-medium text-gray-800 text-sm">{category.name}</h4>
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      Category
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 flex-shrink-0">
+                                <span className="text-sm text-gray-600">{category.product_count || 0}</span>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-blue-100" asChild>
+                                    <Link href={`/admin/categories/${category.id}/edit`}>
+                                      <Edit className="h-3 w-3 text-gray-600" />
+                                    </Link>
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 hover:bg-red-50"
+                                    onClick={() => handleDelete(category.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-red-600" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Subcategories */}
+                            {category.children && category.children.length > 0 && (
+                              <div className="ml-8 space-y-1">
+                                {category.children.map((subcategory) => (
+                                  <div key={subcategory.id} className="flex items-center justify-between p-2 rounded bg-purple-50/50 border border-purple-100">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <ChevronRight className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                                      <span className="text-sm text-gray-700">{subcategory.name}</span>
+                                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                        Sub
+                                      </Badge>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                      <span className="text-xs text-gray-600">{subcategory.product_count || 0}</span>
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-purple-100" asChild>
+                                          <Link href={`/admin/categories/${subcategory.id}/edit`}>
+                                            <Edit className="h-3 w-3 text-gray-600" />
+                                          </Link>
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0 hover:bg-red-50"
+                                          onClick={() => handleDelete(subcategory.id)}
+                                        >
+                                          <Trash2 className="h-3 w-3 text-red-600" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

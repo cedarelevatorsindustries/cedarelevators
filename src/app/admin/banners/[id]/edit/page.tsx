@@ -1,120 +1,121 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save, Loader2, ArrowLeft } from "lucide-react"
+import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { toast } from "sonner"
-import { Banner } from "@/lib/types/banners"
+import { useRouter } from "next/navigation"
+import { useBanner, useUpdateBanner, useUploadBannerImage } from "@/hooks/queries/useBanners"
+import { BANNER_PLACEMENTS } from "@/lib/types/banners"
+import type { BannerPlacement, BannerTargetType, BannerCtaStyle } from "@/lib/types/banners"
 
-export default function EditBannerPage() {
-  const params = useParams()
+export default function EditBannerPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const bannerId = params.id as string
+  const { data: banner, isLoading: isLoadingBanner } = useBanner(params.id)
+  const updateMutation = useUpdateBanner()
+  const uploadMutation = useUploadBannerImage()
 
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [banner, setBanner] = useState<Banner | null>(null)
   const [formData, setFormData] = useState({
-    internal_title: "",
-    placement: "",
-    action_type: "",
-    action_target: "",
-    action_name: "",
+    title: "",
+    subtitle: "",
+    internal_name: "",
+    image_url: "",
+    image_alt: "",
+    mobile_image_url: "",
+    placement: "" as BannerPlacement,
+    target_type: "all" as BannerTargetType,
+    target_id: "",
+    cta_text: "",
+    cta_link: "",
+    cta_style: "primary" as BannerCtaStyle,
     start_date: "",
     end_date: "",
-    position: "",
-    category: "",
-    cta_text: "",
-    status: "",
+    is_active: true,
+    position: 0,
+    background_color: "",
+    text_color: "white"
   })
 
-  useEffect(() => {
-    fetchBanner()
-  }, [bannerId])
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [isUploading, setIsUploading] = useState(false)
 
-  const fetchBanner = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/admin/banners/${bannerId}`)
-      if (!response.ok) throw new Error('Failed to fetch banner')
-      
-      const data = await response.json()
-      setBanner(data)
-      
-      // Populate form
+  // Populate form when banner loads
+  useEffect(() => {
+    if (banner) {
       setFormData({
-        internal_title: data.internal_title || "",
-        placement: data.placement || "",
-        action_type: data.action_type || "",
-        action_target: data.action_target || "",
-        action_name: data.action_name || "",
-        start_date: data.start_date || "",
-        end_date: data.end_date || "",
-        position: data.position?.toString() || "",
-        category: data.category || "",
-        cta_text: data.cta_text || "",
-        status: data.status || "",
+        title: banner.title,
+        subtitle: banner.subtitle || "",
+        internal_name: banner.internal_name,
+        image_url: banner.image_url,
+        image_alt: banner.image_alt || "",
+        mobile_image_url: banner.mobile_image_url || "",
+        placement: banner.placement,
+        target_type: banner.target_type || "all",
+        target_id: banner.target_id || "",
+        cta_text: banner.cta_text || "",
+        cta_link: banner.cta_link || "",
+        cta_style: banner.cta_style,
+        start_date: banner.start_date ? new Date(banner.start_date).toISOString().slice(0, 16) : "",
+        end_date: banner.end_date ? new Date(banner.end_date).toISOString().slice(0, 16) : "",
+        is_active: banner.is_active,
+        position: banner.position,
+        background_color: banner.background_color || "",
+        text_color: banner.text_color
       })
-    } catch (error) {
-      console.error('Error fetching banner:', error)
-      toast.error('Failed to load banner')
-    } finally {
-      setLoading(false)
+      setImagePreview(banner.image_url)
+    }
+  }, [banner])
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  const handleSubmit = async () => {
     try {
-      setSaving(true)
+      let imageUrl = formData.image_url
 
-      const updateData = {
-        internal_title: formData.internal_title,
-        placement: formData.placement,
-        action_type: formData.action_type,
-        action_target: formData.action_target,
-        action_name: formData.action_name,
-        start_date: formData.start_date || undefined,
-        end_date: formData.end_date || undefined,
-        position: formData.position ? parseInt(formData.position) : undefined,
-        category: formData.category || undefined,
-        cta_text: formData.cta_text || undefined,
-        status: formData.status,
+      // Upload new image if selected
+      if (imageFile) {
+        setIsUploading(true)
+        imageUrl = await uploadMutation.mutateAsync(imageFile)
+        setIsUploading(false)
       }
 
-      const response = await fetch(`/api/admin/banners/${bannerId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
+      // Update banner
+      await updateMutation.mutateAsync({
+        id: params.id,
+        data: {
+          ...formData,
+          image_url: imageUrl
+        }
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update banner')
-      }
-
-      toast.success('Banner updated successfully!')
       router.push('/admin/banners')
     } catch (error) {
       console.error('Error updating banner:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update banner')
-    } finally {
-      setSaving(false)
+      setIsUploading(false)
     }
   }
 
-  if (loading) {
+  const isLoading = updateMutation.isPending || isUploading || isLoadingBanner
+
+  if (isLoadingBanner) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
+      <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
@@ -123,12 +124,9 @@ export default function EditBannerPage() {
   if (!banner) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Banner not found</h2>
-        <Button asChild>
-          <Link href="/admin/banners">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Banners
-          </Link>
+        <h2 className="text-2xl font-bold text-gray-900">Banner not found</h2>
+        <Button asChild className="mt-4">
+          <Link href="/admin/banners">Back to Banners</Link>
         </Button>
       </div>
     )
@@ -144,210 +142,25 @@ export default function EditBannerPage() {
               Edit Banner
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              Update banner details and settings
+              {banner.internal_name}
             </p>
           </div>
-          <Button variant="outline" asChild>
-            <Link href="/admin/banners">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Link>
-          </Button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Update banner title and placement</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="internal_title">Internal Title *</Label>
-                <Input
-                  id="internal_title"
-                  value={formData.internal_title}
-                  onChange={(e) => setFormData({ ...formData, internal_title: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="placement">Placement</Label>
-                  <Select value={formData.placement} onValueChange={(value) => setFormData({ ...formData, placement: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="homepage-carousel">Homepage Carousel</SelectItem>
-                      <SelectItem value="product-listing-carousel">Product Listing Carousel</SelectItem>
-                      <SelectItem value="category-banner">Category Banner</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="scheduled">Scheduled</SelectItem>
-                      <SelectItem value="disabled">Disabled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Action Target */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle>Action Target</CardTitle>
-              <CardDescription>Where the banner links to</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="action_type">Action Type</Label>
-                <Select value={formData.action_type} onValueChange={(value) => setFormData({ ...formData, action_type: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="collection">Collection</SelectItem>
-                    <SelectItem value="category">Category</SelectItem>
-                    <SelectItem value="product">Product</SelectItem>
-                    <SelectItem value="external">External URL</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="action_target">Action Target</Label>
-                  <Input
-                    id="action_target"
-                    value={formData.action_target}
-                    onChange={(e) => setFormData({ ...formData, action_target: e.target.value })}
-                    placeholder="ID or URL"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="action_name">Action Name</Label>
-                  <Input
-                    id="action_name"
-                    value={formData.action_name}
-                    onChange={(e) => setFormData({ ...formData, action_name: e.target.value })}
-                    placeholder="Display name"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Optional Fields */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle>Optional Settings</CardTitle>
-              <CardDescription>Additional banner configuration</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cta_text">CTA Text</Label>
-                  <Input
-                    id="cta_text"
-                    value={formData.cta_text}
-                    onChange={(e) => setFormData({ ...formData, cta_text: e.target.value })}
-                    placeholder="e.g., Shop Now"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Input
-                    id="position"
-                    type="number"
-                    value={formData.position}
-                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    placeholder="1, 2, 3..."
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Category (for category banners)</Label>
-                <Input
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Shirts"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date</Label>
-                  <Input
-                    id="start_date"
-                    type="datetime-local"
-                    value={formData.start_date ? new Date(formData.start_date).toISOString().slice(0, 16) : ""}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date</Label>
-                  <Input
-                    id="end_date"
-                    type="datetime-local"
-                    value={formData.end_date ? new Date(formData.end_date).toISOString().slice(0, 16) : ""}
-                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Current Image */}
-          {banner.image_url && (
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle>Current Banner Image</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <img 
-                  src={banner.image_url} 
-                  alt={banner.internal_title}
-                  className="w-full max-w-2xl rounded-lg border border-gray-200"
-                />
-                <p className="text-sm text-gray-500 mt-2">
-                  Note: To change the image, please create a new banner
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" asChild>
-              <Link href="/admin/banners">Cancel</Link>
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <Button variant="outline" asChild>
+              <Link href="/admin/banners">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Cancel
+              </Link>
             </Button>
-            <Button 
-              type="submit" 
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-              disabled={saving}
+            <Button
+              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
+              onClick={handleSubmit}
+              disabled={isLoading}
             >
-              {saving ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {isUploading ? 'Uploading...' : 'Saving...'}
                 </>
               ) : (
                 <>
@@ -357,7 +170,271 @@ export default function EditBannerPage() {
               )}
             </Button>
           </div>
-        </form>
+        </div>
+
+        {/* Form */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Form - 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="internal_name">Internal Name *</Label>
+                  <Input
+                    id="internal_name"
+                    value={formData.internal_name}
+                    onChange={(e) => setFormData({ ...formData, internal_name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="title">Banner Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="subtitle">Subtitle</Label>
+                  <Textarea
+                    id="subtitle"
+                    value={formData.subtitle}
+                    onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Image Upload */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Banner Image</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="image">Upload New Image (optional)</Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="flex-1"
+                    />
+                    <Button variant="outline" onClick={() => document.getElementById('image')?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Browse
+                    </Button>
+                  </div>
+                </div>
+
+                {imagePreview && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img src={imagePreview} alt="Preview" className="w-full h-auto" />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="image_alt">Image Alt Text</Label>
+                  <Input
+                    id="image_alt"
+                    value={formData.image_alt}
+                    onChange={(e) => setFormData({ ...formData, image_alt: e.target.value })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Call to Action */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Call to Action</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cta_text">Button Text</Label>
+                    <Input
+                      id="cta_text"
+                      value={formData.cta_text}
+                      onChange={(e) => setFormData({ ...formData, cta_text: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cta_style">Button Style</Label>
+                    <Select value={formData.cta_style} onValueChange={(value: BannerCtaStyle) => setFormData({ ...formData, cta_style: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="primary">Primary</SelectItem>
+                        <SelectItem value="secondary">Secondary</SelectItem>
+                        <SelectItem value="outline">Outline</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cta_link">Link URL</Label>
+                  <Input
+                    id="cta_link"
+                    value={formData.cta_link}
+                    onChange={(e) => setFormData({ ...formData, cta_link: e.target.value })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - 1 column */}
+          <div className="space-y-6">
+            {/* Placement */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Placement</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Banner Location</Label>
+                  <Select value={formData.placement} onValueChange={(value: BannerPlacement) => setFormData({ ...formData, placement: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BANNER_PLACEMENTS.map((placement) => (
+                        <SelectItem key={placement.id} value={placement.id}>
+                          {placement.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Targeting */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Targeting</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Target Type</Label>
+                  <Select value={formData.target_type} onValueChange={(value: BannerTargetType) => setFormData({ ...formData, target_type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Pages</SelectItem>
+                      <SelectItem value="category">Specific Category</SelectItem>
+                      <SelectItem value="application">Specific Application</SelectItem>
+                      <SelectItem value="collection">Specific Collection</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.target_type !== 'all' && (
+                  <div className="space-y-2">
+                    <Label>Target ID</Label>
+                    <Input
+                      value={formData.target_id}
+                      onChange={(e) => setFormData({ ...formData, target_id: e.target.value })}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Scheduling */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Schedule</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="start_date">Start Date</Label>
+                  <Input
+                    id="start_date"
+                    type="datetime-local"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="end_date">End Date</Label>
+                  <Input
+                    id="end_date"
+                    type="datetime-local"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Display Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="position">Position</Label>
+                  <Input
+                    id="position"
+                    type="number"
+                    min="0"
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="background_color">Background</Label>
+                    <Input
+                      id="background_color"
+                      type="color"
+                      value={formData.background_color}
+                      onChange={(e) => setFormData({ ...formData, background_color: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="text_color">Text Color</Label>
+                    <Input
+                      id="text_color"
+                      type="color"
+                      value={formData.text_color}
+                      onChange={(e) => setFormData({ ...formData, text_color: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                    className="rounded"
+                  />
+                  <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   )
