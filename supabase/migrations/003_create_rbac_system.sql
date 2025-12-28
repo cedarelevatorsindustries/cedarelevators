@@ -166,16 +166,6 @@ DROP POLICY IF EXISTS "Service role full access verification_documents" ON verif
 DROP POLICY IF EXISTS "Users can view own documents" ON verification_documents;
 DROP POLICY IF EXISTS "Users can upload own documents" ON verification_documents;
 
-DROP POLICY IF EXISTS "Service role full access products" ON products;
-DROP POLICY IF EXISTS "Public can view active products" ON products;
-
-DROP POLICY IF EXISTS "Service role full access orders" ON orders;
-DROP POLICY IF EXISTS "Users can view own orders" ON orders;
-DROP POLICY IF EXISTS "Authenticated users can create orders" ON orders;
-
-DROP POLICY IF EXISTS "Service role full access order_items" ON order_items;
-DROP POLICY IF EXISTS "Users can view own order items" ON order_items;
-
 -- ===== PROFILES POLICIES =====
 
 CREATE POLICY "Service role full access profiles"
