@@ -18,6 +18,7 @@ export default function SystemSettingsPage() {
   const [profile, setProfile] = useState<AdminProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [settingsId, setSettingsId] = useState<string | null>(null)
   
   // Feature Flags
   const [featureFlags, setFeatureFlags] = useState({
