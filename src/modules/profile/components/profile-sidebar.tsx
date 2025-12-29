@@ -79,13 +79,13 @@ export default function ProfileSidebar({
     
     switch (verificationStatus) {
       case 'approved':
-        return <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] rounded font-medium whitespace-nowrap">Verified</span>
+        return <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded font-medium whitespace-nowrap">Verified</span>
       case 'pending':
-        return <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-[10px] rounded font-medium whitespace-nowrap">Pending</span>
+        return <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-[10px] rounded font-medium whitespace-nowrap">Pending</span>
       case 'rejected':
-        return <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[10px] rounded font-medium whitespace-nowrap">Rejected</span>
+        return <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] rounded font-medium whitespace-nowrap">Rejected</span>
       default:
-        return <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-[10px] rounded font-medium whitespace-nowrap">Required</span>
+        return <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] rounded font-medium whitespace-nowrap">Required</span>
     }
   }
 
@@ -98,7 +98,7 @@ export default function ProfileSidebar({
       {/* User Card - Fixed at top */}
       {user && (
         <div className="p-4 pb-2 flex-shrink-0">
-          <div className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
             {user.avatar_url ? (
               <Image
                 src={user.avatar_url}
@@ -113,10 +113,10 @@ export default function ProfileSidebar({
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-base truncate text-gray-900 dark:text-white">
+              <h3 className="font-medium text-base truncate text-gray-900">
                 {user.first_name} {user.last_name}
               </h3>
-              <p className="text-sm truncate text-gray-600 dark:text-gray-400">
+              <p className="text-sm truncate text-gray-600">
                 {user.email}
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function ProfileSidebar({
           
           return (
             <div key={group.title} className={groupIndex > 0 ? 'mt-6' : ''}>
-              <h4 className="px-3 text-xs font-semibold uppercase tracking-wider mb-3 text-gray-600 dark:text-gray-400">
+              <h4 className="px-3 text-xs font-semibold uppercase tracking-wider mb-3 text-gray-600">
                 {group.title}
               </h4>
               
@@ -147,8 +147,8 @@ export default function ProfileSidebar({
                       className={cn(
                         'w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
                         isActive
-                          ? 'bg-white dark:bg-gray-800 text-[#F97316] shadow-sm border border-gray-200 dark:border-gray-700'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50'
+                          ? 'bg-white text-[#F97316] shadow-sm border border-gray-200'
+                          : 'text-gray-700 hover:bg-white/50'
                       )}
                     >
                       <ItemIcon size={20} className="flex-shrink-0" />
@@ -168,14 +168,14 @@ export default function ProfileSidebar({
       </nav>
 
       {/* Bottom Actions - Fixed at bottom with divider */}
-      <div className="flex-shrink-0 border-t border-gray-300 dark:border-gray-600 p-4 space-y-1 bg-transparent">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 cursor-pointer">
+      <div className="flex-shrink-0 border-t border-gray-300 p-4 space-y-1 bg-transparent">
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-white/50 cursor-pointer">
           <CircleHelp size={20} />
           <span>Help Center</span>
         </button>
         <button 
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-red-600 hover:bg-red-50 cursor-pointer"
         >
           <LogOut size={20} />
           <span>Logout</span>

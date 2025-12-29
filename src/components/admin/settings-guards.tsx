@@ -4,7 +4,7 @@ import { ReactNode } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ShieldAlert } from "lucide-react"
-import { AdminRole } from "@/lib/admin-auth"
+import { AdminRole } from '@/lib/admin-auth-client'
 import { canAccessTier1, canAccessTier2, canAccessModule } from "@/lib/admin/settings-access"
 
 interface SettingsGuardProps {

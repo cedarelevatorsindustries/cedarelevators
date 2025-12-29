@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { createAdminUserAction, approveAdminAction, revokeAdminAction } from '@/lib/actions/admin-auth'
-import { AdminRole } from '@/lib/admin-auth'
+import { AdminRole } from '@/lib/admin-auth-client'
 import { Shield, UserPlus, Mail, Lock, AlertCircle, CircleCheck, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -39,7 +39,7 @@ export function AdminUsersSettings() {
   })
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState('')
-  
+
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
@@ -62,7 +62,7 @@ export function AdminUsersSettings() {
   const loadAdminUsers = async () => {
     try {
       setIsLoading(true)
-      
+
       // Get admin profiles using raw query since types might not be updated
       const { data: profiles, error: profilesError } = await supabase
         .from('admin_profiles' as any)
@@ -104,7 +104,7 @@ export function AdminUsersSettings() {
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Check for Super Admin warning
     if (createForm.role === 'super_admin') {
       setConfirmDialog({
@@ -114,10 +114,10 @@ export function AdminUsersSettings() {
       })
       return
     }
-    
+
     await executeCreateAdmin()
   }
-  
+
   const executeCreateAdmin = async () => {
     setIsCreating(true)
     setError('')
@@ -155,11 +155,11 @@ export function AdminUsersSettings() {
       userName
     })
   }
-  
+
   const executeApprove = async () => {
     const userId = confirmDialog.userId
     if (!userId) return
-    
+
     try {
       const result = await approveAdminAction(userId)
       if (!result.success) {
@@ -183,7 +183,7 @@ export function AdminUsersSettings() {
       userName
     })
   }
-  
+
   const executeRevoke = async () => {
     const userId = confirmDialog.userId
     if (!userId) return
@@ -219,7 +219,7 @@ export function AdminUsersSettings() {
   }
 
   const getRoleLabel = (role: AdminRole) => {
-    return role.split('_').map(word => 
+    return role.split('_').map((word: string) =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ')
   }
@@ -452,7 +452,7 @@ export function AdminUsersSettings() {
           </div>
         </div>
       )}
-      
+
       {/* Confirmation Dialogs */}
       <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog({ open, type: null })}>
         <AlertDialogContent>

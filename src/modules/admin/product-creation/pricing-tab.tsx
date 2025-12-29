@@ -40,10 +40,10 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
   return (
     <div className="space-y-6">
       {/* Pricing Mode */}
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Pricing Mode</CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardTitle className="text-xl font-bold text-gray-900">Pricing Mode</CardTitle>
+          <CardDescription className="text-gray-600">
             Choose how pricing works for this product
           </CardDescription>
         </CardHeader>
@@ -70,7 +70,7 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
             </div>
           </RadioGroup>
           
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500">
             This toggle controls where pricing is managed
           </p>
         </CardContent>
@@ -78,10 +78,10 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
 
       {/* Single Price Mode */}
       {pricingData.mode === "single" && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Product Pricing</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Product Pricing</CardTitle>
+            <CardDescription className="text-gray-600">
               Set price and discount information
             </CardDescription>
           </CardHeader>
@@ -127,13 +127,13 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
 
             {/* Discount Preview */}
             {discount > 0 && (
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-green-900 dark:text-green-100">
+                    <p className="font-medium text-green-900">
                       Price: ₹{pricingData.price} | MRP: ₹{pricingData.comparePrice}
                     </p>
-                    <p className="text-sm text-green-800 dark:text-green-200">
+                    <p className="text-sm text-green-800">
                       You save: {discount}%
                     </p>
                   </div>
@@ -158,17 +158,17 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
 
       {/* Variant Pricing Mode */}
       {pricingData.mode === "variant" && (
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Variant-Based Pricing</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Variant-Based Pricing</CardTitle>
+            <CardDescription className="text-gray-600">
               Pricing is managed per variant in the Variants tab
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-              <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Variant Pricing</h4>
-              <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1">
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <h4 className="font-medium text-orange-900 mb-2">Variant Pricing</h4>
+              <ul className="text-sm text-orange-800 space-y-1">
                 <li>• Each variant can have its own price and MRP</li>
                 <li>• Discounts are calculated automatically per variant</li>
                 <li>• Go to the Variants tab to set individual prices</li>

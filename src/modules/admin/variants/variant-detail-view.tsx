@@ -145,11 +145,11 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               {variant.name || 'Default Variant'}
             </h1>
             <div className="flex items-center space-x-2 mt-1">
-              <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+              <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                 {formData.sku}
               </code>
               <Badge variant={formData.active ? 'default' : 'secondary'}>
@@ -180,9 +180,9 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
 
       {/* Warning for variants used in orders */}
       {isUsedInOrders && (
-        <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
+        <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="pt-6">
-            <div className="flex items-center space-x-2 text-yellow-800 dark:text-yellow-200">
+            <div className="flex items-center space-x-2 text-yellow-800">
               <AlertTriangle className="w-5 h-5" />
               <span className="font-medium">
                 This variant has been used in orders. Some changes may affect existing orders.
@@ -219,7 +219,7 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
                 <Label>Variant Options</Label>
                 <div className="flex flex-wrap gap-2">
                   {options.map((option: any, index: number) => (
-                    <div key={index} className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                    <div key={index} className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
                       {option.hexColor && (
                         <div
                           className="w-4 h-4 rounded-full border border-gray-300"
@@ -302,8 +302,8 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
 
               {/* Discount preview */}
               {formData.discount_price && parseFloat(formData.discount_price.toString()) > formData.price && (
-                <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                  <div className="text-sm text-green-800 dark:text-green-200">
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="text-sm text-green-800">
                     <span className="font-medium">Discount: </span>
                     {(((parseFloat(formData.discount_price.toString()) - formData.price) / parseFloat(formData.discount_price.toString())) * 100).toFixed(1)}% off
                   </div>
@@ -446,14 +446,14 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
 
       {/* Danger Zone */}
       {!isUsedInOrders && (
-        <Card className="border-orange-200 dark:border-orange-800">
+        <Card className="border-orange-200">
           <CardHeader>
-            <CardTitle className="text-orange-600 dark:text-orange-400">Danger Zone</CardTitle>
+            <CardTitle className="text-orange-600">Danger Zone</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">Delete Variant</h4>
+                <h4 className="font-medium text-gray-900">Delete Variant</h4>
                 <p className="text-sm text-gray-500">
                   Permanently delete this variant. This action cannot be undone.
                 </p>

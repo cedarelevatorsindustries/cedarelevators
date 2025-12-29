@@ -91,21 +91,21 @@ export function PaymentSettingsForm() {
         </Alert>
 
         {/* Razorpay Integration */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
               <CreditCard className="h-5 w-5" />
               <span>Razorpay Integration</span>
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardDescription className="text-gray-600">
               Enable or disable online payments via Razorpay
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable Razorpay</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Enable Razorpay</Label>
+                <p className="text-sm text-gray-600">
                   Accept online payments including UPI, Cards, Net Banking
                 </p>
               </div>
@@ -134,21 +134,21 @@ export function PaymentSettingsForm() {
         </Card>
 
         {/* Bank Transfer */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
               <Building2 className="h-5 w-5" />
               <span>Bank Transfer</span>
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardDescription className="text-gray-600">
               Allow direct bank transfers for B2B customers
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable Bank Transfer</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Enable Bank Transfer</Label>
+                <p className="text-sm text-gray-600">
                   Customers can pay via direct bank transfer
                 </p>
               </div>
@@ -161,21 +161,21 @@ export function PaymentSettingsForm() {
         </Card>
 
         {/* Credit Terms */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
               <Banknote className="h-5 w-5" />
               <span>Credit Terms</span>
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardDescription className="text-gray-600">
               Allow verified business customers to buy on credit
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable Credit Terms</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Enable Credit Terms</Label>
+                <p className="text-sm text-gray-600">
                   Verified business accounts can purchase on credit (NET 30/60)
                 </p>
               </div>

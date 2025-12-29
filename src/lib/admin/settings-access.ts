@@ -1,4 +1,4 @@
-import { AdminRole } from '@/lib/admin-auth'
+import { AdminRole } from '@/lib/admin-auth-client'
 
 /**
  * Settings Access Control Utilities

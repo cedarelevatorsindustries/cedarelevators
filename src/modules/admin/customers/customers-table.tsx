@@ -23,7 +23,7 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
         return (
           <Badge
             variant="outline"
-            className="bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400"
+            className="bg-green-100 text-green-700 border-green-200"
             data-testid={`customer-status-${status}`}
           >
             Active
@@ -33,7 +33,7 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
         return (
           <Badge
             variant="outline"
-            className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-400"
+            className="bg-gray-100 text-gray-700 border-gray-200"
             data-testid={`customer-status-${status}`}
           >
             Inactive

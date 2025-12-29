@@ -36,10 +36,10 @@ export default function RecommendedProducts({ className }: RecommendedProductsPr
     return (
       <div className={className}>
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Recommended Products
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             Based on your browsing history and preferences
           </p>
         </div>
@@ -56,10 +56,10 @@ export default function RecommendedProducts({ className }: RecommendedProductsPr
     <div className={className}>
       {/* Section Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Recommended Products
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600">
           Based on your browsing history and preferences
         </p>
       </div>
@@ -77,7 +77,7 @@ export default function RecommendedProducts({ className }: RecommendedProductsPr
           <div className="flex justify-center">
             <Link
               href="/catalog"
-              className="px-8 py-3 border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white rounded-full font-semibold hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors"
+              className="px-8 py-3 border-2 border-gray-900 text-gray-900 rounded-full font-semibold hover:bg-gray-900 hover:text-white transition-colors"
             >
               View more
             </Link>

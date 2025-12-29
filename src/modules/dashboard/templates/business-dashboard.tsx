@@ -46,10 +46,10 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
             <Building2 className="w-6 h-6 text-[#F97316]" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900">
               {companyName || "Business Dashboard"}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Welcome back, {user.firstName || "there"}!
             </p>
           </div>
@@ -64,13 +64,13 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+            className="bg-white rounded-xl border border-gray-200 p-4"
           >
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+            <p className="text-sm text-gray-500 mb-1">
               {stat.label}
             </p>
             <div className="flex items-end gap-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-2xl font-bold text-gray-900">
                 {stat.value}
               </span>
               {stat.change && (
@@ -85,7 +85,7 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
 
       {/* Quick Actions Grid */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -93,10 +93,10 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
             <Link
               key={action.label}
               href={action.href}
-              className="relative flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-[#F97316] hover:shadow-md transition-all"
+              className="relative flex flex-col items-center justify-center p-6 bg-white rounded-xl border border-gray-200 hover:border-[#F97316] hover:shadow-md transition-all"
             >
               <action.icon className="w-8 h-8 text-[#1E3A8A] mb-3" />
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <span className="text-sm font-medium text-gray-900">
                 {action.label}
               </span>
               {action.count && (
@@ -126,11 +126,11 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
         </div>
 
         {/* Tax Invoice Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             Tax Invoices
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-gray-600 mb-4">
             Download GST-compliant invoices for all your business purchases.
           </p>
           <Link

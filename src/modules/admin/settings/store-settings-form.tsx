@@ -100,10 +100,10 @@ export function StoreSettingsForm() {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <form onSubmit={handleSubmit} className="space-y-8 w-full">
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Store Identity</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Store Identity</CardTitle>
+            <CardDescription className="text-gray-600">
               Basic information about your store
             </CardDescription>
           </CardHeader>
@@ -134,7 +134,7 @@ export function StoreSettingsForm() {
             <div className="space-y-2">
               <Label>Store Logo</Label>
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
                   <span className="text-xs text-gray-400">LOGO</span>
                 </div>
                 <Button type="button" variant="outline">
@@ -146,10 +146,10 @@ export function StoreSettingsForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Contact Information</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Contact Information</CardTitle>
+            <CardDescription className="text-gray-600">
               How customers can reach you
             </CardDescription>
           </CardHeader>
@@ -180,10 +180,10 @@ export function StoreSettingsForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Business Information</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Business Information</CardTitle>
+            <CardDescription className="text-gray-600">
               Legal and tax information
             </CardDescription>
           </CardHeader>

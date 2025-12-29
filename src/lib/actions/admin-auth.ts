@@ -3,20 +3,23 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import {
-    isSetupCompleted,
     getAdminProfile,
-    createAdminUser,
     verifySetupKey,
     generateRecoveryKey,
     hashRecoveryKey,
     verifyRecoveryKey,
+    isSuperAdmin,
+    type AdminRole
+} from '@/lib/admin-auth-client'
+import {
+    isSetupCompleted,
+    createAdminUser,
     getAdminSettings,
     updateAdminSettings,
-    approveAdminUser as approveAdminUserUtil,
-    revokeAdminAccess as revokeAdminAccessUtil,
-    isSuperAdmin,
-    AdminRole
-} from '@/lib/admin-auth'
+    approveAdminUser,
+    revokeAdminAccess,
+    getCurrentAdmin
+} from '@/lib/admin-auth-server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -330,7 +333,7 @@ export async function approveAdminAction(userId: string) {
             }
         }
 
-        const result = await approveAdminUserUtil(userId, user.id)
+        const result = await approveAdminUser(userId, user.id)
 
         if (!result.success) {
             return {
@@ -389,7 +392,7 @@ export async function revokeAdminAction(userId: string) {
             }
         }
 
-        const result = await revokeAdminAccessUtil(userId)
+        const result = await revokeAdminAccess(userId)
 
         if (!result.success) {
             return {

@@ -131,15 +131,15 @@ export default function PersonalInfoSection({
               </label>
             </div>
             <div className="flex flex-col justify-center">
-              <p className="text-xl font-bold text-gray-900 dark:text-white">Profile Photo</p>
-              <p className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-xl font-bold text-gray-900">Profile Photo</p>
+              <p className="text-sm font-normal text-gray-600 mt-1">
                 Upload a new photo. Max size of 2MB.
               </p>
             </div>
           </div>
           <button
             onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
-            className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-bold w-full md:w-auto hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-gray-100 text-gray-900 text-sm font-bold w-full md:w-auto hover:bg-gray-200"
           >
             <span className="truncate">Upload New</span>
           </button>

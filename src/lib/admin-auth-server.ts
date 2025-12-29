@@ -1,68 +1,9 @@
 import { createServerSupabase } from './supabase/server'
 import { createClient } from '@supabase/supabase-js'
-import crypto from 'crypto'
-
-// Admin role hierarchy
-export type AdminRole = 'super_admin' | 'admin' | 'manager' | 'staff'
-
-export interface AdminProfile {
-    id: string
-    user_id: string
-    role: AdminRole
-    is_active: boolean
-    approved_by: string | null
-    approved_at: string | null
-    created_at: string
-    updated_at: string
-}
-
-export interface AdminSettings {
-    id: string
-    setup_completed: boolean
-    recovery_key_hash: string | null
-    created_at: string
-    updated_at: string
-    singleton_guard: boolean
-}
+import { getAdminProfile, type AdminProfile, type AdminSettings, type AdminRole } from './admin-auth-client'
 
 /**
- * Generate a secure recovery key
- * Returns a 32-character alphanumeric key
- */
-export function generateRecoveryKey(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Removed ambiguous chars
-    const length = 32
-    const randomBytes = crypto.randomBytes(length)
-
-    let key = ''
-    for (let i = 0; i < length; i++) {
-        key += chars[randomBytes[i] % chars.length]
-    }
-
-    // Format as XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
-    return key.match(/.{1,4}/g)?.join('-') || key
-}
-
-/**
- * Hash a recovery key using SHA-256
- */
-export function hashRecoveryKey(key: string): string {
-    return crypto
-        .createHash('sha256')
-        .update(key.replace(/-/g, '')) // Remove dashes before hashing
-        .digest('hex')
-}
-
-/**
- * Verify a recovery key against its hash
- */
-export function verifyRecoveryKey(key: string, hash: string): boolean {
-    const inputHash = hashRecoveryKey(key)
-    return inputHash === hash
-}
-
-/**
- * Check if admin setup is completed
+ * Check if admin setup is completed (server-only)
  */
 export async function isSetupCompleted(): Promise<boolean> {
     try {
@@ -86,71 +27,7 @@ export async function isSetupCompleted(): Promise<boolean> {
 }
 
 /**
- * Get admin profile for a user
- * Uses service role to bypass RLS for reliable profile fetching
- */
-export async function getAdminProfile(userId: string): Promise<AdminProfile | null> {
-    try {
-        console.log('[getAdminProfile] Fetching profile for user:', userId)
-
-        // Use service role client to bypass RLS policies
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-        if (!serviceRoleKey) {
-            console.error('[getAdminProfile] Service role key not configured')
-            return null
-        }
-
-        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
-        })
-
-        const { data, error } = await supabaseAdmin
-            .from('admin_profiles')
-            .select('*')
-            .eq('user_id', userId)
-            .single()
-
-        if (error) {
-            console.error('[getAdminProfile] Query error:', error)
-            return null
-        }
-
-        if (!data) {
-            console.log('[getAdminProfile] No data returned')
-            return null
-        }
-
-        console.log('[getAdminProfile] Profile found:', data)
-        return data as AdminProfile
-    } catch (error) {
-        console.error('[getAdminProfile] Exception:', error)
-        return null
-    }
-}
-
-/**
- * Check if user is an active admin
- */
-export async function isActiveAdmin(userId: string): Promise<boolean> {
-    const profile = await getAdminProfile(userId)
-    return profile?.is_active === true
-}
-
-/**
- * Check if user is a super admin
- */
-export async function isSuperAdmin(userId: string): Promise<boolean> {
-    const profile = await getAdminProfile(userId)
-    return profile?.role === 'super_admin' && profile?.is_active === true
-}
-
-/**
- * Get current admin user
+ * Get current admin user (server-only)
  */
 export async function getCurrentAdmin(): Promise<{
     user: any
@@ -175,7 +52,7 @@ export async function getCurrentAdmin(): Promise<{
 }
 
 /**
- * Create admin user using service role
+ * Create admin user using service role (server-only)
  * This bypasses RLS policies
  */
 export async function createAdminUser(
@@ -242,7 +119,7 @@ export async function createAdminUser(
 }
 
 /**
- * Approve admin user
+ * Approve admin user (server-only)
  */
 export async function approveAdminUser(
     userId: string,
@@ -276,7 +153,7 @@ export async function approveAdminUser(
 }
 
 /**
- * Revoke admin access
+ * Revoke admin access (server-only)
  */
 export async function revokeAdminAccess(userId: string): Promise<{ success: boolean; error?: string }> {
     try {
@@ -303,7 +180,7 @@ export async function revokeAdminAccess(userId: string): Promise<{ success: bool
 }
 
 /**
- * Get admin settings
+ * Get admin settings (server-only)
  */
 export async function getAdminSettings(): Promise<AdminSettings | null> {
     try {
@@ -330,7 +207,7 @@ export async function getAdminSettings(): Promise<AdminSettings | null> {
 }
 
 /**
- * Update admin settings
+ * Update admin settings (server-only)
  */
 export async function updateAdminSettings(
     updates: Partial<AdminSettings>
@@ -356,33 +233,4 @@ export async function updateAdminSettings(
         console.error('Error in updateAdminSettings:', error)
         return { success: false, error: error.message }
     }
-}
-
-/**
- * Verify setup key
- */
-export function verifySetupKey(inputKey: string): boolean {
-    const setupKey = process.env.ADMIN_SETUP_KEY
-
-    if (!setupKey) {
-        console.error('ADMIN_SETUP_KEY not configured')
-        return false
-    }
-
-    return inputKey === setupKey
-}
-
-/**
- * Role hierarchy check
- * Returns true if userRole has permission over targetRole
- */
-export function hasRolePermission(userRole: AdminRole, targetRole: AdminRole): boolean {
-    const hierarchy: Record<AdminRole, number> = {
-        super_admin: 4,
-        admin: 3,
-        manager: 2,
-        staff: 1
-    }
-
-    return hierarchy[userRole] >= hierarchy[targetRole]
 }

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Store, DollarSign, Truck, CreditCard, UserCog, ArrowLeft, Settings, Receipt } from "lucide-react"
-import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 import { getSettingsSidebarItems, SettingsModule, SETTINGS_MODULES } from "@/lib/admin/settings-access"
 
 // Icon mapping
@@ -37,7 +38,7 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
 
   const loadUserAndNav = async () => {
     try {
-      const result = await getCurrentAdmin()
+      const result = await getCurrentAdminAction()
       if (result?.profile) {
         setProfile(result.profile)
         // Get all modules (not just accessible ones) to show disabled state

@@ -210,13 +210,13 @@ export default function ProfileDesktopTemplate() {
           />
 
           {/* Content Area - Scrollable */}
-          <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+          <main className="flex-1 overflow-y-auto bg-gray-50">
             <div className="p-6 md:p-8">
               {renderSection()}
             </div>
             
             {/* Recommended Products Section */}
-            <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-6 md:p-8">
+            <div className="bg-white border-t border-gray-200 p-6 md:p-8">
               <RecommendedProducts />
             </div>
           </main>

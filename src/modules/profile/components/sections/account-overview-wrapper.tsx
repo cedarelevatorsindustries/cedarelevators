@@ -30,7 +30,7 @@ export default function AccountOverviewWrapper() {
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
           <LoaderCircle size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading account...</p>
+          <p className="text-gray-600">Loading account...</p>
         </div>
       </div>
     )

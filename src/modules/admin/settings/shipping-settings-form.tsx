@@ -99,20 +99,20 @@ export function ShippingSettingsForm() {
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <form onSubmit={handleSubmit} className="space-y-8 w-full">
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+          <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
             <Truck className="h-5 w-5" />
             <span>Shipping Rates</span>
           </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardDescription className="text-gray-600">
             Configure shipping rates based on zones and item count (India only)
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {formData.shipping_zones.map((zone, index) => (
-              <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+              <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
                 <div className="flex items-center space-x-4">
                   <Switch
                     checked={zone.enabled}
@@ -120,22 +120,22 @@ export function ShippingSettingsForm() {
                   />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800">
+                      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
                         {zone.zone}
                       </Badge>
-                      <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-200">
                         {zone.condition}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       Shipping rate for {zone.zone.toLowerCase()} with {zone.condition.toLowerCase()}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900 dark:text-white">₹{zone.rate}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">per order</div>
+                    <div className="font-semibold text-gray-900">₹{zone.rate}</div>
+                    <div className="text-sm text-gray-500">per order</div>
                   </div>
                 </div>
               </div>
@@ -144,18 +144,18 @@ export function ShippingSettingsForm() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Free Shipping</CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardTitle className="text-xl font-bold text-gray-900">Free Shipping</CardTitle>
+          <CardDescription className="text-gray-600">
             Configure free shipping thresholds (optional)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
             <div className="space-y-0.5">
-              <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable Free Shipping</Label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <Label className="text-base font-semibold text-gray-900">Enable Free Shipping</Label>
+              <p className="text-sm text-gray-600">
                 Offer free shipping above a minimum order value
               </p>
             </div>
@@ -184,7 +184,7 @@ export function ShippingSettingsForm() {
                   id="freeShippingZones"
                   value="All zones"
                   disabled
-                  className="bg-gray-50 dark:bg-gray-800 w-full"
+                  className="bg-gray-50 w-full"
                 />
               </div>
             </div>
@@ -192,10 +192,10 @@ export function ShippingSettingsForm() {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+      <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Delivery SLA</CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardTitle className="text-xl font-bold text-gray-900">Delivery SLA</CardTitle>
+          <CardDescription className="text-gray-600">
             Estimated delivery timeframe displayed to customers
           </CardDescription>
         </CardHeader>

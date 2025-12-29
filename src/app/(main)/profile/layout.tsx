@@ -158,7 +158,7 @@ export default function ProfileLayout({
         }
       `}</style>
 
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 profile-layout-wrapper">
+      <div className="min-h-screen bg-gray-50 profile-layout-wrapper">
         {/* Full Header - Always Visible - Part of Background */}
         <ProfileTopbar user={userProfile} accountType={accountType} />
 
@@ -176,7 +176,7 @@ export default function ProfileLayout({
             <main className="py-6 px-4 sm:px-6 lg:px-8">
               {/* ONE BIG WHITE FLOATING CARD - Alibaba Style */}
               <div className="mx-auto max-w-7xl">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                   {/* Content inside card */}
                   <div className="p-6 sm:p-8 lg:p-10">
                     {children}

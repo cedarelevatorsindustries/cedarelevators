@@ -108,8 +108,8 @@ export default function AnalyticsDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900">
-                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-3 rounded-lg bg-green-100">
+                  <TrendingUp className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
@@ -126,8 +126,8 @@ export default function AnalyticsDashboard() {
 
             <Card className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900">
-                  <ShoppingCart className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-3 rounded-lg bg-blue-100">
+                  <ShoppingCart className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Orders</p>
@@ -144,8 +144,8 @@ export default function AnalyticsDashboard() {
 
             <Card className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-purple-100 dark:bg-purple-900">
-                  <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-3 rounded-lg bg-purple-100">
+                  <Calendar className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Order Value</p>

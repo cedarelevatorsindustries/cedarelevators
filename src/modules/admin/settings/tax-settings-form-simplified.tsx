@@ -114,22 +114,22 @@ export function TaxSettingsFormSimplified() {
         </Alert>
 
         {/* GST Configuration */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
               <Receipt className="h-5 w-5" />
               <span>GST Configuration</span>
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardDescription className="text-gray-600">
               Basic GST settings for Indian tax compliance
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Enable GST */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable GST</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Enable GST</Label>
+                <p className="text-sm text-gray-600">
                   Apply GST to all transactions
                 </p>
               </div>
@@ -163,19 +163,19 @@ export function TaxSettingsFormSimplified() {
         </Card>
 
         {/* Tax Calculation Rules */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Tax Calculation Rules</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Tax Calculation Rules</CardTitle>
+            <CardDescription className="text-gray-600">
               Configure how taxes are calculated and displayed
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Prices Include Tax */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Prices Include Tax</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Prices Include Tax</Label>
+                <p className="text-sm text-gray-600">
                   Product prices are tax-inclusive (vs tax-exclusive)
                 </p>
               </div>
@@ -186,10 +186,10 @@ export function TaxSettingsFormSimplified() {
             </div>
 
             {/* CGST/SGST/IGST Split */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Use CGST/SGST/IGST Split</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Use CGST/SGST/IGST Split</Label>
+                <p className="text-sm text-gray-600">
                   Calculate intra-state (CGST+SGST) vs inter-state (IGST)
                 </p>
               </div>
@@ -202,10 +202,10 @@ export function TaxSettingsFormSimplified() {
         </Card>
 
         {/* Store Location (for GST calculation) */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Store Location</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Store Location</CardTitle>
+            <CardDescription className="text-gray-600">
               Required for CGST/SGST/IGST calculation
             </CardDescription>
           </CardHeader>

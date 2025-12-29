@@ -5,7 +5,8 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LoaderCircle, Store, DollarSign, CreditCard, Receipt, Truck, UserCog, ArrowRight } from "lucide-react"
-import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 import { getAccessibleSettings, getTierBadgeVariant, getTierBadgeText, SettingsModule } from "@/lib/admin/settings-access"
 
 // Icon mapping
@@ -29,7 +30,7 @@ export default function SettingsLandingPage() {
 
   const loadUserAndModules = async () => {
     try {
-      const result = await getCurrentAdmin()
+      const result = await getCurrentAdminAction()
       if (result?.profile) {
         setProfile(result.profile)
         const modules = getAccessibleSettings(result.profile.role)

@@ -1,5 +1,4 @@
 module.exports = {
-  darkMode: ['selector', '[class="never-active"]'], // Effectively disable dark mode
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx}",
     "./src/pages/**/*.{js,ts,jsx,tsx}",

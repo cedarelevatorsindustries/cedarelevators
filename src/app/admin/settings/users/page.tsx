@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { AdminUsersSettings } from "@/modules/admin/settings/admin-users-settings"
-import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 import { Tier1Guard } from "@/components/admin/settings-guards"
 import { LoaderCircle } from "lucide-react"
 
@@ -16,7 +17,7 @@ export default function AdminUsersPage() {
 
   const loadProfile = async () => {
     try {
-      const result = await getCurrentAdmin()
+      const result = await getCurrentAdminAction()
       if (result?.profile) {
         setProfile(result.profile)
       }

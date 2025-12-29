@@ -112,7 +112,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading quote...</p>
+          <p className="text-gray-600">Loading quote...</p>
         </div>
       </div>
     )
@@ -121,7 +121,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
   if (!quote) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">Quote not found</p>
+        <p className="text-gray-600">Quote not found</p>
         <button
           onClick={onBack}
           className="mt-4 px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg"
@@ -240,12 +240,12 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
   const getStatusBadge = () => {
     const configs = {
-      pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', icon: Clock },
-      negotiation: { label: 'Negotiation', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: MessageSquare },
-      revised: { label: 'Revised', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: RefreshCw },
-      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CircleCheck },
-      rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400', icon: X },
-      expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400', icon: AlertCircle },
+      pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700', icon: Clock },
+      negotiation: { label: 'Negotiation', color: 'bg-blue-100 text-blue-700', icon: MessageSquare },
+      revised: { label: 'Revised', color: 'bg-blue-100 text-blue-700', icon: RefreshCw },
+      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700', icon: CircleCheck },
+      rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: X },
+      expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700', icon: AlertCircle },
     }
     return configs[quote.status]
   }
@@ -261,15 +261,15 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             Quote #{quote.quote_number}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             Requested: {formatDate(quote.requested_date)} • Valid until: {formatDate(quote.valid_until)}
           </p>
         </div>
@@ -283,36 +283,36 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Company Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Building2 size={20} />
               Company Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Company Name</p>
-                <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <p className="text-sm text-gray-600 mb-1">Company Name</p>
+                <p className="font-semibold text-gray-900 flex items-center gap-2">
                   {quote.company_name}
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 text-xs rounded-full">
+                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
                     Verified
                   </span>
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Contact Person</p>
-                <p className="font-semibold text-gray-900 dark:text-white">{quote.customer_name}</p>
+                <p className="text-sm text-gray-600 mb-1">Contact Person</p>
+                <p className="font-semibold text-gray-900">{quote.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Email</p>
-                <p className="font-semibold text-gray-900 dark:text-white">{quote.customer_email}</p>
+                <p className="text-sm text-gray-600 mb-1">Email</p>
+                <p className="font-semibold text-gray-900">{quote.customer_email}</p>
               </div>
             </div>
           </div>
 
           {/* Products Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Package size={20} />
                 Products
               </h2>
@@ -321,41 +321,41 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-900">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                       Item
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
                       Qty
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
                       Unit Price
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
                       Discount
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">
                       Final Price
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-gray-200">
                   {quote.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-900 dark:text-white">{item.product_name}</p>
+                        <p className="font-semibold text-gray-900">{item.product_name}</p>
                       </td>
-                      <td className="px-6 py-4 text-center text-gray-900 dark:text-white font-medium">
+                      <td className="px-6 py-4 text-center text-gray-900 font-medium">
                         {item.quantity}
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-600 dark:text-gray-400">
+                      <td className="px-6 py-4 text-right text-gray-600">
                         {formatCurrency(item.unit_price)}
                       </td>
-                      <td className="px-6 py-4 text-right text-green-600 dark:text-green-400 font-medium">
+                      <td className="px-6 py-4 text-right text-green-600 font-medium">
                         {item.discount_percentage}%
                       </td>
-                      <td className="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 text-right font-semibold text-gray-900">
                         {formatCurrency(item.total)}
                       </td>
                     </tr>
@@ -365,26 +365,26 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="md:hidden divide-y divide-gray-200">
               {quote.items.map((item) => (
                 <div key={item.id} className="p-4">
-                  <p className="font-semibold text-gray-900 dark:text-white mb-3">{item.product_name}</p>
+                  <p className="font-semibold text-gray-900 mb-3">{item.product_name}</p>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Quantity:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{item.quantity}</span>
+                      <span className="text-gray-600">Quantity:</span>
+                      <span className="font-medium text-gray-900">{item.quantity}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Unit Price:</span>
-                      <span className="text-gray-900 dark:text-white">{formatCurrency(item.unit_price)}</span>
+                      <span className="text-gray-600">Unit Price:</span>
+                      <span className="text-gray-900">{formatCurrency(item.unit_price)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Discount:</span>
-                      <span className="text-green-600 dark:text-green-400 font-medium">{item.discount_percentage}%</span>
+                      <span className="text-gray-600">Discount:</span>
+                      <span className="text-green-600 font-medium">{item.discount_percentage}%</span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <span className="font-semibold text-gray-900 dark:text-white">Total:</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(item.total)}</span>
+                    <div className="flex justify-between pt-2 border-t border-gray-200">
+                      <span className="font-semibold text-gray-900">Total:</span>
+                      <span className="font-semibold text-gray-900">{formatCurrency(item.total)}</span>
                     </div>
                   </div>
                 </div>
@@ -392,23 +392,23 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
             </div>
 
             {/* Totals */}
-            <div className="p-6 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-6 bg-gray-50 border-t border-gray-200">
               <div className="max-w-md ml-auto space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(quote.subtotal)}</span>
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium text-gray-900">{formatCurrency(quote.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Discount:</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">-{formatCurrency(quote.discount_total)}</span>
+                  <span className="text-gray-600">Discount:</span>
+                  <span className="font-medium text-green-600">-{formatCurrency(quote.discount_total)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">GST (18%):</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(quote.tax_total)}</span>
+                  <span className="text-gray-600">GST (18%):</span>
+                  <span className="font-medium text-gray-900">{formatCurrency(quote.tax_total)}</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">Total:</span>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(quote.total)}</span>
+                <div className="flex justify-between pt-2 border-t border-gray-200">
+                  <span className="text-lg font-bold text-gray-900">Total:</span>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(quote.total)}</span>
                 </div>
               </div>
             </div>
@@ -416,8 +416,8 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
           {/* Attachments */}
           {quote.attachments && quote.attachments.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Paperclip size={20} />
                 Attachments
               </h2>
@@ -428,10 +428,10 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                     href={attachment.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <FileText className="text-red-500" size={20} />
-                    <span className="flex-1 font-medium text-gray-900 dark:text-white">{attachment.name}</span>
+                    <span className="flex-1 font-medium text-gray-900">{attachment.name}</span>
                     <Download className="text-gray-400" size={18} />
                   </a>
                 ))}
@@ -477,7 +477,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
             )}
             <button 
               onClick={handleDownloadPDF}
-              className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
             >
               <Download size={20} />
               Download PDF
@@ -487,9 +487,9 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
         {/* Chat Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-6">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden sticky top-6">
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <MessageSquare size={20} />
                 Messages
               </h2>
@@ -504,30 +504,30 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                     className={cn(
                       'p-3 rounded-lg',
                       message.is_internal
-                        ? 'bg-blue-50 dark:bg-blue-900/20 mr-4'
-                        : 'bg-orange-50 dark:bg-orange-900/20 ml-4'
+                        ? 'bg-blue-50 mr-4'
+                        : 'bg-orange-50 ml-4'
                     )}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold text-gray-900 dark:text-white">
+                      <span className="text-xs font-semibold text-gray-900">
                         {message.user_name}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-500">
                         {formatDateTime(message.created_at)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">{message.message}</p>
+                    <p className="text-sm text-gray-700">{message.message}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+                <p className="text-center text-gray-500 text-sm py-8">
                   No messages yet
                 </p>
               )}
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-t border-gray-200">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -535,7 +535,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
                 <button
                   onClick={handleSendMessage}

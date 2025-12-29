@@ -50,6 +50,7 @@
 		"motion": "^12.23.26",
 		"next": "^16.1.1",
 		"papaparse": "^5.5.3",
+		"pusher": "^5.2.0",
 		"pusher-js": "^8.4.0",
 		"razorpay": "^2.9.4",
 		"react": "^19.2.3",

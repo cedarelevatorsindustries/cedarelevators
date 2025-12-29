@@ -95,11 +95,11 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
       render: (item: InventoryItem) => (
         <TableCell>
           <div>
-            <div className="font-semibold text-gray-900 dark:text-white">
+            <div className="font-semibold text-gray-900">
               {item.product_name}
             </div>
             {item.variant_name && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-gray-600">
                 {item.variant_name}
               </div>
             )}
@@ -111,7 +111,7 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
       key: 'sku',
       header: 'SKU',
       render: (item: InventoryItem) => (
-        <TableCell className="font-mono text-sm text-gray-700 dark:text-gray-300">
+        <TableCell className="font-mono text-sm text-gray-700">
           {item.sku || 'N/A'}
         </TableCell>
       ),
@@ -127,11 +127,11 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
         return (
           <TableCell>
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="font-semibold text-gray-900">
                 {item.quantity || 0}
               </span>
               {stockStatus.icon && (
-                <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
               )}
             </div>
           </TableCell>
@@ -150,10 +150,10 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
           <TableCell>
             <Badge
               className={`font-medium ${stockStatus.color === 'destructive'
-                  ? 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
+                  ? 'bg-orange-100 text-orange-700 border-orange-200'
                   : stockStatus.color === 'secondary'
-                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
-                    : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
+                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                    : 'bg-green-100 text-green-700 border-green-200'
                 }`}
             >
               {stockStatus.label}
@@ -166,7 +166,7 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
       key: 'threshold',
       header: 'Threshold',
       render: (item: InventoryItem) => (
-        <TableCell className="text-gray-700 dark:text-gray-300">
+        <TableCell className="text-gray-700">
           {item.low_stock_threshold || 5}
         </TableCell>
       ),
@@ -181,7 +181,7 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
               <Button
                 variant="ghost"
                 size="sm"
-                className="hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="hover:bg-gray-100"
                 onClick={() => {
                   setSelectedItem(item)
                   setOpenDialog(true)
@@ -289,9 +289,9 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
   ]
 
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50" data-testid="inventory-table">
+    <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50" data-testid="inventory-table">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <CardTitle className="text-xl font-bold text-gray-900">
           Inventory Items ({inventory.length})
         </CardTitle>
       </CardHeader>

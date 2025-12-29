@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 import { SettingsService } from "@/lib/services/settings"
 import { Tier1Guard } from "@/components/admin/settings-guards"
 import { Save, Settings as SettingsIcon, LoaderCircle, AlertTriangle, Flag, Bug } from "lucide-react"
@@ -46,7 +47,7 @@ export default function SystemSettingsPage() {
 
   const loadProfile = async () => {
     try {
-      const result = await getCurrentAdmin()
+      const result = await getCurrentAdminAction()
       if (result?.profile) {
         setProfile(result.profile)
       }

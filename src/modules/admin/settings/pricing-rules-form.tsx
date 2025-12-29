@@ -110,22 +110,22 @@ export function PricingRulesForm() {
         </Alert>
 
         {/* Price Visibility Rules */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
               <DollarSign className="h-5 w-5" />
               <span>Price Visibility Rules</span>
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardDescription className="text-gray-600">
               Control which user types can see product prices
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Guest */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Guest Users</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Guest Users</Label>
+                <p className="text-sm text-gray-600">
                   Show prices to non-logged-in users
                 </p>
               </div>
@@ -136,10 +136,10 @@ export function PricingRulesForm() {
             </div>
 
             {/* Individual */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Individual Users</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Individual Users</Label>
+                <p className="text-sm text-gray-600">
                   Show prices to logged-in individual accounts
                 </p>
               </div>
@@ -150,10 +150,10 @@ export function PricingRulesForm() {
             </div>
 
             {/* Business Unverified */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Business (Unverified)</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Business (Unverified)</Label>
+                <p className="text-sm text-gray-600">
                   Show prices to unverified business accounts
                 </p>
               </div>
@@ -164,10 +164,10 @@ export function PricingRulesForm() {
             </div>
 
             {/* Business Verified */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Business (Verified)</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Business (Verified)</Label>
+                <p className="text-sm text-gray-600">
                   Show prices to verified business accounts
                 </p>
               </div>
@@ -180,18 +180,18 @@ export function PricingRulesForm() {
         </Card>
 
         {/* Purchase Rules */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Purchase Rules</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Purchase Rules</CardTitle>
+            <CardDescription className="text-gray-600">
               Control who can complete checkout
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Verified Business Checkout</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Verified Business Checkout</Label>
+                <p className="text-sm text-gray-600">
                   Allow verified business accounts to complete purchases
                 </p>
               </div>
@@ -204,18 +204,18 @@ export function PricingRulesForm() {
         </Card>
 
         {/* Bulk Pricing & Limits */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-orange-950/20 border-orange-100/50 dark:border-orange-900/20 hover:shadow-md transition-all duration-200">
+        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Bulk Pricing & Limits</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-xl font-bold text-gray-900">Bulk Pricing & Limits</CardTitle>
+            <CardDescription className="text-gray-600">
               Configure bulk pricing and order limits
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
               <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900 dark:text-white">Enable Bulk Pricing</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <Label className="text-base font-semibold text-gray-900">Enable Bulk Pricing</Label>
+                <p className="text-sm text-gray-600">
                   Allow volume-based discounts for large orders
                 </p>
               </div>

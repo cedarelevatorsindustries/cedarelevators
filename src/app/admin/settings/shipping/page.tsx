@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { ShippingSettingsForm } from "@/modules/admin/settings/shipping-settings-form"
-import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 import { Tier2Guard } from "@/components/admin/settings-guards"
 import { LoaderCircle } from "lucide-react"
 
@@ -16,7 +17,7 @@ export default function ShippingSettingsPage() {
 
   const loadProfile = async () => {
     try {
-      const result = await getCurrentAdmin()
+      const result = await getCurrentAdminAction()
       if (result?.profile) {
         setProfile(result.profile)
       }

@@ -78,7 +78,7 @@ export function ProductEditForm({ product, categories, collections, tags }: Prod
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               Edit Product
             </h1>
             <p className="text-gray-500">{product.title}</p>

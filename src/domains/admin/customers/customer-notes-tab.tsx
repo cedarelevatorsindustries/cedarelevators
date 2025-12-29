@@ -159,7 +159,7 @@ export function CustomerNotesTab({ customerClerkId }: CustomerNotesTabProps) {
                   key={note.id}
                   className={`p-4 rounded-lg border ${
                     note.is_important
-                      ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800'
+                      ? 'bg-yellow-50 border-yellow-200'
                       : 'bg-muted/50'
                   }`}
                   data-testid={`note-${note.id}`}

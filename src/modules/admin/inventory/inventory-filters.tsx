@@ -35,9 +35,9 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
   const hasActiveFilters = filters.search || filters.stockStatus !== 'all'
 
   return (
-    <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50">
+    <Card className="border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2 text-lg font-bold text-gray-900 dark:text-gray-100">
+        <CardTitle className="flex items-center space-x-2 text-lg font-bold text-gray-900">
           <Filter className="h-5 w-5" />
           <span>Filters</span>
         </CardTitle>
@@ -45,7 +45,7 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full">
           <div className="space-y-2 min-w-0">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
+            <label className="text-sm font-medium text-gray-700">Search</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -58,7 +58,7 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
           </div>
 
           <div className="space-y-2 min-w-0">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Stock Status</label>
+            <label className="text-sm font-medium text-gray-700">Stock Status</label>
             <Select value={filters.stockStatus || 'all'} onValueChange={handleStockStatusChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -77,7 +77,7 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
               <Button 
                 variant="outline" 
                 onClick={clearFilters}
-                className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950/30"
+                className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               >
                 <X className="mr-2 h-4 w-4" />
                 Clear Filters

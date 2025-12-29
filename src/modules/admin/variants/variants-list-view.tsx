@@ -149,7 +149,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               {product.title} - Variants
             </h1>
             <p className="text-gray-500">
@@ -235,9 +235,9 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                     <TableCell>
                       <Link 
                         href={`/admin/products/${product.id}/variants/${variant.id}`}
-                        className="block hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
+                        className="block hover:bg-gray-50 p-2 rounded-lg transition-colors"
                       >
-                        <div className="font-medium hover:text-orange-600 dark:hover:text-orange-400">
+                        <div className="font-medium hover:text-orange-600">
                           {variant.name || 'Default Variant'}
                         </div>
                         <div className="flex items-center space-x-2 mt-1">
@@ -247,7 +247,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                     </TableCell>
                     
                     <TableCell>
-                      <code className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                         {variant.sku}
                       </code>
                     </TableCell>
@@ -305,7 +305,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
           ) : (
             <div className="text-center py-12">
               <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No variants found
               </h3>
               <p className="text-gray-500 mb-4">
@@ -385,7 +385,7 @@ function InlineEdit({ value, onSave, type, disabled }: InlineEditProps) {
   return (
     <button
       onClick={() => setIsEditing(true)}
-      className="text-left hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition-colors"
+      className="text-left hover:bg-gray-100 px-2 py-1 rounded transition-colors"
       disabled={disabled}
     >
       {type === 'currency' ? `₹${value.toLocaleString('en-IN')}` : value}

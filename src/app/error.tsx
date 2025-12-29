@@ -27,7 +27,7 @@ export default function Error({
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Error Illustration */}
         <div className="relative">
-          <h1 className="text-9xl font-bold text-gray-200 dark:text-gray-800">
+          <h1 className="text-9xl font-bold text-gray-200">
             500
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -56,8 +56,8 @@ export default function Error({
             We're sorry, but something unexpected happened. Our team has been notified and is working on it.
           </p>
           {process.env.NODE_ENV === 'development' && error.message && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-left">
-              <p className="text-sm font-mono text-red-600 dark:text-red-400">
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+              <p className="text-sm font-mono text-red-600">
                 {error.message}
               </p>
             </div>

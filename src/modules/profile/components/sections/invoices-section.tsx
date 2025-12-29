@@ -70,16 +70,16 @@ export default function InvoicesSection({
     return (
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
-          <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-xl p-8 border border-yellow-200 dark:border-yellow-800">
+          <div className="bg-yellow-50 rounded-xl p-8 border border-yellow-200">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-yellow-500 rounded-lg">
                 <FileText className="text-white" size={24} />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Business Verification Required
                 </h3>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
+                <p className="text-gray-700 mb-4">
                   Complete business verification to access invoice management and GST invoices.
                 </p>
                 <a

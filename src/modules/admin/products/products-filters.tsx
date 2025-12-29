@@ -80,10 +80,10 @@ export function ProductsFilters({
   }
 
   return (
-    <div className="space-y-4 p-4 rounded-xl bg-white/60 dark:bg-gray-800/60 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+    <div className="space-y-4 p-4 rounded-xl bg-white/60 border border-gray-200/50 shadow-sm">
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search products..."
             className="pl-10"
@@ -93,10 +93,10 @@ export function ProductsFilters({
         </div>
         
         <Select value={categoryFilter} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-[180px] border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur-sm dark:bg-gray-900/95">
+          <SelectContent className="bg-white/95 backdrop-blur-sm">
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
@@ -107,10 +107,10 @@ export function ProductsFilters({
         </Select>
         
         <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[180px] border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur-sm dark:bg-gray-900/95">
+          <SelectContent className="bg-white/95 backdrop-blur-sm">
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -119,10 +119,10 @@ export function ProductsFilters({
         </Select>
         
         <Select value={stockFilter} onValueChange={onStockChange}>
-          <SelectTrigger className="w-[180px] border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Stock Status" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur-sm dark:bg-gray-900/95">
+          <SelectContent className="bg-white/95 backdrop-blur-sm">
             <SelectItem value="all">All Stock</SelectItem>
             <SelectItem value="in-stock">In Stock</SelectItem>
             <SelectItem value="low-stock">Low Stock</SelectItem>
@@ -130,7 +130,7 @@ export function ProductsFilters({
           </SelectContent>
         </Select>
         
-        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-950/30">
+        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300">
           <Filter className="mr-2 h-4 w-4" />
           More Filters
         </Button>
@@ -139,15 +139,15 @@ export function ProductsFilters({
       {/* Active Filters */}
       {activeFilters.length > 0 && (
         <div className="flex items-center space-x-2 flex-wrap">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Active filters:</span>
+          <span className="text-sm text-gray-600">Active filters:</span>
           {activeFilters.map((filter) => (
             <Badge 
               key={filter.key}
-              className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800"
+              className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200"
             >
               <span>{filter.label}</span>
               <X 
-                className="h-3 w-3 cursor-pointer hover:text-orange-800 dark:hover:text-orange-200" 
+                className="h-3 w-3 cursor-pointer hover:text-orange-800" 
                 onClick={() => removeFilter(filter.key)}
               />
             </Badge>
@@ -155,7 +155,7 @@ export function ProductsFilters({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-950/30"
+            className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
             onClick={onClearFilters}
           >
             Clear all

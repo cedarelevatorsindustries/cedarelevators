@@ -43,11 +43,11 @@ export function ProductPreview({
   return (
     <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 sticky top-4">
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-gray-900 dark:text-white">Product Preview</CardTitle>
+        <CardTitle className="text-lg font-bold text-gray-900">Product Preview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Product Image */}
-        <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
           {primaryImage ? (
             <img
               src={primaryImage.url}
@@ -58,7 +58,7 @@ export function ProductPreview({
             <div className="w-full h-full flex items-center justify-center">
               <div className="text-center">
                 <Image className="mx-auto h-12 w-12 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No image</p>
+                <p className="text-sm text-gray-500">No image</p>
               </div>
             </div>
           )}
@@ -66,11 +66,11 @@ export function ProductPreview({
 
         {/* Product Info */}
         <div className="space-y-2">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+          <h3 className="font-semibold text-gray-900">
             {productName || "Product Name"}
           </h3>
           {productSubtitle && (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               {productSubtitle}
             </p>
           )}
@@ -80,7 +80,7 @@ export function ProductPreview({
         <div className="space-y-2">
           {displayPrice > 0 ? (
             <div className="flex items-center space-x-2">
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
+              <span className="text-lg font-bold text-gray-900">
                 ₹{displayPrice.toFixed(2)}
               </span>
               {displayComparePrice > displayPrice && (
@@ -95,11 +95,11 @@ export function ProductPreview({
               )}
             </div>
           ) : hasVariants ? (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-600">
               Price varies by variant
             </div>
           ) : (
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500">
               Price not set
             </div>
           )}
@@ -107,8 +107,8 @@ export function ProductPreview({
 
         {/* Variant Info */}
         {hasVariants && (
-          <div className="p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-            <p className="text-sm text-orange-800 dark:text-orange-200">
+          <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+            <p className="text-sm text-orange-800">
               {variantCount} variants available
             </p>
           </div>
@@ -116,7 +116,7 @@ export function ProductPreview({
 
         {/* Status */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
+          <span className="text-sm text-gray-600">Status:</span>
           <Badge
             variant={status === "active" ? "default" : status === "draft" ? "secondary" : "outline"}
             className={
@@ -132,12 +132,12 @@ export function ProductPreview({
         </div>
 
         {/* Mock Product Actions */}
-        <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="space-y-2 pt-2 border-t border-gray-200">
           <div className="flex items-center space-x-1 text-yellow-500">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star key={star} className="h-4 w-4 fill-current" />
             ))}
-            <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">(24 reviews)</span>
+            <span className="text-sm text-gray-600 ml-2">(24 reviews)</span>
           </div>
 
           <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" disabled>
@@ -145,7 +145,7 @@ export function ProductPreview({
             Add to Cart
           </Button>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-xs text-gray-500 text-center">
             Preview only - not functional
           </p>
         </div>

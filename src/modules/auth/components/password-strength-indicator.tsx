@@ -18,13 +18,13 @@ export function PasswordStrengthIndicator({ password }: Props) {
 
   return (
     <>
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
+      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
         <div
           className={`h-1.5 rounded-full transition-all ${strengthColors[passwordStrength - 1] || "bg-gray-300"}`}
           style={{ width: `${(passwordStrength / 4) * 100}%` }}
         ></div>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+      <p className="text-xs text-gray-500 mt-1">
         Password strength: {strengthLabels[passwordStrength - 1] || "Too weak"}
       </p>
     </>
