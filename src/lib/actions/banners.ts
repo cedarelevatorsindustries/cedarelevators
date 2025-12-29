@@ -113,6 +113,7 @@ export async function getBannerById(id: string): Promise<{
 
 /**
  * Get banners for storefront display by placement
+ * RESTRICTED: Only 'hero-carousel' / 'all-products-carousel' placement allowed
  */
 export async function getBannersByPlacement(
     placement: BannerPlacement,
@@ -123,12 +124,18 @@ export async function getBannersByPlacement(
     error?: string
 }> {
     try {
+        // VALIDATION: Only allow All Products Carousel
+        if (placement !== 'hero-carousel' && placement !== 'all-products-carousel') {
+            console.warn(`Invalid placement "${placement}". Only "hero-carousel" or "all-products-carousel" is allowed. Other banners are in entity modules.`)
+            return { success: true, banners: [] }
+        }
+
         const supabase = await createClerkSupabaseClient()
 
         let query = supabase
             .from('banners')
             .select('*')
-            .eq('placement', placement)
+            .eq('placement', 'hero-carousel') // Always use hero-carousel internally
             .eq('is_active', true)
             .order('position', { ascending: true })
 
@@ -137,12 +144,8 @@ export async function getBannersByPlacement(
         query = query.or(`start_date.is.null,start_date.lte.${now}`)
         query = query.or(`end_date.is.null,end_date.gte.${now}`)
 
-        // Filter by target if specified
-        if (targetId) {
-            query = query.or(`target_type.eq.all,and(target_type.not.eq.all,target_id.eq.${targetId})`)
-        } else {
-            query = query.eq('target_type', 'all')
-        }
+        // targetId filtering removed - carousel shows all active banners
+        // They link to their respective entities via target_type/target_id
 
         const { data, error } = await query
 
@@ -160,6 +163,7 @@ export async function getBannersByPlacement(
 
 /**
  * Create a new banner
+ * RESTRICTED: Only 'hero-carousel' / 'all-products-carousel' placement allowed
  */
 export async function createBanner(data: BannerFormData): Promise<{
     success: boolean
@@ -168,6 +172,34 @@ export async function createBanner(data: BannerFormData): Promise<{
 }> {
     try {
         const supabase = await createClerkSupabaseClient()
+
+        // VALIDATION: Only allow All Products Carousel
+        const placement = data.placement || 'hero-carousel'
+        if (placement !== 'hero-carousel' && placement !== 'all-products-carousel') {
+            return { 
+                success: false, 
+                error: 'Invalid placement. Only "hero-carousel" or "all-products-carousel" is allowed. Other banners are managed in their respective entity modules.' 
+            }
+        }
+
+        // VALIDATION: Carousel banners require CTA text
+        if (!data.cta_text || data.cta_text.trim() === '') {
+            return { 
+                success: false, 
+                error: 'CTA text is required for carousel banners' 
+            }
+        }
+
+        // VALIDATION: Carousel banners require link destination
+        const linkType = data.link_type || data.target_type
+        const linkId = data.link_id || data.target_id
+        
+        if (!linkType || !linkId) {
+            return { 
+                success: false, 
+                error: 'Link destination is required. Please select link type (application/category/elevator-type/collection) and link ID.' 
+            }
+        }
 
         const { data: banner, error } = await supabase
             .from('banners')
@@ -178,9 +210,9 @@ export async function createBanner(data: BannerFormData): Promise<{
                 image_url: data.image_url!,
                 image_alt: data.image_alt,
                 mobile_image_url: data.mobile_image_url,
-                placement: data.placement,
-                target_type: data.target_type || 'all',
-                target_id: data.target_id,
+                placement: placement,
+                target_type: linkType,
+                target_id: linkId,
                 cta_text: data.cta_text,
                 cta_link: data.cta_link,
                 cta_style: data.cta_style || 'primary',
