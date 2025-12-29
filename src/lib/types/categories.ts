@@ -12,7 +12,10 @@ export interface Category {
     slug: string
     description?: string | null
     parent_id?: string | null
-    image_url?: string | null
+    // Visual Identity
+    image_url?: string | null // DEPRECATED: Use thumbnail_image instead
+    thumbnail_image?: string | null // Square/card image for category cards, grids, filters
+    banner_image?: string | null // Wide banner for category PLP header (optional, non-clickable)
     image_alt?: string | null
     icon?: string | null
     sort_order: number
@@ -37,7 +40,10 @@ export interface CategoryFormData {
     slug: string
     description?: string
     parent_id?: string | null
-    image_url?: string
+    // Visual Identity
+    image_url?: string // DEPRECATED: Use thumbnail_image instead
+    thumbnail_image?: string // Square/card image
+    banner_image?: string // Wide banner for PLP header
     image_alt?: string
     icon?: string
     sort_order?: number

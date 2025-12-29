@@ -7,7 +7,10 @@ export interface ElevatorType {
   name: string
   slug: string
   description?: string
-  icon?: string
+  // Visual Identity
+  icon?: string // Legacy: emoji/icon string
+  thumbnail_image?: string // Square/card image or icon for elevator type cards and filters
+  banner_image?: string // Wide banner for elevator type PLP header (optional, non-clickable)
   sort_order: number
   is_active: boolean
   created_at: string
@@ -18,7 +21,10 @@ export interface ElevatorTypeFormData {
   name: string
   slug: string
   description?: string
-  icon?: string
+  // Visual Identity
+  icon?: string // Legacy: emoji/icon
+  thumbnail_image?: string // Square/card image
+  banner_image?: string // Wide banner for PLP header
   sort_order: number
   is_active: boolean
 }

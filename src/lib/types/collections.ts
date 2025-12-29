@@ -10,7 +10,10 @@ export interface Collection {
     title: string
     slug: string
     description?: string | null
-    image_url?: string | null
+    // Visual Identity
+    image_url?: string | null // DEPRECATED: Use thumbnail_image instead
+    thumbnail_image?: string | null // Square/card image for collection cards and grids
+    banner_image?: string | null // Wide banner for collection PLP header (optional, non-clickable)
     image_alt?: string | null
     type: CollectionType
     rule_json?: any
@@ -49,7 +52,10 @@ export interface CollectionFormData {
     title: string
     slug: string
     description?: string
-    image_url?: string
+    // Visual Identity
+    image_url?: string // DEPRECATED: Use thumbnail_image instead
+    thumbnail_image?: string // Square/card image
+    banner_image?: string // Wide banner for PLP header
     image_alt?: string
     type?: CollectionType
     is_active?: boolean
