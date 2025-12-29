@@ -78,43 +78,15 @@ export const elevatorCategories: CategoryData[] = [
 ## Phase 4: Elevator Types Section
 
 ### Files to Update:
-- [ ] `/src/components/store/shop-by-type-section.tsx`
-  - **Current**: Hardcoded 6 elevator types with Unsplash images
-  - **Action**: Fetch from elevator types API
-  - **Conditional**: Hide section if no types or no products
+- [x] `/src/components/store/shop-by-type-section.tsx`
+  - **Status**: Already using database API with fallback images ✓
+  - **Conditional**: Section hidden if no types or no products ✓
 
-- [ ] `/src/components/store/elevator-types-section.tsx`
-  - **Action**: Same as above
+- [x] All other elevator type components
+  - **Status**: Already migrated to database-driven approach ✓
 
-- [ ] `/src/modules/home/components/desktop/sections/ShopByElevatorTypeSection.tsx`
-  - **Action**: Update to fetch from API
-
-- [ ] `/src/modules/home/components/desktop/tab-content/categories/sections/shop-by-elevator-type.tsx`
-  - **Action**: Update to fetch from API
-
-- [ ] `/src/modules/home/components/mobile/sections/elevator-types-mobile.tsx`
-  - **Action**: Update to fetch from API
-
-### Hardcoded Data to Remove:
-```typescript
-// shop-by-type-section.tsx
-const elevatorTypes = [
-  { id: "passenger-lifts", image: "https://images.unsplash.com/..." },
-  { id: "freight-elevators", image: "https://images.unsplash.com/..." },
-  { id: "House-lifts", image: "https://images.unsplash.com/..." },
-  { id: "hospital-lifts", image: "https://images.unsplash.com/..." },
-  { id: "dumbwaiter", image: "https://images.unsplash.com/..." },
-  { id: "escalators", image: "https://images.unsplash.com/..." }
-]
-```
-
-### Unsplash Images to Remove:
-- [x] Passenger Lifts: `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab`
-- [x] Freight Elevators: `https://images.unsplash.com/photo-1586864387967-d02ef85d93e8`
-- [x] House Lifts: `https://images.unsplash.com/photo-1600585154340-be6161a56a0c`
-- [x] Hospital Lifts: `https://images.unsplash.com/photo-1551190822-a9333d879b1f`
-- [x] Dumbwaiter: `https://images.unsplash.com/photo-1556909114-f6e7ad7d3136`
-- [x] Escalators: `https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b`
+### Unsplash Images:
+- [x] All components using fallback `/images/image.png` when no database image available
 
 ---
 
