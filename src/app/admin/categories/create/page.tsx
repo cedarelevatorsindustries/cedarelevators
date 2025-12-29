@@ -57,8 +57,7 @@ export default function CreateCategoryPage() {
     meta_description: ""
   })
 
-  // Product selection state
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
+  // Removed: Product selection state (products now assign themselves in their own forms)
 
   // Temporary state for cascaded selection for subcategory
   const [selectedAppForSubcat, setSelectedAppForSubcat] = useState<string>("")
