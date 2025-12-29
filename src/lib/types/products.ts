@@ -66,7 +66,15 @@ export interface Product {
 
 // Flattened/Extended Product for UI
 export interface ProductWithDetails extends Product {
+    // Legacy
     category_name?: string
+    
+    // New hierarchy details
+    application_name?: string
+    category_name_new?: string
+    subcategory_name?: string
+    elevator_types?: Array<{ id: string; name: string }>
+    collections?: Array<{ id: string; title: string }>
 }
 
 // Form Data for Create/Update
