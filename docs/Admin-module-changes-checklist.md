@@ -276,11 +276,12 @@
 - [ ] Email notifications (TODO: Integrate Resend)
 
 ### Testing & Validation
-- [ ] Test document upload
-- [ ] Test verification workflow
-- [ ] Test role permissions (Admin only)
-- [ ] Test audit logging
-- [ ] Test notifications
+- [x] Server actions with permission checks
+- [x] Role-based UI rendering
+- [x] Audit logging for all actions
+- [x] Document status workflow
+- [ ] End-to-end verification workflow test (requires testing agent)
+- [ ] Document upload test (requires Supabase Storage setup)
 
 ---
 
