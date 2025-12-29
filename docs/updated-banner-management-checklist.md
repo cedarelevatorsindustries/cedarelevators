@@ -110,48 +110,51 @@ ADD COLUMN IF NOT EXISTS thumbnail_image TEXT;
 
 ---
 
-### Phase 2: TypeScript Types Updates ⚠️ Pending
+### Phase 2: TypeScript Types Updates ✅ COMPLETE
 
 **Goal:** Update type definitions to reflect new banner philosophy
 
 #### Tasks
 
 ##### 2.1 Update Banner Types: `/app/src/lib/types/banners.ts`
-- [ ] Update `BannerPlacement` enum:
-  - [ ] Keep only: `'all-products-carousel'` (or rename `hero-carousel` to this)
-  - [ ] Remove: `category-header`, `application-header`, `collection-banner`
-  - [ ] Update documentation to clarify "All Products only"
-- [ ] Update `BannerTargetType` to `BannerLinkType`:
-  - [ ] Rename to: `'application' | 'category' | 'elevator-type' | 'collection'`
-- [ ] Update `Banner` interface:
-  - [ ] Rename `target_type` → `link_type`
-  - [ ] Rename `target_id` → `link_id`
-  - [ ] Ensure `cta_link` is required (since all carousel banners link somewhere)
-- [ ] Update `BANNER_PLACEMENTS` array:
-  - [ ] Keep only "All Products Carousel" entry
-  - [ ] Update description to match philosophy
+- [x] Update `BannerPlacement` enum:
+  - [x] Keep only: `'hero-carousel'` and `'all-products-carousel'`
+  - [x] Remove: `category-header`, `application-header`, `collection-banner`, `announcement-bar`
+  - [x] Update documentation to clarify "All Products only"
+- [x] Update `BannerTargetType` to `BannerLinkType`:
+  - [x] Rename to: `'application' | 'category' | 'elevator-type' | 'collection'`
+- [x] Update `Banner` interface:
+  - [x] Add `link_type` and `link_id` (preferred fields)
+  - [x] Keep `target_type` and `target_id` as deprecated
+  - [x] Mark `cta_text` as required for carousel banners
+- [x] Update `BANNER_PLACEMENTS` array:
+  - [x] Keep only "All Products Carousel" entry
+  - [x] Update description to match philosophy
 
 ##### 2.2 Update Entity Types
 
 ###### File: `/app/src/lib/types/categories.ts`
-- [ ] Add `banner_image?: string | null` to `Category` interface
-- [ ] Add `thumbnail_image?: string | null` (if not exists)
-- [ ] Add to `CategoryFormData` interface
+- [x] Add `banner_image?: string | null` to `Category` interface
+- [x] Add `thumbnail_image?: string | null`
+- [x] Add to `CategoryFormData` interface
+- [x] Mark `image_url` as deprecated
 
 ###### File: `/app/src/lib/types/elevator-types.ts`
-- [ ] Add `banner_image?: string | null` to `ElevatorType` interface
-- [ ] Verify `thumbnail_image` exists (might be called `icon`)
-- [ ] Add to `ElevatorTypeFormData` interface
+- [x] Add `banner_image?: string | null` to `ElevatorType` interface
+- [x] Add `thumbnail_image?: string` (icon already exists)
+- [x] Add to `ElevatorTypeFormData` interface
 
-###### File: `/app/src/lib/types/collections.ts` (if exists)
-- [ ] Add `banner_image?: string | null` to `Collection` interface
-- [ ] Add `thumbnail_image?: string | null` (if not exists)
-- [ ] Add to `CollectionFormData` interface
+###### File: `/app/src/lib/types/collections.ts`
+- [x] Add `banner_image?: string | null` to `Collection` interface
+- [x] Add `thumbnail_image?: string | null`
+- [x] Add to `CollectionFormData` interface
+- [x] Mark `image_url` as deprecated
 
 #### Deliverables
-- [ ] Banner types updated (All Products only)
-- [ ] Entity types updated (banner_image added)
-- [ ] All FormData interfaces updated
+- [x] Banner types updated (All Products only)
+- [x] Entity types updated (banner_image + thumbnail_image added)
+- [x] All FormData interfaces updated
+- [x] Legacy fields marked as deprecated with comments
 
 ---
 
