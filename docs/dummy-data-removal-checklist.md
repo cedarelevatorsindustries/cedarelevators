@@ -150,18 +150,12 @@ const elevatorTypes = [
 ## Phase 6: Catalog & Category Variants
 
 ### Files to Update:
-- [ ] `/src/lib/config/catalog-variants.ts`
-  - **Current**: Hardcoded category/application metadata with Unsplash images
-  - **Action**: Fetch metadata from database or remove hardcoded images
-  - **Images**: Replace all Unsplash hero images
+- [x] `/src/lib/config/catalog-variants.ts`
+  - **Completed**: All hardcoded Unsplash hero images replaced with `/images/image.png`
+  - **Status**: Fallback metadata functions updated with placeholder images
 
 ### Hardcoded Hero Images to Remove:
-- [x] Decking: `https://images.unsplash.com/photo-1615971677499-5467cbab01c0`
-- [x] Siding: `https://images.unsplash.com/photo-1600585154340-be6161a56a0c`
-- [x] Fencing: `https://images.unsplash.com/photo-1600607687939-ce8a6c25118c`
-- [x] Deck Building: `https://images.unsplash.com/photo-1600585154526-990dced4db0d`
-- [x] House Siding: `https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3`
-- [x] Pergola: `https://images.unsplash.com/photo-1600566752355-35792bedcfea`
+- [x] All 8 Unsplash URLs replaced with `/images/image.png`
 
 ---
 
