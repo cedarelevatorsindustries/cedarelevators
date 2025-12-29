@@ -161,9 +161,6 @@ export default function CreateCategoryPage() {
 
   const isLoading = createMutation.isPending || isUploading
 
-  // Check if products exist
-  const hasProducts = allProducts.length > 0
-
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
       <div className="max-w-5xl mx-auto space-y-8">
