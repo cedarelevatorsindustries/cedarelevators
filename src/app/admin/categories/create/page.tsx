@@ -94,12 +94,6 @@ export default function CreateCategoryPage() {
   }
 
   const handleTypeSelect = (type: 'application' | 'category' | 'elevator-type') => {
-    // Check if products exist before proceeding to step 2
-    if (allProducts.length === 0) {
-      toast.error("Please create products first before creating categories")
-      return
-    }
-
     setCreationType(type)
     setFormData(prev => ({
       ...prev,
