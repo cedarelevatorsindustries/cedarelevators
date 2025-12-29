@@ -1,26 +1,20 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save, Upload, ArrowLeft, Loader2, GripVertical, X, Package } from "lucide-react"
+import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd"
 import { 
   useCollection, 
   useUpdateCollection, 
-  useUploadCollectionImage,
-  useReorderCollectionProducts,
-  useAddProductsToCollection,
-  useRemoveProductFromCollection
+  useUploadCollectionImage
 } from "@/hooks/queries/useCollections"
-import { useProducts } from "@/hooks/queries/useProducts"
-import { ProductSelector } from "@/components/admin/ProductSelector"
 import { generateSlug } from "@/lib/types/collections"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -30,15 +24,8 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
   const { data: collectionData, isLoading: isLoadingCollection } = useCollection(params.id)
   const updateMutation = useUpdateCollection()
   const uploadMutation = useUploadCollectionImage()
-  const reorderMutation = useReorderCollectionProducts()
-  const addProductsMutation = useAddProductsToCollection()
-  const removeProductMutation = useRemoveProductFromCollection()
 
   const collection = collectionData?.collection
-
-  // Get all products
-  const { data: productsData } = useProducts({}, 1, 1000)
-  const allProducts = productsData?.products || []
 
   const [formData, setFormData] = useState({
     title: "",
@@ -53,12 +40,6 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
     meta_title: "",
     meta_description: ""
   })
-
-  // Product state
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
-  const [orderedProductIds, setOrderedProductIds] = useState<string[]>([])
-  const [originalProductIds, setOriginalProductIds] = useState<string[]>([])
-  const [hasReordered, setHasReordered] = useState(false)
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
@@ -83,14 +64,6 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
       if (collection.image_url) {
         setImagePreview(collection.image_url)
       }
-
-      // Load products in order
-      if (collection.products && collection.products.length > 0) {
-        const productIds = collection.products.map(p => p.product_id)
-        setSelectedProductIds(productIds)
-        setOrderedProductIds(productIds)
-        setOriginalProductIds(productIds)
-      }
     }
   }, [collection])
 
@@ -112,36 +85,6 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
       title,
       slug: generateSlug(title)
     })
-  }
-
-  const handleProductSelectionChange = (productIds: string[]) => {
-    // When products are selected/deselected
-    const newProducts = productIds.filter(id => !orderedProductIds.includes(id))
-    const removedProducts = orderedProductIds.filter(id => !productIds.includes(id))
-    
-    // Update ordered list: remove deselected, add new ones at the end
-    const updatedOrdered = orderedProductIds
-      .filter(id => !removedProducts.includes(id))
-      .concat(newProducts)
-    
-    setSelectedProductIds(productIds)
-    setOrderedProductIds(updatedOrdered)
-  }
-
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return
-
-    const items = Array.from(orderedProductIds)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
-
-    setOrderedProductIds(items)
-    setHasReordered(true)
-  }
-
-  const handleRemoveProduct = (productId: string) => {
-    setSelectedProductIds(prev => prev.filter(id => id !== productId))
-    setOrderedProductIds(prev => prev.filter(id => id !== productId))
   }
 
   const handleSubmit = async () => {
@@ -168,56 +111,7 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
       })
 
       if (result.success) {
-        // Handle product changes
-        const addedProducts = orderedProductIds.filter(id => !originalProductIds.includes(id))
-        const removedProducts = originalProductIds.filter(id => !orderedProductIds.includes(id))
-
-        // Remove products
-        if (removedProducts.length > 0) {
-          toast.loading(`Removing ${removedProducts.length} products...`)
-          await Promise.all(
-            removedProducts.map(productId =>
-              removeProductMutation.mutateAsync({
-                collectionId: params.id,
-                productId
-              })
-            )
-          )
-          toast.dismiss()
-        }
-
-        // Add new products
-        if (addedProducts.length > 0) {
-          toast.loading(`Adding ${addedProducts.length} products...`)
-          await addProductsMutation.mutateAsync({
-            collectionId: params.id,
-            productIds: addedProducts
-          })
-          toast.dismiss()
-        }
-
-        // Reorder if needed (or if products were added/removed)
-        if (hasReordered || addedProducts.length > 0 || removedProducts.length > 0) {
-          toast.loading('Updating product order...')
-          await reorderMutation.mutateAsync({
-            collectionId: params.id,
-            orderedProductIds
-          })
-          toast.dismiss()
-        }
-
-        // Show success message
-        if (addedProducts.length > 0 || removedProducts.length > 0) {
-          const msg = []
-          if (addedProducts.length > 0) msg.push(`${addedProducts.length} added`)
-          if (removedProducts.length > 0) msg.push(`${removedProducts.length} removed`)
-          toast.success(`Collection updated! (${msg.join(', ')})`)
-        } else if (hasReordered) {
-          toast.success('Collection updated with new product order!')
-        } else {
-          toast.success('Collection updated successfully!')
-        }
-
+        toast.success('Collection updated successfully!')
         router.push('/admin/collections')
       }
     } catch (error) {
@@ -237,11 +131,6 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
 
   const isLoading = updateMutation.isPending || isUploading
 
-  // Get ordered product details for display
-  const orderedProducts = orderedProductIds
-    .map(id => allProducts.find(p => p.id === id))
-    .filter(Boolean)
-
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -252,7 +141,7 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
               Edit Collection
             </h1>
             <p className="text-gray-600 mt-1">
-              Update collection information and products
+              Update collection information
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -339,138 +228,6 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
               </CardContent>
             </Card>
 
-            {/* Product Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardDescription>
-                  Manage collection products and their order
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <Label>Select Products</Label>
-                  <ProductSelector
-                    products={allProducts}
-                    selectedProductIds={selectedProductIds}
-                    onSelectionChange={handleProductSelectionChange}
-                    placeholder="Search and select products..."
-                    multiple={true}
-                  />
-                  {(selectedProductIds.length !== originalProductIds.length) && (
-                    <p className="text-xs text-orange-600 font-medium">
-                      Changes will be saved when you click "Save Changes"
-                    </p>
-                  )}
-                </div>
-
-                {/* Drag and Drop Ordered List */}
-                {orderedProducts.length > 0 && (
-                  <div className="space-y-3 mt-6">
-                    <div className="flex items-center justify-between">
-                      <Label>Product Order ({orderedProducts.length})</Label>
-                      <p className="text-xs text-gray-500">Drag to reorder</p>
-                    </div>
-                    
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                      <Droppable droppableId="products">
-                        {(provided, snapshot) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className={cn(
-                              "space-y-2 p-3 rounded-lg border-2 border-dashed transition-colors",
-                              snapshot.isDraggingOver 
-                                ? "border-orange-400 bg-orange-50" 
-                                : "border-gray-200 bg-gray-50"
-                            )}
-                          >
-                            {orderedProducts.map((product: any, index: number) => (
-                              <Draggable 
-                                key={product.id} 
-                                draggableId={product.id} 
-                                index={index}
-                              >
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    className={cn(
-                                      "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all",
-                                      snapshot.isDragging 
-                                        ? "border-orange-400 shadow-lg" 
-                                        : "border-gray-200 hover:border-gray-300"
-                                    )}
-                                  >
-                                    {/* Drag Handle */}
-                                    <div
-                                      {...provided.dragHandleProps}
-                                      className="flex-shrink-0 cursor-grab active:cursor-grabbing"
-                                    >
-                                      <GripVertical className="h-5 w-5 text-gray-400" />
-                                    </div>
-
-                                    {/* Position Badge */}
-                                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
-                                      {index + 1}
-                                    </div>
-
-                                    {/* Product Thumbnail */}
-                                    {product.thumbnail ? (
-                                      <img
-                                        src={product.thumbnail}
-                                        alt={product.name}
-                                        className="h-12 w-12 rounded object-cover flex-shrink-0"
-                                      />
-                                    ) : (
-                                      <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                        <Package className="h-6 w-6 text-gray-400" />
-                                      </div>
-                                    )}
-
-                                    {/* Product Info */}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-gray-900 truncate">
-                                        {product.name}
-                                      </p>
-                                      <p className="text-xs text-gray-500 truncate">
-                                        {product.sku || product.slug}
-                                      </p>
-                                    </div>
-
-                                    {/* Remove Button */}
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleRemoveProduct(product.id)}
-                                      className="flex-shrink-0 h-8 w-8 p-0 hover:bg-red-50"
-                                    >
-                                      <X className="h-4 w-4 text-red-600" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-                  </div>
-                )}
-
-                {selectedProductIds.length === 0 && (
-                  <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
-                    <Package className="mx-auto h-12 w-12 text-gray-300 mb-2" />
-                    <p className="text-sm text-gray-500">
-                      No products in this collection. Use the selector above to add products.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Image Upload */}
             <Card>
               <CardHeader>
@@ -530,6 +287,23 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
 
           {/* Right Column */}
           <div className="lg:col-span-4 space-y-6">
+            {/* Golden Rule Info Card */}
+            <Card className="bg-blue-50 border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-blue-900 flex items-center gap-2 text-base">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Cedar Golden Rule
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-blue-900 space-y-2">
+                <p><strong>Products assign themselves</strong> to collections.</p>
+                <p className="text-xs text-blue-700">To manage products in this collection, edit individual products in their Organization tab.</p>
+                <p className="text-xs text-blue-700 pt-2">View assigned products on the collection detail page.</p>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Publishing</CardTitle>
