@@ -225,17 +225,17 @@ CREATE POLICY "Service role full access customer_notes"
 -- Users can read their own verification documents
 CREATE POLICY "Users read own verification_documents" 
   ON verification_documents FOR SELECT TO authenticated 
-  USING (customer_clerk_id = current_setting('request.jwt.claims', true)::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Users can upload their own verification documents
 CREATE POLICY "Users upload own verification_documents" 
   ON verification_documents FOR INSERT TO authenticated 
-  WITH CHECK (customer_clerk_id = current_setting('request.jwt.claims', true)::json->>'sub');
+  WITH CHECK (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Users can read their own verification audit log
 CREATE POLICY "Users read own verification_audit_log" 
   ON verification_audit_log FOR SELECT TO authenticated 
-  USING (customer_clerk_id = current_setting('request.jwt.claims', true)::json->>'sub');
+  USING (clerk_user_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- =====================================================
 -- SEED DATA (OPTIONAL)
