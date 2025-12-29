@@ -169,7 +169,9 @@ export async function createCollection(formData: CollectionFormData) {
                 title: formData.title,
                 slug: formData.slug,
                 description: formData.description,
-                image_url: formData.image_url,
+                image_url: formData.image_url, // DEPRECATED: Use thumbnail_image instead
+                thumbnail_image: formData.thumbnail_image,
+                banner_image: formData.banner_image,
                 image_alt: formData.image_alt,
                 type: formData.type || 'manual',
                 is_active: formData.is_active !== false,
@@ -217,7 +219,9 @@ export async function updateCollection(id: string, formData: Partial<CollectionF
         if (formData.title !== undefined) updateData.title = formData.title
         if (formData.slug !== undefined) updateData.slug = formData.slug
         if (formData.description !== undefined) updateData.description = formData.description
-        if (formData.image_url !== undefined) updateData.image_url = formData.image_url
+        if (formData.image_url !== undefined) updateData.image_url = formData.image_url // DEPRECATED
+        if (formData.thumbnail_image !== undefined) updateData.thumbnail_image = formData.thumbnail_image
+        if (formData.banner_image !== undefined) updateData.banner_image = formData.banner_image
         if (formData.image_alt !== undefined) updateData.image_alt = formData.image_alt
         if (formData.type !== undefined) updateData.type = formData.type
         if (formData.is_active !== undefined) updateData.is_active = formData.is_active

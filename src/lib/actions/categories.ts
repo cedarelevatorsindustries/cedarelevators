@@ -140,7 +140,9 @@ export async function createCategory(formData: CategoryFormData) {
         slug: formData.slug,
         description: formData.description,
         parent_id: formData.parent_id || null,
-        image_url: formData.image_url,
+        image_url: formData.image_url, // DEPRECATED: Use thumbnail_image instead
+        thumbnail_image: formData.thumbnail_image,
+        banner_image: formData.banner_image,
         image_alt: formData.image_alt,
         icon: formData.icon,
         sort_order: formData.sort_order || 0,
@@ -185,7 +187,9 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
     if (formData.slug !== undefined) updateData.slug = formData.slug
     if (formData.description !== undefined) updateData.description = formData.description
     if (formData.parent_id !== undefined) updateData.parent_id = formData.parent_id
-    if (formData.image_url !== undefined) updateData.image_url = formData.image_url
+    if (formData.image_url !== undefined) updateData.image_url = formData.image_url // DEPRECATED
+    if (formData.thumbnail_image !== undefined) updateData.thumbnail_image = formData.thumbnail_image
+    if (formData.banner_image !== undefined) updateData.banner_image = formData.banner_image
     if (formData.image_alt !== undefined) updateData.image_alt = formData.image_alt
     if (formData.icon !== undefined) updateData.icon = formData.icon
     if (formData.sort_order !== undefined) updateData.sort_order = formData.sort_order

@@ -96,9 +96,20 @@ export async function createElevatorType(
       return { success: false, error: 'Slug already exists' }
     }
 
+    const insertData = {
+      name: formData.name,
+      slug: formData.slug,
+      description: formData.description,
+      icon: formData.icon,
+      thumbnail_image: formData.thumbnail_image,
+      banner_image: formData.banner_image,
+      sort_order: formData.sort_order,
+      is_active: formData.is_active
+    }
+
     const { data, error } = await supabase
       .from('elevator_types')
-      .insert([formData])
+      .insert([insertData])
       .select()
       .single()
 
@@ -239,6 +250,41 @@ export async function getProductsByElevatorType(
     const { data, error } = await supabase.rpc('get_elevator_type_products', {
       elevator_type_id_param: elevatorTypeId,
     })
+
+
+/**
+ * Upload elevator type image to Supabase Storage
+ */
+export async function uploadElevatorTypeImage(
+  file: File,
+  type: 'thumbnail' | 'banner' = 'thumbnail'
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    const supabase = await createClient()
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${type}-${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+    const filePath = `${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('elevator-types')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('elevator-types')
+      .getPublicUrl(filePath)
+
+    return { success: true, url: publicUrl }
+  } catch (error: any) {
+    console.error('Error uploading elevator type image:', error)
+    return { success: false, error: error.message }
+  }
+}
 
     if (error) {
       console.error('Error fetching products by elevator type:', error)
