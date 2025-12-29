@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import type { Application } from "@/lib/data/applications"
 import HeroLite from "../../components/common/hero-lite"
 import { WelcomeSection } from "../../components/common/welcome-section"
 import ProductsTab from "../../components/desktop/tab-content/product"
@@ -15,13 +16,15 @@ interface DesktopHomepageLoggedInProps {
   testimonials: any[]
   userType: "individual" | "business"
   categories: ProductCategory[]
+  applications?: Application[]
 }
 
 export default function DesktopHomepageLoggedIn({
   products,
   testimonials,
   userType,
-  categories
+  categories,
+  applications = []
 }: DesktopHomepageLoggedInProps) {
   const searchParams = useSearchParams()
   const app = searchParams.get('app')
