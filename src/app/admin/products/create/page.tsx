@@ -291,6 +291,12 @@ export default function CreateProductPage() {
             {activeTab === "organization" && (
               <OrganizationTab
                 organizationData={{
+                  application_id: formData.application_id,
+                  category_id: formData.category_id,
+                  subcategory_id: formData.subcategory_id,
+                  elevator_type_ids: formData.elevator_type_ids,
+                  collection_ids: formData.collection_ids,
+                  // Legacy
                   categories: formData.categories,
                   collections: formData.collections,
                   tags: formData.tags
