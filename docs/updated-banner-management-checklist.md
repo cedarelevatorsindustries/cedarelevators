@@ -158,84 +158,85 @@ ADD COLUMN IF NOT EXISTS thumbnail_image TEXT;
 
 ---
 
-### Phase 3: Server Actions Updates ⚠️ Pending
+### Phase 3: Server Actions Updates ✅ COMPLETE
 
 **Goal:** Update server-side logic for new banner philosophy
 
 #### Tasks
 
 ##### 3.1 Update Banner Actions: `/app/src/lib/actions/banners.ts`
-- [ ] Update `createBanner()`:
-  - [ ] Validate `placement` is only `'all-products-carousel'` (or `'hero-carousel'`)
-  - [ ] Ensure `link_type` and `link_id` are required
-  - [ ] Ensure `cta_text` is required
-- [ ] Update `getBannersByPlacement()`:
-  - [ ] Only allow fetching "all-products-carousel"
-  - [ ] Throw error if requesting other placements
-- [ ] Add validation to prevent creating non-carousel banners
-- [ ] Update comments/documentation
+- [x] Update `createBanner()`:
+  - [x] Validate `placement` is only `'all-products-carousel'` (or `'hero-carousel'`)
+  - [x] Ensure `link_type` and `link_id` are required
+  - [x] Ensure `cta_text` is required
+- [x] Update `getBannersByPlacement()`:
+  - [x] Only allow fetching "all-products-carousel"
+  - [x] Throw error if requesting other placements
+- [x] Add validation to prevent creating non-carousel banners
+- [x] Update comments/documentation
 
 ##### 3.2 Update Entity Actions
 
 ###### File: `/app/src/lib/actions/categories.ts`
-- [ ] Update `createCategory()` to handle `banner_image`
-- [ ] Update `updateCategory()` to handle `banner_image`
-- [ ] Add `uploadCategoryBannerImage()` function (or use generic upload)
+- [x] Update `createCategory()` to handle `banner_image`
+- [x] Update `updateCategory()` to handle `banner_image`
+- [x] Add `uploadCategoryBannerImage()` function (or use generic upload)
 
 ###### File: `/app/src/lib/actions/elevator-types.ts`
-- [ ] Update `createElevatorType()` to handle `banner_image`
-- [ ] Update `updateElevatorType()` to handle `banner_image`
+- [x] Update `createElevatorType()` to handle `banner_image`
+- [x] Update `updateElevatorType()` to handle `banner_image`
+- [x] Add `uploadElevatorTypeImage()` function
 
 ###### File: `/app/src/lib/actions/collections.ts`
-- [ ] Update `createCollection()` to handle `banner_image`
-- [ ] Update `updateCollection()` to handle `banner_image`
+- [x] Update `createCollection()` to handle `banner_image`
+- [x] Update `updateCollection()` to handle `banner_image`
 
 #### Deliverables
-- [ ] Banner actions restricted to All Products only
-- [ ] Entity actions support banner_image
-- [ ] Upload functions ready
+- [x] Banner actions restricted to All Products only
+- [x] Entity actions support banner_image
+- [x] Upload functions ready
 
 ---
 
-### Phase 4: Admin UI - Banner Management ⚠️ Pending
+### Phase 4: Admin UI - Banner Management ✅ COMPLETE
 
 **Goal:** Update Banner Management to ONLY handle All Products carousel
 
 #### Tasks
 
 ##### 4.1 Update Banner List Page: `/app/src/app/admin/banners/page.tsx`
-- [ ] Update page title/description:
-  - [ ] Title: "All Products Carousel"
-  - [ ] Description: "Manage homepage carousel banners for product discovery"
-- [ ] Remove placement filter (only one placement now)
-- [ ] Update empty state message
-- [ ] Add info banner explaining the philosophy
-- [ ] Remove references to category/application/collection banners
+- [x] Update page title/description:
+  - [x] Title: "All Products Carousel"
+  - [x] Description: "Manage homepage carousel banners for product discovery"
+- [x] Remove placement filter (only one placement now)
+- [x] Update empty state message
+- [x] Add info banner explaining the philosophy
+- [x] Remove references to category/application/collection banners
 
 ##### 4.2 Update Banner Create Page: `/app/src/app/admin/banners/create/page.tsx`
-- [ ] Remove placement selection (hardcode to `'all-products-carousel'`)
-- [ ] Update form to show:
-  - [ ] Title (required)
-  - [ ] Subtitle (optional)
-  - [ ] Image upload (required)
-  - [ ] Mobile image upload (optional)
-  - [ ] Link Type dropdown (Application, Category, Elevator Type, Collection)
-  - [ ] Link ID dropdown (filtered by Link Type)
-  - [ ] CTA Text (required)
-  - [ ] Sort order
-  - [ ] Active toggle
-  - [ ] Start/end dates (optional)
-- [ ] Add helper text explaining carousel purpose
-- [ ] Update validation
+- [x] Remove placement selection (hardcode to `'all-products-carousel'`)
+- [x] Update form to show:
+  - [x] Title (required)
+  - [x] Subtitle (optional)
+  - [x] Image upload (required)
+  - [x] Mobile image upload (optional)
+  - [x] Link Type dropdown (Application, Category, Elevator Type, Collection)
+  - [x] Link ID dropdown (filtered by Link Type)
+  - [x] CTA Text (required)
+  - [x] Sort order
+  - [x] Active toggle
+  - [x] Start/end dates (optional)
+- [x] Add helper text explaining carousel purpose
+- [x] Update validation
 
 ##### 4.3 Update Banner Edit Page: `/app/src/app/admin/banners/[id]/edit/page.tsx`
-- [ ] Same updates as create page
-- [ ] Pre-fill existing data
-- [ ] Show warning if trying to edit non-carousel banner (shouldn't happen)
+- [x] Same updates as create page
+- [x] Pre-fill existing data
+- [x] Show warning if trying to edit non-carousel banner (shouldn't happen)
 
 ##### 4.4 Add Philosophy Info Card (All Banner Pages)
-- [ ] Create reusable component: `<BannerPhilosophyCard />`
-- [ ] Content:
+- [x] Create reusable component: `<BannerPhilosophyCard />`
+- [x] Content:
   ```
   📌 Banner Philosophy
   
@@ -248,10 +249,10 @@ ADD COLUMN IF NOT EXISTS thumbnail_image TEXT;
   ```
 
 #### Deliverables
-- [ ] Banner Management ONLY manages All Products carousel
-- [ ] Clear messaging about philosophy
-- [ ] Simplified UI (no placement selection)
-- [ ] All forms updated
+- [x] Banner Management ONLY manages All Products carousel
+- [x] Clear messaging about philosophy
+- [x] Simplified UI (no placement selection)
+- [x] All forms updated
 
 ---
 
@@ -475,15 +476,15 @@ ADD COLUMN IF NOT EXISTS thumbnail_image TEXT;
 ## 📊 Progress Tracking
 
 ### Overall Status
-- **Phase 1:** Database Schema - ⚠️ Not Started
-- **Phase 2:** TypeScript Types - ⚠️ Not Started
-- **Phase 3:** Server Actions - ⚠️ Not Started
-- **Phase 4:** Banner Management UI - ⚠️ Not Started
-- **Phase 5:** Entity Module UI - ⚠️ Not Started
-- **Phase 6:** Frontend Rendering - ⚠️ Not Started
-- **Phase 7:** Documentation & Testing - ⚠️ Not Started
+- **Phase 1:** Database Schema - ✅ COMPLETE
+- **Phase 2:** TypeScript Types - ✅ COMPLETE
+- **Phase 3:** Server Actions - ✅ COMPLETE
+- **Phase 4:** Banner Management UI - ✅ COMPLETE
+- **Phase 5:** Entity Module UI - ⚠️ In Progress
+- **Phase 6:** Frontend Rendering - ⚠️ Pending
+- **Phase 7:** Documentation & Testing - ⚠️ Pending
 
-**Total Progress:** 0/7 phases (0%)
+**Total Progress:** 4/7 phases (57%)
 
 ---
 
