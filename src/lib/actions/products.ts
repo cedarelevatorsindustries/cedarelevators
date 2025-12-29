@@ -163,9 +163,17 @@ export async function createProduct(productData: ProductFormData) {
 export async function updateProduct(id: string, productData: Partial<ProductFormData>) {
     const supabase = await createServerSupabase()
 
+    // Prepare update data ensuring technical_specs is properly formatted
+    const updateData = {
+        ...productData,
+        technical_specs: productData.technical_specs !== undefined 
+            ? productData.technical_specs 
+            : undefined,
+    }
+
     const { data, error } = await supabase
         .from('products')
-        .update(productData)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single()
