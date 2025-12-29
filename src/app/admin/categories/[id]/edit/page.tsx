@@ -202,35 +202,20 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
               </CardContent>
             </Card>
 
-            {/* Product Assignment Card */}
-            <Card>
+            {/* Golden Rule Info Card */}
+            <Card className="bg-blue-50 border-blue-200">
               <CardHeader>
-                <CardTitle>Product Assignment</CardTitle>
-                <CardDescription>
-                  Manage which products belong to this category
-                </CardDescription>
+                <CardTitle className="text-blue-900 flex items-center gap-2">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Cedar Golden Rule
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Label>Assigned Products</Label>
-                  <ProductSelector
-                    products={allProducts}
-                    selectedProductIds={selectedProductIds}
-                    onSelectionChange={setSelectedProductIds}
-                    placeholder="Select products to assign to this category..."
-                    multiple={true}
-                  />
-                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
-                    <span>
-                      {selectedProductIds.length} product{selectedProductIds.length !== 1 ? 's' : ''} assigned
-                    </span>
-                    {(selectedProductIds.length !== originalProductIds.length) && (
-                      <span className="text-orange-600 font-medium">
-                        Changes will be saved
-                      </span>
-                    )}
-                  </div>
-                </div>
+              <CardContent className="text-sm text-blue-900 space-y-2">
+                <p><strong>Products assign themselves</strong> to categories.</p>
+                <p className="text-xs text-blue-700">You cannot select products here. Products choose their own categories in their Organization tab.</p>
+                <p className="text-xs text-blue-700 pt-2"><strong>To view products:</strong> Visit the category detail page to see which products have assigned themselves to this category.</p>
               </CardContent>
             </Card>
 
