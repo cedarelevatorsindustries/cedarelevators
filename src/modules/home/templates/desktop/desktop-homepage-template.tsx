@@ -1,5 +1,6 @@
 import { Product, ProductCategory } from "@/lib/types/domain"
 import type { Application } from "@/lib/data/applications"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import {
   HeroSection,
   FeaturedProductsSection,
@@ -16,9 +17,10 @@ interface DesktopHomepageProps {
   categories: ProductCategory[]
   testimonials: any[]
   applications?: Application[]
+  elevatorTypes?: ElevatorType[]
 }
 
-export default function DesktopHomepage({ products, categories, testimonials, applications = [] }: DesktopHomepageProps) {
+export default function DesktopHomepage({ products, categories, testimonials, applications = [], elevatorTypes = [] }: DesktopHomepageProps) {
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -43,7 +45,7 @@ export default function DesktopHomepage({ products, categories, testimonials, ap
 
       {/* Shop by Type - Elevator Type categorization */}
       <div className="mt-12">
-        <ShopByTypeSection hasProducts={products.length > 0} />
+        <ShopByTypeSection hasProducts={products.length > 0} elevatorTypes={elevatorTypes} />
       </div>
 
       {/* Why Choose Cedar */}
