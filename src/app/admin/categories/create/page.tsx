@@ -149,21 +149,7 @@ export default function CreateCategoryPage() {
       })
 
       if (result.success && result.category) {
-        // Update selected products to assign this category
-        if (selectedProductIds.length > 0) {
-          toast.loading(`Assigning ${selectedProductIds.length} products to category...`)
-          
-          const updatePromises = selectedProductIds.map(productId =>
-            updateProduct(productId, { category: result.category!.id })
-          )
-          
-          await Promise.all(updatePromises)
-          toast.dismiss()
-          toast.success(`Category created and ${selectedProductIds.length} products assigned!`)
-        } else {
-          toast.success('Category created successfully!')
-        }
-
+        toast.success('Category created successfully! Products can now assign themselves to this category.')
         router.push('/admin/categories')
       }
     } catch (error) {
