@@ -1,12 +1,35 @@
 'use client'
 
-import { useRouter, usePathname } from "next/navigation"
-import { Wrench, ClipboardCheck, Cog, Grid3x3 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Wrench, ClipboardCheck, Cog, Grid3x3, Package } from "lucide-react"
 import { useState, useEffect } from "react"
+import type { Application } from "@/lib/data/applications"
 
-export function ApplicationsSection() {
+// Icon mapping for applications
+const iconMap: Record<string, any> = {
+    wrench: Wrench,
+    clipboard: ClipboardCheck,
+    cog: Cog,
+    grid: Grid3x3,
+    package: Package
+}
+
+// Badge color mapping
+const badgeColorMap: Record<string, string> = {
+    orange: "bg-orange-600",
+    blue: "bg-blue-600",
+    green: "bg-green-600",
+    purple: "bg-purple-600",
+    red: "bg-red-600",
+    yellow: "bg-yellow-600"
+}
+
+interface ApplicationsSectionProps {
+    applications: Application[]
+}
+
+export function ApplicationsSection({ applications }: ApplicationsSectionProps) {
     const router = useRouter()
-    const pathname = usePathname()
     const [isMobile, setIsMobile] = useState(false)
 
     // Detect mobile
@@ -17,44 +40,10 @@ export function ApplicationsSection() {
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    const applications = [
-        {
-            name: "Erection",
-            slug: "erection",
-            description: "Mechanical components and installation parts",
-            badge: "ESSENTIAL",
-            badgeColor: "bg-orange-600",
-            image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center",
-            icon: Wrench
-        },
-        {
-            name: "Testing",
-            slug: "testing",
-            description: "Electrical testing equipment and components",
-            badge: "QUALITY",
-            badgeColor: "bg-blue-600",
-            image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800&h=600&fit=crop&crop=center",
-            icon: ClipboardCheck
-        },
-        {
-            name: "Service",
-            slug: "service",
-            description: "Repair, AMC, and maintenance solutions",
-            badge: "SUPPORT",
-            badgeColor: "bg-green-600",
-            image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&crop=center",
-            icon: Cog
-        },
-        {
-            name: "Others",
-            slug: "others",
-            description: "Additional elevator components",
-            badge: "NEW",
-            badgeColor: "bg-purple-600",
-            image: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=800&h=600&fit=crop&crop=center",
-            icon: Grid3x3
-        }
-    ]
+    // Don't render if no applications
+    if (!applications || applications.length === 0) {
+        return null
+    }
 
     const handleApplicationClick = (slug: string) => {
         // Always go to catalog page with application filter (for both logged-in and guest users)
