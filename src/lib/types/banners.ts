@@ -45,10 +45,14 @@ export interface Banner {
     image_alt?: string | null
     mobile_image_url?: string | null
     placement: BannerPlacement
+    // Link destination (required for carousel banners)
+    link_type?: BannerLinkType | null  // Preferred: use this
+    link_id?: string | null             // Preferred: use this
+    // DEPRECATED: Use link_type/link_id instead
     target_type?: BannerTargetType | null
     target_id?: string | null
-    cta_text?: string | null
-    cta_link?: string | null
+    cta_text?: string | null // REQUIRED for carousel banners
+    cta_link?: string | null // Optional manual override (use link_type/link_id instead)
     cta_style: BannerCtaStyle
     start_date?: string | null
     end_date?: string | null
@@ -78,11 +82,15 @@ export interface BannerFormData {
     image_url?: string
     image_alt?: string
     mobile_image_url?: string
-    placement: BannerPlacement
+    placement?: BannerPlacement // Default to 'hero-carousel'
+    // Link destination (required for carousel)
+    link_type?: BannerLinkType
+    link_id?: string
+    // DEPRECATED: Use link_type/link_id instead
     target_type?: BannerTargetType
     target_id?: string
-    cta_text?: string
-    cta_link?: string
+    cta_text?: string // REQUIRED for carousel
+    cta_link?: string // Optional manual override
     cta_style?: BannerCtaStyle
     start_date?: string
     end_date?: string
@@ -127,48 +135,24 @@ export interface PlacementConfig {
 
 /**
  * Available banner placements with metadata
+ * UPDATED: Only All Products Carousel is managed here
  */
 export const BANNER_PLACEMENTS: PlacementConfig[] = [
     {
         id: 'hero-carousel',
-        label: 'Homepage Hero Carousel',
-        description: 'Main banner slider on the homepage',
+        label: 'All Products Carousel',
+        description: 'Homepage carousel for product discovery navigation (3-5 slides recommended)',
         aspectRatio: '16:9',
         recommendedSize: '1920x1080',
         icon: 'Layout'
     },
-    {
-        id: 'category-header',
-        label: 'Category Page Header',
-        description: 'Banner at the top of category listing pages',
-        aspectRatio: '21:9',
-        recommendedSize: '1920x480',
-        icon: 'FolderOpen'
-    },
-    {
-        id: 'application-header',
-        label: 'Application Page Header',
-        description: 'Banner for application pages (Residential, Commercial, etc.)',
-        aspectRatio: '21:9',
-        recommendedSize: '1920x480',
-        icon: 'Layers'
-    },
-    {
-        id: 'announcement-bar',
-        label: 'Announcement Bar',
-        description: 'Thin persistent bar at the top of the website',
-        aspectRatio: 'N/A',
-        recommendedSize: 'Text only or small icon',
-        icon: 'Bell'
-    },
-    {
-        id: 'collection-banner',
-        label: 'Collection Banner',
-        description: 'Promotional banner for featured collections',
-        aspectRatio: '16:9',
-        recommendedSize: '1200x675',
-        icon: 'Grid'
-    }
+    // DEPRECATED placements - managed in entity modules:
+    // {
+    //     id: 'category-header',
+    //     label: 'Category Page Header',
+    //     description: 'NOW MANAGED IN: Category Module → Visual Identity → Banner Image',
+    //     ...
+    // },
 ]
 
 /**
