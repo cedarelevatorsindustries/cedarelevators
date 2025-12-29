@@ -139,6 +139,13 @@ export default function CreateProductPage() {
         short_description: formData.subtitle,
         status: isDraft ? 'draft' : formData.status,
 
+        // Cedar Interconnection Logic
+        application_id: formData.application_id,
+        category_id: formData.category_id,
+        subcategory_id: formData.subcategory_id,
+        elevator_type_ids: formData.elevator_type_ids || [],
+        collection_ids: formData.collection_ids || [],
+
         // Pricing (for single product mode)
         price: formData.pricingMode === 'single' ? (parseFloat(formData.price) || 0) : 0,
         compare_at_price: formData.pricingMode === 'single' ? (parseFloat(formData.comparePrice) || undefined) : undefined,
