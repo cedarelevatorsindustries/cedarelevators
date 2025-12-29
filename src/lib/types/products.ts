@@ -45,6 +45,13 @@ export interface Product {
     subcategory_id?: string
     is_categorized: boolean
     
+    // Cedar-specific technical fields (Phase 3)
+    voltage?: string // Operating voltage (e.g., 220V, 380V, 415V)
+    load_capacity_kg?: number // Maximum load capacity in kilograms
+    speed_ms?: number // Operating speed in meters per second
+    variant_group?: string // Group identifier for product variants
+    technical_specs?: Record<string, any> // Additional technical specifications as JSON
+    
     status: ProductStatus
     thumbnail?: string
     images: ProductImage[]
