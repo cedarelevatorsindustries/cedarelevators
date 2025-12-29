@@ -217,11 +217,11 @@ export default function CreateCategoryPage() {
                 Details Form
               </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* STEP 1: Type Selection */}
-        {currentStep === 1 && hasProducts && (
+        {currentStep === 1 && (
           <div className="grid gap-6 md:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card
               className="cursor-pointer hover:border-orange-500 hover:shadow-md transition-all group relative overflow-hidden"
