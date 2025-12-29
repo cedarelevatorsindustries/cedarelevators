@@ -9,7 +9,7 @@
 ## 📊 Overall Progress
 
 - **Phase 1: Quotes Module** - ✅ Complete
-- **Phase 2: Customers Module** - ⏸️ Not Started
+- **Phase 2: Customers Module** - ✅ Complete
 - **Phase 3: Products Module** - ⏸️ Not Started
 - **Phase 4: Inventory Module** - ⏸️ Not Started
 
