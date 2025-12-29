@@ -67,7 +67,9 @@ export default function DesktopHomepageLoggedIn({
         {activeTab === "products" && (
           <>
             {/* Shop by Application - Only show on Products tab */}
-            <ApplicationsSection />
+            {applications.length > 0 && (
+              <ApplicationsSection applications={applications} />
+            )}
             <ProductsTab products={products} />
           </>
         )}
