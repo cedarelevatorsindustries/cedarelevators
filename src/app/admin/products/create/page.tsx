@@ -104,7 +104,14 @@ export default function CreateProductPage() {
     lowStockThreshold: "5",
     globalStock: "0",
 
-    // Organization
+    // Organization (Cedar Interconnection Logic)
+    application_id: undefined,
+    category_id: undefined,
+    subcategory_id: undefined,
+    elevator_type_ids: [],
+    collection_ids: [],
+    
+    // Legacy (deprecated)
     categories: [],
     collections: [],
     tags: [],
