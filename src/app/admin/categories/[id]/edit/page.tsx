@@ -11,9 +11,6 @@ import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCategory, useUpdateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
-import { useProducts } from "@/hooks/queries/useProducts"
-import { updateProduct } from "@/lib/actions/products"
-import { ProductSelector } from "@/components/admin/ProductSelector"
 import { toast } from "sonner"
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
