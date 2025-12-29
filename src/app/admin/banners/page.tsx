@@ -11,16 +11,16 @@ import Link from "next/link"
 import { useBanners, useDeleteBanner, useToggleBannerStatus } from "@/hooks/queries/useBanners"
 import { computeBannerStatus } from "@/lib/types/banners"
 import type { BannerWithStatus } from "@/lib/types/banners"
+import { BannerPhilosophyCard } from "@/components/admin/banner-philosophy-card"
 
 
 export default function BannersPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [placementFilter, setPlacementFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   const filters = {
     search: searchQuery || undefined,
-    placement: placementFilter !== 'all' ? placementFilter : undefined,
+    placement: 'hero-carousel' as const, // Always filter to All Products Carousel
     status: statusFilter !== 'all' ? statusFilter : undefined,
   }
 
@@ -46,9 +46,9 @@ export default function BannersPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Banners</h1>
+            <h1 className="text-3xl font-bold text-gray-900">All Products Carousel</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Manage promotional banners across your store
+              Manage homepage carousel banners for product discovery navigation
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -70,6 +70,9 @@ export default function BannersPage() {
             </Button>
           </div>
         </div>
+
+        {/* Philosophy Card */}
+        <BannerPhilosophyCard />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -124,7 +127,7 @@ export default function BannersPage() {
             <CardTitle className="text-base font-semibold text-gray-900">Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Search</label>
                 <div className="relative">
@@ -136,23 +139,6 @@ export default function BannersPage() {
                     className="pl-10 bg-white border-gray-200"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Placement</label>
-                <Select value={placementFilter} onValueChange={setPlacementFilter}>
-                  <SelectTrigger className="bg-white border-gray-200">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Placements</SelectItem>
-                    <SelectItem value="hero-carousel">Hero Carousel</SelectItem>
-                    <SelectItem value="category-header">Category Header</SelectItem>
-                    <SelectItem value="application-header">Application Header</SelectItem>
-                    <SelectItem value="announcement-bar">Announcement Bar</SelectItem>
-                    <SelectItem value="collection-banner">Collection Banner</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
@@ -189,11 +175,11 @@ export default function BannersPage() {
             ) : banners.length === 0 ? (
               <div className="text-center py-12">
                 <ImageIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                <h3 className="text-base font-medium text-gray-900 mb-2">No banners found</h3>
+                <h3 className="text-base font-medium text-gray-900 mb-2">No carousel banners found</h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  {searchQuery || placementFilter !== "all" || statusFilter !== "all"
+                  {searchQuery || statusFilter !== "all"
                     ? "Try adjusting your filters."
-                    : "Get started by creating your first banner."}
+                    : "Get started by creating your first carousel banner for product discovery."}
                 </p>
                 <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
                   <Link href="/admin/banners/create">
