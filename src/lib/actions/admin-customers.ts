@@ -402,6 +402,18 @@ export async function approveVerification(
       }
     )
 
+    // Send verification approved email
+    try {
+      const { sendVerificationStatus } = await import('@/lib/services/email')
+      // Note: Email would need to be fetched from Clerk or customer_meta
+      // For now, we'll log it - in production, get email from Clerk API
+      console.log('Sending verification approved email to customer:', profile.clerk_user_id)
+      // await sendVerificationStatus(customerEmail, 'approved', profile.company_name, notes)
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError)
+      // Don't fail the entire operation if email fails
+    }
+
     revalidatePath('/admin/customers')
     revalidatePath(`/admin/customers/${profile.clerk_user_id}`)
 
