@@ -36,6 +36,9 @@ ON CONFLICT (name) DO NOTHING;
 -- We'll use existing categories table with parent_id = null
 -- and application field to mark as Application type
 
+-- First, add the application column to categories if it doesn't exist
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS application VARCHAR(50);
+
 -- Seed default applications (if not exists)
 INSERT INTO categories (name, slug, description, parent_id, application, is_active, sort_order) VALUES
   ('Erection', 'erection', 'Installation and erection services', NULL, 'erection', true, 1),
