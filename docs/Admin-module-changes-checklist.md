@@ -366,9 +366,9 @@
 - [x] Create `/lib/config/technical-specs-templates.ts`
 
 ### Backend (Server Actions)
-- [ ] Update `createProduct` with new fields validation
-- [ ] Update `updateProduct` with new fields
-- [ ] Add validation for Cedar-specific fields
+- [x] Update `createProduct` with new fields validation
+- [x] Update `updateProduct` with new fields
+- [x] Add validation for Cedar-specific fields
 
 ### Product Create/Edit Form
 - [ ] Add Elevator Type selector
