@@ -118,12 +118,12 @@ export const elevatorCategories: CategoryData[] = [
 ## Phase 7: Catalog Banner & Related Components
 
 ### Files to Check:
-- [ ] `/src/modules/catalog/components/catalog-banner.tsx`
-- [ ] `/src/modules/catalog/templates/catalog-template.tsx`
-- [ ] `/src/modules/catalog/templates/mobile/categories-tab-template.tsx`
-- [ ] `/src/modules/catalog/templates/mobile/products-tab-template.tsx`
+- [x] `/src/modules/catalog/components/catalog-banner.tsx` - All URLs replaced
+- [x] `/src/modules/catalog/templates/catalog-template.tsx` - Verified
+- [x] `/src/modules/catalog/templates/mobile/categories-tab-template.tsx` - Verified
+- [x] `/src/modules/catalog/templates/mobile/products-tab-template.tsx` - Verified
 
-**Action**: Search for any Unsplash URLs and replace
+**Completed**: All Unsplash URLs replaced with `/images/image.png`
 
 ---
 
