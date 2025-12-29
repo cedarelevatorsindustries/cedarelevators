@@ -54,8 +54,8 @@ export const elevatorCategories: CategoryData[] = [
 ```
 
 ### Images to Replace:
-- [x] `/api/placeholder/120/80` → `public/images/image.png`
-- [x] `https://picsum.photos/200/200?random=*` → `public/images/image.png`
+- [x] `/api/placeholder/120/80` → Removed (now uses database images or fallback)
+- [x] `https://picsum.photos/200/200?random=*` → Removed (now uses database images or fallback)
 
 ---
 
