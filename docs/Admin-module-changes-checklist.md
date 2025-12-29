@@ -196,29 +196,37 @@
 
 ## 👥 PHASE 2: CUSTOMERS MODULE (VERIFICATION & TRUST)
 
-**Priority:** HIGH | **Status:** ⏸️ Not Started
+**Priority:** HIGH | **Status:** ⏳ In Progress
 
 ### Database Schema Changes
-- [ ] Create `verification_documents` table
-- [ ] Add verification fields to customers
-- [ ] Create `verification_audit_log` table
-- [ ] Add business_verified flag
+- [x] Create `verification_documents` table
+- [x] Add verification fields to customers
+- [x] Create `verification_audit_log` table
+- [x] Add business_verified flag
+- [x] Create `customer_notes` table
+- [x] Enhance business_profiles with verification fields
 
 ### Type Definitions
-- [ ] Add VerificationDocument type
-- [ ] Add VerificationStatus type
-- [ ] Update Customer type with verification fields
-- [ ] Add VerificationAuditLog type
+- [x] Add VerificationDocument type
+- [x] Add VerificationStatus type
+- [x] Update Customer type with verification fields
+- [x] Add VerificationAuditLog type
+- [x] Add CustomerNote type
+- [x] Add helper functions for display
 
 ### Backend (Server Actions)
-- [ ] Implement `getCustomers` action
-- [ ] Implement `getCustomerById` action
-- [ ] Add `getVerificationDocuments` action
-- [ ] Add `approveVerification` action (Admin only)
-- [ ] Add `rejectVerification` action (Admin only)
-- [ ] Add `requestMoreDocuments` action
-- [ ] Add `getVerificationAuditLog` action
-- [ ] Implement `exportCustomersAction`
+- [x] Implement `getCustomers` action
+- [x] Implement `getCustomerById` action
+- [x] Add `getVerificationDocuments` action
+- [x] Add `approveVerification` action (Admin only)
+- [x] Add `rejectVerification` action (Admin only)
+- [x] Add `requestMoreDocuments` action
+- [x] Add `getVerificationAuditLog` action
+- [x] Implement `exportCustomersAction`
+- [x] Add `approveDocument` action
+- [x] Add `rejectDocument` action
+- [x] Add `getCustomerNotes` action
+- [x] Add `addCustomerNote` action
 
 ### Customers List Page (`/admin/customers/page.tsx`)
 - [ ] Keep filters: Account type, Verification status, Registration date
