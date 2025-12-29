@@ -70,13 +70,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     }
   }, [category])
 
-  useEffect(() => {
-    if (categoryProducts.length > 0) {
-      const productIds = categoryProducts.map(p => p.id)
-      setSelectedProductIds(productIds)
-      setOriginalProductIds(productIds)
-    }
-  }, [categoryProducts])
+  // Removed: useEffect for product initialization (products now assign themselves)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
