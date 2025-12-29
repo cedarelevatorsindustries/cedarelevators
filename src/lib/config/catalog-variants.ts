@@ -350,55 +350,57 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
 
 /**
  * Helper: Get category metadata
+ * Fallback images replaced with /images/image.png
  */
 function getCategoryMetadata(category: string) {
   const categories: Record<string, any> = {
     'decking': {
       displayName: 'Cedar Decking',
-      heroImage: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
     'siding': {
       displayName: 'Cedar Siding',
-      heroImage: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
     'fencing': {
       displayName: 'Cedar Fencing',
-      heroImage: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
   }
 
   return categories[category] || {
     displayName: category.charAt(0).toUpperCase() + category.slice(1),
-    heroImage: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop',
+    heroImage: '/images/image.png',
   }
 }
 
 /**
  * Helper: Get application metadata
+ * Fallback images replaced with /images/image.png
  */
 function getApplicationMetadata(application: string) {
   const applications: Record<string, any> = {
     'deck-building': {
       displayName: 'Deck Building',
       subtitle: 'Everything you need for your perfect outdoor deck',
-      heroImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
     'House-siding': {
       displayName: 'House Siding',
       subtitle: 'Transform your House exterior with premium cedar',
-      heroImage: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
     'pergola': {
       displayName: 'Pergola Construction',
       subtitle: 'Create stunning outdoor living spaces',
-      heroImage: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=1400&h=300&fit=crop',
+      heroImage: '/images/image.png',
     },
   }
 
   return applications[application] || {
     displayName: application.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     subtitle: 'Quality cedar products for your project',
-    heroImage: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop',
+    heroImage: '/images/image.png',
   }
 }
 

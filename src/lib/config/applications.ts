@@ -1,5 +1,6 @@
 // Application to Category Mapping
 // Maps application slugs to their associated categories
+// All Unsplash images replaced with fallback image
 
 export interface ApplicationConfig {
     name: string
@@ -14,7 +15,7 @@ export const APPLICATION_CONFIGS: Record<string, ApplicationConfig> = {
         name: "Erection",
         slug: "erection",
         subtitle: "Mechanical components and installation parts for elevator erection",
-        backgroundImage: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1400&h=300&fit=crop",
+        backgroundImage: "/images/image.png",
         categoryHandles: [
             // Add category handles that belong to erection
             "motors",
@@ -28,7 +29,7 @@ export const APPLICATION_CONFIGS: Record<string, ApplicationConfig> = {
         name: "Testing",
         slug: "testing",
         subtitle: "Electrical testing equipment and components for quality assurance",
-        backgroundImage: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1400&h=300&fit=crop",
+        backgroundImage: "/images/image.png",
         categoryHandles: [
             // Add category handles that belong to testing
             "testing-equipment",
@@ -41,7 +42,7 @@ export const APPLICATION_CONFIGS: Record<string, ApplicationConfig> = {
         name: "Service",
         slug: "service",
         subtitle: "Repair, AMC, and maintenance solutions for elevator systems",
-        backgroundImage: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=300&fit=crop",
+        backgroundImage: "/images/image.png",
         categoryHandles: [
             // Add category handles that belong to service
             "spare-parts",
@@ -54,7 +55,7 @@ export const APPLICATION_CONFIGS: Record<string, ApplicationConfig> = {
         name: "Others",
         slug: "others",
         subtitle: "Additional elevator components and accessories",
-        backgroundImage: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=1400&h=300&fit=crop",
+        backgroundImage: "/images/image.png",
         categoryHandles: [
             // Add category handles that belong to others
             "accessories",

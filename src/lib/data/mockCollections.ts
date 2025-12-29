@@ -47,6 +47,7 @@ export interface Collection {
 /**
  * Mock Product Data
  * These products will be used across different collections
+ * Images replaced with fallback image
  */
 const mockProducts: Product[] = [
   {
@@ -54,7 +55,7 @@ const mockProducts: Product[] = [
     title: "Smart Control Panel Pro",
     description: "IoT-enabled control system with touchscreen interface and real-time monitoring",
     handle: "smart-control-panel-pro",
-    thumbnail: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_1",
       title: "Standard",
@@ -72,7 +73,7 @@ const mockProducts: Product[] = [
     title: "Energy Efficient Motor",
     description: "Variable frequency drive motor for reduced power consumption",
     handle: "energy-efficient-motor",
-    thumbnail: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_2",
       title: "Standard",
@@ -90,7 +91,7 @@ const mockProducts: Product[] = [
     title: "Hospital Grade Door System",
     description: "Medical facility certified automatic door operator",
     handle: "hospital-grade-door-system",
-    thumbnail: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_3",
       title: "Standard",
@@ -108,7 +109,7 @@ const mockProducts: Product[] = [
     title: "Heavy Duty Cable Set",
     description: "Industrial strength steel cables for freight elevators",
     handle: "heavy-duty-cable-set",
-    thumbnail: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_4",
       title: "Standard",
@@ -126,7 +127,7 @@ const mockProducts: Product[] = [
     title: "LED Cabin Lighting Kit",
     description: "Energy-saving LED lighting with ambient controls",
     handle: "led-cabin-lighting-kit",
-    thumbnail: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_5",
       title: "Standard",
@@ -144,7 +145,7 @@ const mockProducts: Product[] = [
     title: "Safety Sensor System",
     description: "Advanced infrared safety sensors with auto-reverse",
     handle: "safety-sensor-system",
-    thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_6",
       title: "Standard",
@@ -162,7 +163,7 @@ const mockProducts: Product[] = [
     title: "Hydraulic Power Unit",
     description: "Compact hydraulic power pack for smooth operation",
     handle: "hydraulic-power-unit",
-    thumbnail: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_7",
       title: "Standard",
@@ -180,7 +181,7 @@ const mockProducts: Product[] = [
     title: "Emergency Phone System",
     description: "GSM-based emergency communication with auto-dialer",
     handle: "emergency-phone-system",
-    thumbnail: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_8",
       title: "Standard",
@@ -198,7 +199,7 @@ const mockProducts: Product[] = [
     title: "Inverter Drive System",
     description: "High-efficiency VFD for smooth acceleration and energy savings",
     handle: "inverter-drive-system",
-    thumbnail: "https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_9",
       title: "Standard",
@@ -216,7 +217,7 @@ const mockProducts: Product[] = [
     title: "Stainless Steel Car Panel",
     description: "Premium grade stainless steel cabin interior panels",
     handle: "stainless-steel-car-panel",
-    thumbnail: "https://images.unsplash.com/photo-1565537373149-89d084048730?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ 
       id: "var_10",
       title: "Standard",
