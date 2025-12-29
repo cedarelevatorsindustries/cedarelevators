@@ -69,7 +69,7 @@ export async function getProduct(id: string) {
 }
 
 /**
- * Create new product
+ * Create new product (Cedar Interconnection Logic)
  */
 export async function createProduct(productData: ProductFormData) {
     const supabase = await createServerSupabase()
@@ -85,19 +85,68 @@ export async function createProduct(productData: ProductFormData) {
         throw new Error('Product with this URL handle already exists')
     }
 
-    const { data, error } = await supabase
+    // Separate elevator_type_ids and collection_ids from main product data
+    const { elevator_type_ids, collection_ids, ...mainProductData } = productData
+
+    // Set is_categorized based on whether product has proper category
+    const is_categorized = !!(
+        mainProductData.application_id &&
+        mainProductData.category_id &&
+        mainProductData.application_id !== 'general' &&
+        mainProductData.category_id !== 'uncategorized'
+    )
+
+    // Insert product
+    const { data: product, error: productError } = await supabase
         .from('products')
-        .insert([productData])
+        .insert([{ ...mainProductData, is_categorized }])
         .select()
         .single()
 
-    if (error) {
-        console.error('Error creating product:', error)
+    if (productError) {
+        console.error('Error creating product:', productError)
         throw new Error('Failed to create product')
     }
 
+    // Insert elevator type relationships
+    if (elevator_type_ids && elevator_type_ids.length > 0) {
+        const elevatorTypeRecords = elevator_type_ids.map((typeId) => ({
+            product_id: product.id,
+            elevator_type_id: typeId,
+        }))
+
+        const { error: elevatorTypesError } = await supabase
+            .from('product_elevator_types')
+            .insert(elevatorTypeRecords)
+
+        if (elevatorTypesError) {
+            console.error('Error creating product-elevator type relationships:', elevatorTypesError)
+            // Rollback: delete the product
+            await supabase.from('products').delete().eq('id', product.id)
+            throw new Error('Failed to assign elevator types')
+        }
+    }
+
+    // Insert collection relationships (if any)
+    if (collection_ids && collection_ids.length > 0) {
+        const collectionRecords = collection_ids.map((collectionId, index) => ({
+            product_id: product.id,
+            collection_id: collectionId,
+            position: index,
+        }))
+
+        const { error: collectionsError } = await supabase
+            .from('product_collections')
+            .insert(collectionRecords)
+
+        if (collectionsError) {
+            console.error('Error creating product-collection relationships:', collectionsError)
+            // Non-fatal: Collections are optional
+        }
+    }
+
     revalidatePath('/admin/products')
-    return data as Product
+    return { success: true, product: product as Product }
 }
 
 /**
