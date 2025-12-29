@@ -215,16 +215,20 @@ const imageSrc = item.thumbnail || item.image || '/images/image.png'
 ## Testing Checklist
 
 ### After Implementation:
-- [ ] Homepage loads without hardcoded data
-- [ ] Mega menu shows database categories (or hidden if none)
-- [ ] Applications section shows database applications (or hidden if none)
-- [ ] Elevator types section shows database types (or hidden if none)
-- [ ] No Unsplash images visible anywhere
-- [ ] Fallback image appears when no image uploaded
-- [ ] No console errors related to missing data
-- [ ] No broken image links
-- [ ] Mobile view works correctly
-- [ ] All sections conditionally render based on data availability
+- [x] Mega menu shows database categories (or hidden if none)
+- [x] Applications section shows database applications (or hidden if none)
+- [x] Elevator types section shows database types (or hidden if none)
+- [x] No Unsplash images visible anywhere
+- [x] Fallback image `/images/image.png` used when no image uploaded
+- [x] All hardcoded data removed from categories-data.ts
+- [x] All Unsplash URLs replaced in mockCollections.ts
+- [x] All Unsplash URLs replaced in catalog-variants.ts
+- [x] All Unsplash URLs replaced in applications.ts
+- [ ] Homepage loads without hardcoded data (requires testing)
+- [ ] No console errors related to missing data (requires testing)
+- [ ] No broken image links (requires testing)
+- [ ] Mobile view works correctly (requires testing)
+- [ ] All sections conditionally render based on data availability (requires testing)
 
 ### Search Commands for Verification:
 ```bash
