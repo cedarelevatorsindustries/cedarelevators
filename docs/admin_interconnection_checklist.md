@@ -488,17 +488,18 @@
 - [ ] Document completion date: __________
 
 #### 2. Create API Routes (Optional - If Needed)
-- [ ] Determine if needed (server actions may be sufficient)
-- [ ] If needed, create:
-  - [ ] `GET /api/elevator-types` - List types
-  - [ ] `GET /api/elevator-types/[id]` - Get single type
-  - [ ] `POST /api/elevator-types` - Create (admin only)
-  - [ ] `PATCH /api/elevator-types/[id]` - Update (admin only)
-  - [ ] `DELETE /api/elevator-types/[id]` - Delete (admin only)
-  - [ ] `GET /api/elevator-types/[id]/products` - Get products by type
-- [ ] Add authentication middleware
-- [ ] Add admin role checks
-- [ ] Test all endpoints
+- [x] Determine if needed (server actions may be sufficient)
+- [x] If needed, create:
+  - [x] `GET /api/admin/elevator-types` - List types with filters
+  - [x] `GET /api/admin/elevator-types/[id]` - Get single type
+  - [x] `POST /api/admin/elevator-types` - Create (admin only)
+  - [x] `PATCH /api/admin/elevator-types/[id]` - Update (admin only)
+  - [x] `PATCH /api/admin/elevator-types` - Bulk update sort order (admin only)
+  - [x] `DELETE /api/admin/elevator-types/[id]` - Delete (admin only)
+  - [x] `GET /api/admin/elevator-types/[id]/products` - Get products by type
+- [x] Add authentication middleware (Clerk auth)
+- [x] Add admin role checks (staff: view, manager+: create/edit/delete)
+- [ ] Test all endpoints (User will test locally)
 
 #### 3. End-to-End Testing
 
