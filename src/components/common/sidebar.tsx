@@ -154,6 +154,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                         "space-y-1",
                         collapsed ? "" : "pr-1 lg:pr-2"
                     )}>
+                        {/* Main Navigation Items */}
                         {mainNavItems.map((item) => (
                             <Button
                                 key={item.href}
@@ -162,7 +163,71 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                     "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
                                     collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
                                     (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
-                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200" // Active: Orange bg, White text
+                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200"
+                                        : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
+                                )}
+                                asChild
+                                title={collapsed ? item.title : undefined}
+                            >
+                                <Link href={item.href}>
+                                    <item.icon className={cn(
+                                        "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
+                                        collapsed ? "" : "mr-2 lg:mr-3",
+                                        (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
+                                            ? "text-white"
+                                            : "text-gray-400 group-hover:text-gray-500"
+                                    )} />
+                                    {!collapsed && <span className="truncate">{item.title}</span>}
+                                </Link>
+                            </Button>
+                        ))}
+
+                        {/* Catalog Section */}
+                        {!collapsed && (
+                            <div className="pt-4 pb-2">
+                                <p className="px-2 lg:px-3 text-[10px] lg:text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                    Catalog
+                                </p>
+                            </div>
+                        )}
+                        
+                        {catalogNavItems.map((item) => (
+                            <Button
+                                key={item.href}
+                                variant="ghost"
+                                className={cn(
+                                    "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
+                                    collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
+                                    (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
+                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200"
+                                        : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
+                                )}
+                                asChild
+                                title={collapsed ? item.title : undefined}
+                            >
+                                <Link href={item.href}>
+                                    <item.icon className={cn(
+                                        "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
+                                        collapsed ? "" : "mr-2 lg:mr-3",
+                                        (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
+                                            ? "text-white"
+                                            : "text-gray-400 group-hover:text-gray-500"
+                                    )} />
+                                    {!collapsed && <span className="truncate">{item.title}</span>}
+                                </Link>
+                            </Button>
+                        ))}
+
+                        {/* Other Items */}
+                        {otherNavItems.map((item) => (
+                            <Button
+                                key={item.href}
+                                variant="ghost"
+                                className={cn(
+                                    "w-full h-8 lg:h-9 xl:h-10 rounded-lg font-medium transition-all duration-200 text-xs lg:text-sm xl:text-base",
+                                    collapsed ? "justify-center px-2" : "justify-start px-2 lg:px-3",
+                                    (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)))
+                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200"
                                         : "text-gray-500 hover:bg-white/50 hover:text-gray-900"
                                 )}
                                 asChild
