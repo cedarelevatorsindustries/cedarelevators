@@ -1,4 +1,5 @@
 import { Product, ProductCategory } from "@/lib/types/domain"
+import type { Application } from "@/lib/data/applications"
 import {
   HeroSection,
   FeaturedProductsSection,
@@ -14,16 +15,19 @@ interface DesktopHomepageProps {
   products: Product[]
   categories: ProductCategory[]
   testimonials: any[]
+  applications?: Application[]
 }
 
-export default function DesktopHomepage({ products, categories, testimonials }: DesktopHomepageProps) {
+export default function DesktopHomepage({ products, categories, testimonials, applications = [] }: DesktopHomepageProps) {
   return (
     <div className="w-full">
       {/* Hero Section */}
       <HeroSection />
 
       {/* Shop by Application - Work stages (Erection, Testing, Service, Others) */}
-      <ApplicationsSection />
+      {applications.length > 0 && (
+        <ApplicationsSection applications={applications} />
+      )}
 
       {/* Quick Categories */}
       <div className="mt-12">
