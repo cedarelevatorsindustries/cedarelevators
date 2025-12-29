@@ -460,33 +460,6 @@ export default function CreateCategoryPage() {
                 </CardContent>
               </Card>
 
-              {/* Product Selection Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Product Assignment (Optional)</CardTitle>
-                  <CardDescription>
-                    Select products to assign to this category. You can also assign products later.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Label>Select Products</Label>
-                    <ProductSelector
-                      products={allProducts}
-                      selectedProductIds={selectedProductIds}
-                      onSelectionChange={setSelectedProductIds}
-                      placeholder="Select products to assign to this category..."
-                      multiple={true}
-                    />
-                    {selectedProductIds.length > 0 && (
-                      <p className="text-xs text-gray-500">
-                        {selectedProductIds.length} product{selectedProductIds.length !== 1 ? 's' : ''} will be assigned to this category
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle>Display & Media</CardTitle>
