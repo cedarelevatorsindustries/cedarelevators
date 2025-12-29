@@ -130,12 +130,15 @@ export const elevatorCategories: CategoryData[] = [
 ## Phase 8: Homepage Sections
 
 ### Files to Check:
-- [ ] `/src/modules/home/components/desktop/sections/TestimonialsSection.tsx`
-- [ ] `/src/modules/home/components/desktop/sections/HeroSection.tsx` (Already uses local image ✓)
-- [ ] `/src/modules/home/components/desktop/tab-content/categories/sections/top-applications.tsx`
-- [ ] `/src/modules/home/components/mobile/sections/CustomerReviewsSection.tsx`
+- [x] `/src/modules/home/components/desktop/sections/TestimonialsSection.tsx` - Fallback image updated
+- [x] `/src/modules/home/components/desktop/sections/HeroSection.tsx` (Already uses local image ✓)
+- [x] `/src/modules/home/components/desktop/tab-content/categories/sections/top-applications.tsx` - All URLs replaced
+- [x] `/src/modules/home/components/mobile/sections/CustomerReviewsSection.tsx` - Fallback image updated
+- [x] `/src/modules/home/components/desktop/sections/ShopByElevatorTypeSection.tsx` - All URLs replaced
+- [x] `/src/modules/home/components/desktop/tab-content/categories/sections/shop-by-elevator-type.tsx` - All URLs replaced
+- [x] `/src/modules/home/components/mobile/sections/elevator-types-mobile.tsx` - All URLs replaced
 
-**Action**: Check for Unsplash images, ensure data comes from database
+**Completed**: All Unsplash images replaced with `/images/image.png`
 
 ---
 
