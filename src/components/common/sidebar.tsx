@@ -19,7 +19,8 @@ import {
     Settings,
     Store,
     LogOut,
-    FileText
+    FileText,
+    Tag
 } from "lucide-react"
 
 const mainNavItems = [
@@ -39,9 +40,23 @@ const mainNavItems = [
         icon: FileText,
     },
     {
+        title: "Customers",
+        href: "/admin/customers",
+        icon: Users,
+    },
+    {
         title: "Products",
         href: "/admin/products",
         icon: Package,
+    },
+]
+
+// Catalog Section - New Structure
+const catalogNavItems = [
+    {
+        title: "Applications",
+        href: "/admin/applications",
+        icon: Layers,
     },
     {
         title: "Categories",
@@ -49,24 +64,27 @@ const mainNavItems = [
         icon: FolderTree,
     },
     {
-        title: "Collections",
-        href: "/admin/collections",
-        icon: Layers,
+        title: "Elevator Types",
+        href: "/admin/elevator-types",
+        icon: Tag,
     },
     {
-        title: "Banners",
-        href: "/admin/banners",
-        icon: Image,
+        title: "Collections",
+        href: "/admin/collections",
+        icon: Store,
     },
+]
+
+const otherNavItems = [
     {
         title: "Inventory",
         href: "/admin/inventory",
         icon: Warehouse,
     },
     {
-        title: "Customers",
-        href: "/admin/customers",
-        icon: Users,
+        title: "Banners",
+        href: "/admin/banners",
+        icon: Image,
     },
 ]
 
