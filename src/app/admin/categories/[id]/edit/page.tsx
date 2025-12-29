@@ -41,9 +41,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     meta_description: ""
   })
 
-  // Product selection state
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
-  const [originalProductIds, setOriginalProductIds] = useState<string[]>([])
+  // Removed: Product selection state (products now assign themselves)
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
