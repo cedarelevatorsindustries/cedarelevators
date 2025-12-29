@@ -33,9 +33,7 @@ export default function CreateCategoryPage() {
   const { data } = useCategories()
   const allCategories = data?.categories || []
 
-  // Get all products for product selection
-  const { data: productsData, isLoading: productsLoading } = useProducts({}, 1, 1000)
-  const allProducts = productsData?.products || []
+  // Removed: Product selection (products now assign themselves)
 
   // Derive available parents
   const applications = useMemo(() =>
