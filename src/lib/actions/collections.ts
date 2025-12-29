@@ -508,3 +508,107 @@ export async function getCollectionStats(): Promise<CollectionStats> {
         }
     }
 }
+
+// =============================================
+// GET COLLECTIONS FOR DISPLAY LOCATION
+// =============================================
+
+export async function getCollectionsForDisplay(location: string) {
+    try {
+        const supabase = await createClerkSupabaseClient()
+
+        // Get collections filtered by display_location
+        const { data: collections, error } = await supabase
+            .from('collections')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true })
+            .order('title', { ascending: true })
+
+        if (error) throw error
+
+        // Filter collections that include this location in their display_location array
+        const filteredCollections = (collections || []).filter(collection => {
+            const displayLocations = collection.display_location as string[] || []
+            return displayLocations.includes(location)
+        })
+
+        // Get products for each collection
+        const collectionsWithProducts = await Promise.all(
+            filteredCollections.map(async (collection) => {
+                const { data: productCollections } = await supabase
+                    .from('product_collections')
+                    .select(`
+                        id,
+                        product_id,
+                        collection_id,
+                        position,
+                        products (
+                            id,
+                            name,
+                            slug,
+                            thumbnail,
+                            price,
+                            status,
+                            description,
+                            created_at,
+                            handle,
+                            variants,
+                            metadata,
+                            categories
+                        )
+                    `)
+                    .eq('collection_id', collection.id)
+                    .order('position', { ascending: true })
+
+                // Transform to match expected Product format
+                const products = (productCollections || []).map(pc => {
+                    const product = pc.products as any
+                    return {
+                        id: product.id,
+                        title: product.name,
+                        name: product.name,
+                        slug: product.slug,
+                        handle: product.handle || product.slug,
+                        thumbnail: product.thumbnail,
+                        price: product.price ? {
+                            amount: product.price,
+                            currency_code: 'INR'
+                        } : undefined,
+                        variants: product.variants || [],
+                        description: product.description,
+                        metadata: product.metadata,
+                        categories: product.categories,
+                        created_at: product.created_at
+                    }
+                })
+
+                return {
+                    id: collection.id,
+                    title: collection.title,
+                    description: collection.description,
+                    slug: collection.slug,
+                    displayLocation: collection.display_location || [],
+                    layout: collection.layout || 'grid-5',
+                    icon: collection.icon || 'none',
+                    viewAllLink: collection.view_all_link || `/catalog?collection=${collection.slug}`,
+                    products: products,
+                    isActive: collection.is_active,
+                    sortOrder: collection.sort_order,
+                    showViewAll: collection.show_view_all !== false,
+                    emptyStateMessage: collection.empty_state_message,
+                    metadata: {
+                        thumbnail_image: collection.thumbnail_image,
+                        banner_image: collection.banner_image,
+                        is_featured: collection.is_featured
+                    }
+                }
+            })
+        )
+
+        return { collections: collectionsWithProducts, success: true }
+    } catch (error) {
+        console.error('Error fetching collections for display:', error)
+        return { collections: [], error: 'Failed to fetch collections', success: false }
+    }
+}

@@ -32,7 +32,7 @@ export default function NotificationTestPage() {
 
   const sendTestNotification = async () => {
     setStatus("Sending...")
-    
+
     try {
       // This would normally be sent from your backend
       // For testing, you can use Pusher Debug Console
@@ -125,11 +125,10 @@ Data:
             </button>
 
             {status && (
-              <div className={`p-4 rounded-lg ${
-                status.startsWith('✓') ? 'bg-green-50 text-green-800' : 
-                status.startsWith('✕') ? 'bg-red-50 text-red-800' : 
-                'bg-blue-50 text-blue-800'
-              }`}>
+              <div className={`p-4 rounded-lg ${status.startsWith('✓') ? 'bg-green-50 text-green-800' :
+                  status.startsWith('✕') ? 'bg-red-50 text-red-800' :
+                    'bg-blue-50 text-blue-800'
+                }`}>
                 <pre className="whitespace-pre-wrap text-sm font-mono">{status}</pre>
               </div>
             )}
@@ -157,7 +156,7 @@ Data:
               onClick={() => router.push('/')}
               className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
-              Back to House
+              Back to Home
             </button>
           </div>
         </div>

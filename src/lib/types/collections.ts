@@ -22,6 +22,13 @@ export interface Collection {
     sort_order: number
     meta_title?: string | null
     meta_description?: string | null
+    // Display Configuration
+    display_location?: string[] | null // Where to show: ["House", "catalog", "product"]
+    layout?: string | null // grid-5, grid-4, grid-3, horizontal-scroll, special
+    icon?: string | null // heart, trending, star, new, recommended, none
+    show_view_all?: boolean | null
+    view_all_link?: string | null
+    empty_state_message?: string | null
     created_at: string
     updated_at: string
     created_by?: string | null

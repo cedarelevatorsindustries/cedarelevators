@@ -3,25 +3,25 @@ import { ProductCategory } from "@/lib/types/domain"
 
 
 /**
- * List categories - Uses demo data when demo mode is enabled
+ * List categories from Supabase
  */
 export async function listCategories(params?: {
-  parent_category_id?: string | null
+  parent_id?: string | null
   include_descendants_tree?: boolean
 }): Promise<ProductCategory[]> {
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = getSupabaseClient()
     let query = supabase
       .from('categories')
       .select('*')
 
-    if (params?.parent_category_id !== undefined) {
-      if (params.parent_category_id === null) {
-        query = query.is('parent_category_id', null)
+    if (params?.parent_id !== undefined) {
+      if (params.parent_id === null) {
+        query = query.is('parent_id', null)
       } else {
-        query = query.eq('parent_category_id', params.parent_category_id)
+        query = query.eq('parent_id', params.parent_id)
       }
     }
 
@@ -50,7 +50,7 @@ export async function listCategories(params?: {
  */
 export async function getCategory(idOrHandle: string): Promise<ProductCategory | null> {
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = getSupabaseClient()
 

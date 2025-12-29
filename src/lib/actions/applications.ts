@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabase } from "@/lib/supabase/server"
 import type {
   Application,
   ApplicationWithStats,
@@ -16,7 +16,7 @@ import type {
 
 export async function getApplications(filters?: ApplicationFilters) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     // Applications are categories with parent_id = NULL
     let query = supabase
@@ -57,7 +57,7 @@ export async function getApplications(filters?: ApplicationFilters) {
           .from('categories')
           .select('id')
           .eq('parent_id', app.id)
-        
+
         let subcategoryCount = 0
         if (categories && categories.length > 0) {
           const categoryIds = categories.map(c => c.id)
@@ -96,7 +96,7 @@ export async function getApplications(filters?: ApplicationFilters) {
 
 export async function getApplicationById(id: string) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('categories')
@@ -137,7 +137,7 @@ export async function getApplicationById(id: string) {
 
 export async function createApplication(formData: ApplicationFormData) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('categories')
@@ -178,7 +178,7 @@ export async function createApplication(formData: ApplicationFormData) {
 
 export async function updateApplication(id: string, formData: Partial<ApplicationFormData>) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const updateData: any = {
       ...formData,
@@ -216,7 +216,7 @@ export async function updateApplication(id: string, formData: Partial<Applicatio
 
 export async function deleteApplication(id: string) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     // Check if application has categories
     const { count: categoryCount } = await supabase
@@ -267,7 +267,7 @@ export async function deleteApplication(id: string) {
 
 export async function getApplicationStats(): Promise<ApplicationStats> {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     // Total applications
     const { count: total } = await supabase
@@ -347,7 +347,7 @@ export async function getApplicationStats(): Promise<ApplicationStats> {
 
 export async function uploadApplicationImage(file: File) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`

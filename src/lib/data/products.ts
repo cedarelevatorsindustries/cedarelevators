@@ -21,14 +21,14 @@ interface ListProductsResponse {
 }
 
 /**
- * Fetch products - Uses demo data when demo mode is enabled
+ * Fetch products from Supabase
  */
 export async function listProducts(params?: ListProductsParams): Promise<ListProductsResponse> {
   const { queryParams } = params || {}
   const limit = queryParams?.limit || 20
   const offset = queryParams?.offset || 0
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = getSupabaseClient()
 
@@ -86,11 +86,11 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 }
 
 /**
- * Fetch a single product by handle - Uses demo data when demo mode is enabled
+ * Fetch a single product by handle from Supabase
  */
 export async function getProductByHandle(handle: string): Promise<Product | null> {
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = getSupabaseClient()
 

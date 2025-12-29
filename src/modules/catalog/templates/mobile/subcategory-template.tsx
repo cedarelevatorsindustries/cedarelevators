@@ -35,9 +35,9 @@ export default function SubcategoryTemplate({
   if (category.category_children && category.category_children.length > 0) {
     // Use actual children
     subcategories = category.category_children
-  } else if (category.parent_category_id) {
+  } else if (category.parent_id) {
     // Use siblings if this is a child category
-    subcategories = allCategories.filter(cat => cat.parent_category_id === category.parent_category_id)
+    subcategories = allCategories.filter(cat => cat.parent_id === category.parent_id)
   } else {
     // Create "All" subcategory for main categories
     subcategories = [
@@ -103,15 +103,15 @@ export default function SubcategoryTemplate({
                 key={subcat.id}
                 onClick={() => setSelectedSubCategory(subcat.id)}
                 className={`w-full px-2 py-3 text-center transition-all ${selectedSubCategory === subcat.id
-                    ? "bg-white border-l-2 border-orange-600 text-orange-600 font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-white border-l-2 border-orange-600 text-orange-600 font-semibold"
+                  : "text-gray-700 hover:bg-gray-100"
                   }`}
               >
                 <div className="flex flex-col items-center gap-1">
                   {/* Icon placeholder */}
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${selectedSubCategory === subcat.id
-                      ? "bg-orange-50"
-                      : "bg-white"
+                    ? "bg-orange-50"
+                    : "bg-white"
                     }`}>
                     <span className="text-2xl">
                       {getMetadataString(subcat.metadata?.icon) || "📦"}

@@ -27,7 +27,7 @@ export default async function HomePage() {
 
   // Fetch categories
   const categories = await listCategories({
-    parent_category_id: null,
+    parent_id: null,
     include_descendants_tree: true
   })
 

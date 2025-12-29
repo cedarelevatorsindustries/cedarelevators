@@ -1,7 +1,7 @@
 "use client"
 
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
-import { Collection } from "@/lib/data/mockCollections"
+import { DisplayCollection } from "@/lib/types/display-collection"
 import { Product } from "@/lib/types/domain"
 
 interface ProductSectionMobileProps {
@@ -25,7 +25,7 @@ export default function ProductSectionMobile({
   if (products.length === 0) return null
 
   // Create a temporary collection object from props
-  const collection: Collection = {
+  const collection: DisplayCollection = {
     id: `temp_${title.toLowerCase().replace(/\s+/g, '-')}`,
     title,
     slug: title.toLowerCase().replace(/\s+/g, '-'),

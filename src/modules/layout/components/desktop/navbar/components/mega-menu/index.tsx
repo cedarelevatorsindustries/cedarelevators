@@ -23,7 +23,7 @@ export function MegaMenu({ categories: initialCategories, isScrolled = false, on
       const fetchCategories = async () => {
         try {
           // Fetch only top-level categories (applications) that have is_active = true
-          const cats = await listCategories({ parent_category_id: null })
+          const cats = await listCategories({ parent_id: null })
           setCategories(cats.filter(cat => cat.is_active !== false))
         } catch (error) {
           console.error('Error fetching categories for mega menu:', error)

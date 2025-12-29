@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabase } from "@/lib/supabase/server"
 import type {
   Category,
   CategoryWithChildren,
@@ -17,7 +17,7 @@ import type {
 
 export async function getCategories(filters?: CategoryFilters) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     let query = supabase
       .from('categories')
@@ -74,7 +74,7 @@ export async function getCategories(filters?: CategoryFilters) {
 
 export async function getCategoryById(id: string) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('categories')
@@ -108,7 +108,7 @@ export async function getCategoryById(id: string) {
 
 export async function getCategoryBySlug(slug: string) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('categories')
@@ -131,7 +131,7 @@ export async function getCategoryBySlug(slug: string) {
 
 export async function createCategory(formData: CategoryFormData) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('categories')
@@ -177,7 +177,7 @@ export async function createCategory(formData: CategoryFormData) {
 
 export async function updateCategory(id: string, formData: Partial<CategoryFormData>) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const updateData: any = {
       updated_at: new Date().toISOString()
@@ -228,7 +228,7 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
 
 export async function deleteCategory(id: string) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     // Check if category has children
     const { count } = await supabase
@@ -269,7 +269,7 @@ export async function deleteCategory(id: string) {
 
 export async function uploadCategoryImage(file: File) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
@@ -305,7 +305,7 @@ export async function uploadCategoryImage(file: File) {
 
 export async function getCategoryStats(): Promise<CategoryStats> {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const supabase = await createServerSupabase()
 
     const { count: total } = await supabase
       .from('categories')

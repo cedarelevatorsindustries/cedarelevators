@@ -77,7 +77,7 @@ export default function Error({
           <Link href="/">
             <Button size="lg" variant="outline" className="gap-2">
               <House className="h-5 w-5" />
-              Go House
+              Go Home
             </Button>
           </Link>
         </div>

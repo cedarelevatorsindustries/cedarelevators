@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useUser } from "@/lib/auth/client"
 
-
 interface WishlistItem {
   id: string
   variant_id: string
@@ -14,7 +13,7 @@ interface WishlistItem {
   quantity: number
 }
 
-const WISHLIST_STORAGE_KEY = "demo-wishlist"
+const WISHLIST_STORAGE_KEY = "cedar-wishlist"
 
 // Helper functions for localStorage
 function getStoredWishlist(): WishlistItem[] {
@@ -39,19 +38,11 @@ export function useWishlist() {
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchWishlist = async () => {
-    // Production Mode: Fetch from Medusa
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/wishlist`, {
-        credentials: "include",
-      })
-      const data = await response.json()
-      setItems(data.items || [])
-      setCount(data.count || 0)
-    } catch (error) {
-      console.error("Error fetching wishlist:", error)
-    } finally {
-      setIsLoading(false)
-    }
+    // Load from localStorage
+    const storedItems = getStoredWishlist()
+    setItems(storedItems)
+    setCount(storedItems.length)
+    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -65,51 +56,40 @@ export function useWishlist() {
     thumbnail: string | null,
     price: number
   ) => {
+    const currentItems = getStoredWishlist()
 
-
-    // Production Mode: Add via Medusa
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/wishlist/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          variant_id: variantId,
-          product_id: productId,
-          title,
-          thumbnail,
-          price,
-        }),
-        credentials: "include",
-      })
-      const data = await response.json()
-      setItems(data.items || [])
-      setCount(data.count || 0)
-      return data
-    } catch (error) {
-      console.error("Error adding to wishlist:", error)
-      throw error
+    // Check if item already exists
+    if (currentItems.some(item => item.variant_id === variantId)) {
+      return { items: currentItems, count: currentItems.length }
     }
+
+    const newItem: WishlistItem = {
+      id: `wishlist_${Date.now()}_${variantId}`,
+      variant_id: variantId,
+      product_id: productId,
+      title,
+      thumbnail,
+      price,
+      quantity: 1,
+    }
+
+    const updatedItems = [...currentItems, newItem]
+    saveWishlist(updatedItems)
+    setItems(updatedItems)
+    setCount(updatedItems.length)
+
+    return { items: updatedItems, count: updatedItems.length }
   }
 
   const removeItem = async (variantId: string) => {
+    const currentItems = getStoredWishlist()
+    const updatedItems = currentItems.filter(item => item.variant_id !== variantId)
 
+    saveWishlist(updatedItems)
+    setItems(updatedItems)
+    setCount(updatedItems.length)
 
-    // Production Mode: Remove via Medusa
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/wishlist/remove`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variant_id: variantId }),
-        credentials: "include",
-      })
-      const data = await response.json()
-      setItems(data.items || [])
-      setCount(data.count || 0)
-      return data
-    } catch (error) {
-      console.error("Error removing from wishlist:", error)
-      throw error
-    }
+    return { items: updatedItems, count: updatedItems.length }
   }
 
   const isInWishlist = (variantId: string) => {
@@ -131,25 +111,15 @@ export function useWishlist() {
   }
 
   const mergeGuestWishlist = async (sessionId: string) => {
+    // For localStorage-only implementation, no merging needed
+    // Just reload the current wishlist
+    await fetchWishlist()
+  }
 
-
-    if (!user) return
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/wishlist/merge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId }),
-        credentials: "include",
-      })
-      const data = await response.json()
-      setItems(data.items || [])
-      setCount(data.count || 0)
-      return data
-    } catch (error) {
-      console.error("Error merging wishlist:", error)
-      throw error
-    }
+  const clearWishlist = () => {
+    saveWishlist([])
+    setItems([])
+    setCount(0)
   }
 
   return {
@@ -161,6 +131,7 @@ export function useWishlist() {
     toggleItem,
     isInWishlist,
     mergeGuestWishlist,
+    clearWishlist,
     refresh: fetchWishlist,
   }
 }

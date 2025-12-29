@@ -39,7 +39,7 @@ export function Breadcrumb({ pathname }: BreadcrumbProps) {
   })
 
   // Get parent for mobile
-  const parent = breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2] : { href: '/', label: 'House' }
+  const parent = breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2] : { href: '/', label: 'Home' }
   const current = breadcrumbs[breadcrumbs.length - 1]
 
   return (
@@ -52,7 +52,7 @@ export function Breadcrumb({ pathname }: BreadcrumbProps) {
             className="flex items-center gap-1 text-gray-600 hover:text-orange-600 transition-colors"
           >
             <House size={14} />
-            <span>House</span>
+            <span>Home</span>
           </LocalizedClientLink>
 
           {breadcrumbs.map((crumb, index) => (

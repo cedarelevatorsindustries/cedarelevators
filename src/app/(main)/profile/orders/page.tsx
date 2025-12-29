@@ -20,18 +20,18 @@ export default async function OrderHistoryPage() {
 
 
 
-    // Production Mode: Normal flow
+    // Fetch user profile from Supabase
     const supabase = await createClerkSupabaseClient()
 
-    // Get user profile to check if business user and get medusa_customer_id
+    // Get user profile to check if business user
     const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("id", userId)
       .single()
 
-    // If no profile or no Medusa customer ID, show empty state
-    if (profileError || !profile || !profile.medusa_customer_id) {
+    // If no profile, show empty state
+    if (profileError || !profile) {
       return (
         <OrderHistoryTemplate
           orders={[]}
@@ -46,9 +46,9 @@ export default async function OrderHistoryPage() {
       )
     }
 
-    // Fetch orders from Medusa
-    const orders = await getCustomerOrders(profile.medusa_customer_id)
-    const summary = await getOrderSummary(profile.medusa_customer_id)
+    // Fetch orders using clerk_user_id
+    const orders = await getCustomerOrders(profile.clerk_user_id)
+    const summary = await getOrderSummary(profile.clerk_user_id)
 
     return (
       <OrderHistoryTemplate

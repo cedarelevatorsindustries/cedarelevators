@@ -44,11 +44,12 @@ export interface ProductCategory {
     id: string
     name: string
     handle: string
-    parent_category_id?: string | null
+    parent_id?: string | null
     description?: string
     category_children?: ProductCategory[]
     products?: Product[]
     metadata?: Record<string, any>
+    is_active?: boolean
 }
 
 export interface Order {

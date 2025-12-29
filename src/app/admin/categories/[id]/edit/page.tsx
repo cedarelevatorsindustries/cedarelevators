@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCategory, useUpdateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
 import { toast } from "sonner"
+import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -253,7 +254,18 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
             <Card>
               <CardHeader>
-                <CardTitle>SEO Settings</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>SEO Settings</CardTitle>
+                  <SEOAutoGenerateButton
+                    name={formData.name}
+                    description={formData.description}
+                    onGenerate={(data) => setFormData({
+                      ...formData,
+                      meta_title: data.meta_title,
+                      meta_description: data.meta_description
+                    })}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

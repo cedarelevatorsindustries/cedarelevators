@@ -10,14 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Save, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { 
-  useCollection, 
-  useUpdateCollection, 
+import {
+  useCollection,
+  useUpdateCollection,
   useUploadCollectionImage
 } from "@/hooks/queries/useCollections"
 import { generateSlug } from "@/lib/types/collections"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
 
 export default function EditCollectionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -346,7 +347,18 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">SEO</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">SEO</CardTitle>
+                  <SEOAutoGenerateButton
+                    name={formData.title}
+                    description={formData.description}
+                    onGenerate={(data) => setFormData({
+                      ...formData,
+                      meta_title: data.meta_title,
+                      meta_description: data.meta_description
+                    })}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

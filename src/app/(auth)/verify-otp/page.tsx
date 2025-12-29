@@ -16,7 +16,7 @@ type Props = {
 export default async function VerifyOTPPage({ searchParams }: Props) {
   const user = await currentUser()
 
-  // If already logged in, redirect to House
+  // If already logged in, redirect to Home
   if (user) {
     redirect("/")
   }

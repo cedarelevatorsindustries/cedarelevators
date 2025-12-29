@@ -11,7 +11,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateApplication, useUploadApplicationImage } from "@/hooks/queries/useApplications"
 import type { ApplicationFormData } from "@/lib/types/applications"
+import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
 
 export default function CreateApplicationPage() {
   const router = useRouter()
@@ -186,9 +188,8 @@ export default function CreateApplicationPage() {
                   <div className="flex items-start gap-6">
                     <div
                       onClick={() => document.getElementById('thumbnail-upload')?.click()}
-                      className={`h-32 w-32 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden ${
-                        thumbnailPreview ? "border-solid border-gray-200" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50"
-                      }`}
+                      className={`h-32 w-32 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden ${thumbnailPreview ? "border-solid border-gray-200" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50"
+                        }`}
                     >
                       {thumbnailPreview ? (
                         <>
@@ -286,7 +287,18 @@ export default function CreateApplicationPage() {
             {/* SEO */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">SEO</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">SEO</CardTitle>
+                  <SEOAutoGenerateButton
+                    name={formData.name}
+                    description={formData.description}
+                    onGenerate={(data) => setFormData({
+                      ...formData,
+                      meta_title: data.meta_title,
+                      meta_description: data.meta_description
+                    })}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

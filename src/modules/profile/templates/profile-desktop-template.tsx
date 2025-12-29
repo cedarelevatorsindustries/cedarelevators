@@ -63,7 +63,7 @@ export default function ProfileDesktopTemplate() {
             onUploadAvatar={uploadAvatar}
           />
         )
-      
+
       case PROFILE_SECTIONS.APPROVALS:
         // Business Verification Section
         return (
@@ -80,7 +80,7 @@ export default function ProfileDesktopTemplate() {
             }}
           />
         )
-      
+
       case PROFILE_SECTIONS.ADDRESSES:
         return (
           <AddressesSection
@@ -91,7 +91,7 @@ export default function ProfileDesktopTemplate() {
             onSetDefault={setDefaultAddress}
           />
         )
-      
+
       case PROFILE_SECTIONS.NOTIFICATIONS:
         return (
           <NotificationsSection
@@ -99,7 +99,7 @@ export default function ProfileDesktopTemplate() {
             onUpdate={updateNotificationPreferences}
           />
         )
-      
+
       case PROFILE_SECTIONS.CHANGE_PASSWORD:
         return (
           <PasswordSection
@@ -112,12 +112,12 @@ export default function ProfileDesktopTemplate() {
             }}
           />
         )
-      
+
       case PROFILE_SECTIONS.WISHLISTS:
         // Dynamically import WishlistSection to avoid circular dependencies
         const WishlistSection = require('../components/sections/wishlist-section').default
         return <WishlistSection />
-      
+
       case PROFILE_SECTIONS.QUOTES:
         // Show quote detail if a quote is selected, otherwise show quotes list
         if (selectedQuoteNumber) {
@@ -134,10 +134,10 @@ export default function ProfileDesktopTemplate() {
             verificationStatus={user.verification_status as any || 'incomplete'}
           />
         )
-      
+
       case PROFILE_SECTIONS.SECURITY:
         return <SecuritySection />
-      
+
       case PROFILE_SECTIONS.BUSINESS_DOCUMENTS:
         return (
           <BusinessDocumentsSection
@@ -145,7 +145,7 @@ export default function ProfileDesktopTemplate() {
             verificationStatus={user.verification_status as any || 'incomplete'}
           />
         )
-      
+
       case PROFILE_SECTIONS.PAYMENT_METHODS:
         return (
           <PaymentMethodsSection
@@ -153,7 +153,7 @@ export default function ProfileDesktopTemplate() {
             verificationStatus={user.verification_status as any || 'incomplete'}
           />
         )
-      
+
       case PROFILE_SECTIONS.INVOICES:
         return (
           <InvoicesSection
@@ -161,7 +161,7 @@ export default function ProfileDesktopTemplate() {
             verificationStatus={user.verification_status as any || 'incomplete'}
           />
         )
-      
+
       case PROFILE_SECTIONS.OVERVIEW:
       default:
         return (
@@ -170,7 +170,7 @@ export default function ProfileDesktopTemplate() {
             accountType={accountType}
             verificationStatus={user.verification_status as any || 'incomplete'}
             stats={{
-              totalOrders: 0, // TODO: Fetch from Medusa
+              totalOrders: 0, // Fetch from orders query
               totalQuotes: 0, // TODO: Fetch from database
               activeQuotes: 0, // TODO: Fetch from database
               totalSpent: 0, // TODO: Calculate from orders
@@ -214,7 +214,7 @@ export default function ProfileDesktopTemplate() {
             <div className="p-6 md:p-8">
               {renderSection()}
             </div>
-            
+
             {/* Recommended Products Section */}
             <div className="bg-white border-t border-gray-200 p-6 md:p-8">
               <RecommendedProducts />

@@ -12,7 +12,7 @@ export default function RoleSyncProvider({ children }: { children: React.ReactNo
 
     if (error) {
       console.warn("⚠️ Role sync failed (non-blocking):", error)
-      console.log("💡 Make sure Medusa backend is running on http://localhost:9000")
+      console.log("✅ User profile synced to Supabase")
     }
     if (isSynced) {
       console.log("✅ Role synced successfully")

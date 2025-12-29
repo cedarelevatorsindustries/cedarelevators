@@ -18,7 +18,7 @@ export default function ChooseTypeTemplate() {
         router.push("/sign-in")
         return
       }
-      
+
       // If user is authenticated and has account type, redirect to homepage
       const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
       if (accountType) {
@@ -55,7 +55,7 @@ export default function ChooseTypeTemplate() {
       // Reload user to get updated metadata
       await user.reload()
 
-      // Sync role to backend (Medusa + Neon DB)
+      // Sync role to Supabase
       const syncResponse = await fetch("/api/sync-role", {
         method: "POST",
         headers: {

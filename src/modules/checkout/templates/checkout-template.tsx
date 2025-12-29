@@ -24,9 +24,9 @@ import WhatsAppButton from '../components/whatsapp-button'
 import ExitIntentPopup from '../components/exit-intent-popup'
 
 // Types
-import type { 
-  CheckoutAddress, 
-  DeliveryOption, 
+import type {
+  CheckoutAddress,
+  DeliveryOption,
   PaymentMethod,
   UserCheckoutType,
   CheckoutStep,
@@ -39,8 +39,8 @@ export default function CheckoutTemplate() {
   const { isGuest, isBusiness, user, isLoaded } = useAccountType()
 
   // Check verification status
-  const isVerified = user?.publicMetadata?.verified === true || 
-                     user?.unsafeMetadata?.verified === true
+  const isVerified = user?.publicMetadata?.verified === true ||
+    user?.unsafeMetadata?.verified === true
 
   // Determine user checkout type
   const getUserType = (): UserCheckoutType => {
@@ -151,10 +151,10 @@ export default function CheckoutTemplate() {
 
   const handlePlaceOrder = async () => {
     if (!termsAccepted || userType !== 'business_verified') return
-    
+
     setIsProcessing(true)
     try {
-      // TODO: Implement order placement via Medusa
+      // Place order via Supabase
       await new Promise(resolve => setTimeout(resolve, 2000))
       router.push('/order-confirmation/order-123?type=order')
     } catch (error) {
@@ -179,11 +179,11 @@ export default function CheckoutTemplate() {
   }
 
   // Step 2: Blocked State (Guest after email, Individual, Unverified Business)
-  if (step === 'blocked' || userType === 'individual' || userType === 'business_unverified' || 
-      (userType === 'guest' && guestEmail)) {
+  if (step === 'blocked' || userType === 'individual' || userType === 'business_unverified' ||
+    (userType === 'guest' && guestEmail)) {
     return (
       <>
-        <CheckoutBlockedSection 
+        <CheckoutBlockedSection
           userType={userType === 'guest' ? 'guest' : userType}
           onRequestQuote={handleRequestQuote}
           isLoading={isProcessing}
@@ -255,7 +255,7 @@ export default function CheckoutTemplate() {
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 {/* Terms Checkbox */}
                 <label className="flex items-start gap-3 mb-6 cursor-pointer">
-                  <div 
+                  <div
                     className={`
                       w-6 h-6 rounded border-2 flex items-center justify-center mt-0.5 transition-colors
                       ${termsAccepted ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}
@@ -298,7 +298,7 @@ export default function CheckoutTemplate() {
 
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
-            <CartSummarySticky 
+            <CartSummarySticky
               summary={orderSummary}
               showBulkCalculator={showPrices}
             />

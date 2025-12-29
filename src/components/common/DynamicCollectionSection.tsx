@@ -1,13 +1,13 @@
 "use client"
 
-import { Collection } from "@/lib/data/mockCollections"
 import ProductCard from "@/components/ui/product-card"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Heart, TrendingUp, Star, Sparkles, ThumbsUp } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DisplayCollection } from "@/lib/types/display-collection"
 
 interface DynamicCollectionSectionProps {
-  collection: Collection
+  collection: DisplayCollection
   className?: string
   variant?: "default" | "mobile"
 }
@@ -58,7 +58,7 @@ export default function DynamicCollectionSection({
           {collection.icon && collection.icon !== "none" && (
             <div className="flex justify-center mb-4">
               {(() => {
-                const Icon = iconMap[collection.icon]
+                const Icon = iconMap[collection.icon as keyof typeof iconMap]
                 return Icon ? <Icon className="w-12 h-12 text-gray-400" /> : null
               })()}
             </div>
@@ -93,7 +93,7 @@ export default function DynamicCollectionSection({
             <h2 className="text-lg font-bold text-gray-900">{collection.title}</h2>
             {collection.icon && collection.icon !== "none" && (
               (() => {
-                const Icon = iconMap[collection.icon]
+                const Icon = iconMap[collection.icon as keyof typeof iconMap]
                 return Icon ? <Icon className="w-5 h-5 text-gray-600" /> : null
               })()
             )}
@@ -151,7 +151,7 @@ export default function DynamicCollectionSection({
           <h2 className="text-2xl font-semibold text-gray-900">{collection.title}</h2>
           {collection.icon && collection.icon !== "none" && (
             (() => {
-              const Icon = iconMap[collection.icon]
+              const Icon = iconMap[collection.icon as keyof typeof iconMap]
               if (!Icon) return null
 
               // Special styling for trending icon
@@ -177,7 +177,7 @@ export default function DynamicCollectionSection({
         <p className="text-gray-600 mb-4">{collection.description}</p>
       )}
 
-      <div className={gridClasses[layout]}>
+      <div className={gridClasses[layout as keyof typeof gridClasses] || gridClasses["grid-5"]}>
         {displayProducts.map((product) => (
           <ProductCard
             key={product.id}

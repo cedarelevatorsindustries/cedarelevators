@@ -7,7 +7,7 @@ export interface NavItemConfig {
 }
 
 export const navItems: NavItemConfig[] = [
-  { href: "/", icon: House, label: "House" },
+  { href: "/", icon: House, label: "Home" },
   { href: "/catalog", icon: ShoppingBag, label: "Catalog" },
   { href: "/quotes", icon: FileText, label: "Quote" },
   { href: "/cart", icon: ShoppingCart, label: "Cart" },

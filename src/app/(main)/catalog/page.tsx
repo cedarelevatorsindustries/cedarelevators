@@ -40,7 +40,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const products = response.products
 
   const categories = await listCategories({
-    parent_category_id: null,
+    parent_id: null,
     include_descendants_tree: true
   })
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Package } from "lucide-react"
-import ElevatorTypesMobile from "@/modules/House/components/mobile/sections/elevator-types-mobile"
+import ElevatorTypesMobile from "@/modules/home/components/mobile/sections/elevator-types-mobile"
 import ProductCard from "@/components/ui/product-card"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 

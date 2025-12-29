@@ -15,6 +15,7 @@ import type { CollectionFormData } from "@/lib/types/collections"
 import { generateSlug } from "@/lib/types/collections"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
 
 export default function CreateCollectionPage() {
   const router = useRouter()
@@ -303,7 +304,18 @@ export default function CreateCollectionPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">SEO</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">SEO</CardTitle>
+                  <SEOAutoGenerateButton
+                    name={formData.title}
+                    description={formData.description}
+                    onGenerate={(data) => setFormData({
+                      ...formData,
+                      meta_title: data.meta_title,
+                      meta_description: data.meta_description
+                    })}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">

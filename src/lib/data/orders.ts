@@ -13,7 +13,7 @@ interface OrderSummary {
 
 export async function getCustomerOrders(customerId: string): Promise<Order[]> {
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = await createClerkSupabaseClient()
     const { data, error } = await supabase
@@ -33,7 +33,7 @@ export async function getCustomerOrders(customerId: string): Promise<Order[]> {
 
 export async function getOrderSummary(customerId: string): Promise<OrderSummary> {
 
-  // Production Mode: Fetch from Supabase
+  // Fetch from Supabase
   try {
     const supabase = await createClerkSupabaseClient()
     const { data: orders, error } = await supabase

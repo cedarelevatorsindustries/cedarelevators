@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   const suggestions = [
-    { label: 'House', href: '/', icon: House },
+    { label: 'Home', href: '/', icon: House },
     { label: 'Products', href: '/products', icon: Search },
     { label: 'Categories', href: '/categories', icon: Search },
     { label: 'Contact', href: '/contact', icon: Search },
@@ -65,7 +65,7 @@ export default function NotFound() {
           <Link href="/">
             <Button size="lg" className="gap-2">
               <House className="h-5 w-5" />
-              Go House
+              Go Home
             </Button>
           </Link>
           <Button

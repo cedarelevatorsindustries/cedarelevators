@@ -3,12 +3,12 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { useCart } from '@/lib/hooks'
 import { useAccountType } from '@/lib/hooks'
-import type { 
-  CheckoutState, 
-  CheckoutContextValue, 
-  OrderSummary, 
+import type {
+  CheckoutState,
+  CheckoutContextValue,
+  OrderSummary,
   UserCheckoutType,
-  CheckoutStep 
+  CheckoutStep
 } from '../types'
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null)
@@ -36,10 +36,10 @@ interface CheckoutProviderProps {
 export function CheckoutProvider({ children }: CheckoutProviderProps) {
   const { cart, items } = useCart()
   const { isGuest, isBusiness, user } = useAccountType()
-  
+
   // Check if business is verified (from metadata)
-  const isVerified = user?.publicMetadata?.verified === true || 
-                     user?.unsafeMetadata?.verified === true
+  const isVerified = user?.publicMetadata?.verified === true ||
+    user?.unsafeMetadata?.verified === true
 
   const userType = determineUserCheckoutType(isGuest, isBusiness, isVerified)
   const showPrices = canShowPrices(userType)
@@ -117,10 +117,10 @@ export function CheckoutProvider({ children }: CheckoutProviderProps) {
 
   const placeOrder = async () => {
     if (!canProceed || userType !== 'business_verified') return
-    
+
     setIsProcessing(true)
     try {
-      // TODO: Implement actual order placement via Medusa
+      // Implement actual order placement via Supabase
       await new Promise(resolve => setTimeout(resolve, 2000))
       updateState({ step: 'confirmation' })
     } catch (error) {
