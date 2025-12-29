@@ -280,7 +280,7 @@ export default function CreateCategoryPage() {
         )}
 
         {/* STEP 2: Details Form */}
-        {currentStep === 2 && hasProducts && (
+        {currentStep === 2 && (
           <div className="grid gap-8 lg:grid-cols-12 animate-in fade-in slide-in-from-right-4 duration-500">
 
             {/* Main Form */}
