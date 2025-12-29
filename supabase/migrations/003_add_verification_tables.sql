@@ -209,6 +209,14 @@ ALTER TABLE verification_documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE verification_audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customer_notes ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to make migration idempotent)
+DROP POLICY IF EXISTS "Service role full access verification_documents" ON verification_documents;
+DROP POLICY IF EXISTS "Service role full access verification_audit_log" ON verification_audit_log;
+DROP POLICY IF EXISTS "Service role full access customer_notes" ON customer_notes;
+DROP POLICY IF EXISTS "Users read own verification_documents" ON verification_documents;
+DROP POLICY IF EXISTS "Users upload own verification_documents" ON verification_documents;
+DROP POLICY IF EXISTS "Users read own verification_audit_log" ON verification_audit_log;
+
 -- Service role has full access
 CREATE POLICY "Service role full access verification_documents" 
   ON verification_documents FOR ALL TO service_role 
