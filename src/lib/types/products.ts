@@ -35,7 +35,16 @@ export interface Product {
     slug: string
     description?: string
     short_description?: string
+    
+    // Legacy field (deprecated)
     category?: string // Can be UUID or text
+    
+    // New relationship fields (Cedar Interconnection Logic)
+    application_id?: string
+    category_id?: string
+    subcategory_id?: string
+    is_categorized: boolean
+    
     status: ProductStatus
     thumbnail?: string
     images: ProductImage[]
