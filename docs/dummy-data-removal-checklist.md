@@ -1,0 +1,334 @@
+# Dummy Data Removal Checklist
+
+## Overview
+This document tracks the removal of all hardcoded/dummy data and Unsplash stock images from the Cedar Elevators codebase, replacing them with real-time database-driven data.
+
+---
+
+## Phase 1: API Endpoints & Data Layer
+
+### ✅ Existing APIs (Verify)
+- [ ] `/src/lib/data` - Check listProducts function
+- [ ] `/src/lib/data` - Check listCategories function
+- [ ] Check if elevator types API exists
+- [ ] Check if applications API exists
+
+### 🔧 Create/Modify APIs
+- [ ] Ensure categories API returns complete data with images
+- [ ] Ensure elevator types API exists and returns data
+- [ ] Ensure applications API exists and returns data
+- [ ] Add fallback image logic in API responses
+
+---
+
+## Phase 2: Mega Menu - Hardcoded Categories
+
+### Files to Update:
+- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/categories-data.ts`
+  - **Current**: Hardcoded array with 12 categories, using placeholder images
+  - **Action**: Remove entire hardcoded array, fetch from categories API
+  - **Images**: Replace `/api/placeholder/120/80` with fallback or real images
+
+- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/mega-menu-panel.tsx`
+  - **Current**: Imports `elevatorCategories` from categories-data.ts
+  - **Action**: Fetch categories from API, pass as props
+  - **Images**: Ensure fallback image logic
+
+- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-content.tsx`
+  - **Action**: Verify it handles dynamic data correctly
+  - **Images**: Replace any hardcoded images
+
+- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-sidebar.tsx`
+  - **Action**: Verify it handles dynamic data correctly
+
+- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/index.tsx`
+  - **Action**: Fetch categories and pass to children components
+  - **Conditional**: Hide mega menu if no categories exist
+
+### Hardcoded Data to Remove:
+```typescript
+// categories-data.ts - REMOVE THIS ENTIRE FILE OR CONVERT TO TYPES ONLY
+export const elevatorCategories: CategoryData[] = [
+  { id: "control-panels", subcategories: [...] },
+  { id: "door-operators", subcategories: [...] },
+  // ... 10 more categories
+]
+```
+
+### Images to Replace:
+- [x] `/api/placeholder/120/80` → `public/images/image.png`
+- [x] `https://picsum.photos/200/200?random=*` → `public/images/image.png`
+
+---
+
+## Phase 3: Applications Section
+
+### Files to Update:
+- [ ] `/src/components/store/applications-section.tsx`
+  - **Current**: Hardcoded 4 applications with Unsplash images
+  - **Action**: Fetch from applications API
+  - **Conditional**: Hide section if no applications in database
+
+- [ ] `/src/lib/config/applications.ts`
+  - **Current**: Hardcoded APPLICATION_CONFIGS with Unsplash images
+  - **Action**: Remove hardcoded data, fetch from API
+  - **Images**: Replace all Unsplash URLs
+
+### Hardcoded Data to Remove:
+```typescript
+// applications-section.tsx
+const applications = [
+  { name: "Erection", image: "https://images.unsplash.com/..." },
+  { name: "Testing", image: "https://images.unsplash.com/..." },
+  { name: "Service", image: "https://images.unsplash.com/..." },
+  { name: "Others", image: "https://images.unsplash.com/..." }
+]
+```
+
+### Unsplash Images to Remove:
+- [x] Erection: `https://images.unsplash.com/photo-1581094794329-c8112a89af12`
+- [x] Testing: `https://images.unsplash.com/photo-1581092160562-40aa08e78837`
+- [x] Service: `https://images.unsplash.com/photo-1581092918056-0c4c3acd3789`
+- [x] Others: `https://images.unsplash.com/photo-1581093588401-fbb62a02f120`
+
+---
+
+## Phase 4: Elevator Types Section
+
+### Files to Update:
+- [ ] `/src/components/store/shop-by-type-section.tsx`
+  - **Current**: Hardcoded 6 elevator types with Unsplash images
+  - **Action**: Fetch from elevator types API
+  - **Conditional**: Hide section if no types or no products
+
+- [ ] `/src/components/store/elevator-types-section.tsx`
+  - **Action**: Same as above
+
+- [ ] `/src/modules/home/components/desktop/sections/ShopByElevatorTypeSection.tsx`
+  - **Action**: Update to fetch from API
+
+- [ ] `/src/modules/home/components/desktop/tab-content/categories/sections/shop-by-elevator-type.tsx`
+  - **Action**: Update to fetch from API
+
+- [ ] `/src/modules/home/components/mobile/sections/elevator-types-mobile.tsx`
+  - **Action**: Update to fetch from API
+
+### Hardcoded Data to Remove:
+```typescript
+// shop-by-type-section.tsx
+const elevatorTypes = [
+  { id: "passenger-lifts", image: "https://images.unsplash.com/..." },
+  { id: "freight-elevators", image: "https://images.unsplash.com/..." },
+  { id: "House-lifts", image: "https://images.unsplash.com/..." },
+  { id: "hospital-lifts", image: "https://images.unsplash.com/..." },
+  { id: "dumbwaiter", image: "https://images.unsplash.com/..." },
+  { id: "escalators", image: "https://images.unsplash.com/..." }
+]
+```
+
+### Unsplash Images to Remove:
+- [x] Passenger Lifts: `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab`
+- [x] Freight Elevators: `https://images.unsplash.com/photo-1586864387967-d02ef85d93e8`
+- [x] House Lifts: `https://images.unsplash.com/photo-1600585154340-be6161a56a0c`
+- [x] Hospital Lifts: `https://images.unsplash.com/photo-1551190822-a9333d879b1f`
+- [x] Dumbwaiter: `https://images.unsplash.com/photo-1556909114-f6e7ad7d3136`
+- [x] Escalators: `https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b`
+
+---
+
+## Phase 5: Mock Collections & Product Data
+
+### Files to Update/Remove:
+- [ ] `/src/lib/data/mockCollections.ts`
+  - **Action**: REMOVE ENTIRE FILE or convert to types only
+  - **Current**: 10 mock products with Unsplash images, 8 mock collections
+  - **Replace**: All components using mockCollections should fetch real data
+
+### Components Using Mock Collections:
+- [ ] Find all imports of `mockCollections`
+- [ ] Replace with real API calls
+- [ ] Add conditional rendering when no data
+
+### Mock Product Images to Remove (10 total):
+- [x] `https://images.unsplash.com/photo-1558346490-a72e53ae2d4f` (Control Panel)
+- [x] `https://images.unsplash.com/photo-1581092160562-40aa08e78837` (Motor)
+- [x] `https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04` (Door System)
+- [x] `https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1` (Cable)
+- [x] `https://images.unsplash.com/photo-1513506003901-1e6a229e2d15` (LED Kit)
+- [x] `https://images.unsplash.com/photo-1550751827-4bd374c3f58b` (Safety Sensor)
+- [x] `https://images.unsplash.com/photo-1581092918056-0c4c3acd3789` (Hydraulic)
+- [x] `https://images.unsplash.com/photo-1519389950473-47ba0277781c` (Emergency Phone)
+- [x] `https://images.unsplash.com/photo-1581092162384-8987c1d64718` (Inverter)
+- [x] `https://images.unsplash.com/photo-1565537373149-89d084048730` (Steel Panel)
+
+---
+
+## Phase 6: Catalog & Category Variants
+
+### Files to Update:
+- [ ] `/src/lib/config/catalog-variants.ts`
+  - **Current**: Hardcoded category/application metadata with Unsplash images
+  - **Action**: Fetch metadata from database or remove hardcoded images
+  - **Images**: Replace all Unsplash hero images
+
+### Hardcoded Hero Images to Remove:
+- [x] Decking: `https://images.unsplash.com/photo-1615971677499-5467cbab01c0`
+- [x] Siding: `https://images.unsplash.com/photo-1600585154340-be6161a56a0c`
+- [x] Fencing: `https://images.unsplash.com/photo-1600607687939-ce8a6c25118c`
+- [x] Deck Building: `https://images.unsplash.com/photo-1600585154526-990dced4db0d`
+- [x] House Siding: `https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3`
+- [x] Pergola: `https://images.unsplash.com/photo-1600566752355-35792bedcfea`
+
+---
+
+## Phase 7: Catalog Banner & Related Components
+
+### Files to Check:
+- [ ] `/src/modules/catalog/components/catalog-banner.tsx`
+- [ ] `/src/modules/catalog/templates/catalog-template.tsx`
+- [ ] `/src/modules/catalog/templates/mobile/categories-tab-template.tsx`
+- [ ] `/src/modules/catalog/templates/mobile/products-tab-template.tsx`
+
+**Action**: Search for any Unsplash URLs and replace
+
+---
+
+## Phase 8: Homepage Sections
+
+### Files to Check:
+- [ ] `/src/modules/home/components/desktop/sections/TestimonialsSection.tsx`
+- [ ] `/src/modules/home/components/desktop/sections/HeroSection.tsx` (Already uses local image ✓)
+- [ ] `/src/modules/home/components/desktop/tab-content/categories/sections/top-applications.tsx`
+- [ ] `/src/modules/home/components/mobile/sections/CustomerReviewsSection.tsx`
+
+**Action**: Check for Unsplash images, ensure data comes from database
+
+---
+
+## Phase 9: Next.js Default Unsplash Images
+
+### Check & Remove:
+- [ ] Search for any Next.js placeholder images
+- [ ] Check `next.config.ts` for Unsplash domain
+- [ ] Remove Unsplash from allowed image domains if present
+- [ ] Search entire codebase for "unsplash" string
+
+```bash
+# Command to find all Unsplash references
+grep -r "unsplash" --include="*.tsx" --include="*.ts" --include="*.jsx" --include="*.js"
+```
+
+---
+
+## Phase 10: Conditional Rendering Implementation
+
+### Components to Update:
+- [ ] `/src/modules/home/templates/desktop/desktop-homepage-template.tsx`
+  - Add: Hide sections when no data available
+  - Current: Already has some conditional rendering
+
+- [ ] All section components:
+  - [ ] ApplicationsSection - Hide if no applications
+  - [ ] ShopByTypeSection - Hide if no types or no products
+  - [ ] QuickCategoriesSection - Hide if no categories
+  - [ ] FeaturedProductsSection - Already conditional ✓
+  - [ ] TestimonialsSection - Already conditional ✓
+
+### Pattern to Follow:
+```typescript
+// Example conditional rendering
+{applications.length > 0 && (
+  <ApplicationsSection applications={applications} />
+)}
+
+// Or return null in component
+if (!data || data.length === 0) return null
+```
+
+---
+
+## Phase 11: Fallback Image Implementation
+
+### Strategy:
+1. **Backend/API**: Return fallback image path when no image uploaded
+2. **Frontend**: Use fallback in img src when thumbnail is null/empty
+3. **Cloudinary**: Keep existing Cloudinary images from admin uploads
+
+### Fallback Image Path:
+- `/images/image.png` (already exists in public folder)
+
+### Components to Update:
+- [ ] ProductCard component
+- [ ] CategoryCard component
+- [ ] ApplicationCard component
+- [ ] ElevatorTypeCard component
+- [ ] Any component displaying images
+
+### Implementation Pattern:
+```typescript
+const imageSrc = item.thumbnail || item.image || '/images/image.png'
+
+// Or in img tag
+<img 
+  src={product.thumbnail || '/images/image.png'} 
+  alt={product.title}
+/>
+```
+
+---
+
+## Testing Checklist
+
+### After Implementation:
+- [ ] Homepage loads without hardcoded data
+- [ ] Mega menu shows database categories (or hidden if none)
+- [ ] Applications section shows database applications (or hidden if none)
+- [ ] Elevator types section shows database types (or hidden if none)
+- [ ] No Unsplash images visible anywhere
+- [ ] Fallback image appears when no image uploaded
+- [ ] No console errors related to missing data
+- [ ] No broken image links
+- [ ] Mobile view works correctly
+- [ ] All sections conditionally render based on data availability
+
+### Search Commands for Verification:
+```bash
+# Find remaining Unsplash references
+grep -r "unsplash" src/
+
+# Find remaining picsum references
+grep -r "picsum" src/
+
+# Find placeholder images
+grep -r "placeholder" src/
+
+# Find mockCollections imports
+grep -r "mockCollections" src/
+```
+
+---
+
+## Summary of Changes
+
+### Files to Delete/Deprecate:
+1. `/src/lib/data/mockCollections.ts` - Remove mock data
+2. `/src/modules/layout/components/desktop/navbar/components/mega-menu/categories-data.ts` - Remove hardcoded categories
+
+### Files to Modify (Major Changes):
+1. All mega menu components (5 files)
+2. Applications section (2 files)
+3. Elevator types section (5 files)
+4. Catalog variants config
+5. Homepage templates
+
+### Total Unsplash URLs to Remove: ~25+
+### Total Components to Update: ~20+
+
+---
+
+## Notes:
+- ✅ = Completed
+- [ ] = Pending
+- 🔧 = In Progress
+
+**Last Updated**: [To be updated during implementation]
