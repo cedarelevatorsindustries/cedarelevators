@@ -83,7 +83,17 @@ export interface ProductFormData {
     slug: string
     description?: string
     short_description?: string
+    
+    // Legacy (deprecated)
     category?: string
+    
+    // New relationship fields (Cedar Interconnection Logic)
+    application_id?: string
+    category_id?: string
+    subcategory_id?: string
+    elevator_type_ids?: string[] // Multi-select
+    collection_ids?: string[] // Multi-select (optional)
+    
     status: ProductStatus
     price: number
     compare_at_price?: number
