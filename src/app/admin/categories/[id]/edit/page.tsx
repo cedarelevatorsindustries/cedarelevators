@@ -106,38 +106,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       })
 
       if (result.success) {
-        // Update product assignments
-        const addedProducts = selectedProductIds.filter(id => !originalProductIds.includes(id))
-        const removedProducts = originalProductIds.filter(id => !selectedProductIds.includes(id))
-
-        if (addedProducts.length > 0 || removedProducts.length > 0) {
-          toast.loading('Updating product assignments...')
-
-          const updatePromises = [
-            ...addedProducts.map(productId =>
-              updateProduct(productId, { category: params.id })
-            ),
-            ...removedProducts.map(productId =>
-              updateProduct(productId, { category: undefined })
-            )
-          ]
-
-          await Promise.all(updatePromises)
-          toast.dismiss()
-          
-          if (addedProducts.length > 0 && removedProducts.length > 0) {
-            toast.success(`Category updated! ${addedProducts.length} products added, ${removedProducts.length} removed`)
-          } else if (addedProducts.length > 0) {
-            toast.success(`Category updated! ${addedProducts.length} products assigned`)
-          } else if (removedProducts.length > 0) {
-            toast.success(`Category updated! ${removedProducts.length} products unassigned`)
-          } else {
-            toast.success('Category updated successfully!')
-          }
-        } else {
-          toast.success('Category updated successfully!')
-        }
-
+        toast.success('Category updated successfully!')
         router.push('/admin/categories')
       }
     } catch (error) {
