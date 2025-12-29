@@ -101,6 +101,13 @@ export interface ProductFormData {
     elevator_type_ids?: string[] // Multi-select
     collection_ids?: string[] // Multi-select (optional)
     
+    // Cedar-specific technical fields (Phase 3)
+    voltage?: string // Operating voltage
+    load_capacity_kg?: number // Load capacity in kg
+    speed_ms?: number // Speed in m/s
+    variant_group?: string // Variant grouping
+    technical_specs?: Record<string, any> // Additional tech specs
+    
     status: ProductStatus
     price: number
     compare_at_price?: number
