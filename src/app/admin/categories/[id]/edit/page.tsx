@@ -23,14 +23,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   const category = categoryData?.category
   const existingCategories = categoriesData?.categories?.filter((c: any) => c.id !== params.id) || []
 
-  // Get all products
-  const { data: productsData } = useProducts({}, 1, 1000)
-  const allProducts = productsData?.products || []
-
-  // Get products currently in this category
-  const categoryProducts = useMemo(() => {
-    return allProducts.filter(p => p.category === params.id)
-  }, [allProducts, params.id])
+  // Removed: Product selection state (products now assign themselves)
 
   const [formData, setFormData] = useState({
     name: "",
