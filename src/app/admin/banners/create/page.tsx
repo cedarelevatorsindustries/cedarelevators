@@ -12,7 +12,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateBanner, useUploadBannerImage } from "@/hooks/queries/useBanners"
 import { BANNER_PLACEMENTS } from "@/lib/types/banners"
-import type { BannerPlacement, BannerTargetType, BannerCtaStyle } from "@/lib/types/banners"
+import type { BannerPlacement, BannerLinkType, BannerCtaStyle } from "@/lib/types/banners"
+import { BannerPhilosophyCard } from "@/components/admin/banner-philosophy-card"
 
 export default function CreateBannerPage() {
   const router = useRouter()
@@ -26,9 +27,9 @@ export default function CreateBannerPage() {
     image_url: "",
     image_alt: "",
     mobile_image_url: "",
-    placement: "" as BannerPlacement,
-    target_type: "all" as BannerTargetType,
-    target_id: "",
+    placement: "hero-carousel" as BannerPlacement, // Hardcoded to All Products Carousel
+    link_type: "" as BannerLinkType,
+    link_id: "",
     cta_text: "",
     cta_link: "",
     cta_style: "primary" as BannerCtaStyle,
@@ -59,8 +60,20 @@ export default function CreateBannerPage() {
   const handleSubmit = async (isDraft = false) => {
     try {
       // Validate required fields
-      if (!formData.placement || !formData.title || !formData.internal_name || !imageFile) {
+      if (!formData.title || !formData.internal_name || !imageFile) {
         alert('Please fill in all required fields and upload an image')
+        return
+      }
+
+      // Validate link destination (required for carousel)
+      if (!formData.link_type || !formData.link_id) {
+        alert('Link destination is required. Please select link type and link ID.')
+        return
+      }
+
+      // Validate CTA text (required for carousel)
+      if (!formData.cta_text) {
+        alert('CTA text is required for carousel banners.')
         return
       }
 
@@ -92,10 +105,10 @@ export default function CreateBannerPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
-              Create Banner
+              Create Carousel Banner
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              Add a new promotional banner to your storefront
+              Add a new banner to the All Products carousel for discovery navigation
             </p>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
@@ -136,6 +149,9 @@ export default function CreateBannerPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form - 2 columns */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Philosophy Card */}
+            <BannerPhilosophyCard />
+
             {/* Basic Info */}
             <Card>
               <CardHeader>
@@ -220,18 +236,20 @@ export default function CreateBannerPage() {
             {/* Call to Action */}
             <Card>
               <CardHeader>
-                <CardTitle>Call to Action</CardTitle>
+                <CardTitle>Call to Action *</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cta_text">Button Text</Label>
+                    <Label htmlFor="cta_text">Button Text *</Label>
                     <Input
                       id="cta_text"
-                      placeholder="e.g., Shop Now"
+                      placeholder="e.g., Shop Now, View Products"
                       value={formData.cta_text}
                       onChange={(e) => setFormData({ ...formData, cta_text: e.target.value })}
+                      required
                     />
+                    <p className="text-xs text-gray-500">Required for carousel banners</p>
                   </div>
 
                   <div className="space-y-2">
@@ -248,82 +266,66 @@ export default function CreateBannerPage() {
                     </Select>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cta_link">Link URL</Label>
-                  <Input
-                    id="cta_link"
-                    placeholder="e.g., /catalog?type=sale"
-                    value={formData.cta_link}
-                    onChange={(e) => setFormData({ ...formData, cta_link: e.target.value })}
-                  />
-                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar - 1 column */}
           <div className="space-y-6">
-            {/* Placement */}
+            {/* Link Destination */}
             <Card>
               <CardHeader>
-                <CardTitle>Placement *</CardTitle>
+                <CardTitle>Link Destination *</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Banner Location</Label>
-                  <Select value={formData.placement} onValueChange={(value: BannerPlacement) => setFormData({ ...formData, placement: value })}>
+                  <Label>Link Type *</Label>
+                  <Select value={formData.link_type} onValueChange={(value: BannerLinkType) => setFormData({ ...formData, link_type: value, link_id: "" })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select placement" />
+                      <SelectValue placeholder="Select link type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {BANNER_PLACEMENTS.map((placement) => (
-                        <SelectItem key={placement.id} value={placement.id}>
-                          {placement.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="application">Application</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
+                      <SelectItem value="elevator-type">Elevator Type</SelectItem>
+                      <SelectItem value="collection">Collection</SelectItem>
                     </SelectContent>
                   </Select>
-                  {formData.placement && (
-                    <p className="text-xs text-gray-500">
-                      {BANNER_PLACEMENTS.find(p => p.id === formData.placement)?.description}
-                    </p>
-                  )}
+                  <p className="text-xs text-gray-500">Where this banner links to</p>
                 </div>
+
+                {formData.link_type && (
+                  <div className="space-y-2">
+                    <Label>Link ID *</Label>
+                    <Input
+                      placeholder={`Enter ${formData.link_type} ID`}
+                      value={formData.link_id}
+                      onChange={(e) => setFormData({ ...formData, link_id: e.target.value })}
+                      required
+                    />
+                    <p className="text-xs text-gray-500">
+                      The ID of the {formData.link_type} to link to
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Targeting */}
+            {/* Placement (Read-only info) */}
             <Card>
               <CardHeader>
-                <CardTitle>Targeting</CardTitle>
+                <CardTitle>Placement</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Target Type</Label>
-                  <Select value={formData.target_type} onValueChange={(value: BannerTargetType) => setFormData({ ...formData, target_type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Pages</SelectItem>
-                      <SelectItem value="category">Specific Category</SelectItem>
-                      <SelectItem value="application">Specific Application</SelectItem>
-                      <SelectItem value="collection">Specific Collection</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <CardContent className="space-y-2">
+                <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">All Products Carousel</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Homepage carousel for product discovery navigation (3-5 slides recommended)
+                  </p>
                 </div>
-
-                {formData.target_type !== 'all' && (
-                  <div className="space-y-2">
-                    <Label>Target ID</Label>
-                    <Input
-                      placeholder="Enter category/application/collection ID"
-                      value={formData.target_id}
-                      onChange={(e) => setFormData({ ...formData, target_id: e.target.value })}
-                    />
-                  </div>
-                )}
+                <p className="text-xs text-blue-600">
+                  ℹ️ All banners here are part of the homepage carousel
+                </p>
               </CardContent>
             </Card>
 
