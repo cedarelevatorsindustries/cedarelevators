@@ -24,26 +24,24 @@ This document tracks the removal of all hardcoded/dummy data and Unsplash stock 
 ## Phase 2: Mega Menu - Hardcoded Categories
 
 ### Files to Update:
-- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/categories-data.ts`
-  - **Current**: Hardcoded array with 12 categories, using placeholder images
-  - **Action**: Remove entire hardcoded array, fetch from categories API
-  - **Images**: Replace `/api/placeholder/120/80` with fallback or real images
+- [x] `/src/modules/layout/components/desktop/navbar/components/mega-menu/categories-data.ts`
+  - **Completed**: Removed hardcoded array, kept only types and icon/color mappings
+  - **Images**: All placeholder images removed
 
-- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/mega-menu-panel.tsx`
-  - **Current**: Imports `elevatorCategories` from categories-data.ts
-  - **Action**: Fetch categories from API, pass as props
-  - **Images**: Ensure fallback image logic
+- [x] `/src/modules/layout/components/desktop/navbar/components/mega-menu/mega-menu-panel.tsx`
+  - **Completed**: Now receives categories as props from parent
+  - **Images**: Fallback image logic implemented
 
-- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-content.tsx`
-  - **Action**: Verify it handles dynamic data correctly
-  - **Images**: Replace any hardcoded images
+- [x] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-content.tsx`
+  - **Completed**: Now handles dynamic data from database
+  - **Images**: Uses fallback `/images/image.png` when no image available
 
-- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-sidebar.tsx`
-  - **Action**: Verify it handles dynamic data correctly
+- [x] `/src/modules/layout/components/desktop/navbar/components/mega-menu/category-sidebar.tsx`
+  - **Completed**: Now handles dynamic data correctly
 
-- [ ] `/src/modules/layout/components/desktop/navbar/components/mega-menu/index.tsx`
-  - **Action**: Fetch categories and pass to children components
-  - **Conditional**: Hide mega menu if no categories exist
+- [x] `/src/modules/layout/components/desktop/navbar/components/mega-menu/index.tsx`
+  - **Completed**: Fetches categories from database, conditionally renders
+  - **Conditional**: Returns null if no categories exist
 
 ### Hardcoded Data to Remove:
 ```typescript
