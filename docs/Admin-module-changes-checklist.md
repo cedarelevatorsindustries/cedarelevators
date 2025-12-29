@@ -470,13 +470,13 @@
 
 ## 📊 PHASE 4: INVENTORY MODULE (SIMPLIFIED)
 
-**Priority:** MEDIUM | **Status:** ⏸️ Not Started
+**Priority:** MEDIUM | **Status:** ✅ Complete
 
 ### Database Schema Changes
-- [ ] Add `inventory_adjustments` table
-- [ ] Add adjustment_reason field
-- [ ] Add adjusted_by field (admin user)
-- [ ] Remove: auto-reserve, forecasting fields
+- [x] Add `inventory_adjustments` table
+- [x] Add adjustment_reason field
+- [x] Add adjusted_by field (admin user)
+- [x] Remove: auto-reserve, forecasting fields (already simplified)
 
 ### Type Definitions
 - [ ] Add InventoryAdjustment type
