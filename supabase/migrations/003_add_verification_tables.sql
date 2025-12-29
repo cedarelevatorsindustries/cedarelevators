@@ -62,7 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_verification_audit_created ON verification_audit_
 
 CREATE TABLE IF NOT EXISTS customer_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_clerk_id VARCHAR(255) NOT NULL,
+  clerk_user_id VARCHAR(255) NOT NULL,
   admin_clerk_id VARCHAR(255) NOT NULL,
   admin_name TEXT,
   note_text TEXT NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS customer_notes (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_customer_notes_customer ON customer_notes(customer_clerk_id);
+CREATE INDEX IF NOT EXISTS idx_customer_notes_customer ON customer_notes(clerk_user_id);
 CREATE INDEX IF NOT EXISTS idx_customer_notes_created ON customer_notes(created_at DESC);
 
 -- =====================================================
