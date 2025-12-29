@@ -38,7 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_verification_documents_status ON verification_doc
 
 CREATE TABLE IF NOT EXISTS verification_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_clerk_id VARCHAR(255) NOT NULL,
+  clerk_user_id VARCHAR(255) NOT NULL,
   business_profile_id UUID REFERENCES business_profiles(id) ON DELETE CASCADE,
   action_type TEXT NOT NULL 
     CHECK (action_type IN ('documents_submitted', 'verification_requested', 'document_approved', 'document_rejected', 'verification_approved', 'verification_rejected', 'more_documents_requested')),
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS verification_audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_verification_audit_customer ON verification_audit_log(customer_clerk_id);
+CREATE INDEX IF NOT EXISTS idx_verification_audit_customer ON verification_audit_log(clerk_user_id);
 CREATE INDEX IF NOT EXISTS idx_verification_audit_profile ON verification_audit_log(business_profile_id);
 CREATE INDEX IF NOT EXISTS idx_verification_audit_created ON verification_audit_log(created_at);
 
