@@ -168,11 +168,15 @@ export default function CreateProductPage() {
       // TODO: Handle Variant creation separately or expand server action
       // For now we create the base product. Variants require a valid product ID.
 
-      const newProduct = await createProduct(productPayload)
+      const result = await createProduct(productPayload)
 
-      toast.success("Product created successfully")
-      // Redirect to products list
-      window.location.href = '/admin/products'
+      if (result.success) {
+        toast.success("Product created successfully")
+        // Redirect to products list
+        window.location.href = '/admin/products'
+      } else {
+        throw new Error('Failed to create product')
+      }
 
     } catch (error: any) {
       console.error('Error creating product:', error)
