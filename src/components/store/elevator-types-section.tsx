@@ -10,37 +10,37 @@ export function ElevatorTypesSection() {
             name: "Passenger Lifts",
             slug: "passenger",
             description: "Components for passenger elevators in commercial and residential buildings",
-            image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         },
         {
             name: "Freight Elevators",
             slug: "freight",
             description: "Heavy-duty components for cargo transport and industrial use",
-            image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         },
         {
             name: "House Lifts",
             slug: "House",
             description: "Premium residential elevator solutions for luxury homes",
-            image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         },
         {
             name: "Hospital Lifts",
             slug: "hospital",
             description: "Medical-grade elevator systems for healthcare facilities",
-            image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         },
         {
             name: "Dumbwaiter",
             slug: "dumbwaiter",
             description: "Compact service lifts for food, documents, and small items",
-            image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         },
         {
             name: "Escalators",
             slug: "escalator",
             description: "Moving stairway components for malls and transit stations",
-            image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=600&fit=crop&crop=center"
+            image: "/images/image.png"
         }
     ]
 

@@ -50,7 +50,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       id: "House-lift",
       title: "House Elevator Kit",
       handle: "House-elevator-kit",
-      thumbnail: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop",
+      thumbnail: "/images/image.png",
       description: "Complete residential elevator system",
       metadata: { category: "Residential" },
       variants: [{
@@ -66,7 +66,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       id: "passenger-lift",
       title: "Commercial Passenger Lift",
       handle: "commercial-passenger-lift",
-      thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=400&fit=crop",
+      thumbnail: "/images/image.png",
       description: "High-capacity office building elevator",
       metadata: { category: "Commercial" },
       variants: [{
@@ -82,7 +82,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       id: "hospital-lift",
       title: "Stretcher Lift System",
       handle: "stretcher-lift-system",
-      thumbnail: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=400&fit=crop",
+      thumbnail: "/images/image.png",
       description: "Medical grade reliable transport",
       metadata: { category: "Healthcare" },
       variants: [{
@@ -98,7 +98,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       id: "goods-lift",
       title: "Heavy Duty Goods Lift",
       handle: "heavy-duty-goods-lift",
-      thumbnail: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=400&h=400&fit=crop",
+      thumbnail: "/images/image.png",
       description: "Industrial cargo solution",
       metadata: { category: "Industrial" },
       variants: [{

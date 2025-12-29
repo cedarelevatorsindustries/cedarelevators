@@ -10,42 +10,42 @@ const elevatorTypes = [
     id: "residential-elevators",
     title: "Build Your Dream House Elevator",
     description: "Premium components for luxury residential installations",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=residential"
   },
   {
     id: "commercial-buildings",
     title: "Power Commercial Projects",
     description: "High-capacity systems for office buildings and complexes",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=commercial"
   },
   {
     id: "hospital-elevators",
     title: "Medical-Grade Elevator Systems",
     description: "Reliable, safe components for healthcare facilities",
-    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=hospital"
   },
   {
     id: "freight-elevators",
     title: "Heavy-Duty Freight Solutions",
     description: "Industrial-strength components for cargo transport",
-    image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=freight"
   },
   {
     id: "modernization",
     title: "Modernize Existing Elevators",
     description: "Upgrade old systems with latest technology",
-    image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=modernization"
   },
   {
     id: "luxury-elevators",
     title: "Luxury Custom Installations",
     description: "Premium finishes and advanced features for high-end projects",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&crop=center",
+    image: "/images/image.png",
     href: "/catalog?application=luxury"
   }
 ]

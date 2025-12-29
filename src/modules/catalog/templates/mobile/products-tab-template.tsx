@@ -33,7 +33,7 @@ export default function ProductsTabTemplate({ products }: ProductsTabProps) {
       <div className="p-4">
         <div className="relative aspect-[16/6] rounded-xl overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=300&fit=crop"
+            src="/images/image.png"
             alt="Catalog Banner"
             className="w-full h-full object-cover"
           />

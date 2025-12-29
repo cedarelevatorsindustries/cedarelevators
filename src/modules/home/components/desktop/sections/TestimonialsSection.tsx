@@ -70,7 +70,7 @@ const TestimonialsSection = ({ testimonials }: TestimonialsSectionProps) => {
               {/* Profile Image */}
               <div className="flex-shrink-0">
                 <img
-                  src={currentTestimonial.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"}
+                  src={currentTestimonial.image || "/images/image.png"}
                   alt={currentTestimonial.name}
                   className="w-32 h-32 rounded-full object-cover border-4 border-orange-100"
                 />

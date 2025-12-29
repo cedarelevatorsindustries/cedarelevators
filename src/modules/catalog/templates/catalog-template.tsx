@@ -221,7 +221,7 @@ export default function CatalogTemplate({
         <CatalogBanner
           title={currentCategory.name || ""}
           subtitle={currentCategory.description || undefined}
-          backgroundImage={(currentCategory.metadata?.banner as string) || "https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=1400&h=300&fit=crop"}
+          backgroundImage={(currentCategory.metadata?.banner as string) || "/images/image.png"}
           categories={currentCategory.category_children || []}
           type="category"
           slug={currentCategory.handle || currentCategory.id}
@@ -234,7 +234,7 @@ export default function CatalogTemplate({
         <CatalogBanner
           title="Premium Elevator Components"
           subtitle="ISO Certified Quality | Pan-India Delivery"
-          backgroundImage="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop"
+          backgroundImage="/images/image.png"
           categories={categories.slice(0, 10)}
           type="category"
           slug="all"

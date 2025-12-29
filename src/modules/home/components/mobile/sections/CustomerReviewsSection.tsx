@@ -83,7 +83,7 @@ export default function CustomerReviewsSection({ testimonials }: CustomerReviews
             <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
               {/* Profile Image */}
               <img
-                src={currentTestimonial.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"}
+                src={currentTestimonial.image || "/images/image.png"}
                 alt={currentTestimonial.name}
                 className="w-10 h-10 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
               />

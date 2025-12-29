@@ -18,36 +18,36 @@ interface CatalogBannerProps {
 // Stock images for categories
 const getCategoryImage = (categoryName: string) => {
     const images: Record<string, string> = {
-        "Commercial Elevators": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop",
-        "House Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&h=100&fit=crop",
-        "Hospital Lifts": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=100&h=100&fit=crop",
-        "Goods Lifts": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&h=100&fit=crop",
-        "Hydraulic Lifts": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=100&h=100&fit=crop",
-        "Dumbwaiters": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=100&h=100&fit=crop",
-        "Parking Lifts": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=100&h=100&fit=crop",
-        "Escalators": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=100&h=100&fit=crop",
-        "Safety Elevators": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=100&h=100&fit=crop",
-        "Luxury Elevators": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=100&h=100&fit=crop",
+        "Commercial Elevators": "/images/image.png",
+        "House Lifts": "/images/image.png",
+        "Hospital Lifts": "/images/image.png",
+        "Goods Lifts": "/images/image.png",
+        "Hydraulic Lifts": "/images/image.png",
+        "Dumbwaiters": "/images/image.png",
+        "Parking Lifts": "/images/image.png",
+        "Escalators": "/images/image.png",
+        "Safety Elevators": "/images/image.png",
+        "Luxury Elevators": "/images/image.png",
     }
-    return images[categoryName] || "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=100&h=100&fit=crop"
+    return images[categoryName] || "/images/image.png"
 }
 
 // Stock banner images for different types
 const getBannerImage = (type: "application" | "category", name: string) => {
     const bannerImages: Record<string, string> = {
         // Application banners
-        "Commercial Elevators": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop",
-        "House Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&h=360&fit=crop",
-        "Hospital Lifts": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1400&h=360&fit=crop",
-        "Goods Lifts": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&h=360&fit=crop",
-        "Hydraulic Lifts": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1400&h=360&fit=crop",
-        "Dumbwaiters": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=360&fit=crop",
-        "Parking Lifts": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=1400&h=360&fit=crop",
-        "Escalators": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1400&h=360&fit=crop",
-        "Safety Elevators": "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1400&h=360&fit=crop",
-        "Luxury Elevators": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1400&h=360&fit=crop",
+        "Commercial Elevators": "/images/image.png",
+        "House Lifts": "/images/image.png",
+        "Hospital Lifts": "/images/image.png",
+        "Goods Lifts": "/images/image.png",
+        "Hydraulic Lifts": "/images/image.png",
+        "Dumbwaiters": "/images/image.png",
+        "Parking Lifts": "/images/image.png",
+        "Escalators": "/images/image.png",
+        "Safety Elevators": "/images/image.png",
+        "Luxury Elevators": "/images/image.png",
     }
-    return bannerImages[name] || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop"
+    return bannerImages[name] || "/images/image.png"
 }
 
 export function CatalogBanner({

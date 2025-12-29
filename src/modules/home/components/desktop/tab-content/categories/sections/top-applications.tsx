@@ -11,7 +11,7 @@ const topApplicationProducts = [
     title: "Commercial High-Speed Motor",
     description: "Gearless traction motor for high-rise buildings",
     handle: "commercial-high-speed-motor",
-    thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ calculated_price: { calculated_amount: 85000 } }],
     metadata: { category: "Commercial" }
   },
@@ -20,7 +20,7 @@ const topApplicationProducts = [
     title: "Residential Door Operator",
     description: "Quiet and smooth door system for luxury apartments",
     handle: "residential-door-operator",
-    thumbnail: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ calculated_price: { calculated_amount: 22000 } }],
     metadata: { category: "Residential" }
   },
@@ -29,7 +29,7 @@ const topApplicationProducts = [
     title: "Hospital Emergency System",
     description: "Battery backup control panel for medical facilities",
     handle: "hospital-emergency-system",
-    thumbnail: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ calculated_price: { calculated_amount: 65000 } }],
     metadata: { category: "Healthcare" }
   },
@@ -38,7 +38,7 @@ const topApplicationProducts = [
     title: "Industrial Freight Brake",
     description: "Heavy-duty electromagnetic brake for cargo lifts",
     handle: "industrial-freight-brake",
-    thumbnail: "https://images.unsplash.com/photo-1565610222536-ef125c59da2e?w=800&h=800&fit=crop",
+    thumbnail: "/images/image.png",
     variants: [{ calculated_price: { calculated_amount: 38000 } }],
     metadata: { category: "Industrial" }
   }
