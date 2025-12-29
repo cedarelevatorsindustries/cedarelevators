@@ -184,14 +184,10 @@ export default function CreateCategoryPage() {
             </Button>
           </div>
 
-          {/* No Products Warning */}
-          {!hasProducts && !productsLoading && (
-            <NoProductsWarning />
-          )}
+          {/* No Products Warning - Removed (not needed anymore) */}
 
           {/* Stepper / Tabs */}
-          {hasProducts && (
-            <div className="flex items-center space-x-4 border-b border-gray-200">
+          <div className="flex items-center space-x-4 border-b border-gray-200">
               <button
                 onClick={() => setCurrentStep(1)}
                 className={cn(
