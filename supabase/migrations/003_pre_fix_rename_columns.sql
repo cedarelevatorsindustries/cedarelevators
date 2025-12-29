@@ -5,9 +5,20 @@
 -- Run this BEFORE running 003_add_verification_tables.sql
 -- =====================================================
 
--- Rename user_id to clerk_user_id in verification_documents table
-ALTER TABLE verification_documents 
-RENAME COLUMN user_id TO clerk_user_id;
+-- Rename user_id to clerk_user_id in verification_documents table (only if user_id exists)
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'verification_documents' 
+    AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE verification_documents RENAME COLUMN user_id TO clerk_user_id;
+    RAISE NOTICE 'Column user_id renamed to clerk_user_id';
+  ELSE
+    RAISE NOTICE 'Column user_id does not exist or already renamed to clerk_user_id';
+  END IF;
+END $$;
 
 -- If there are any indexes on user_id, they will be automatically renamed
 -- If there are any RLS policies referencing user_id, we need to drop and recreate them
