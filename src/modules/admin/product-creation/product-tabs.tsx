@@ -9,13 +9,14 @@ interface ProductTabsProps {
 }
 
 const tabs = [
-  { id: "general", label: "General" },
-  { id: "media", label: "Media" },
-  { id: "pricing", label: "Pricing" },
-  { id: "variants", label: "Variants" },
-  { id: "inventory", label: "Inventory" },
-  { id: "organization", label: "Organization" },
-  { id: "seo", label: "SEO" }
+  { id: "basic-information", label: "1. Basic Info", step: 1 },
+  { id: "media", label: "2. Media", step: 2 },
+  { id: "product-details", label: "3. Details", step: 3 },
+  { id: "variants", label: "4. Variants", step: 4 },
+  { id: "classification", label: "5. Classification", step: 5 },
+  { id: "pricing-inventory", label: "6. Pricing", step: 6 },
+  { id: "seo", label: "7. SEO", step: 7 },
+  { id: "review", label: "8. Review", step: 8 }
 ]
 
 export function ProductTabs({ activeTab, onTabChange }: ProductTabsProps) {
