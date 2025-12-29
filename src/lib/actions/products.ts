@@ -96,10 +96,18 @@ export async function createProduct(productData: ProductFormData) {
         mainProductData.category_id !== 'uncategorized'
     )
 
+    // Prepare product data with Cedar technical fields
+    const productToInsert = {
+        ...mainProductData,
+        is_categorized,
+        // Ensure technical_specs is properly formatted as JSONB
+        technical_specs: mainProductData.technical_specs || {},
+    }
+
     // Insert product
     const { data: product, error: productError } = await supabase
         .from('products')
-        .insert([{ ...mainProductData, is_categorized }])
+        .insert([productToInsert])
         .select()
         .single()
 
