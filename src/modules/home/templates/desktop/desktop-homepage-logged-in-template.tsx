@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import type { Application } from "@/lib/data/applications"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import HeroLite from "../../components/common/hero-lite"
 import { WelcomeSection } from "../../components/common/welcome-section"
 import ProductsTab from "../../components/desktop/tab-content/product"
@@ -17,6 +18,7 @@ interface DesktopHomepageLoggedInProps {
   userType: "individual" | "business"
   categories: ProductCategory[]
   applications?: Application[]
+  elevatorTypes?: ElevatorType[]
 }
 
 export default function DesktopHomepageLoggedIn({
@@ -24,7 +26,8 @@ export default function DesktopHomepageLoggedIn({
   testimonials,
   userType,
   categories,
-  applications = []
+  applications = [],
+  elevatorTypes = []
 }: DesktopHomepageLoggedInProps) {
   const searchParams = useSearchParams()
   const app = searchParams.get('app')
