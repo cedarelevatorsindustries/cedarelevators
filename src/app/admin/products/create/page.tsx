@@ -186,7 +186,10 @@ export default function CreateProductPage() {
     return formData.name &&
       formData.description &&
       (formData.variants.length > 0 || formData.price) &&
-      formData.images.length > 0
+      formData.images.length > 0 &&
+      formData.application_id && // Required
+      formData.category_id && // Required
+      formData.elevator_type_ids && formData.elevator_type_ids.length > 0 // Required
   }
 
   return (
