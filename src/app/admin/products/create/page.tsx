@@ -55,7 +55,14 @@ interface ProductFormData {
   lowStockThreshold: string
   globalStock: string
 
-  // Organization
+  // Organization (Cedar Interconnection Logic)
+  application_id?: string
+  category_id?: string
+  subcategory_id?: string
+  elevator_type_ids?: string[]
+  collection_ids?: string[]
+  
+  // Legacy (deprecated)
   categories: string[]
   collections: string[]
   tags: string[]
