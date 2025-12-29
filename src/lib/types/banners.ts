@@ -1,17 +1,31 @@
 /**
  * Banner Management Types for Cedar Elevators
+ * 
+ * PHILOSOPHY: Banners are navigation + context surfaces, NOT promotional assets
+ * 
+ * Banner Management handles ONLY:
+ * - All Products Carousel (homepage discovery navigation)
+ * 
+ * Entity banners (category/application/type headers) are managed in their respective modules.
  */
 
-// Banner placement locations across the storefront
+// Banner placement - ONLY All Products Carousel
+// Other placements moved to entity tables (categories.banner_image, etc.)
 export type BannerPlacement =
-    | 'hero-carousel'        // Main homepage carousel
-    | 'category-header'      // Top of category pages
-    | 'application-header'   // Top of application pages
-    | 'announcement-bar'     // Persistent top bar
-    | 'collection-banner'    // Collection promotional banners
+    | 'hero-carousel'        // All Products Carousel - homepage/catalog discovery
+    | 'all-products-carousel' // Alias for hero-carousel (preferred name)
 
-// What the banner targets
-export type BannerTargetType = 'category' | 'application' | 'collection' | 'all'
+// DEPRECATED placements (moved to entity modules):
+// - 'category-header' → categories.banner_image
+// - 'application-header' → categories.banner_image (where application type)
+// - 'collection-banner' → collections.banner_image
+// - 'announcement-bar' → Out of scope
+
+// What the banner links to (carousel navigation)
+export type BannerLinkType = 'application' | 'category' | 'elevator-type' | 'collection'
+
+// DEPRECATED: Use BannerLinkType instead
+export type BannerTargetType = BannerLinkType
 
 // CTA button styles
 export type BannerCtaStyle = 'primary' | 'secondary' | 'outline'
