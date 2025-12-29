@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AnalyticsService } from '@/lib/services/analytics'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
 export function RevenueChart() {
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily')
@@ -46,7 +46,7 @@ export function RevenueChart() {
       <CardContent>
         {loading ? (
           <div className="h-80 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : data.length === 0 ? (
           <div className="h-80 flex items-center justify-center text-gray-500">

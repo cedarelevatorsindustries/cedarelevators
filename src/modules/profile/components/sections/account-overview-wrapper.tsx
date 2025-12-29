@@ -2,7 +2,7 @@
 
 import { useProfile } from '@/lib/hooks/useProfile'
 import AccountOverviewSection from './account-overview-section'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { PROFILE_SECTIONS } from '@/lib/constants/profile'
 
@@ -29,7 +29,7 @@ export default function AccountOverviewWrapper() {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
+          <LoaderCircle size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading account...</p>
         </div>
       </div>

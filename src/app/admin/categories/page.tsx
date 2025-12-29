@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, Loader2, RefreshCw, Search } from "lucide-react"
+import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, LoaderCircle, RefreshCw, Search } from "lucide-react"
 import Link from "next/link"
 import { useCategories, useCategoryStats, useDeleteCategory } from "@/hooks/queries/useCategories"
 import type { CategoryWithChildren } from "@/lib/types/categories"
@@ -168,7 +168,7 @@ export default function CategoriesPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                <LoaderCircle className="h-8 w-8 animate-spin text-orange-500" />
               </div>
             ) : categories.length === 0 ? (
               <div className="text-center py-12">

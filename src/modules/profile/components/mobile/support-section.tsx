@@ -1,6 +1,6 @@
 'use client'
 
-import { HelpCircle, Phone, MessageCircle } from 'lucide-react'
+import { CircleHelp, Phone, MessageCircle } from 'lucide-react'
 import MenuItem from './menu-item'
 import MenuSection from './menu-section'
 
@@ -8,7 +8,7 @@ export default function SupportSection() {
   return (
     <MenuSection title="Support & Help">
       <MenuItem 
-        icon={HelpCircle} 
+        icon={CircleHelp} 
         label="Help & FAQ" 
         href="/help" 
         bgColor="bg-orange-50" 

@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, Clock, CheckCircle } from "lucide-react"
+import { AlertCircle, Clock, CircleCheck } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface Alert {
@@ -50,7 +50,7 @@ export default function ActionAlerts() {
     {
       id: "3",
       type: "info",
-      icon: CheckCircle,
+      icon: CircleCheck,
       title: "Quote Approved",
       message: "Quote #Q-2301 has been approved. Ready to convert to order.",
       action: {

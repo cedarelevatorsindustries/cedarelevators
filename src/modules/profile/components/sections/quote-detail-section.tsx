@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Quote, QuoteMessage } from '@/types/b2b/quote'
 import { 
-  ArrowLeft, Download, CheckCircle, X, RefreshCw, 
+  ArrowLeft, Download, CircleCheck, X, RefreshCw, 
   FileText, Calendar, Building2, User, Mail, Phone,
   MessageSquare, Send, Paperclip, Package, TrendingUp,
   Clock, AlertCircle
@@ -243,7 +243,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
       pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', icon: Clock },
       negotiation: { label: 'Negotiation', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: MessageSquare },
       revised: { label: 'Revised', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: RefreshCw },
-      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CheckCircle },
+      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CircleCheck },
       rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400', icon: X },
       expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400', icon: AlertCircle },
     }
@@ -447,7 +447,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                   onClick={() => handleUpdateStatus('accepted')}
                   className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
                 >
-                  <CheckCircle size={20} />
+                  <CircleCheck size={20} />
                   Accept Quote
                 </button>
                 <button 

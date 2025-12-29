@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, Loader2, Plus, ShoppingBag } from "lucide-react"
+import { FileText, LoaderCircle, Plus, ShoppingBag } from "lucide-react"
 import { toast } from "sonner"
 import { useQuoteBasket } from "@/lib/hooks/use-quote-basket"
 
@@ -94,7 +94,7 @@ export function AddToQuoteButton({
             title={getLabel()}
         >
             {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <LoaderCircle className="w-4 h-4 animate-spin" />
             ) : variant === "icon" ? (
                 <Plus className="w-4 h-4" />
             ) : (

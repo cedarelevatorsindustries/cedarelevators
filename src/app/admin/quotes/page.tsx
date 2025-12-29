@@ -6,12 +6,12 @@ import { getAdminQuotes, getAdminQuoteStats, updateQuoteStatus, updateQuotePrior
 import {
     FileText,
     Clock,
-    CheckCircle,
+    CircleCheck,
     XCircle,
     Search,
     Filter,
     TrendingUp,
-    Loader2,
+    LoaderCircle,
     RefreshCw,
     ChevronRight,
     User,
@@ -45,11 +45,11 @@ const getStatusConfig = (status: QuoteStatus) => {
         case 'reviewing':
             return { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Eye, label: 'Reviewing' }
         case 'approved':
-            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Approved' }
+            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CircleCheck, label: 'Approved' }
         case 'rejected':
             return { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Rejected' }
         case 'converted':
-            return { color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: CheckCircle, label: 'Converted' }
+            return { color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: CircleCheck, label: 'Converted' }
         default:
             return { color: 'bg-gray-100 text-gray-700 border-gray-200', icon: FileText, label: status }
     }
@@ -149,7 +149,7 @@ export default function AdminQuotesPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+                <LoaderCircle className="w-8 h-8 animate-spin text-orange-600" />
             </div>
         )
     }
@@ -214,7 +214,7 @@ export default function AdminQuotesPage() {
                     <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-green-50">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                             <CardTitle className="text-sm font-semibold text-gray-700">Accepted</CardTitle>
-                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <CircleCheck className="h-4 w-4 text-green-600" />
                         </CardHeader>
                         <CardContent className="pt-0">
                             <div className="text-2xl font-bold text-gray-900">{stats.accepted_count}</div>

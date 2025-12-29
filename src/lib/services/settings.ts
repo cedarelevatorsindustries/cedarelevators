@@ -1,8 +1,8 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
-import { 
-    StoreSettings, 
+import {
+    StoreSettings,
     UpdateStoreSettingsData,
     PaymentSettings,
     UpdatePaymentSettingsData,
@@ -117,9 +117,16 @@ export async function initializeStoreSettings(): Promise<{
             .single()
 
         if (error) {
+            console.error('Error initializing store settings:', error)
+            return { success: false, error: error.message }
+        }
 
-
-// =====================================================
+        return { success: true, data: data as StoreSettings }
+    } catch (error: any) {
+        console.error('Error in initializeStoreSettings:', error)
+        return { success: false, error: error.message || 'Failed to initialize settings' }
+    }
+}
 // PAYMENT SETTINGS
 // =====================================================
 
@@ -409,13 +416,4 @@ export const SettingsService = {
     initializeStoreSettings,
 }
 
-            console.error('Error initializing store settings:', error)
-            return { success: false, error: error.message }
-        }
 
-        return { success: true, data: data as StoreSettings }
-    } catch (error: any) {
-        console.error('Error in initializeStoreSettings:', error)
-        return { success: false, error: error.message || 'Failed to initialize settings' }
-    }
-}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Package, FileText, HelpCircle, Headset, ChevronRight, User, Download, Shield, Truck, RotateCcw, Phone, MessageCircle } from 'lucide-react'
+import { Package, FileText, CircleHelp, Headset, ChevronRight, User, Download, Shield, Truck, RotateCcw, Phone, MessageCircle } from 'lucide-react'
 
 export default function GuestProfileMobile() {
     return (
@@ -52,7 +52,7 @@ export default function GuestProfileMobile() {
                     <h3 className="font-bold text-gray-900 text-lg">Help & Support</h3>
                 </div>
                 <div className="flex flex-col">
-                    <MenuItem icon={HelpCircle} label="Help Center & FAQ" href="/help" bgColor="bg-gray-100" iconColor="text-gray-600" />
+                    <MenuItem icon={CircleHelp} label="Help Center & FAQ" href="/help" bgColor="bg-gray-100" iconColor="text-gray-600" />
                 </div>
             </div>
 

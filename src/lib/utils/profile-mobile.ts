@@ -43,7 +43,7 @@ export function getMobileProfileMenu(
         title: 'Support',
         items: [
           { label: 'Contact Sales', icon: 'Phone', href: '/contact' },
-          { label: 'Help Center', icon: 'HelpCircle', href: '/help' },
+          { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
         ]
       }
     ]
@@ -78,7 +78,7 @@ export function getMobileProfileMenu(
       {
         title: 'Support & Auth',
         items: [
-          { label: 'Help Center', icon: 'HelpCircle', href: '/help' },
+          { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
           { label: 'Contact Support', icon: 'Headset', href: '/contact' },
           { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
         ]
@@ -95,7 +95,7 @@ export function getMobileProfileMenu(
           title: 'Account',
           items: [
             { label: 'Business Info', icon: 'Building2', href: '/profile/business-info' },
-            { label: 'Verification', icon: 'CheckCircle', href: '/profile/approvals', badge: 'Pending' },
+            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
           ]
         },
@@ -116,7 +116,7 @@ export function getMobileProfileMenu(
         {
           title: 'Support & Auth',
           items: [
-            { label: 'Help Center', icon: 'HelpCircle', href: '/help' },
+            { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
             { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
           ]
@@ -151,7 +151,7 @@ export function getMobileProfileMenu(
         {
           title: 'Support & Auth',
           items: [
-            { label: 'Help Center', icon: 'HelpCircle', href: '/help' },
+            { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
             { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
           ]

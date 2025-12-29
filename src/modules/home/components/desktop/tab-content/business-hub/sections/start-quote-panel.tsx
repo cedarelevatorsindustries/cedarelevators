@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, CheckCircle } from "lucide-react"
+import { Plus, CircleCheck } from "lucide-react"
 import Link from "next/link"
 
 export default function StartQuotePanel() {
@@ -14,15 +14,15 @@ export default function StartQuotePanel() {
           </p>
           <ul className="space-y-2 text-blue-100 text-sm">
             <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
+              <CircleCheck className="w-4 h-4" />
               Volume discounts available
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
+              <CircleCheck className="w-4 h-4" />
               Custom specifications supported
             </li>
             <li className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
+              <CircleCheck className="w-4 h-4" />
               Fast turnaround time
             </li>
           </ul>

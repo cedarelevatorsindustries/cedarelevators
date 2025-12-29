@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, forwardRef } from "react"
-import { Star, ThumbsUp, CheckCircle, ChevronDown, ChevronUp, Image as ImageIcon, Filter } from "lucide-react"
+import { Star, ThumbsUp, CircleCheck, ChevronDown, ChevronUp, Image as ImageIcon, Filter } from "lucide-react"
 
 interface Review {
   id: string
@@ -285,7 +285,7 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                         <p className="font-semibold text-gray-900">{review.name || "Anonymous"}</p>
                         {review.verified && (
                           <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                            <CheckCircle className="w-3 h-3" />
+                            <CircleCheck className="w-3 h-3" />
                             Verified Purchase
                           </span>
                         )}

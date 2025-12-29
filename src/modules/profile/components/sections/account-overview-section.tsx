@@ -1,7 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/lib/types/profile'
-import { CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
+import { CircleCheck, AlertCircle, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
@@ -144,7 +144,7 @@ export default function AccountOverviewSection({
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
+                <CircleCheck className="text-green-600 dark:text-green-400" size={24} />
               </div>
             </div>
             <div className="flex-1">

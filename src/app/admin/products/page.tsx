@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, Loader2, AlertTriangle, Archive, ExternalLink } from "lucide-react"
+import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { useProducts, useProductStats, useDeleteProduct, useUpdateProduct } from "@/hooks/queries/useProducts"
 import type { Product } from "@/lib/types/products"
@@ -175,7 +175,7 @@ export default function ProductsPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                <LoaderCircle className="h-8 w-8 animate-spin text-orange-500" />
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-12">

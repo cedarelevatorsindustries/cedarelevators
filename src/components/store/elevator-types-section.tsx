@@ -19,8 +19,8 @@ export function ElevatorTypesSection() {
             image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&h=600&fit=crop&crop=center"
         },
         {
-            name: "Home Lifts",
-            slug: "home",
+            name: "House Lifts",
+            slug: "House",
             description: "Premium residential elevator solutions for luxury homes",
             image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop&crop=center"
         },

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, Package, Loader2 } from "lucide-react"
+import { FileText, Package, LoaderCircle } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { getQuotes } from "@/lib/actions/quotes"
 import { Quote } from "@/types/b2b/quote"
@@ -26,7 +26,7 @@ export default function QuotesOrdersSnapshot() {
           date_range: 'all',
           search: ''
         })
-        
+
         if (quotesResult.success) {
           const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'in_review').length
           const approved = quotesResult.quotes.filter(q => q.status === 'accepted').length
@@ -50,7 +50,7 @@ export default function QuotesOrdersSnapshot() {
     return (
       <section className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+          <LoaderCircle className="w-6 h-6 animate-spin text-blue-600" />
         </div>
       </section>
     )
@@ -69,7 +69,7 @@ export default function QuotesOrdersSnapshot() {
   return (
     <section className="bg-white border border-gray-200 rounded-lg p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Quotes & Orders</h2>
-      
+
       <div className="grid md:grid-cols-2 gap-8">
         {/* Quotes Section */}
         <div>

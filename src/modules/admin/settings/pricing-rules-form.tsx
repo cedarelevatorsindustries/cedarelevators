@@ -13,7 +13,7 @@ import {
   PricingSettings 
 } from "@/lib/services/pricing-settings"
 import { toast } from "sonner"
-import { Save, DollarSign, Loader2, Info } from "lucide-react"
+import { Save, DollarSign, LoaderCircle, Info } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function PricingRulesForm() {
@@ -93,7 +93,7 @@ export function PricingRulesForm() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

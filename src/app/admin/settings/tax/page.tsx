@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { TaxSettingsFormSimplified } from "@/modules/admin/settings/tax-settings-form-simplified"
 import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
 import { Tier1Guard } from "@/components/admin/settings-guards"
-import { Loader2 } from "lucide-react"
+import { LoaderCircle } from "lucide-react"
 
 export default function TaxSettingsPage() {
   const [profile, setProfile] = useState<AdminProfile | null>(null)
@@ -30,7 +30,7 @@ export default function TaxSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

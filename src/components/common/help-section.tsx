@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { HelpCircle, Phone, MessageCircle } from "lucide-react"
+import { CircleHelp, Phone, MessageCircle } from "lucide-react"
 
 interface HelpSectionProps {
   variant?: "mobile" | "desktop"
@@ -23,7 +23,7 @@ export default function HelpSection({
   const helpLinks = [
     {
       href: "/help",
-      icon: HelpCircle,
+      icon: CircleHelp,
       label: "Help & FAQ",
       description: "Find answers to common questions",
       color: "text-blue-600",

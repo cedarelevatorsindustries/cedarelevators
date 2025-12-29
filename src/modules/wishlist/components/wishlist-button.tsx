@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Heart, Loader2 } from "lucide-react"
+import { Heart, LoaderCircle } from "lucide-react"
 import { useWishlist } from "@/lib/hooks"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 
@@ -76,7 +76,7 @@ export default function WishlistButton({
         title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
       >
         {isLoading ? (
-          <Loader2 className={`${iconSizes[size]} animate-spin text-gray-600`} />
+          <LoaderCircle className={`${iconSizes[size]} animate-spin text-gray-600`} />
         ) : (
           <Heart
             className={`${iconSizes[size]} transition-all ${isWishlisted
@@ -108,7 +108,7 @@ export default function WishlistButton({
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <LoaderCircle className="w-5 h-5 animate-spin" />
           {isWishlisted ? "Removing..." : "Adding..."}
         </>
       ) : (

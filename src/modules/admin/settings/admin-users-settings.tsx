@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { createAdminUserAction, approveAdminAction, revokeAdminAction } from '@/lib/actions/admin-auth'
 import { AdminRole } from '@/lib/admin-auth'
-import { Shield, UserPlus, Mail, Lock, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Shield, UserPlus, Mail, Lock, AlertCircle, CircleCheck, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -304,7 +304,7 @@ export function AdminUsersSettings() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.is_active ? (
                         <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                          <CheckCircle className="w-3 h-3 mr-1" />
+                          <CircleCheck className="w-3 h-3 mr-1" />
                           Active
                         </span>
                       ) : (
@@ -326,7 +326,7 @@ export function AdminUsersSettings() {
                               className="text-green-600 hover:text-green-900"
                               data-testid={`approve-admin-${user.id}`}
                             >
-                              <CheckCircle className="w-5 h-5" />
+                              <CircleCheck className="w-5 h-5" />
                             </button>
                           ) : (
                             <button

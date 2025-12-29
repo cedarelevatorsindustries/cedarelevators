@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/admin-ui/checkbox"
 import { TableCell } from "@/components/ui/admin-ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/admin-ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/admin-ui/alert-dialog"
-import { Edit, MoreHorizontal, Eye, Copy, Archive, Trash2, Loader2 } from "lucide-react"
+import { Edit, MoreHorizontal, Eye, Copy, Archive, Trash2, LoaderCircle } from "lucide-react"
 import { deleteProduct } from "@/lib/actions/products"
 import { toast } from "sonner"
 import { VirtualizedTable } from "@/modules/admin/common/virtualized-table"
@@ -318,7 +318,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                     >
                       {deletingId === product.id ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                           Deleting...
                         </>
                       ) : (
@@ -364,7 +364,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                   disabled={isPending}
                 >
                   {isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <Trash2 className="mr-2 h-4 w-4" />
                   )}
@@ -389,7 +389,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                   >
                     {isPending ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                         Deleting...
                       </>
                     ) : (

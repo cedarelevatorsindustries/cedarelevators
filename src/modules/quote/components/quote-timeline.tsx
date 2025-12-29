@@ -27,7 +27,7 @@ export const QuoteTimeline = ({ quotes }: QuoteTimelineProps) => {
         },
         {
             id: "4312",
-            title: "Home Lift",
+            title: "House Lift",
             amount: "₹18.4 L",
             status: "accepted"
         },

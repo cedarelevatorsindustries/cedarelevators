@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { SettingsService } from "@/lib/services/settings"
 import { ShippingSettings, ShippingZone } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Save, Loader2, Truck } from "lucide-react"
+import { Save, LoaderCircle, Truck } from "lucide-react"
 
 export function ShippingSettingsForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -91,7 +91,7 @@ export function ShippingSettingsForm() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
 import { SettingsService } from "@/lib/services/settings"
 import { Tier1Guard } from "@/components/admin/settings-guards"
-import { Save, Settings as SettingsIcon, Loader2, AlertTriangle, Flag, Bug } from "lucide-react"
+import { Save, Settings as SettingsIcon, LoaderCircle, AlertTriangle, Flag, Bug } from "lucide-react"
 import { toast } from "sonner"
 
 export default function SystemSettingsPage() {
@@ -116,7 +116,7 @@ export default function SystemSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

@@ -2,7 +2,7 @@
 
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import Link from "next/link"
-import { CheckCircle, TrendingUp, Shield, Headset } from "lucide-react"
+import { CircleCheck, TrendingUp, Shield, Headset } from "lucide-react"
 import {
   StickyTopBar,
   GuestQuoteForm,
@@ -26,7 +26,7 @@ export default function GuestQuoteTemplate({ products }: GuestQuoteTemplateProps
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-4 h-4 text-white" />
+              <CircleCheck className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm text-gray-700">Best prices guaranteed</span>
           </div>

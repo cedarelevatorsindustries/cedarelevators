@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SettingsService } from "@/lib/services/settings"
 import { TaxSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Save, Receipt, Loader2, Info } from "lucide-react"
+import { Save, Receipt, LoaderCircle, Info } from "lucide-react"
 
 // Indian states list
 const INDIAN_STATES = [
@@ -97,7 +97,7 @@ export function TaxSettingsFormSimplified() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

@@ -3,7 +3,7 @@
  * Business logic for analytics dashboard
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabase } from '@/lib/supabase/server'
 
 export interface SalesMetrics {
   totalRevenue: number
@@ -44,7 +44,7 @@ export async function calculateSalesMetrics(
   startDate: Date,
   endDate: Date
 ): Promise<SalesMetrics> {
-  const supabase = await createClient()
+  const supabase = await createServerSupabase()
 
   // Current period
   const { data: orders } = await supabase
@@ -73,11 +73,11 @@ export async function calculateSalesMetrics(
   const previousRevenue = previousOrders?.reduce((sum, order) => sum + order.total_amount, 0) || 0
   const previousOrdersCount = previousOrders?.length || 0
 
-  const revenueChange = previousRevenue > 0 
-    ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 
+  const revenueChange = previousRevenue > 0
+    ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
     : 0
-  const ordersChange = previousOrdersCount > 0 
-    ? ((totalOrders - previousOrdersCount) / previousOrdersCount) * 100 
+  const ordersChange = previousOrdersCount > 0
+    ? ((totalOrders - previousOrdersCount) / previousOrdersCount) * 100
     : 0
 
   return {
@@ -93,7 +93,7 @@ export async function calculateSalesMetrics(
  * Calculate product metrics
  */
 export async function calculateProductMetrics(): Promise<ProductMetrics> {
-  const supabase = await createClient()
+  const supabase = await createServerSupabase()
 
   const { count: totalProducts } = await supabase
     .from('products')
@@ -168,7 +168,7 @@ export async function calculateCustomerMetrics(
   startDate: Date,
   endDate: Date
 ): Promise<CustomerMetrics> {
-  const supabase = await createClient()
+  const supabase = await createServerSupabase()
 
   const { count: totalCustomers } = await supabase
     .from('users')
@@ -232,7 +232,7 @@ export async function getRevenueTrends(
   startDate: Date,
   endDate: Date
 ): Promise<Array<{ date: string; revenue: number; orders: number }>> {
-  const supabase = await createClient()
+  const supabase = await createServerSupabase()
 
   const { data: orders } = await supabase
     .from('orders')

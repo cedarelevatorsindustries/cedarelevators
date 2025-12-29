@@ -50,7 +50,7 @@ export default function IndividualQuoteTemplate({ products }: IndividualQuoteTem
   const individualQuotes: QuoteItem[] = [
     {
       id: "Q-2024-001",
-      title: "Home Lift Kit",
+      title: "House Lift Kit",
       amount: "₹4.5 L",
       status: "pending",
       expiry: "Expires 24h"

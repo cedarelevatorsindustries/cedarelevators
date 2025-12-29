@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageSquare, Loader2 } from "lucide-react"
+import { MessageSquare, LoaderCircle } from "lucide-react"
 import { useState } from "react"
 
 interface GetQuoteButtonProps {
@@ -64,7 +64,7 @@ export default function GetQuoteButton({
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <LoaderCircle className="w-5 h-5 animate-spin" />
           Requesting...
         </>
       ) : (

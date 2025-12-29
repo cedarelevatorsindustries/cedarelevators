@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { HelpCircle } from "lucide-react"
+import { CircleHelp } from "lucide-react"
 
 export default function HelpSection() {
   return (
     <section className="bg-gray-50 border border-gray-200 rounded-lg p-6">
       <div className="flex items-start gap-4">
-        <HelpCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+        <CircleHelp className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
         <div className="flex-1">
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Need Help with Quotes?

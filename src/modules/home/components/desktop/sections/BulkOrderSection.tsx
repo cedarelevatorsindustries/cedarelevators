@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle } from "lucide-react"
+import { CircleCheck } from "lucide-react"
 
 const BulkOrderSection = () => {
   return (
@@ -14,24 +14,24 @@ const BulkOrderSection = () => {
           <p className="text-lg text-gray-300">
             Unlock exclusive benefits tailored for our B2B partners. We provide the parts and support you need to keep your projects on schedule and under budget.
           </p>
-          
+
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
-              <CheckCircle className="text-orange-500 mt-1 flex-shrink-0" size={24} />
+              <CircleCheck className="text-orange-500 mt-1 flex-shrink-0" size={24} />
               <div>
                 <h4 className="font-bold">Volume Discounts</h4>
                 <p className="text-gray-200">Competitive pricing on large orders to maximize your project's profitability.</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <CheckCircle className="text-orange-500 mt-1 flex-shrink-0" size={24} />
+              <CircleCheck className="text-orange-500 mt-1 flex-shrink-0" size={24} />
               <div>
                 <h4 className="font-bold">Dedicated Account Manager</h4>
                 <p className="text-gray-200">Personalized service from an expert who understands your business needs.</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <CheckCircle className="text-orange-500 mt-1 flex-shrink-0" size={24} />
+              <CircleCheck className="text-orange-500 mt-1 flex-shrink-0" size={24} />
               <div>
                 <h4 className="font-bold">Custom Solutions & Sourcing</h4>
                 <p className="text-gray-200">Access to custom-fabricated parts and our extensive sourcing network.</p>
@@ -55,7 +55,7 @@ const BulkOrderSection = () => {
                 type="text"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="contact-name">
                 Contact Name
@@ -68,7 +68,7 @@ const BulkOrderSection = () => {
                 type="text"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="email">
                 Email Address
@@ -81,7 +81,7 @@ const BulkOrderSection = () => {
                 type="email"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="product-interest">
                 Product(s) of Interest
@@ -94,7 +94,7 @@ const BulkOrderSection = () => {
                 rows={3}
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="quantity">
                 Estimated Quantity
@@ -107,7 +107,7 @@ const BulkOrderSection = () => {
                 type="text"
               />
             </div>
-            
+
             <div className="md:col-span-2">
               <button
                 className="w-full flex items-center justify-center rounded-lg h-12 px-6 bg-orange-500 text-white text-base font-bold leading-normal tracking-[0.015em] transition-transform hover:bg-orange-600 hover:scale-105"

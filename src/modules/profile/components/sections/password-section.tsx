@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Lock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Lock, CircleCheck, XCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { validatePasswordStrength } from '@/lib/utils/profile'
 
@@ -257,7 +257,7 @@ export default function PasswordSection({
             )}
             {formData.confirmPassword && formData.newPassword === formData.confirmPassword && (
               <p className="mt-1 text-sm text-green-600 flex items-center gap-1">
-                <CheckCircle size={14} />
+                <CircleCheck size={14} />
                 Passwords match
               </p>
             )}
@@ -279,7 +279,7 @@ export default function PasswordSection({
                     ))
                   ) : formData.newPassword ? (
                     <li className="flex items-center gap-2">
-                      <CheckCircle size={14} className="text-green-500 flex-shrink-0" />
+                      <CircleCheck size={14} className="text-green-500 flex-shrink-0" />
                       All requirements met
                     </li>
                   ) : (

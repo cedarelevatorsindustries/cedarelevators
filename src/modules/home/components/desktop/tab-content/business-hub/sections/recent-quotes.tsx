@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Clock, CheckCircle, AlertCircle, FileText } from "lucide-react"
+import { Clock, CircleCheck, AlertCircle, FileText } from "lucide-react"
 
 const quotes = [
   { id: "QT-1234", status: "pending", items: 12, total: "₹15,420", date: "2 days ago" },
@@ -14,7 +14,7 @@ const getStatusConfig = (status: string) => {
     case "pending":
       return { color: "yellow", icon: Clock, label: "Pending" }
     case "approved":
-      return { color: "green", icon: CheckCircle, label: "Approved" }
+      return { color: "green", icon: CircleCheck, label: "Approved" }
     case "in-review":
       return { color: "blue", icon: AlertCircle, label: "In Review" }
     default:

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Tag, X, Check, Loader2 } from 'lucide-react'
+import { Tag, X, Check, LoaderCircle } from 'lucide-react'
 
 interface CouponCodeInputProps {
   appliedCode?: string
@@ -99,7 +99,7 @@ export default function CouponCodeInput({
             flex items-center gap-2"
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <LoaderCircle className="w-4 h-4 animate-spin" />
           ) : (
             'Apply'
           )}

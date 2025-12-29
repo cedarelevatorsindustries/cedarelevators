@@ -1,5 +1,5 @@
 import { deleteLineItem } from "@/lib/data/cart"
-import { Loader2, Trash2 } from "lucide-react"
+import { LoaderCircle, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 
@@ -32,7 +32,7 @@ const DeleteButton = ({
         className="flex gap-x-1 text-gray-600 hover:text-gray-900 cursor-pointer"
         onClick={() => handleDelete(id)}
       >
-        {isDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+        {isDeleting ? <LoaderCircle className="animate-spin" size={16} /> : <Trash2 size={16} />}
         <span>{children}</span>
       </button>
     </div>

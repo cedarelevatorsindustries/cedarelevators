@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Save, Upload, ArrowLeft, Loader2, Layers, FolderTree, FileType, Box, Tag, ArrowRight, Check } from "lucide-react"
+import { Save, Upload, ArrowLeft, LoaderCircle, Layers, FolderTree, FileType, Box, Tag, ArrowRight, Check } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateCategory, useUploadCategoryImage, useCategories } from "@/hooks/queries/useCategories"
@@ -651,7 +651,7 @@ export default function CreateCategoryPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
                   ) : (
                     "Create"
                   )}

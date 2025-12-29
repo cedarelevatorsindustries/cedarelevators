@@ -157,7 +157,7 @@ Data:
               onClick={() => router.push('/')}
               className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
-              Back to Home
+              Back to House
             </button>
           </div>
         </div>

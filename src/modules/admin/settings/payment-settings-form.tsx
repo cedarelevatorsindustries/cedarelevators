@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SettingsService } from "@/lib/services/settings"
 import { PaymentSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Save, CreditCard, Banknote, Building2, Loader2, Info } from "lucide-react"
+import { Save, CreditCard, Banknote, Building2, LoaderCircle, Info } from "lucide-react"
 
 export function PaymentSettingsForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -74,7 +74,7 @@ export function PaymentSettingsForm() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

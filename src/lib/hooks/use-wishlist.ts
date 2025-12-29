@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useUser } from "@/lib/auth/client"
-import { isDemoMode } from "@/lib/data/demo/config"
+
 
 interface WishlistItem {
   id: string
@@ -39,15 +39,6 @@ export function useWishlist() {
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchWishlist = async () => {
-    // 🚀 Demo Mode: Use localStorage
-    if (isDemoMode()) {
-      const storedItems = getStoredWishlist()
-      setItems(storedItems)
-      setCount(storedItems.length)
-      setIsLoading(false)
-      return
-    }
-
     // Production Mode: Fetch from Medusa
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/wishlist`, {
@@ -74,28 +65,7 @@ export function useWishlist() {
     thumbnail: string | null,
     price: number
   ) => {
-    // 🚀 Demo Mode: Add to localStorage
-    if (isDemoMode()) {
-      const newItem: WishlistItem = {
-        id: `wishlist-${Date.now()}`,
-        variant_id: variantId,
-        product_id: productId,
-        title,
-        thumbnail,
-        price,
-        quantity: 1,
-      }
-      const existingItems = getStoredWishlist()
-      // Check if already exists
-      if (existingItems.some(item => item.variant_id === variantId)) {
-        return { items: existingItems, count: existingItems.length }
-      }
-      const updatedItems = [...existingItems, newItem]
-      saveWishlist(updatedItems)
-      setItems(updatedItems)
-      setCount(updatedItems.length)
-      return { items: updatedItems, count: updatedItems.length }
-    }
+
 
     // Production Mode: Add via Medusa
     try {
@@ -122,15 +92,7 @@ export function useWishlist() {
   }
 
   const removeItem = async (variantId: string) => {
-    // 🚀 Demo Mode: Remove from localStorage
-    if (isDemoMode()) {
-      const existingItems = getStoredWishlist()
-      const updatedItems = existingItems.filter(item => item.variant_id !== variantId)
-      saveWishlist(updatedItems)
-      setItems(updatedItems)
-      setCount(updatedItems.length)
-      return { items: updatedItems, count: updatedItems.length }
-    }
+
 
     // Production Mode: Remove via Medusa
     try {
@@ -169,10 +131,7 @@ export function useWishlist() {
   }
 
   const mergeGuestWishlist = async (sessionId: string) => {
-    // 🚀 Demo Mode: No-op (already using localStorage)
-    if (isDemoMode()) {
-      return { items, count }
-    }
+
 
     if (!user) return
 

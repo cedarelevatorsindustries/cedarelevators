@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ShoppingCart, Package, User, CreditCard, AlertTriangle, CheckCircle } from "lucide-react"
+import { ShoppingCart, Package, User, CreditCard, AlertTriangle, CircleCheck } from "lucide-react"
 import { RecentActivity as RecentActivityType } from "@/lib/actions/analytics"
 import { formatDistanceToNow } from "date-fns"
 
@@ -35,7 +35,7 @@ const getActivityIcon = (type: string) => {
     case 'customer_registered':
       return User
     default:
-      return CheckCircle
+      return CircleCheck
   }
 }
 

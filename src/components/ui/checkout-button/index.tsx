@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/hooks'
-import { ShoppingCart, ArrowRight, Loader2 } from 'lucide-react'
+import { ShoppingCart, ArrowRight, LoaderCircle } from 'lucide-react'
 import { useState } from 'react'
 
 interface CheckoutButtonProps {
@@ -64,7 +64,7 @@ export default function CheckoutButton({
     >
       {isNavigating ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <LoaderCircle className="w-5 h-5 animate-spin" />
           Redirecting...
         </>
       ) : (

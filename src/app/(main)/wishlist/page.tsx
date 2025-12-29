@@ -2,7 +2,7 @@
 
 import { useWishlist } from "@/lib/hooks"
 import ProductCard from "@/components/ui/product-card"
-import { Heart, ShoppingBag, Loader2 } from "lucide-react"
+import { Heart, ShoppingBag, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function WishlistPage() {
@@ -11,7 +11,7 @@ export default function WishlistPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+        <LoaderCircle className="w-12 h-12 animate-spin text-blue-600" />
       </div>
     )
   }

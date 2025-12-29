@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { Upload, FileText, CircleCheck, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
@@ -72,7 +72,7 @@ export default function BusinessVerificationSection({
       case 'approved':
         return (
           <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 rounded-lg">
-            <CheckCircle className="text-green-600 dark:text-green-400" size={20} />
+            <CircleCheck className="text-green-600 dark:text-green-400" size={20} />
             <span className="text-green-700 dark:text-green-400 font-semibold">Verified Business</span>
           </div>
         )
@@ -119,7 +119,7 @@ export default function BusinessVerificationSection({
           <div className="flex-shrink-0">
             {verificationStatus === 'approved' && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                <CheckCircle size={14} />
+                <CircleCheck size={14} />
                 Verified
               </span>
             )}

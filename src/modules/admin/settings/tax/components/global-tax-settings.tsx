@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Calculator, Info, CheckCircle2 } from "lucide-react"
+import { Calculator, Info, CircleCheck2 } from "lucide-react"
 import { GST_RATES, type TaxSettings } from "../types"
 
 interface GlobalTaxSettingsProps {
@@ -77,7 +77,7 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
                     }`}>
                       {taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">
-                          <CheckCircle2 className="w-3 h-3 text-white" />
+                          <CircleCheck2 className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>
@@ -101,7 +101,7 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
                     }`}>
                       {!taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">
-                          <CheckCircle2 className="w-3 h-3 text-white" />
+                          <CircleCheck2 className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>

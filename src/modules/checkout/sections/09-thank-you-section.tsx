@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle, Package, MessageCircle, Share2, ArrowRight, UserPlus } from 'lucide-react'
+import { CircleCheck, Package, MessageCircle, Share2, ArrowRight, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
@@ -58,7 +58,7 @@ export default function ThankYouSection({
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           {/* Success Icon */}
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-12 h-12 text-green-600" />
+            <CircleCheck className="w-12 h-12 text-green-600" />
           </div>
 
           {/* Title */}

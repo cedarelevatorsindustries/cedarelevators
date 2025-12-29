@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MoreVertical } from "lucide-react"
+import { EllipsisVertical } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { guestMoreMenuItems, loggedInMoreMenuItems, type MenuItem } from "../../../common"
 
@@ -16,7 +16,7 @@ interface MoreMenuProps {
 export function MoreMenu({ isLoggedIn, isTransparent, isScrolled = false, isOpen: controlledIsOpen, onOpenChange }: MoreMenuProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  
+
   // Use controlled state if provided, otherwise use internal state
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen
   const setIsOpen = (open: boolean) => {
@@ -26,37 +26,36 @@ export function MoreMenu({ isLoggedIn, isTransparent, isScrolled = false, isOpen
       setInternalIsOpen(open)
     }
   }
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-  
+
   // Always show all menu items including Contact and Help Center
   const menuItems = isLoggedIn ? loggedInMoreMenuItems : guestMoreMenuItems
-  
+
   return (
     <div className="relative" ref={menuRef}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1 transition-colors focus:outline-none rounded-sm ${
-          isTransparent
-            ? 'text-white hover:text-blue-300' 
-            : 'text-gray-700 hover:text-blue-700'
-        }`}
+        className={`flex items-center gap-1 transition-colors focus:outline-none rounded-sm ${isTransparent
+          ? 'text-white hover:text-blue-300'
+          : 'text-gray-700 hover:text-blue-700'
+          }`}
         aria-label={isOpen ? "Close more menu" : "Open more menu"}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <MoreVertical size={20} aria-hidden="true" />
+        <EllipsisVertical size={20} aria-hidden="true" />
       </button>
-      
+
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 z-50">
           {/* Card content - no arrow pointer */}

@@ -6,7 +6,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { getCLS, getFID, getFCP, getLCP, getTTFB, Metric } from 'web-vitals'
+import { onCLS, onINP, onFCP, onLCP, onTTFB, Metric } from 'web-vitals'
 
 interface PerformanceMetric {
   name: string
@@ -51,11 +51,11 @@ function sendToAnalytics(metric: Metric) {
  */
 export function useReportWebVitals() {
   useEffect(() => {
-    getCLS(sendToAnalytics)
-    getFID(sendToAnalytics)
-    getFCP(sendToAnalytics)
-    getLCP(sendToAnalytics)
-    getTTFB(sendToAnalytics)
+    onCLS(sendToAnalytics)
+    onINP(sendToAnalytics)
+    onFCP(sendToAnalytics)
+    onLCP(sendToAnalytics)
+    onTTFB(sendToAnalytics)
   }, [])
 }
 

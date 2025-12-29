@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { Upload, CheckCircle, XCircle, AlertCircle, Eye, Download, RefreshCw } from 'lucide-react'
+import { Upload, CircleCheck, XCircle, AlertCircle, Eye, Download, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BulkUpload {
@@ -56,7 +56,7 @@ export default function BulkQuoteHistory() {
       success: {
         label: 'Success',
         color: 'bg-green-100 text-green-700 border-green-200',
-        icon: CheckCircle,
+        icon: CircleCheck,
         iconColor: 'text-green-600'
       },
       partial: {
@@ -125,7 +125,7 @@ export default function BulkQuoteHistory() {
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center gap-2 mb-1">
-            <CheckCircle className="text-green-600" size={16} />
+            <CircleCheck className="text-green-600" size={16} />
             <span className="text-xs font-medium text-green-700">Success</span>
           </div>
           <p className="text-xl font-bold text-green-900">

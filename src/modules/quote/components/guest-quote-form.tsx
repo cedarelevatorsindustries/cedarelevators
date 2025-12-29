@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Upload, Send, Loader2, CheckCircle } from "lucide-react"
+import { Upload, Send, LoaderCircle, CircleCheck } from "lucide-react"
 import { toast } from "sonner"
 import { submitGuestQuote } from "@/lib/actions/quotes"
 import { useQuoteBasket } from "@/lib/hooks/use-quote-basket"
@@ -102,7 +102,7 @@ export const GuestQuoteForm = ({ onSuccess }: GuestQuoteFormProps) => {
             <div className="px-4 py-6">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center space-y-4">
                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                        <CheckCircle className="w-8 h-8 text-green-600" />
+                        <CircleCheck className="w-8 h-8 text-green-600" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Quote Request Sent!</h3>
                     <p className="text-gray-600">
@@ -230,7 +230,7 @@ export const GuestQuoteForm = ({ onSuccess }: GuestQuoteFormProps) => {
                 >
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <LoaderCircle className="w-5 h-5 animate-spin" />
                             Submitting...
                         </>
                     ) : (

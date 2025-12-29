@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnalyticsService } from '@/lib/services/analytics'
-import { Loader2, TrendingUp } from 'lucide-react'
+import { LoaderCircle, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 export function TopProducts() {
@@ -34,7 +34,7 @@ export function TopProducts() {
       <CardContent>
         {loading ? (
           <div className="h-64 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : products.length === 0 ? (
           <div className="h-64 flex items-center justify-center text-gray-500">

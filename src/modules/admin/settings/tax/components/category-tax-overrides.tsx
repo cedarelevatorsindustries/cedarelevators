@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { IndianRupee, Plus, Edit2, Trash2, X, CheckCircle2, Info } from "lucide-react"
+import { IndianRupee, Plus, Edit2, Trash2, X, CircleCheck2, Info } from "lucide-react"
 import { GST_RATES, type CategoryTaxRule, type Category, type TaxSettings } from "../types"
 import { useCategoryTaxRules } from "../hooks/use-category-tax-rules"
 
@@ -129,7 +129,7 @@ export function CategoryTaxOverrides({
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      <CircleCheck2 className="w-3 h-3 mr-1" />
                       Yes
                     </Badge>
                   </TableCell>

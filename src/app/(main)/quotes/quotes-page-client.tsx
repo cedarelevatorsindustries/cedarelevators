@@ -6,13 +6,13 @@ import { getQuotes } from "@/lib/actions/quotes"
 import {
     FileText,
     Clock,
-    CheckCircle,
+    CircleCheck,
     XCircle,
     Search,
     Filter,
     TrendingUp,
     Package,
-    Loader2,
+    LoaderCircle,
     Plus,
     ChevronRight,
     AlertCircle,
@@ -40,7 +40,7 @@ const getStatusConfig = (status: QuoteStatus) => {
         case 'negotiation':
             return { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: FileText, label: 'Negotiation' }
         case 'accepted':
-            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Accepted' }
+            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CircleCheck, label: 'Accepted' }
         case 'rejected':
             return { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Rejected' }
         case 'converted':
@@ -319,7 +319,7 @@ export default function QuotesPageClient({
                         <div className="bg-white rounded-xl border border-gray-200 p-5">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <CircleCheck className="w-5 h-5 text-green-600" />
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">{stats.accepted_count}</p>
@@ -382,7 +382,7 @@ export default function QuotesPageClient({
                     {/* Quotes List */}
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="w-8 h-8 animate-spin text-[#ff3705]" />
+                            <LoaderCircle className="w-8 h-8 animate-spin text-[#ff3705]" />
                         </div>
                     ) : quotes.length === 0 ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">

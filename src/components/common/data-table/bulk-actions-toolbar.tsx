@@ -1,6 +1,6 @@
 "use client"
 
-import { Download, CheckCircle, ShoppingCart, Trash2, X } from "lucide-react"
+import { Download, CircleCheck, ShoppingCart, Trash2, X } from "lucide-react"
 
 interface BulkActionsToolbarProps {
   selectedCount: number
@@ -34,7 +34,7 @@ export function BulkActionsToolbar({
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           aria-label={`Mark ${selectedCount} items as read`}
         >
-          <CheckCircle size={18} aria-hidden="true" />
+          <CircleCheck size={18} aria-hidden="true" />
           <span className="hidden sm:inline">Mark as Read</span>
         </button>
       )}

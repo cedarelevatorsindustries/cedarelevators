@@ -24,11 +24,11 @@ const elevatorTypes = [
         href: "/products?type=freight"
     },
     {
-        id: "home-lifts",
-        title: "Home Lifts",
+        id: "House-lifts",
+        title: "House Lifts",
         description: "Premium residential elevator solutions for luxury homes",
         image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop&crop=center",
-        href: "/products?type=home"
+        href: "/products?type=House"
     },
     {
         id: "hospital-lifts",

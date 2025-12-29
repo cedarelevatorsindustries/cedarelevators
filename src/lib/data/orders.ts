@@ -2,11 +2,7 @@
 
 import { createClerkSupabaseClient } from "@/lib/supabase/server"
 import { Order } from "@/lib/types/domain"
-import { DEMO_CONFIG } from "./demo/config"
 
-// Import demo data statically for server-side usage
-import demoOrdersData from "./demo/demo-orders.json"
-const demoOrders = demoOrdersData as Order[]
 
 interface OrderSummary {
   totalOrders: number
@@ -16,10 +12,6 @@ interface OrderSummary {
 }
 
 export async function getCustomerOrders(customerId: string): Promise<Order[]> {
-  // 🚀 Demo Mode: Return demo orders
-  if (DEMO_CONFIG.USE_DEMO_DATA) {
-    return demoOrders
-  }
 
   // Production Mode: Fetch from Supabase
   try {
@@ -40,17 +32,6 @@ export async function getCustomerOrders(customerId: string): Promise<Order[]> {
 }
 
 export async function getOrderSummary(customerId: string): Promise<OrderSummary> {
-  // 🚀 Demo Mode: Calculate summary from demo orders
-  if (DEMO_CONFIG.USE_DEMO_DATA) {
-    const summary = demoOrders.reduce((acc, order) => {
-      acc.totalOrders += 1
-      acc.totalSpent += order.total || 0
-      if (order.status === 'delivered') acc.delivered += 1
-      if (order.status === 'shipped' || order.status === 'processing') acc.inTransit += 1
-      return acc
-    }, { totalOrders: 0, delivered: 0, inTransit: 0, totalSpent: 0 })
-    return summary
-  }
 
   // Production Mode: Fetch from Supabase
   try {

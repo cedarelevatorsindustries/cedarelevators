@@ -15,7 +15,7 @@ import {
 import { getStoreSettings, updateStoreSettings } from "@/lib/services/settings"
 import { StoreSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Upload, Save, Loader2 } from "lucide-react"
+import { Upload, Save, LoaderCircle } from "lucide-react"
 
 export function StoreSettingsForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -92,7 +92,7 @@ export function StoreSettingsForm() {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

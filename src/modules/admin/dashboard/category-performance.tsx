@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnalyticsService } from '@/lib/services/analytics'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
 const COLORS = ['#dc2626', '#ea580c', '#f59e0b', '#84cc16', '#22c55e', '#06b6d4']
 
@@ -38,7 +38,7 @@ export function CategoryPerformance() {
       <CardContent>
         {loading ? (
           <div className="h-80 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : categories.length === 0 ? (
           <div className="h-80 flex items-center justify-center text-gray-500">

@@ -5,9 +5,9 @@ import { getProfileNavigation, getInitials } from '@/lib/utils/profile'
 import { UserProfile } from '@/lib/types/profile'
 import { useClerk } from '@clerk/nextjs'
 import { 
-  User, LayoutDashboard, Settings, Activity, Building2, Lock, HelpCircle, LogOut,
-  Home, Mail, Phone, MapPin, Bell, Globe, Shield, MessageSquare, Package,
-  FileText, Heart, Copy, Eye, CreditCard, CheckCircle, BarChart3, Key,
+  User, LayoutDashboard, Settings, Activity, Building2, Lock, CircleHelp, LogOut,
+  House, Mail, Phone, MapPin, Bell, Globe, Shield, MessageSquare, Package,
+  FileText, Heart, Copy, Eye, CreditCard, CircleCheck, BarChart3, Key,
   ShieldCheck, Monitor, History, MessageCircle, BookOpen, Upload
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -31,8 +31,8 @@ const iconMap: Record<string, any> = {
   Activity,
   Building2,
   Lock,
-  HelpCircle,
-  Home,
+  CircleHelp,
+  House,
   Mail,
   Phone,
   MapPin,
@@ -46,7 +46,7 @@ const iconMap: Record<string, any> = {
   Copy,
   Eye,
   CreditCard,
-  CheckCircle,
+  CircleCheck,
   BarChart3,
   Key,
   ShieldCheck,
@@ -170,7 +170,7 @@ export default function ProfileSidebar({
       {/* Bottom Actions - Fixed at bottom with divider */}
       <div className="flex-shrink-0 border-t border-gray-300 dark:border-gray-600 p-4 space-y-1 bg-transparent">
         <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50 cursor-pointer">
-          <HelpCircle size={20} />
+          <CircleHelp size={20} />
           <span>Help Center</span>
         </button>
         <button 

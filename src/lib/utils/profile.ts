@@ -88,7 +88,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           {
             section: PROFILE_SECTIONS.APPROVALS,
             label: 'Verification',
-            icon: 'CheckCircle',
+            icon: 'CircleCheck',
             badge: 'status',
           },
           {

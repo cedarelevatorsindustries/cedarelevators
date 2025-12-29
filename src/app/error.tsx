@@ -7,7 +7,7 @@
 
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Home, RefreshCw } from 'lucide-react'
+import { House, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Error({
@@ -76,8 +76,8 @@ export default function Error({
           </Button>
           <Link href="/">
             <Button size="lg" variant="outline" className="gap-2">
-              <Home className="h-5 w-5" />
-              Go Home
+              <House className="h-5 w-5" />
+              Go House
             </Button>
           </Link>
         </div>

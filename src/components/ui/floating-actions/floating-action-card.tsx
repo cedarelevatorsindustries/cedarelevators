@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowUp, HelpCircle } from "lucide-react"
+import { ArrowUp, CircleHelp } from "lucide-react"
 
 interface FloatingActionCardProps {
   whatsappNumber?: string
@@ -98,7 +98,7 @@ export function FloatingActionCard({
                   className={`flex-shrink-0 ${isExpanded && !isMobile ? 'w-10 h-10' : 'w-10 h-10'} bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center transition-colors`}
                   aria-label="Take survey"
                 >
-                  <HelpCircle className="w-5 h-5" />
+                  <CircleHelp className="w-5 h-5" />
                 </button>
                 {isExpanded && !isMobile && (
                   <div className="flex-1 animate-fadeIn">

@@ -3,8 +3,8 @@
 import { UserProfile } from '@/lib/types/profile'
 import {
   FileText, Package, Heart, Clock,
-  CheckCircle, AlertCircle, ArrowRight,
-  Truck, HelpCircle, MessageCircle, MessageSquare
+  CircleCheck, AlertCircle, ArrowRight,
+  Truck, CircleHelp, MessageCircle, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -205,7 +205,7 @@ export default function DashboardSection({
       {isVerified && (
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
           <div className="flex items-center gap-3">
-            <CheckCircle className="text-green-600" size={32} />
+            <CircleCheck className="text-green-600" size={32} />
             <div>
               <h3 className="text-lg font-semibold text-green-900">Verified Business Account</h3>
               <p className="text-green-700">You have full access to all B2B features including custom quotes and bulk ordering.</p>
@@ -454,7 +454,7 @@ export default function DashboardSection({
             href="/help"
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <HelpCircle size={18} />
+            <CircleHelp size={18} />
             Help Center
           </Link>
         </div>

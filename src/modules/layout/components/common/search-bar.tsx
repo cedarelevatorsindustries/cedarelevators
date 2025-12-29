@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Loader2 } from "lucide-react"
+import { Search, LoaderCircle } from "lucide-react"
 import Image from "next/image"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
@@ -37,7 +37,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     if (isFocused || inputValue) return
 
     const currentText = searchPlaceholders[currentIndex]
-    
+
     if (isTyping) {
       if (charIndex < currentText.length) {
         const timeout = setTimeout(() => {
@@ -111,20 +111,20 @@ export function SearchBar({ className = "" }: SearchBarProps) {
         aria-label="Search for products, SKUs, or categories"
         autoComplete="off"
       />
-      <Search 
-        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" 
-        size={18} 
-        aria-hidden="true" 
+      <Search
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+        size={18}
+        aria-hidden="true"
       />
-      
+
       {isLoading && (
-        <Loader2 
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 animate-spin" 
-          size={18} 
-          aria-hidden="true" 
+        <LoaderCircle
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 animate-spin"
+          size={18}
+          aria-hidden="true"
         />
       )}
-      
+
       {!isFocused && !inputValue && !isLoading && (
         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 animate-pulse pointer-events-none" aria-hidden="true">
           |

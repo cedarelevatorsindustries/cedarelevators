@@ -5,7 +5,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Home, Search, ArrowLeft } from 'lucide-react'
+import { House, Search, ArrowLeft } from 'lucide-react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   const suggestions = [
-    { label: 'Home', href: '/', icon: Home },
+    { label: 'House', href: '/', icon: House },
     { label: 'Products', href: '/products', icon: Search },
     { label: 'Categories', href: '/categories', icon: Search },
     { label: 'Contact', href: '/contact', icon: Search },
@@ -64,8 +64,8 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/">
             <Button size="lg" className="gap-2">
-              <Home className="h-5 w-5" />
-              Go Home
+              <House className="h-5 w-5" />
+              Go House
             </Button>
           </Link>
           <Button

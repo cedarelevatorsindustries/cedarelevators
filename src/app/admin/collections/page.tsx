@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Layers, Package, Eye, EyeOff, Edit, Trash2, Loader2, RefreshCw, Search, Star } from "lucide-react"
+import { Plus, Layers, Package, Eye, EyeOff, Edit, Trash2, LoaderCircle, RefreshCw, Search, Star } from "lucide-react"
 import Link from "next/link"
 import { useCollections, useDeleteCollection, useToggleCollectionStatus } from "@/hooks/queries/useCollections"
 import type { CollectionWithProducts } from "@/lib/types/collections"
@@ -177,7 +177,7 @@ export default function CollectionsPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                <LoaderCircle className="h-8 w-8 animate-spin text-orange-500" />
               </div>
             ) : collections.length === 0 ? (
               <div className="text-center py-12">

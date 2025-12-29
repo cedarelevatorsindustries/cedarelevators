@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Quote, QuoteStatus, QuoteFilters, QuoteStats } from '@/types/b2b/quote'
 import { 
   FileText, Download, Search, Filter, Eye, MessageSquare, 
-  RefreshCw, X, Calendar, TrendingUp, Clock, CheckCircle,
+  RefreshCw, X, Calendar, TrendingUp, Clock, CircleCheck,
   AlertCircle, XCircle, Plus, ChevronDown
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -94,7 +94,7 @@ export default function QuotesSection({ accountType, verificationStatus }: Quote
       pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400', icon: Clock },
       negotiation: { label: 'Negotiation', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: MessageSquare },
       revised: { label: 'Revised', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400', icon: RefreshCw },
-      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CheckCircle },
+      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400', icon: CircleCheck },
       rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400', icon: XCircle },
       expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400', icon: AlertCircle },
     }

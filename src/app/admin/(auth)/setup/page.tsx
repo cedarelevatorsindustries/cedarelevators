@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Shield, Key, CheckCircle, Copy, Download } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Shield, Key, CircleCheck, Copy, Download } from 'lucide-react'
 import { adminSetupAction, checkSetupStatusAction } from '@/lib/actions/admin-auth'
 
 export default function AdminSetupPage() {
@@ -293,7 +293,7 @@ export default function AdminSetupPage() {
             {/* Success Header */}
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+                <CircleCheck className="w-10 h-10 text-green-600" />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Setup Complete!
@@ -335,7 +335,7 @@ export default function AdminSetupPage() {
                 >
                   {keyCopied ? (
                     <>
-                      <CheckCircle className="w-5 h-5" />
+                      <CircleCheck className="w-5 h-5" />
                       Copied!
                     </>
                   ) : (

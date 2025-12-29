@@ -6,7 +6,7 @@ import { OrdersFilters } from "@/modules/admin/orders/orders-filters"
 import { OrdersEmptyState } from "@/modules/admin/common/empty-states"
 import { Button } from "@/components/ui/admin-ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/admin-ui/card"
-import { Plus, Download, RefreshCw, Package, Clock, Truck, CheckCircle } from "lucide-react"
+import { Plus, Download, RefreshCw, Package, Clock, Truck, CircleCheck } from "lucide-react"
 import { useOrders, useOrderStats } from "@/hooks/queries/useOrders"
 import { toast } from "sonner"
 
@@ -156,7 +156,7 @@ export default function OrdersPage() {
           <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-green-50 border-green-100/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-gray-700">Delivered</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CircleCheck className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-2xl font-bold text-gray-900">{stats.delivered || 0}</div>

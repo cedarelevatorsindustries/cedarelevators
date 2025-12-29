@@ -19,7 +19,7 @@ interface CatalogBannerProps {
 const getCategoryImage = (categoryName: string) => {
     const images: Record<string, string> = {
         "Commercial Elevators": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop",
-        "Home Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&h=100&fit=crop",
+        "House Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&h=100&fit=crop",
         "Hospital Lifts": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=100&h=100&fit=crop",
         "Goods Lifts": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&h=100&fit=crop",
         "Hydraulic Lifts": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=100&h=100&fit=crop",
@@ -37,7 +37,7 @@ const getBannerImage = (type: "application" | "category", name: string) => {
     const bannerImages: Record<string, string> = {
         // Application banners
         "Commercial Elevators": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&h=360&fit=crop",
-        "Home Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&h=360&fit=crop",
+        "House Lifts": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&h=360&fit=crop",
         "Hospital Lifts": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1400&h=360&fit=crop",
         "Goods Lifts": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&h=360&fit=crop",
         "Hydraulic Lifts": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1400&h=360&fit=crop",

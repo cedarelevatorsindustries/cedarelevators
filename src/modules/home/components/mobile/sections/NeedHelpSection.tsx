@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircle, Phone, HelpCircle } from "lucide-react"
+import { MessageCircle, Phone, CircleHelp } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 const helpOptions = [
@@ -15,7 +15,7 @@ const helpOptions = [
     href: "/contact"
   },
   {
-    icon: HelpCircle,
+    icon: CircleHelp,
     label: "FAQ",
     href: "/faq"
   }

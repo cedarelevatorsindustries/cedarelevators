@@ -48,19 +48,12 @@ const nextConfig: NextConfig = {
       'node_modules/@unrs/**',
     ],
   },
-  // Webpack optimization
-  webpack: (config, { isServer }) => {
-    // Tree shaking for lucide-react
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'lucide-react': 'lucide-react/dist/esm/icons',
-    }
-    return config
-  },
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  // Turbopack configuration
+  turbopack: {},
   // Experimental features
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],

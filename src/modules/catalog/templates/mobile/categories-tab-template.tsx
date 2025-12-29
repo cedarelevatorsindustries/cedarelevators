@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import { Package } from "lucide-react"
-import ElevatorTypesMobile from "@/modules/home/components/mobile/sections/elevator-types-mobile"
+import ElevatorTypesMobile from "@/modules/House/components/mobile/sections/elevator-types-mobile"
 import ProductCard from "@/components/ui/product-card"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 
@@ -47,9 +47,9 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
   // Mock data for Top Applications converted to Product structure
   const elevatorTypes: Product[] = [
     {
-      id: "home-lift",
-      title: "Home Elevator Kit",
-      handle: "home-elevator-kit",
+      id: "House-lift",
+      title: "House Elevator Kit",
+      handle: "House-elevator-kit",
       thumbnail: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop",
       description: "Complete residential elevator system",
       metadata: { category: "Residential" },

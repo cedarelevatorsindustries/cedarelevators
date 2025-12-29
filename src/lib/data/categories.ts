@@ -1,7 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase/client"
 import { ProductCategory } from "@/lib/types/domain"
-import { isDemoMode } from "./demo/config"
-import { getDemoCategories, getDemoCategory } from "./demo"
+
 
 /**
  * List categories - Uses demo data when demo mode is enabled
@@ -10,10 +9,6 @@ export async function listCategories(params?: {
   parent_category_id?: string | null
   include_descendants_tree?: boolean
 }): Promise<ProductCategory[]> {
-  // 🚀 Demo Mode: Return static data for client review
-  if (isDemoMode()) {
-    return getDemoCategories(params)
-  }
 
   // Production Mode: Fetch from Supabase
   try {
@@ -51,13 +46,9 @@ export async function listCategories(params?: {
 }
 
 /**
- * Get a single category - Uses demo data when demo mode is enabled
+ * Get a single category
  */
 export async function getCategory(idOrHandle: string): Promise<ProductCategory | null> {
-  // 🚀 Demo Mode: Return static data for client review
-  if (isDemoMode()) {
-    return getDemoCategory(idOrHandle)
-  }
 
   // Production Mode: Fetch from Supabase
   try {

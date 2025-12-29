@@ -13,7 +13,7 @@ import SecuritySection from '../components/sections/security-section'
 import BusinessDocumentsSection from '../components/sections/business-documents-section'
 import PaymentMethodsSection from '../components/sections/payment-methods-section'
 import InvoicesSection from '../components/sections/invoices-section'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
@@ -41,7 +41,7 @@ export default function ProfileDesktopTemplate() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
+          <LoaderCircle size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>

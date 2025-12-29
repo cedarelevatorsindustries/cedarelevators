@@ -22,13 +22,13 @@ export default async function HomePage() {
   const { response } = await listProducts({
     queryParams: { limit: 20 }
   })
-  
+
   const products = response.products
 
   // Fetch categories
-  const categories = await listCategories({ 
+  const categories = await listCategories({
     parent_category_id: null,
-    include_descendants_tree: true 
+    include_descendants_tree: true
   })
 
   // Extract testimonials from product metadata (if available)

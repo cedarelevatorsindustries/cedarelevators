@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ShoppingCart, Loader2, Check } from "lucide-react"
+import { ShoppingCart, LoaderCircle, Check } from "lucide-react"
 import { useCart } from "@/lib/hooks"
 
 interface AddToCartButtonProps {
@@ -64,7 +64,7 @@ export default function AddToCartButton({
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <LoaderCircle className="w-5 h-5 animate-spin" />
           Adding...
         </>
       ) : showSuccess ? (

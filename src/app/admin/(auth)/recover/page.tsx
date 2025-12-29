@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Key, AlertCircle, Shield, CheckCircle } from 'lucide-react'
+import { Mail, Key, AlertCircle, Shield, CircleCheck } from 'lucide-react'
 import { adminRecoveryAction } from '@/lib/actions/admin-auth'
 
 export default function AdminRecoverPage() {
@@ -189,7 +189,7 @@ export default function AdminRecoverPage() {
             {/* Success Header */}
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-10 h-10 text-green-600" />
+                <CircleCheck className="w-10 h-10 text-green-600" />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Recovery Successful

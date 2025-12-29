@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AnalyticsService } from '@/lib/services/analytics'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
 export function OrdersChart() {
   const [data, setData] = useState<any[]>([])
@@ -31,7 +31,7 @@ export function OrdersChart() {
       <CardContent>
         {loading ? (
           <div className="h-80 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : data.length === 0 ? (
           <div className="h-80 flex items-center justify-center text-gray-500">

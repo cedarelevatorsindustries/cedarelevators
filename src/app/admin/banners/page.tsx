@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Image as ImageIcon, Calendar, Eye, Edit, Trash2, Loader2, RefreshCw, Search, MoreHorizontal } from "lucide-react"
+import { Plus, Image as ImageIcon, Calendar, Eye, Edit, Trash2, LoaderCircle, RefreshCw, Search, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
 import { useBanners, useDeleteBanner, useToggleBannerStatus } from "@/hooks/queries/useBanners"
 import { computeBannerStatus } from "@/lib/types/banners"
@@ -184,7 +184,7 @@ export default function BannersPage() {
           <CardContent>
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                <LoaderCircle className="h-8 w-8 animate-spin text-orange-500" />
               </div>
             ) : banners.length === 0 ? (
               <div className="text-center py-12">

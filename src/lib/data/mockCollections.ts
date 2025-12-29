@@ -2,11 +2,11 @@ import { Product } from "@/lib/types/domain"
 
 /**
  * Collection Display Location Types
- * - "home": Display on homepage
+ * - "House": Display on homepage
  * - "catalog": Display on catalog page
  * - "product": Display on product detail pages
  */
-export type CollectionDisplayLocation = "home" | "catalog" | "product"
+export type CollectionDisplayLocation = "House" | "catalog" | "product"
 
 /**
  * Collection Layout Types
@@ -242,7 +242,7 @@ export const mockCollections: Collection[] = [
     title: "Top Selling Components",
     description: "Our best-selling elevator components trusted by professionals",
     slug: "top-selling",
-    displayLocation: ["home", "catalog"],
+    displayLocation: ["House", "catalog"],
     layout: "grid-5",
     icon: "star",
     viewAllLink: "/catalog?type=top-choice&sort=best-selling",
@@ -257,7 +257,7 @@ export const mockCollections: Collection[] = [
     title: "New Arrivals",
     description: "Latest additions to our product catalog",
     slug: "new-arrivals",
-    displayLocation: ["home", "catalog"],
+    displayLocation: ["House", "catalog"],
     layout: "grid-5",
     icon: "new",
     viewAllLink: "/products?sort=newest&from=new-arrivals",
@@ -272,7 +272,7 @@ export const mockCollections: Collection[] = [
     title: "Trending Collections",
     description: "Most popular products this month",
     slug: "trending",
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "grid-4",
     icon: "trending",
     viewAllLink: "/products?sort=trending",
@@ -287,7 +287,7 @@ export const mockCollections: Collection[] = [
     title: "Recommended for You",
     description: "Personalized product recommendations based on your interests",
     slug: "recommended",
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "grid-5",
     icon: "recommended",
     viewAllLink: "/catalog?type=recommended",
@@ -302,7 +302,7 @@ export const mockCollections: Collection[] = [
     title: "Top Choices This Month",
     description: "Editor's picks and customer favorites",
     slug: "top-choices",
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "grid-5",
     icon: "star",
     viewAllLink: "/catalog?type=top-choice&sort=popularity",
@@ -317,7 +317,7 @@ export const mockCollections: Collection[] = [
     title: "Your Favorites",
     description: "Products you've saved to your wishlist",
     slug: "favorites",
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "grid-5",
     icon: "heart",
     viewAllLink: "/wishlist?from=favorites",
@@ -333,7 +333,7 @@ export const mockCollections: Collection[] = [
     title: "Recently Viewed",
     description: "Products you've recently looked at",
     slug: "recently-viewed",
-    displayLocation: ["home", "product"],
+    displayLocation: ["House", "product"],
     layout: "grid-5",
     icon: "none",
     viewAllLink: "/catalog?type=recent",
@@ -349,7 +349,7 @@ export const mockCollections: Collection[] = [
     title: "Exclusive Business Products",
     description: "Premium components for business customers",
     slug: "business-exclusive",
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "grid-4",
     icon: "star",
     viewAllLink: "/catalog?type=business-exclusive",

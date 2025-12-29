@@ -38,6 +38,7 @@ function getBrowseAllConfig(): CatalogVariantConfig {
     title: 'All Products',
     showBanner: true,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
     variantType: 'browse',
@@ -61,7 +62,7 @@ function getBrowseAllConfig(): CatalogVariantConfig {
 
     navigation: {
       breadcrumb: [
-        { label: 'Home', href: '/' },
+        { label: 'House', href: '/' },
         { label: 'All Products', href: '/catalog' },
       ],
       showCategoryBar: true,
@@ -117,6 +118,7 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
     showBanner: false,
     showHeroLite: true,
     heroLiteType: 'category',
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
     variantType: 'category',
@@ -141,7 +143,7 @@ function getCategoryConfig(category: string): CatalogVariantConfig {
 
     navigation: {
       breadcrumb: [
-        { label: 'Home', href: '/' },
+        { label: 'House', href: '/' },
         { label: 'Cedar Products', href: '/catalog' },
         { label: categoryData.displayName, href: `/catalog?category=${category}` },
       ],
@@ -198,6 +200,7 @@ function getApplicationConfig(application: string): CatalogVariantConfig {
     showBanner: false,
     showHeroLite: true,
     heroLiteType: 'application',
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
     variantType: 'application',
@@ -222,7 +225,7 @@ function getApplicationConfig(application: string): CatalogVariantConfig {
 
     navigation: {
       breadcrumb: [
-        { label: 'Home', href: '/' },
+        { label: 'House', href: '/' },
         { label: 'Shop by Elevator Type', href: '/catalog' },
         { label: appData.displayName, href: `/catalog?application=${application}` },
       ],
@@ -276,6 +279,7 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
     title: 'Search Results',
     showBanner: false,
     showHeroLite: false,
+    showFilters: true,
     filterPrimaryProducts: false,
     fallbackToAll: false,
     variantType: 'search',
@@ -299,7 +303,7 @@ function getSearchConfig(searchQuery: string): CatalogVariantConfig {
 
     navigation: {
       breadcrumb: [
-        { label: 'Home', href: '/' },
+        { label: 'House', href: '/' },
         { label: 'Search Results', href: `/catalog?search=${searchQuery}` },
       ],
       showCategoryBar: false,
@@ -379,9 +383,9 @@ function getApplicationMetadata(application: string) {
       subtitle: 'Everything you need for your perfect outdoor deck',
       heroImage: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1400&h=300&fit=crop',
     },
-    'home-siding': {
-      displayName: 'Home Siding',
-      subtitle: 'Transform your home exterior with premium cedar',
+    'House-siding': {
+      displayName: 'House Siding',
+      subtitle: 'Transform your House exterior with premium cedar',
       heroImage: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1400&h=300&fit=crop',
     },
     'pergola': {

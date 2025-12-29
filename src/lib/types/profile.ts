@@ -42,7 +42,7 @@ export interface Address {
   is_default: boolean
   is_default_shipping: boolean
   is_default_billing: boolean
-  type?: 'home' | 'office' | 'warehouse' | 'other'
+  type?: 'House' | 'office' | 'warehouse' | 'other'
   label?: string
   created_at: string
   updated_at: string

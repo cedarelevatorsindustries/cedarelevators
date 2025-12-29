@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Bell, Package, ShoppingCart, User, AlertCircle, CheckCircle } from 'lucide-react'
+import { Bell, Package, ShoppingCart, User, AlertCircle, CircleCheck } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { NotificationType } from '@/lib/services/notifications'
 
@@ -76,7 +76,7 @@ export function NotificationCenter() {
         <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
-              <CheckCircle className="h-12 w-12 text-gray-400 mb-4" />
+              <CircleCheck className="h-12 w-12 text-gray-400 mb-4" />
               <p className="text-gray-600 font-medium">All caught up!</p>
               <p className="text-sm text-gray-500 mt-1">You have no new notifications</p>
             </div>

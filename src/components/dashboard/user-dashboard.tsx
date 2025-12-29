@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Upload, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Upload, CircleCheck, Clock, XCircle } from 'lucide-react'
 import VerificationUpload from './verification-upload'
 
 interface Profile {
@@ -105,7 +105,7 @@ export default function UserDashboard() {
     const statusConfig = {
       none: { label: 'Unverified', icon: XCircle, className: 'bg-gray-100 text-gray-800' },
       pending: { label: 'Verification Pending', icon: Clock, className: 'bg-yellow-100 text-yellow-800' },
-      verified: { label: 'Verified Business', icon: CheckCircle, className: 'bg-green-100 text-green-800' },
+      verified: { label: 'Verified Business', icon: CircleCheck, className: 'bg-green-100 text-green-800' },
       rejected: { label: 'Verification Rejected', icon: XCircle, className: 'bg-red-100 text-red-800' },
     }
 
@@ -189,7 +189,7 @@ export default function UserDashboard() {
 
               {profile.verification_status === 'verified' && (
                 <div className="flex items-center text-green-700 bg-green-50 p-4 rounded-lg">
-                  <CheckCircle className="w-5 h-5 mr-2" />
+                  <CircleCheck className="w-5 h-5 mr-2" />
                   <div>
                     <p className="font-medium">Verified Business Badge</p>
                     <p className="text-sm">You have access to all business features and bulk ordering.</p>
@@ -209,25 +209,25 @@ export default function UserDashboard() {
           <CardContent>
             <ul className="space-y-3">
               <li className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <CircleCheck className="w-5 h-5 text-green-500 mr-2" />
                 <span>Browse all products</span>
               </li>
               <li className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <CircleCheck className="w-5 h-5 text-green-500 mr-2" />
                 <span>Place orders</span>
               </li>
               {profile?.role === 'business' && profile.verification_status === 'verified' && (
                 <>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <CircleCheck className="w-5 h-5 text-green-500 mr-2" />
                     <span>Bulk ordering discounts</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <CircleCheck className="w-5 h-5 text-green-500 mr-2" />
                     <span>Business invoices with GST</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <CircleCheck className="w-5 h-5 text-green-500 mr-2" />
                     <span>Credit terms (Net 30)</span>
                   </li>
                 </>

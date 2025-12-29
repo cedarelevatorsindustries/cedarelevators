@@ -1,7 +1,6 @@
 import { getSupabaseClient } from "@/lib/supabase/client"
 import { Product } from "@/lib/types/domain"
-import { isDemoMode } from "./demo/config"
-import { getDemoProducts, getDemoProductByHandle } from "./demo"
+
 
 interface ListProductsParams {
   queryParams?: {
@@ -28,17 +27,6 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
   const { queryParams } = params || {}
   const limit = queryParams?.limit || 20
   const offset = queryParams?.offset || 0
-
-  // 🚀 Demo Mode: Return static data for client review
-  if (isDemoMode()) {
-    const demoResult = getDemoProducts({
-      limit,
-      offset,
-      category_id: queryParams?.category_id,
-      q: queryParams?.q,
-    })
-    return { response: demoResult }
-  }
 
   // Production Mode: Fetch from Supabase
   try {
@@ -101,10 +89,6 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
  * Fetch a single product by handle - Uses demo data when demo mode is enabled
  */
 export async function getProductByHandle(handle: string): Promise<Product | null> {
-  // 🚀 Demo Mode: Return static data for client review
-  if (isDemoMode()) {
-    return getDemoProductByHandle(handle)
-  }
 
   // Production Mode: Fetch from Supabase
   try {

@@ -29,7 +29,7 @@ export default function ProductSectionMobile({
     id: `temp_${title.toLowerCase().replace(/\s+/g, '-')}`,
     title,
     slug: title.toLowerCase().replace(/\s+/g, '-'),
-    displayLocation: ["home"],
+    displayLocation: ["House"],
     layout: "horizontal-scroll",
     icon,
     viewAllLink,

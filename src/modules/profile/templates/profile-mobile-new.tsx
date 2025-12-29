@@ -1,7 +1,7 @@
 'use client'
 
 import { useProfile } from '@/lib/hooks/useProfile'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { GuestMenu, IndividualMenu, BusinessMenu } from '../components/mobile'
 
 /**
@@ -23,7 +23,7 @@ export default function ProfileMobileNew() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
+          <LoaderCircle size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>

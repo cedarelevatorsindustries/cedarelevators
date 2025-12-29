@@ -3,7 +3,7 @@ import { getCustomerOrders, getOrderSummary } from "@/lib/data/orders"
 import OrderHistoryTemplate from "@/modules/orders/templates/order-history-template"
 import { auth } from "@clerk/nextjs/server"
 import { createClerkSupabaseClient } from "@/lib/supabase/server"
-import { DEMO_CONFIG } from "@/lib/data/demo/config"
+
 
 export const metadata = {
   title: "Order History | Cedar B2B Storefront",
@@ -18,18 +18,7 @@ export default async function OrderHistoryPage() {
       redirect("/sign-in?redirect=/profile/orders")
     }
 
-    // 🚀 Demo Mode: Skip Supabase/Medusa checks, show demo orders directly
-    if (DEMO_CONFIG.USE_DEMO_DATA) {
-      const orders = await getCustomerOrders("demo-customer")
-      const summary = await getOrderSummary("demo-customer")
-      return (
-        <OrderHistoryTemplate
-          orders={orders}
-          summary={summary}
-          isBusinessUser={true}
-        />
-      )
-    }
+
 
     // Production Mode: Normal flow
     const supabase = await createClerkSupabaseClient()

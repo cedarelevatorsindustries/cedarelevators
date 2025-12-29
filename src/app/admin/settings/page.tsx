@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Store, DollarSign, CreditCard, Receipt, Truck, UserCog, ArrowRight } from "lucide-react"
+import { LoaderCircle, Store, DollarSign, CreditCard, Receipt, Truck, UserCog, ArrowRight } from "lucide-react"
 import { getCurrentAdmin, AdminProfile } from "@/lib/admin-auth"
 import { getAccessibleSettings, getTierBadgeVariant, getTierBadgeText, SettingsModule } from "@/lib/admin/settings-access"
 
@@ -45,7 +45,7 @@ export default function SettingsLandingPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <LoaderCircle className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
   }

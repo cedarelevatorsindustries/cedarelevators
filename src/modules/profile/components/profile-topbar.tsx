@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Bell, HelpCircle } from 'lucide-react'
+import { Search, Bell, CircleHelp } from 'lucide-react'
 import { UserProfile, AccountType } from '@/lib/types/profile'
 import { getInitials } from '@/lib/utils/profile'
 import { cn } from '@/lib/utils'
@@ -49,7 +49,7 @@ export default function ProfileTopbar({ user, accountType, className }: ProfileT
 
           {/* Help */}
           <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700">
-            <HelpCircle size={20} />
+            <CircleHelp size={20} />
           </button>
 
           {/* User Avatar */}

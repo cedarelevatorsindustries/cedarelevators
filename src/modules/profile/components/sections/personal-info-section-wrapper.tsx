@@ -2,7 +2,7 @@
 
 import { useProfile } from '@/lib/hooks/useProfile'
 import PersonalInfoSection from './personal-info-section'
-import { Loader2 } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 
 export default function PersonalInfoSectionWrapper() {
   const {
@@ -16,7 +16,7 @@ export default function PersonalInfoSectionWrapper() {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
+          <LoaderCircle size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>

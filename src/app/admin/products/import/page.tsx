@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { ArrowLeft, Upload, Download, Loader2, CheckCircle, XCircle, AlertTriangle, FileWarning } from 'lucide-react'
+import { ArrowLeft, Upload, Download, LoaderCircle, CircleCheck, XCircle, AlertTriangle, FileWarning } from 'lucide-react'
 import Link from 'next/link'
 import type { PreviewResult, ProductGroup, ImportResult, ValidationError, ProductVariant, ImportError } from '@/types/csv-import.types'
 
@@ -214,7 +214,7 @@ export default function ProductImportPage() {
                   className="w-full bg-orange-600 hover:bg-orange-700"
                   data-testid="preview-button"
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   {loading ? 'Loading Preview...' : 'Preview Import'}
                 </Button>
               </div>
@@ -427,7 +427,7 @@ export default function ProductImportPage() {
                 className="bg-orange-600 hover:bg-orange-700"
                 data-testid="confirm-import-button"
               >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? 'Importing...' : 'Confirm & Import'}
               </Button>
             )}
@@ -444,7 +444,7 @@ export default function ProductImportPage() {
               <CardTitle className={`flex items-center ${importResults.success ? 'text-green-900' : 'text-yellow-900'}`}>
                 {importResults.success ? (
                   <>
-                    <CheckCircle className="mr-2 h-6 w-6" />
+                    <CircleCheck className="mr-2 h-6 w-6" />
                     Import Completed Successfully!
                   </>
                 ) : (
@@ -469,7 +469,7 @@ export default function ProductImportPage() {
                     <div className="text-2xl font-bold text-green-600">{importResults.productsCreated}</div>
                     <div className="text-sm text-gray-600">Products Created</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <CircleCheck className="h-8 w-8 text-green-600" />
                 </div>
               </CardContent>
             </Card>
@@ -480,7 +480,7 @@ export default function ProductImportPage() {
                     <div className="text-2xl font-bold text-orange-600">{importResults.productsUpdated}</div>
                     <div className="text-sm text-gray-600">Products Updated</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-orange-600" />
+                  <CircleCheck className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>
@@ -491,7 +491,7 @@ export default function ProductImportPage() {
                     <div className="text-2xl font-bold text-green-600">{importResults.variantsCreated}</div>
                     <div className="text-sm text-gray-600">Variants Created</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <CircleCheck className="h-8 w-8 text-green-600" />
                 </div>
               </CardContent>
             </Card>
@@ -502,7 +502,7 @@ export default function ProductImportPage() {
                     <div className="text-2xl font-bold text-orange-600">{importResults.variantsUpdated}</div>
                     <div className="text-sm text-gray-600">Variants Updated</div>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-orange-600" />
+                  <CircleCheck className="h-8 w-8 text-orange-600" />
                 </div>
               </CardContent>
             </Card>

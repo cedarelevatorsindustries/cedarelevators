@@ -8,7 +8,7 @@ import LocalizedClientLink from "@components/ui/localized-client-link"
 const elevatorTypes = [
   {
     id: "residential-elevators",
-    title: "Build Your Dream Home Elevator",
+    title: "Build Your Dream House Elevator",
     description: "Premium components for luxury residential installations",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop&crop=center",
     href: "/catalog?application=residential"

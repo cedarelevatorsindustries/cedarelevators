@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send, Loader2, CheckCircle, Trash2, Upload, Minus, Plus, Building2, CheckSquare } from "lucide-react"
+import { Send, LoaderCircle, CircleCheck, Trash2, Upload, Minus, Plus, Building2, CheckSquare } from "lucide-react"
 import { toast } from "sonner"
 import { submitBusinessQuote } from "@/lib/actions/quotes"
 import { getBusinessProfile } from "@/lib/actions/business"
@@ -139,7 +139,7 @@ export const BusinessQuoteForm = ({ onSuccess, isVerified = false }: BusinessQuo
         return (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <CircleCheck className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Quote Submitted!</h3>
                 <p className="text-gray-600">
@@ -417,7 +417,7 @@ export const BusinessQuoteForm = ({ onSuccess, isVerified = false }: BusinessQuo
             >
                 {isSubmitting ? (
                     <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <LoaderCircle className="w-5 h-5 animate-spin" />
                         Submitting Bulk Quote...
                     </>
                 ) : (

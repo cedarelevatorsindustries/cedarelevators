@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useUser } from "@clerk/nextjs"
-import { isDemoMode } from "@/lib/data/demo/config"
+
 
 export function useRoleSync() {
   const { user, isLoaded } = useUser()
@@ -11,11 +11,7 @@ export function useRoleSync() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // 🚀 Demo Mode: Skip Medusa sync entirely
-    if (isDemoMode()) {
-      setIsSynced(true)
-      return
-    }
+
 
     // Only sync if user is loaded and logged in
     if (!isLoaded || !user || isSynced || isSyncing) {

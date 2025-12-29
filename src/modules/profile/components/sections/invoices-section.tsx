@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Eye, Search, Filter, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { FileText, Download, Eye, Search, Filter, CircleCheck, Clock, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Invoice {
@@ -122,7 +122,7 @@ export default function InvoicesSection({
 
   const getStatusBadge = (status: Invoice['status']) => {
     const configs = {
-      paid: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CheckCircle },
+      paid: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CircleCheck },
       pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700', icon: Clock },
       overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: XCircle },
     }
@@ -160,7 +160,7 @@ export default function InvoicesSection({
           <div className="bg-green-50 rounded-lg p-4 border border-green-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-green-700">Paid</span>
-              <CheckCircle className="text-green-500" size={20} />
+              <CircleCheck className="text-green-500" size={20} />
             </div>
             <p className="text-2xl font-bold text-green-900">{formatCurrency(paidAmount)}</p>
           </div>

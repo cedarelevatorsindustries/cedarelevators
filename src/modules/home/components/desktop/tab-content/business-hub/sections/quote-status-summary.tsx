@@ -1,6 +1,6 @@
 "use client"
 
-import { Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { Clock, CircleCheck, AlertCircle } from "lucide-react"
 
 export default function QuoteStatusSummary() {
   return (
@@ -18,7 +18,7 @@ export default function QuoteStatusSummary() {
 
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CircleCheck className="w-8 h-8 text-green-600" />
             <span className="text-3xl font-bold text-green-600">5</span>
           </div>
           <h3 className="text-lg font-medium text-gray-900">Approved</h3>

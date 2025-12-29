@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, CheckCircle, Clock, Package } from "lucide-react"
+import { AlertCircle, CircleCheck, Clock, Package } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
@@ -32,7 +32,7 @@ export default function VerificationBanner({
       buttonColor: undefined
     },
     approved: {
-      icon: CheckCircle,
+      icon: CircleCheck,
       iconColor: "text-green-600",
       bgColor: "bg-green-50",
       borderColor: "border-green-200",

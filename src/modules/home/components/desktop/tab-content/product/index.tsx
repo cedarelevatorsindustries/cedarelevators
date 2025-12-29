@@ -16,8 +16,8 @@ export default function ProductsTab({
   userFavorites = [],
   recentlyViewed = []
 }: ProductsTabProps) {
-  // Get all collections for the "home" location
-  let collections = getCollectionsByLocation("home")
+  // Get all collections for the "House" location
+  let collections = getCollectionsByLocation("House")
   
   // Merge user-specific data (favorites, recently viewed)
   collections = mergeUserCollections(collections, userFavorites, recentlyViewed)

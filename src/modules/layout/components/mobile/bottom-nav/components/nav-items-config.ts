@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, ShoppingCart, User, FileText } from "lucide-react"
+import { House, ShoppingBag, ShoppingCart, User, FileText } from "lucide-react"
 
 export interface NavItemConfig {
   href: string
@@ -7,7 +7,7 @@ export interface NavItemConfig {
 }
 
 export const navItems: NavItemConfig[] = [
-  { href: "/", icon: Home, label: "Home" },
+  { href: "/", icon: House, label: "House" },
   { href: "/catalog", icon: ShoppingBag, label: "Catalog" },
   { href: "/quotes", icon: FileText, label: "Quote" },
   { href: "/cart", icon: ShoppingCart, label: "Cart" },

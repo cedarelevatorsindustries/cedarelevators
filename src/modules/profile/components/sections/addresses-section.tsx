@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Address } from '@/lib/types/profile'
-import { MapPin, Plus, Edit2, Trash2, Star, Home, Building2, Warehouse, MapPinned } from 'lucide-react'
+import { MapPin, Plus, Edit2, Trash2, Star, House, Building2, Warehouse, MapPinned } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AddressesSectionProps {
@@ -25,7 +25,7 @@ export default function AddressesSection({
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<Partial<Address>>({
-    type: 'home',
+    type: 'House',
     is_default: false,
     label: '',
     first_name: '',
@@ -42,8 +42,8 @@ export default function AddressesSection({
 
   const getAddressIcon = (type: string) => {
     switch (type) {
-      case 'home':
-        return <Home size={20} />
+      case 'House':
+        return <House size={20} />
       case 'office':
         return <Building2 size={20} />
       case 'warehouse':
@@ -72,7 +72,7 @@ export default function AddressesSection({
 
   const resetForm = () => {
     setFormData({
-      type: 'home',
+      type: 'House',
       is_default: false,
       label: '',
       first_name: '',
@@ -153,7 +153,7 @@ export default function AddressesSection({
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
-                  <option value="home">Home</option>
+                  <option value="House">House</option>
                   <option value="office">Office</option>
                   <option value="warehouse">Warehouse</option>
                   <option value="other">Other</option>
@@ -170,7 +170,7 @@ export default function AddressesSection({
                   value={formData.label}
                   onChange={(e) => setFormData({ ...formData, label: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Main Office, Home"
+                  placeholder="e.g., Main Office, House"
                 />
               </div>
 
@@ -366,7 +366,7 @@ export default function AddressesSection({
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="text-gray-600">
-                      {getAddressIcon(address.type || 'home')}
+                      {getAddressIcon(address.type || 'House')}
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 capitalize">
