@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS verification_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_clerk_id VARCHAR(255) NOT NULL,
+  clerk_user_id VARCHAR(255) NOT NULL,
   business_profile_id UUID REFERENCES business_profiles(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL 
     CHECK (document_type IN ('gst_certificate', 'pan_card', 'business_license', 'incorporation_certificate', 'address_proof', 'other')),
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS verification_documents (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_verification_documents_customer ON verification_documents(customer_clerk_id);
+CREATE INDEX IF NOT EXISTS idx_verification_documents_customer ON verification_documents(clerk_user_id);
 CREATE INDEX IF NOT EXISTS idx_verification_documents_profile ON verification_documents(business_profile_id);
 CREATE INDEX IF NOT EXISTS idx_verification_documents_status ON verification_documents(status);
 
