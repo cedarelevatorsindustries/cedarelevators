@@ -12,7 +12,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useBanner, useUpdateBanner, useUploadBannerImage } from "@/hooks/queries/useBanners"
 import { BANNER_PLACEMENTS } from "@/lib/types/banners"
-import type { BannerPlacement, BannerTargetType, BannerCtaStyle } from "@/lib/types/banners"
+import type { BannerPlacement, BannerLinkType, BannerCtaStyle } from "@/lib/types/banners"
+import { BannerPhilosophyCard } from "@/components/admin/banner-philosophy-card"
 
 export default function EditBannerPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -27,9 +28,9 @@ export default function EditBannerPage({ params }: { params: { id: string } }) {
     image_url: "",
     image_alt: "",
     mobile_image_url: "",
-    placement: "" as BannerPlacement,
-    target_type: "all" as BannerTargetType,
-    target_id: "",
+    placement: "hero-carousel" as BannerPlacement,
+    link_type: "" as BannerLinkType,
+    link_id: "",
     cta_text: "",
     cta_link: "",
     cta_style: "primary" as BannerCtaStyle,
@@ -56,8 +57,8 @@ export default function EditBannerPage({ params }: { params: { id: string } }) {
         image_alt: banner.image_alt || "",
         mobile_image_url: banner.mobile_image_url || "",
         placement: banner.placement,
-        target_type: banner.target_type || "all",
-        target_id: banner.target_id || "",
+        link_type: (banner.link_type || banner.target_type || "") as BannerLinkType,
+        link_id: banner.link_id || banner.target_id || "",
         cta_text: banner.cta_text || "",
         cta_link: banner.cta_link || "",
         cta_style: banner.cta_style,
@@ -176,6 +177,9 @@ export default function EditBannerPage({ params }: { params: { id: string } }) {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form - 2 columns */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Philosophy Card */}
+            <BannerPhilosophyCard />
+
             {/* Basic Info */}
             <Card>
               <CardHeader>
@@ -255,17 +259,19 @@ export default function EditBannerPage({ params }: { params: { id: string } }) {
             {/* Call to Action */}
             <Card>
               <CardHeader>
-                <CardTitle>Call to Action</CardTitle>
+                <CardTitle>Call to Action *</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cta_text">Button Text</Label>
+                    <Label htmlFor="cta_text">Button Text *</Label>
                     <Input
                       id="cta_text"
                       value={formData.cta_text}
                       onChange={(e) => setFormData({ ...formData, cta_text: e.target.value })}
+                      required
                     />
+                    <p className="text-xs text-gray-500">Required for carousel banners</p>
                   </div>
 
                   <div className="space-y-2">
@@ -282,75 +288,59 @@ export default function EditBannerPage({ params }: { params: { id: string } }) {
                     </Select>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cta_link">Link URL</Label>
-                  <Input
-                    id="cta_link"
-                    value={formData.cta_link}
-                    onChange={(e) => setFormData({ ...formData, cta_link: e.target.value })}
-                  />
-                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar - 1 column */}
           <div className="space-y-6">
-            {/* Placement */}
+            {/* Link Destination */}
             <Card>
               <CardHeader>
-                <CardTitle>Placement</CardTitle>
+                <CardTitle>Link Destination *</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Banner Location</Label>
-                  <Select value={formData.placement} onValueChange={(value: BannerPlacement) => setFormData({ ...formData, placement: value })}>
+                  <Label>Link Type *</Label>
+                  <Select value={formData.link_type} onValueChange={(value: BannerLinkType) => setFormData({ ...formData, link_type: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {BANNER_PLACEMENTS.map((placement) => (
-                        <SelectItem key={placement.id} value={placement.id}>
-                          {placement.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="application">Application</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
+                      <SelectItem value="elevator-type">Elevator Type</SelectItem>
+                      <SelectItem value="collection">Collection</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Link ID *</Label>
+                  <Input
+                    value={formData.link_id}
+                    onChange={(e) => setFormData({ ...formData, link_id: e.target.value })}
+                    required
+                  />
+                  <p className="text-xs text-gray-500">
+                    The ID of the {formData.link_type || 'entity'} to link to
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Targeting */}
+            {/* Placement (Read-only info) */}
             <Card>
               <CardHeader>
-                <CardTitle>Targeting</CardTitle>
+                <CardTitle>Placement</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Target Type</Label>
-                  <Select value={formData.target_type} onValueChange={(value: BannerTargetType) => setFormData({ ...formData, target_type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Pages</SelectItem>
-                      <SelectItem value="category">Specific Category</SelectItem>
-                      <SelectItem value="application">Specific Application</SelectItem>
-                      <SelectItem value="collection">Specific Collection</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <CardContent className="space-y-2">
+                <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">All Products Carousel</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Homepage carousel for product discovery navigation
+                  </p>
                 </div>
-
-                {formData.target_type !== 'all' && (
-                  <div className="space-y-2">
-                    <Label>Target ID</Label>
-                    <Input
-                      value={formData.target_id}
-                      onChange={(e) => setFormData({ ...formData, target_id: e.target.value })}
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
 
