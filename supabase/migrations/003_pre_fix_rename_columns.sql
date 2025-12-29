@@ -12,10 +12,18 @@ RENAME COLUMN user_id TO clerk_user_id;
 -- If there are any indexes on user_id, they will be automatically renamed
 -- If there are any RLS policies referencing user_id, we need to drop and recreate them
 
--- Check and drop existing policies if they exist
+-- Check and drop ALL existing policies on verification_documents
 DO $$ 
 BEGIN
-  -- Drop policy if it exists
+  -- Drop all policies if they exist
+  IF EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'verification_documents' 
+    AND policyname = 'Service role full access verification_documents'
+  ) THEN
+    DROP POLICY "Service role full access verification_documents" ON verification_documents;
+  END IF;
+
   IF EXISTS (
     SELECT 1 FROM pg_policies 
     WHERE tablename = 'verification_documents' 
