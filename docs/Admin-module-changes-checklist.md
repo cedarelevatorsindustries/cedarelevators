@@ -273,7 +273,7 @@
 - [x] Request more documents
 - [x] Audit trail for all actions
 - [x] Document approval/rejection individually
-- [ ] Email notifications (TODO: Integrate Resend)
+- [x] Email notifications (Integrated with Resend)
 
 ### Testing & Validation
 - [x] Server actions with permission checks
