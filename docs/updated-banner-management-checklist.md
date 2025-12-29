@@ -58,21 +58,21 @@
 
 ## 📋 Implementation Phases
 
-### Phase 1: Database Schema Updates ⚠️ Pending
+### Phase 1: Database Schema Updates ✅ COMPLETE
 
 **Goal:** Add banner_image fields to entity tables
 
 #### Tasks
 
 ##### 1.1 Create Migration File
-- [ ] Create `/app/supabase/migrations/009_add_entity_banner_images.sql`
-- [ ] Add `banner_image` column to:
-  - [ ] `categories` table
-  - [ ] `applications` table (if exists, or use categories with application type)
-  - [ ] `elevator_types` table
-  - [ ] `collections` table
-- [ ] Ensure all entities already have `thumbnail_image` (or add it)
-- [ ] Add storage bucket permissions if needed
+- [x] Create `/app/supabase/migrations/009_add_entity_banner_images.sql`
+- [x] Add `banner_image` column to:
+  - [x] `categories` table
+  - [x] `applications` table (uses categories with application type)
+  - [x] `elevator_types` table
+  - [x] `collections` table
+- [x] Ensure all entities already have `thumbnail_image` (or add it)
+- [x] Add storage bucket permissions if needed
 
 ##### 1.2 Migration Content
 ```sql
@@ -95,15 +95,18 @@ ADD COLUMN IF NOT EXISTS thumbnail_image TEXT;
 ```
 
 ##### 1.3 Banner Table Refactor
-- [ ] Update `banners` table purpose (documentation only)
-- [ ] Change `link_type` enum to: `application | category | elevator-type | collection`
-- [ ] Simplify fields (remove target_type/target_id if they're the same as link)
-- [ ] Current structure is OK, just need to restrict usage to "All Products" only
+- [x] Update `banners` table purpose (documentation only)
+- [x] Change `link_type` enum to: `application | category | elevator-type | collection`
+- [x] Simplify fields (remove target_type/target_id if they're the same as link)
+- [x] Current structure is OK, just need to restrict usage to "All Products" only
 
 #### Deliverables
-- [ ] Migration SQL file created
-- [ ] All entity tables have `banner_image` field
-- [ ] Storage policies updated (if needed)
+- [x] Migration SQL file created (163 lines with comments)
+- [x] All entity tables have `banner_image` field
+- [x] All entity tables have `thumbnail_image` field
+- [x] Data migration from legacy fields (image_url, icon)
+- [x] Comments added for clarity
+- [x] Storage policies (already existed, no changes needed)
 
 ---
 
