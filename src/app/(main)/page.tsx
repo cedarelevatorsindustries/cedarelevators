@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
-import { listProducts, listCategories } from "@/lib/data"
+import { listProducts, listCategories, listApplications } from "@/lib/data"
 import {
   DesktopHomepage,
   DesktopHomepageLoggedIn,
@@ -31,6 +31,9 @@ export default async function HomePage() {
     include_descendants_tree: true
   })
 
+  // Fetch applications
+  const applications = await listApplications()
+
   // Extract testimonials from product metadata (if available)
   const testimonials: any[] = []
   response.products.forEach((product: any) => {
@@ -51,6 +54,7 @@ export default async function HomePage() {
             testimonials={testimonials}
             userType={userType}
             categories={categories}
+            applications={applications}
           />
         </div>
 
@@ -75,6 +79,7 @@ export default async function HomePage() {
           products={products}
           categories={categories}
           testimonials={testimonials}
+          applications={applications}
         />
       </div>
 
