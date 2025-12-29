@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect } from "react"
-import { elevatorCategories } from "./categories-data"
+import { ProductCategory } from "@/lib/types/domain"
+import { getCategoryIcon, getCategoryColors } from "./categories-data"
 
 interface CategorySidebarProps {
   activeCategory: string
@@ -11,6 +12,7 @@ interface CategorySidebarProps {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>
   categoryRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>
   isScrollingProgrammatically: React.MutableRefObject<boolean>
+  categories: ProductCategory[]
 }
 
 export function CategorySidebar({
@@ -20,15 +22,16 @@ export function CategorySidebar({
   categoryButtonRefs,
   scrollContainerRef,
   categoryRefs,
-  isScrollingProgrammatically
+  isScrollingProgrammatically,
+  categories
 }: CategorySidebarProps) {
   
   // Initialize active category
   useEffect(() => {
-    if (!activeCategory && elevatorCategories.length > 0) {
-      setActiveCategory(elevatorCategories[0].id)
+    if (!activeCategory && categories.length > 0) {
+      setActiveCategory(categories[0].id)
     }
-  }, [activeCategory, setActiveCategory])
+  }, [activeCategory, setActiveCategory, categories])
 
   const handleCategoryClick = (categoryId: string) => {
     const element = categoryRefs.current[categoryId]
@@ -59,8 +62,8 @@ export function CategorySidebar({
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="p-4 space-y-1">
-          {elevatorCategories.map((category) => {
-            const IconComponent = category.icon
+          {categories.map((category) => {
+            const IconComponent = getCategoryIcon(category.handle || category.slug || category.id)
             const isActive = activeCategory === category.id
             
             return (

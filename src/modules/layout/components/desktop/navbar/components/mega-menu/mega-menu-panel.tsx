@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef } from "react"
 import { CategorySidebar } from "./category-sidebar"
 import { CategoryContent } from "./category-content"
-import { elevatorCategories } from "./categories-data"
+import { ProductCategory } from "@/lib/types/domain"
 
 interface MegaMenuPanelProps {
   isScrolled: boolean
@@ -12,6 +12,7 @@ interface MegaMenuPanelProps {
   onMouseEnter: () => void
   onMouseLeave: () => void
   onClose: () => void
+  categories: ProductCategory[] // Now passed as prop from parent
 }
 
 export function MegaMenuPanel({ 
@@ -20,13 +21,19 @@ export function MegaMenuPanel({
   setActiveCategory,
   onMouseEnter,
   onMouseLeave,
-  onClose
+  onClose,
+  categories
 }: MegaMenuPanelProps) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const leftSidebarRef = useRef<HTMLDivElement | null>(null)
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const categoryButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({})
   const isScrollingProgrammatically = useRef(false)
+
+  // Don't render if no categories
+  if (!categories || categories.length === 0) {
+    return null
+  }
 
   // Spy scrolling: Update active category based on scroll position
   const handleRightPanelScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -41,7 +48,7 @@ export function MegaMenuPanel({
       let newActiveCategory = activeCategory
       let minDistance = Infinity
 
-      elevatorCategories.forEach((category) => {
+      categories.forEach((category) => {
         const element = categoryRefs.current[category.id]
         if (element) {
           const rect = element.getBoundingClientRect()
@@ -107,6 +114,7 @@ export function MegaMenuPanel({
           scrollContainerRef={scrollContainerRef}
           categoryRefs={categoryRefs}
           isScrollingProgrammatically={isScrollingProgrammatically}
+          categories={categories}
         />
         
         <CategoryContent
@@ -114,6 +122,7 @@ export function MegaMenuPanel({
           categoryRefs={categoryRefs}
           onScroll={handleRightPanelScroll}
           onClose={onClose}
+          categories={categories}
         />
       </div>
     </div>
