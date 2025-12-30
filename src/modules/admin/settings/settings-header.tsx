@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Bell, Save, Menu } from "lucide-react"
+import { useSettings } from "@/modules/admin/settings/settings-context"
+import { toast } from "sonner"
 
 interface SettingsHeaderProps {
   sidebarCollapsed: boolean
@@ -16,6 +18,8 @@ export function SettingsHeader({
   mobileMenuOpen,
   onToggleMobileMenu
 }: SettingsHeaderProps) {
+  const { triggerSave, isSaving } = useSettings()
+
   return (
     <header className="px-4 lg:px-6 py-3 lg:py-4 flex-shrink-0">
       <div className="flex items-center justify-between gap-4">
@@ -55,10 +59,20 @@ export function SettingsHeader({
             variant="outline"
             size="sm"
             className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 hidden md:flex"
+            onClick={async () => {
+              const promise = triggerSave()
+              toast.promise(promise, {
+                loading: 'Saving changes...',
+                success: 'All changes saved successfully',
+                error: 'Failed to save changes'
+              })
+              await promise
+            }}
+            disabled={isSaving}
           >
             <Save className="mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
-            <span className="hidden lg:inline">Save All Changes</span>
-            <span className="lg:hidden">Save</span>
+            <span className="hidden lg:inline">{isSaving ? "Saving..." : "Save All Changes"}</span>
+            <span className="lg:hidden">{isSaving ? "Saving..." : "Save"}</span>
           </Button>
 
           <Button

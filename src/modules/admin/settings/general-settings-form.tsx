@@ -9,8 +9,10 @@ import { toast } from "sonner"
 import { getStoreSettings, updateStoreSettings } from "@/lib/services/settings"
 import { StoreSettings } from "@/lib/types/settings"
 import { LoaderCircle, Save } from "lucide-react"
+import { useSettings } from "@/modules/admin/settings/settings-context"
 
 export function GeneralSettingsForm() {
+    const { registerSaveHandler, unregisterSaveHandler } = useSettings()
     const [isLoading, setIsLoading] = useState(false)
     const [isFetching, setIsFetching] = useState(true)
     const [settings, setSettings] = useState<StoreSettings | null>(null)
@@ -132,6 +134,14 @@ export function GeneralSettingsForm() {
             setIsLoading(false)
         }
     }
+
+    // Register save handler
+    useEffect(() => {
+        registerSaveHandler(async () => {
+            await handleSubmit({ preventDefault: () => { } } as any)
+        })
+        return () => unregisterSaveHandler()
+    }, [settings, formData])
 
     if (isFetching) {
         return (

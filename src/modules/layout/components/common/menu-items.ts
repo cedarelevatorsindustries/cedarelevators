@@ -33,7 +33,6 @@ export const guestMoreMenuItems: MenuItem[] = [
 
 // Logged-in user more menu items (Contact and Help Center included for sticky navbar)
 export const loggedInMoreMenuItems: MenuItem[] = [
-  { icon: Package, label: "Bulk Order", href: "/bulk-orders" },
   { icon: Truck, label: "Track Order", href: "/track" },
 
   { icon: Info, label: "About Us", href: "/about" },
@@ -44,8 +43,7 @@ export const loggedInMoreMenuItems: MenuItem[] = [
 // Mobile hamburger menu items - Logged-in user
 export const loggedInShoppingItems: MenuItem[] = [
   { icon: ShoppingCart, label: "My Cart", href: "/cart" },
-  { icon: Heart, label: "Saved Items / Wishlist", href: "/saved" },
-  { icon: Package, label: "Bulk Order", href: "/bulk-orders" }
+  { icon: Heart, label: "Saved Items / Wishlist", href: "/saved" }
 ]
 
 export const loggedInActivityItems: MenuItem[] = [

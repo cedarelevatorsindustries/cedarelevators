@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
 import { listProducts, listCategories, listApplications, listElevatorTypes } from "@/lib/data"
+import { getCollectionsForDisplay, getCollectionBySlug } from "@/lib/actions/collections"
 import {
   DesktopHomepage,
   DesktopHomepageLoggedIn,
@@ -37,6 +38,21 @@ export default async function HomePage() {
   // Fetch elevator types
   const elevatorTypes = await listElevatorTypes()
 
+  // Fetch collections for the "House" location (for ProductsTab)
+  const { collections: rawCollections } = await getCollectionsForDisplay("House")
+  // Serialize to ensure only plain objects are passed to client components
+  const collections = JSON.parse(JSON.stringify(rawCollections))
+
+  // Fetch trending collection (for CategoriesTab)
+  const { collection: rawTrendingCollection } = await getCollectionBySlug("trending")
+  // Serialize to ensure only plain objects are passed to client components
+  const trendingCollection = rawTrendingCollection ? JSON.parse(JSON.stringify(rawTrendingCollection)) : null
+
+  // Fetch top applications collection (for CategoriesTab)
+  const { collection: rawTopApplicationsCollection } = await getCollectionBySlug("top-applications")
+  // Serialize to ensure only plain objects are passed to client components
+  const topApplicationsCollection = rawTopApplicationsCollection ? JSON.parse(JSON.stringify(rawTopApplicationsCollection)) : null
+
   // Extract testimonials from product metadata (if available)
   const testimonials: any[] = []
   response.products.forEach((product: any) => {
@@ -46,6 +62,13 @@ export default async function HomePage() {
     }
   })
 
+  // Serialize all data to ensure only plain objects are passed to client components
+  const serializedProducts = JSON.parse(JSON.stringify(products))
+  const serializedCategories = JSON.parse(JSON.stringify(categories))
+  const serializedApplications = JSON.parse(JSON.stringify(applications))
+  const serializedElevatorTypes = JSON.parse(JSON.stringify(elevatorTypes))
+  const serializedTestimonials = JSON.parse(JSON.stringify(testimonials))
+
   // For logged-in users, show the dashboard-style layout
   if (userType !== "guest") {
     return (
@@ -53,20 +76,23 @@ export default async function HomePage() {
         {/* Desktop View - Website-like UI */}
         <div className="hidden md:block">
           <DesktopHomepageLoggedIn
-            products={products}
-            testimonials={testimonials}
+            products={serializedProducts}
+            testimonials={serializedTestimonials}
             userType={userType}
-            categories={categories}
-            applications={applications}
-            elevatorTypes={elevatorTypes}
+            categories={serializedCategories}
+            applications={serializedApplications}
+            elevatorTypes={serializedElevatorTypes}
+            collections={collections}
+            trendingCollection={trendingCollection}
+            topApplicationsCollection={topApplicationsCollection}
           />
         </div>
 
         {/* Mobile View - App-like UI */}
         <div className="block md:hidden">
           <MobileHomepageLoggedIn
-            products={products}
-            categories={categories}
+            products={serializedProducts}
+            categories={serializedCategories}
             userType={userType}
           />
         </div>
@@ -80,20 +106,20 @@ export default async function HomePage() {
       {/* Desktop View - Website-like UI */}
       <div className="hidden md:block">
         <DesktopHomepage
-          products={products}
-          categories={categories}
-          testimonials={testimonials}
-          applications={applications}
-          elevatorTypes={elevatorTypes}
+          products={serializedProducts}
+          categories={serializedCategories}
+          testimonials={serializedTestimonials}
+          applications={serializedApplications}
+          elevatorTypes={serializedElevatorTypes}
         />
       </div>
 
       {/* Mobile View - App-like UI */}
       <div className="block md:hidden">
         <MobileHomepageGuest
-          products={products}
-          categories={categories}
-          testimonials={testimonials}
+          products={serializedProducts}
+          categories={serializedCategories}
+          testimonials={serializedTestimonials}
         />
       </div>
     </>

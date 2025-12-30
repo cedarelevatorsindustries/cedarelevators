@@ -4,6 +4,7 @@ import "@/styles/globals.css"
 import { RoleSyncProvider } from "@/components/providers"
 import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
+import { Toaster } from "@/components/ui/sonner"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
 
@@ -105,12 +106,12 @@ export default function RootLayout({
           {/* Structured Data */}
           <JsonLd data={generateOrganizationSchema()} />
           <JsonLd data={generateWebSiteSchema()} />
-          
+
           {/* PWA Meta Tags */}
           <meta name="theme-color" content="#F97316" />
           <meta name="mobile-web-app-capable" content="yes" />
           <link rel="apple-touch-icon" href="/web-app-manifest-192x192.png" />
-          
+
           {/* Preconnect to external domains */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://res.cloudinary.com" />
@@ -119,6 +120,7 @@ export default function RootLayout({
         <body className={spaceGrotesk.variable}>
           <RoleSyncProvider>
             {children}
+            <Toaster />
           </RoleSyncProvider>
         </body>
       </html>

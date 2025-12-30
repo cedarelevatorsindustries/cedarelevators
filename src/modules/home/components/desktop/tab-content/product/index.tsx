@@ -1,22 +1,22 @@
+"use client"
+
 import { Product } from "@/lib/types/domain"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
-import { getCollectionsForDisplay } from "@/lib/actions/collections"
 import HelpSection from "./sections/help-section"
 
 interface ProductsTabProps {
   products?: Product[]
   userFavorites?: Product[]
   recentlyViewed?: Product[]
+  collections: any[]
 }
 
-export default async function ProductsTab({
+export default function ProductsTab({
   products = [],
   userFavorites = [],
-  recentlyViewed = []
+  recentlyViewed = [],
+  collections: dbCollections = []
 }: ProductsTabProps) {
-  // Get all collections for the "House" location from database
-  const { collections: dbCollections } = await getCollectionsForDisplay("House")
-
   // Merge user-specific data (favorites, recently viewed) into collections
   const collections = dbCollections.map(collection => {
     // Handle favorites collection

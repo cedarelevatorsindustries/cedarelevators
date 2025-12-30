@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Enhanced 404 Not Found Page
  * Custom error page with helpful suggestions

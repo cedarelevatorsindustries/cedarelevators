@@ -25,6 +25,13 @@ export default function AccountOverviewWrapper() {
   const router = useRouter()
   const { user, accountType, isLoading } = useProfile()
 
+  const handleNavigate = (section: string) => {
+    const route = sectionToRoute[section]
+    if (route) {
+      router.push(route)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -36,20 +43,9 @@ export default function AccountOverviewWrapper() {
     )
   }
 
-  if (!user) {
+  // Guest users or no user shouldn't see the account overview
+  if (!user || accountType === 'guest') {
     return null
-  }
-
-  // Guest users shouldn't see the account overview
-  if (accountType === 'guest') {
-    return null
-  }
-
-  const handleNavigate = (section: string) => {
-    const route = sectionToRoute[section]
-    if (route) {
-      router.push(route)
-    }
   }
 
   return (

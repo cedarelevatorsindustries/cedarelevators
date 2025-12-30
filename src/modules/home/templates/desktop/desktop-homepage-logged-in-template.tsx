@@ -19,6 +19,9 @@ interface DesktopHomepageLoggedInProps {
   categories: ProductCategory[]
   applications?: Application[]
   elevatorTypes?: ElevatorType[]
+  collections: any[]
+  trendingCollection: any
+  topApplicationsCollection: any
 }
 
 export default function DesktopHomepageLoggedIn({
@@ -27,7 +30,10 @@ export default function DesktopHomepageLoggedIn({
   userType,
   categories,
   applications = [],
-  elevatorTypes = []
+  elevatorTypes = [],
+  collections = [],
+  trendingCollection = null,
+  topApplicationsCollection = null
 }: DesktopHomepageLoggedInProps) {
   const searchParams = useSearchParams()
   const app = searchParams.get('app')
@@ -73,10 +79,10 @@ export default function DesktopHomepageLoggedIn({
             {applications.length > 0 && (
               <ApplicationsSection applications={applications} />
             )}
-            <ProductsTab products={products} />
+            <ProductsTab products={products} collections={collections} />
           </>
         )}
-        {activeTab === "categories" && <CategoriesTab categories={categories} />}
+        {activeTab === "categories" && <CategoriesTab categories={categories} elevatorTypes={elevatorTypes} trendingCollection={trendingCollection} topApplicationsCollection={topApplicationsCollection} />}
         {activeTab === "business-hub" && userType === "business" && <BusinessHubTab />}
       </div>
     </div>

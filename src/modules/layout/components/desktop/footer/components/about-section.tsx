@@ -11,11 +11,6 @@ export function AboutSection() {
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
 
-  // Don't show About section on profile pages
-  if (pathname?.startsWith('/profile')) {
-    return null
-  }
-
   useEffect(() => {
     async function fetchSettings() {
       try {
@@ -32,6 +27,11 @@ export function AboutSection() {
 
     fetchSettings()
   }, [])
+
+  // Don't show About section on profile pages
+  if (pathname?.startsWith('/profile')) {
+    return null
+  }
 
   // If no content is found, don't render the section
   if (!isLoading && !aboutContent) {

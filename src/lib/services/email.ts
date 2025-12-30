@@ -6,7 +6,7 @@ if (!process.env.RESEND_API_KEY) {
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Cedar Elevators <noreply@cedarelevators.com>'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Cedar Elevators <updates@notifications.cedarelevator.com>'
 
 /**
  * Send order confirmation email
@@ -249,16 +249,15 @@ export async function sendVerificationStatus(
               <h2>Business Verification ${status === 'approved' ? 'Complete' : 'Update'}</h2>
               <p>${message}</p>
               
-              ${
-                status === 'approved'
-                  ? `<div style="text-align: center; margin: 30px 0;">
+              ${status === 'approved'
+          ? `<div style="text-align: center; margin: 30px 0;">
                       <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/dashboard" 
                          style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
                         Go to Dashboard
                       </a>
                     </div>`
-                  : ''
-              }
+          : ''
+        }
               
               <p style="margin-top: 30px; text-align: center; color: #666;">
                 If you have any questions, please contact our support team.
@@ -353,6 +352,74 @@ export async function sendWelcomeEmail(to: string, name: string) {
     return { success: true, data }
   } catch (error: any) {
     console.error('Error in sendWelcomeEmail:', error)
+    return { success: false, error: error.message || 'Failed to send email' }
+  }
+}
+
+/**
+ * Send admin invite email
+ */
+export async function sendAdminInviteEmail(to: string, role: string, inviteLink: string, invitedByEmail?: string) {
+  try {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: 'You have been invited to join Cedar Elevators Admin',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f97316; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Cedar Elevators</h1>
+            </div>
+            
+            <div style="padding: 20px; background-color: #f9f9f9;">
+              <h2>Admin Invitation</h2>
+              <p>You have been invited to join the Cedar Elevators admin team as a <strong>${role.replace('_', ' ').toUpperCase()}</strong>.</p>
+              ${invitedByEmail ? `<p>Invited by: ${invitedByEmail}</p>` : ''}
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${inviteLink}" 
+                   style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                  Accept Invitation
+                </a>
+              </div>
+              
+              <p style="text-align: center; font-size: 14px; color: #666;">
+                Or copy and paste this link into your browser:<br>
+                <a href="${inviteLink}" style="color: #f97316;">${inviteLink}</a>
+              </p>
+
+              <p style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">
+                This link will expire in 72 hours. If you did not expect this invitation, please ignore this email.
+              </p>
+            </div>
+            
+            <div style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} Cedar Elevators. All rights reserved.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Error sending admin invite email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('Error in sendAdminInviteEmail:', error)
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }

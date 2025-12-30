@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { User, FileText, Settings, LogOut } from "lucide-react"
+import { User, FileText, Settings, LogOut, Building2 } from "lucide-react"
 import { useClerk, useUser } from "@clerk/nextjs"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import Image from "next/image"
@@ -13,6 +13,7 @@ interface ProfileMenuProps {
 
 export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSwitching, setIsSwitching] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const { signOut } = useClerk()
@@ -39,9 +40,44 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
   const avatarUrl = user?.imageUrl
   const userName = user?.fullName || user?.firstName || "User"
 
+  // Check both publicMetadata and unsafeMetadata for account type, with fallback to 'individual'
+  const accountType = (user?.publicMetadata?.accountType as string) ||
+    (user?.unsafeMetadata?.accountType as string) ||
+    'individual'
+  const isIndividual = accountType === "individual"
+
+  // Debug logging
+  console.log("User publicMetadata:", user?.publicMetadata)
+  console.log("User unsafeMetadata:", user?.unsafeMetadata)
+  console.log("Account type:", accountType)
+  console.log("Is individual:", isIndividual)
+
+  const handleSwitchToBusiness = async () => {
+    if (!user || isSwitching) return
+
+    setIsSwitching(true)
+    try {
+      await user.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          accountType: "business",
+          is_verified: false // Business accounts need verification
+        }
+      })
+
+      // Reload the page to reflect the changes
+      window.location.reload()
+    } catch (error) {
+      console.error("Error switching to business account:", error)
+      alert("Failed to switch account type. Please try again.")
+    } finally {
+      setIsSwitching(false)
+    }
+  }
+
   return (
-    <div 
-      className="relative" 
+    <div
+      className="relative"
       ref={menuRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -75,7 +111,7 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
           <div className="absolute right-2 -top-2">
             <div className="w-4 h-4 bg-white border-t border-l border-gray-200 rotate-45 shadow-lg" />
           </div>
-          
+
           {/* Card content */}
           <div className="relative bg-white border border-gray-200 rounded-lg shadow-lg py-2 w-48">
             <LocalizedClientLink
@@ -94,6 +130,23 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
               <FileText size={16} />
               My Orders
             </LocalizedClientLink>
+
+            {/* Switch to Business Account - Only for Individual Users */}
+            {isIndividual && (
+              <>
+                <div className="border-t border-gray-200 my-1"></div>
+                <button
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleSwitchToBusiness}
+                  disabled={isSwitching}
+                >
+                  <Building2 size={16} />
+                  {isSwitching ? "Switching..." : "Switch to Business"}
+                </button>
+              </>
+            )}
+
+            <div className="border-t border-gray-200 my-1"></div>
             <LocalizedClientLink
               href="/account/settings"
               className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

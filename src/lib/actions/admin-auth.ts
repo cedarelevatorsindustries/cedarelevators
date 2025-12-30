@@ -19,7 +19,15 @@ import {
     approveAdminUser,
     revokeAdminAccess,
     getCurrentAdmin,
-    updateAdminProfile
+    updateAdminProfile,
+    getAdminUsers,
+    createAdminInvite,
+    revokeAdminInvite,
+    resendAdminInvite,
+    getAdminInvites,
+    acceptInvite,
+    verifyInviteToken,
+    deleteAdminUser
 } from '@/lib/admin-auth-server'
 import { revalidatePath } from 'next/cache'
 
@@ -97,6 +105,7 @@ export async function adminLoginAction(email: string, password: string) {
         }
     }
 }
+
 
 /**
  * Admin Setup Action (First-Time Only)
@@ -521,6 +530,166 @@ export async function uploadAdminAvatarAction(formData: FormData) {
             .getPublicUrl(filePath)
 
         return { success: true, publicUrl }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Get Admin Users List Action
+ */
+export async function getAdminUsersAction() {
+    try {
+        const supabase = await createServerSupabase()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+            return { success: false, error: 'Not authenticated' }
+        }
+
+        return await getAdminUsers()
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+// ==========================================
+// Admin Invite Actions
+// ==========================================
+
+/**
+ * Invite Admin User Action
+ */
+export async function inviteAdminUserAction(
+    email: string,
+    role: AdminRole
+) {
+    try {
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) return { success: false, error: 'Not authenticated' }
+
+        // Only super admin and admin can invite? 
+        // Logic: Super Admin can invite anyone. Admin can invite Manager/Staff.
+        // For now, let's restrict to Super Admin for safety, or check hierarchy.
+        // Let's implement hierarchy check:
+        const isSuper = admin.profile?.role === 'super_admin'
+
+        // As per user request: "Admin: Full product... Cannot manage admin users" 
+        // So ONLY Super Admin can invite.
+        if (!isSuper) return { success: false, error: 'Only Super Admins can invite users.' }
+
+        const result = await createAdminInvite(email, role, admin.user.id)
+
+        if (result.success) {
+            revalidatePath('/admin/settings/users')
+        }
+
+        return result
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Get Admin Invites Action
+ */
+export async function getAdminInvitesAction() {
+    try {
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) return { success: false, error: 'Not authenticated' }
+
+        // Only Super Admin can view invites? Or maybe let admins see them?
+        // Let's stick to Super Admin for user management as per rules.
+        if (admin.profile?.role !== 'super_admin') {
+            return { success: false, error: 'Unauthorized to view invites' }
+        }
+
+        return await getAdminInvites()
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Revoke Admin Invite Action
+ */
+export async function revokeAdminInviteAction(inviteId: string) {
+    try {
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) return { success: false, error: 'Not authenticated' }
+
+        if (admin.profile?.role !== 'super_admin') {
+            return { success: false, error: 'Unauthorized to revoke invites' }
+        }
+
+        const result = await revokeAdminInvite(inviteId)
+
+        if (result.success) {
+            revalidatePath('/admin/settings/users')
+        }
+
+        return result
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Resend Admin Invite Action
+ */
+export async function resendAdminInviteAction(inviteId: string) {
+    try {
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) return { success: false, error: 'Not authenticated' }
+
+        if (admin.profile?.role !== 'super_admin') {
+            return { success: false, error: 'Unauthorized to resend invites' }
+        }
+
+        const result = await resendAdminInvite(inviteId)
+
+        if (result.success) {
+            revalidatePath('/admin/settings/users')
+        }
+
+        return result
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Accept Admin Invite Action
+ * Public access - no auth required
+ */
+export async function acceptAdminInviteAction(
+    token: string,
+    password: string,
+    name: string
+) {
+    try {
+        const result = await acceptInvite(token, password, name)
+        return result
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+export async function deleteAdminUserAction(userId: string) {
+    const admin = await getCurrentAdmin()
+    if (!admin?.profile || admin.profile.role !== 'super_admin') {
+        return { success: false, error: 'Unauthorized: Only Super Admins can delete users' }
+    }
+
+    // Prevent deleting self (just partial safety, UI should handle too)
+    if (admin.user.id === userId) {
+        return { success: false, error: 'Cannot delete your own account' }
+    }
+
+    try {
+        const result = await deleteAdminUser(userId)
+        revalidatePath('/admin/settings/users')
+        return result
     } catch (error: any) {
         return { success: false, error: error.message }
     }

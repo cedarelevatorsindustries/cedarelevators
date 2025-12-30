@@ -38,7 +38,7 @@ export default function AdminLayout({
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   // Auth routes that don't need the admin layout
-  const authRoutes = ['/admin/login', '/admin/setup', '/admin/recover', '/admin/pending', '/admin/logout']
+  const authRoutes = ['/admin/login', '/admin/setup', '/admin/recover', '/admin/pending', '/admin/logout', '/admin/invite']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
   // Settings routes that have their own complete layout

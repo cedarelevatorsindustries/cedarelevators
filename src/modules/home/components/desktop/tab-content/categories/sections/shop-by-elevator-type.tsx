@@ -2,53 +2,16 @@
 
 import { ArrowRight } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 
-const elevatorTypes = [
-  {
-    id: "residential-elevators",
-    title: "Build Your Dream House Elevator",
-    description: "Premium components for luxury residential installations",
-    image: "/images/image.png",
-    href: "/catalog?application=residential"
-  },
-  {
-    id: "commercial-buildings",
-    title: "Power Commercial Projects",
-    description: "High-capacity systems for office buildings and complexes",
-    image: "/images/image.png",
-    href: "/catalog?application=commercial"
-  },
-  {
-    id: "hospital-elevators",
-    title: "Medical-Grade Elevator Systems",
-    description: "Reliable, safe components for healthcare facilities",
-    image: "/images/image.png",
-    href: "/catalog?application=hospital"
-  },
-  {
-    id: "freight-elevators",
-    title: "Heavy-Duty Freight Solutions",
-    description: "Industrial-strength components for cargo transport",
-    image: "/images/image.png",
-    href: "/catalog?application=freight"
-  },
-  {
-    id: "modernization",
-    title: "Modernize Existing Elevators",
-    description: "Upgrade old systems with latest technology",
-    image: "/images/image.png",
-    href: "/catalog?application=modernization"
-  },
-  {
-    id: "luxury-elevators",
-    title: "Luxury Custom Installations",
-    description: "Premium finishes and advanced features for high-end projects",
-    image: "/images/image.png",
-    href: "/catalog?application=luxury"
-  }
-]
+interface ShopByElevatorTypeProps {
+  elevatorTypes?: ElevatorType[]
+}
 
-export default function ShopByElevatorType() {
+export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevatorTypeProps) {
+  // Don't render if no elevator types
+  if (elevatorTypes.length === 0) return null
+
   return (
     <section>
       {/* Section Header */}
@@ -68,7 +31,7 @@ export default function ShopByElevatorType() {
             {/* Mobile: Title and Description Outside Card */}
             <div className="md:hidden mb-2">
               <h3 className="text-base font-bold text-gray-900 mb-1">
-                {type.title}
+                {type.name}
               </h3>
               <p className="text-gray-600 text-xs leading-relaxed">
                 {type.description}
@@ -76,16 +39,20 @@ export default function ShopByElevatorType() {
             </div>
 
             <LocalizedClientLink
-              href={type.href}
+              href={`/catalog?type=${type.slug}`}
               className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 aspect-square"
             >
               {/* Background Image */}
               <div className="absolute inset-0 bg-gray-200">
-                <img
-                  src={type.image}
-                  alt={type.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
+                {type.thumbnail_image ? (
+                  <img
+                    src={type.thumbnail_image}
+                    alt={type.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100" />
+                )}
 
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent group-hover:from-black/90 transition-all duration-300" />
@@ -94,7 +61,7 @@ export default function ShopByElevatorType() {
               {/* Content Overlay - Desktop Only */}
               <div className="hidden md:block absolute bottom-0 left-0 right-0 p-4 text-white">
                 <h3 className="text-base font-bold mb-1 group-hover:text-blue-300 transition-colors line-clamp-2">
-                  {type.title}
+                  {type.name}
                 </h3>
                 <p className="text-gray-200 text-xs mb-2 leading-relaxed line-clamp-2">
                   {type.description}

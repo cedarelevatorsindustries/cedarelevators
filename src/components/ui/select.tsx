@@ -190,44 +190,25 @@ interface SelectContentProps {
 function SelectContent({
   children,
   className,
-  position = "item-aligned",
+  position = "popper",
   align = "start"
 }: SelectContentProps) {
-  const { open, triggerRef } = useSelectContext()
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [coords, setCoords] = useState({ top: 0, left: 0, right: 0, width: 0 })
-
-  useEffect(() => {
-    if (open && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect()
-      setCoords({
-        top: rect.bottom + 4,
-        left: rect.left,
-        right: window.innerWidth - rect.right,
-        width: rect.width
-      })
-    }
-  }, [open, triggerRef])
+  const { open } = useSelectContext()
 
   if (!open) return null
 
   return (
     <div
-      ref={contentRef}
       data-cedar-select-content
       role="listbox"
       className={cn(
-        "fixed z-50 min-w-[8rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg",
+        "absolute z-50 min-w-[8rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg",
         "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
+        // Position logic
+        "top-[calc(100%+4px)] w-full",
+        align === "end" ? "right-0" : "left-0",
         className
       )}
-      style={{
-        top: coords.top,
-        left: align === "end" ? "auto" : coords.left,
-        right: align === "end" ? coords.right : "auto",
-        minWidth: coords.width,
-        maxHeight: "min(300px, calc(100vh - 100px))"
-      }}
     >
       <div className="max-h-[280px] overflow-y-auto p-1">
         {children}

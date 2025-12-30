@@ -10,10 +10,12 @@ import { getTaxSettings, updateTaxSettings } from "@/lib/services/settings"
 import { TaxSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
 import { Save, LoaderCircle } from "lucide-react"
+import { useSettings } from "@/modules/admin/settings/settings-context"
 
 const GST_RATES = [0, 5, 12, 18, 28]
 
 export function TaxSettingsFormSimplified() {
+  const { registerSaveHandler, unregisterSaveHandler } = useSettings()
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [settings, setSettings] = useState<TaxSettings | null>(null)
@@ -73,6 +75,14 @@ export function TaxSettingsFormSimplified() {
     }
   }
 
+  // Register save handler
+  useEffect(() => {
+    registerSaveHandler(async () => {
+      await handleSubmit({ preventDefault: () => { } } as any)
+    })
+    return () => unregisterSaveHandler()
+  }, [settings, formData])
+
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -109,7 +119,7 @@ export function TaxSettingsFormSimplified() {
             <SelectTrigger className="max-w-sm h-12 text-base">
               <SelectValue placeholder="Select GST rate" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" align="start">
               {GST_RATES.map((rate) => (
                 <SelectItem key={rate} value={rate.toString()}>
                   {rate}% GST
@@ -151,13 +161,13 @@ export function TaxSettingsFormSimplified() {
         >
           <div className="flex items-center space-x-4 py-4 px-5 bg-gray-50 rounded-xl">
             <RadioGroupItem value="exclusive" id="exclusive" className="h-5 w-5" />
-            <Label htmlFor="exclusive" className="text-base font-medium text-gray-900 cursor-pointer">
+            <Label htmlFor="exclusive" className="text-lg font-semibold text-gray-900 cursor-pointer">
               Prices exclusive of tax
             </Label>
           </div>
           <div className="flex items-center space-x-4 py-4 px-5 bg-gray-50 rounded-xl">
             <RadioGroupItem value="inclusive" id="inclusive" className="h-5 w-5" />
-            <Label htmlFor="inclusive" className="text-base font-medium text-gray-900 cursor-pointer">
+            <Label htmlFor="inclusive" className="text-lg font-semibold text-gray-900 cursor-pointer">
               Prices inclusive of tax
             </Label>
           </div>

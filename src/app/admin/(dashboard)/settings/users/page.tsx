@@ -47,12 +47,6 @@ export default function AdminUsersPage() {
   return (
     <Tier1Guard userRole={profile.role}>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Admin Users</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Manage admin access and permissions
-          </p>
-        </div>
         <AdminUsersSettings />
       </div>
     </Tier1Guard>
