@@ -685,7 +685,7 @@ export function AdminUsersSettings() {
                   executeInvite()
                 }
               }}
-              className={confirmDialog.type === 'approve' ? 'bg-orange-600' : 'bg-red-600'}
+              className={confirmDialog.type === 'approve' ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-red-600 text-white hover:bg-red-700'}
             >
               {confirmDialog.type === 'delete' ? 'Delete' : 'Confirm'}
             </AlertDialogAction>
