@@ -69,6 +69,8 @@ export async function updateStoreSettings(
 }> {
     try {
         const supabase = await createServerSupabase()
+        
+        console.log('📝 Updating store settings...', { id, updates })
 
         const { data, error } = await supabase
             .from('store_settings')
@@ -81,13 +83,20 @@ export async function updateStoreSettings(
             .single()
 
         if (error) {
-            console.error('Error updating store settings:', error)
+            console.error('❌ Error updating store settings:', error)
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            })
             return { success: false, error: error.message }
         }
 
+        console.log('✅ Store settings updated successfully')
         return { success: true, data: data as StoreSettings }
     } catch (error: any) {
-        console.error('Error in updateStoreSettings:', error)
+        console.error('❌ Exception in updateStoreSettings:', error)
         return { success: false, error: error.message || 'Failed to update settings' }
     }
 }
