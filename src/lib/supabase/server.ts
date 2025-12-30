@@ -52,15 +52,16 @@ export async function createClerkSupabaseClient() {
     supabaseKey,
     {
       global: {
-        // Use standard Clerk session token (native integration)
+        // Use standard Clerk session token (native integration - NO template!)
         fetch: async (url, options = {}) => {
-          const clerkToken = await getToken({ template: 'supabase' })
+          // Get standard Clerk token without template (Native Integration method)
+          const clerkToken = await getToken()
 
           const headers = new Headers(options?.headers)
           if (clerkToken) {
             headers.set('Authorization', `Bearer ${clerkToken}`)
           } else {
-            console.warn('createClerkSupabaseClient: No Clerk token found for template "supabase". Request will be anonymous.')
+            console.warn('createClerkSupabaseClient: No Clerk token found. Request will be anonymous.')
           }
 
           return fetch(url, {
