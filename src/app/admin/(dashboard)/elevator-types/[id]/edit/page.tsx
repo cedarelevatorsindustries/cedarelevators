@@ -25,10 +25,15 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
     name: "",
     slug: "",
     description: "",
+    banner_image: "",
     icon: "",
     sort_order: 0,
     is_active: true
   })
+
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null)
+  const [bannerImagePreview, setBannerImagePreview] = useState<string>("")
+  const [isUploading, setIsUploading] = useState(false)
 
   // Load elevator type data
   useEffect(() => {
@@ -37,10 +42,14 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
         name: elevatorType.name || "",
         slug: elevatorType.slug || "",
         description: elevatorType.description || "",
+        banner_image: elevatorType.banner_image || "",
         icon: elevatorType.icon || "",
         sort_order: elevatorType.sort_order || 0,
         is_active: elevatorType.is_active ?? true
       })
+      if (elevatorType.banner_image) {
+        setBannerImagePreview(elevatorType.banner_image)
+      }
     }
   }, [elevatorType])
 
@@ -52,6 +61,18 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
     })
   }
 
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setBannerImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = async () => {
     try {
       if (!formData.name || !formData.slug) {
@@ -59,9 +80,23 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
         return
       }
 
+      let bannerImageUrl = formData.banner_image
+
+      // Upload banner image if selected
+      if (bannerImageFile) {
+        setIsUploading(true)
+        // Note: Need to add upload mutation to useElevatorTypes hook
+        // For now, we'll skip the upload and just save the formData
+        toast.warning('Banner image upload not yet implemented')
+        setIsUploading(false)
+      }
+
       const result = await updateMutation.mutateAsync({
         id: params.id,
-        formData
+        formData: {
+          ...formData,
+          banner_image: bannerImageUrl
+        }
       })
 
       if (result.success) {
@@ -73,6 +108,7 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
     } catch (error) {
       console.error('Error updating elevator type:', error)
       toast.error('Failed to update elevator type')
+      setIsUploading(false)
     }
   }
 
@@ -98,7 +134,7 @@ export default function EditElevatorTypePage({ params }: { params: { id: string 
     )
   }
 
-  const isLoading = updateMutation.isPending
+  const isLoading = updateMutation.isPending || isUploading
 
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabase } from '@/lib/supabase/server'
 import type {
   ElevatorType,
   ElevatorTypeFormData,
@@ -18,7 +18,7 @@ export async function fetchElevatorTypes(
   filters?: ElevatorTypeFilters
 ): Promise<FetchElevatorTypesResult> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     let query = supabase
       .from('elevator_types')
@@ -56,7 +56,7 @@ export async function fetchElevatorTypeById(
   id: string
 ): Promise<UpdateElevatorTypeResult> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase
       .from('elevator_types')
@@ -83,7 +83,7 @@ export async function createElevatorType(
   formData: ElevatorTypeFormData
 ): Promise<CreateElevatorTypeResult> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     // Check if slug already exists
     const { data: existing } = await supabase
@@ -133,7 +133,7 @@ export async function updateElevatorType(
   formData: Partial<ElevatorTypeFormData>
 ): Promise<UpdateElevatorTypeResult> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     // If slug is being updated, check uniqueness
     if (formData.slug) {
@@ -175,7 +175,7 @@ export async function deleteElevatorType(
   id: string
 ): Promise<DeleteElevatorTypeResult> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     // Check if elevator type is in use by any products
     const { data: productsInUse } = await supabase
@@ -215,7 +215,7 @@ export async function updateElevatorTypesOrder(
   updates: Array<{ id: string; sort_order: number }>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     const promises = updates.map((update) =>
       supabase
@@ -245,12 +245,23 @@ export async function getProductsByElevatorType(
   elevatorTypeId: string
 ): Promise<{ success: boolean; products?: any[]; error?: string }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     const { data, error } = await supabase.rpc('get_elevator_type_products', {
       elevator_type_id_param: elevatorTypeId,
     })
 
+    if (error) {
+      console.error('Error fetching products by elevator type:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, products: data }
+  } catch (error: any) {
+    console.error('Error in getProductsByElevatorType:', error)
+    return { success: false, error: error.message }
+  }
+}
 
 /**
  * Upload elevator type image to Supabase Storage
@@ -260,7 +271,7 @@ export async function uploadElevatorTypeImage(
   type: 'thumbnail' | 'banner' = 'thumbnail'
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${type}-${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
@@ -282,18 +293,6 @@ export async function uploadElevatorTypeImage(
     return { success: true, url: publicUrl }
   } catch (error: any) {
     console.error('Error uploading elevator type image:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-    if (error) {
-      console.error('Error fetching products by elevator type:', error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, products: data }
-  } catch (error: any) {
-    console.error('Error in getProductsByElevatorType:', error)
     return { success: false, error: error.message }
   }
 }

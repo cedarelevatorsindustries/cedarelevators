@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { TableCell } from "@/components/ui/table"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,12 +25,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Eye, MoreHorizontal, Package, Truck, X, Edit } from "lucide-react"
 import {
-  OrderWithDetails,
   updateOrderStatus,
   bulkUpdateOrderStatus,
   addTrackingInfo,
   cancelOrder
 } from "@/lib/actions/orders"
+import type { OrderWithDetails } from "@/lib/types/orders"
 import {
   getCustomerName,
   getOrderNumber,
@@ -43,7 +42,7 @@ import {
 import { formatDistanceToNow } from "date-fns"
 import { toast } from "sonner"
 import Link from "next/link"
-import { VirtualizedTable } from "@/modules/admin/common/virtualized-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface OrdersTableProps {
   orders: OrderWithDetails[]
@@ -195,7 +194,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       header: 'Order ID',
       render: (order: OrderWithDetails) => (
         <TableCell className="font-mono font-semibold text-gray-900">
-          {getOrderNumber(order)}
+          {getOrderNumber(order.id)}
         </TableCell>
       ),
     },
@@ -205,7 +204,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       render: (order: OrderWithDetails) => (
         <TableCell>
           <div>
-            <div className="font-semibold text-gray-900">{getCustomerName(order)}</div>
+            <div className="font-semibold text-gray-900">{getCustomerName(order.guest_name, order.guest_email)}</div>
             <div className="text-sm text-gray-600">{order.guest_email}</div>
           </div>
         </TableCell>
@@ -383,13 +382,33 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
         </div>
       )}
 
-      <div className="rounded-xl border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
-        <VirtualizedTable
-          data={orders}
-          columns={columns}
-          estimatedRowHeight={90}
-          emptyMessage="No orders found. Try adjusting your filters or check back later."
-        />
+      <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+              <TableHead className="w-12 px-4">
+                <Checkbox
+                  checked={selectedOrders.length === orders.length && orders.length > 0}
+                  onCheckedChange={toggleAll}
+                />
+              </TableHead>
+              {columns.slice(1).map((column) => (
+                <TableHead key={column.key} className={column.key === 'actions' ? 'text-right' : ''}>
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                {columns.map((column) => (
+                  <column.render key={`${order.id}-${column.key}`} {...order} />
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Add Tracking Dialog */}

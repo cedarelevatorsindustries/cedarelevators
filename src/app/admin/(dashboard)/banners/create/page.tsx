@@ -10,15 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Save, Upload, ArrowLeft, LoaderCircle, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCreateBanner, useUploadBannerImage } from "@/hooks/queries/useBanners"
-import { BANNER_PLACEMENTS } from "@/lib/types/banners"
-import type { BannerPlacement, BannerLinkType, BannerCtaStyle } from "@/lib/types/banners"
-import { BannerPhilosophyCard } from "@/components/admin/banner-philosophy-card"
+import { useCreateBanner } from "@/hooks/queries/useBanners"
+import type { BannerPlacement, BannerLinkType, BannerCtaStyle, BannerSlide } from "@/lib/types/banners"
+import { EntitySelector } from "@/components/admin/entity-selector"
+import { BannerSlideManager } from "@/components/admin/banner-slide-manager"
+import { createBannerSlide } from "@/lib/actions/banner-slides"
+import { toast } from "sonner"
 
 export default function CreateBannerPage() {
   const router = useRouter()
   const createMutation = useCreateBanner()
-  const uploadMutation = useUploadBannerImage()
 
   const [formData, setFormData] = useState({
     title: "",
@@ -27,7 +28,7 @@ export default function CreateBannerPage() {
     image_url: "",
     image_alt: "",
     mobile_image_url: "",
-    placement: "hero-carousel" as BannerPlacement, // Hardcoded to All Products Carousel
+    placement: "hero-carousel" as BannerPlacement,
     link_type: "" as BannerLinkType,
     link_id: "",
     cta_text: "",
@@ -41,57 +42,51 @@ export default function CreateBannerPage() {
     text_color: "white"
   })
 
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>("")
+  // Slides state
+  const [slides, setSlides] = useState<BannerSlide[]>([])
   const [isUploading, setIsUploading] = useState(false)
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const handleSubmit = async (isDraft = false) => {
     try {
-      // Validate required fields
-      if (!formData.title || !formData.internal_name || !imageFile) {
-        alert('Please fill in all required fields and upload an image')
+      // Validate required basic fields
+      if (!formData.title || !formData.internal_name) {
+        toast.error('Please fill in title and internal name')
         return
       }
 
-      // Validate link destination (required for carousel)
-      if (!formData.link_type || !formData.link_id) {
-        alert('Link destination is required. Please select link type and link ID.')
+      // Validate slides
+      if (slides.length === 0) {
+        toast.error('Please add at least one slide')
         return
       }
 
-      // Validate CTA text (required for carousel)
-      if (!formData.cta_text) {
-        alert('CTA text is required for carousel banners.')
-        return
-      }
-
-      // Upload image first
       setIsUploading(true)
-      const imageUrl = await uploadMutation.mutateAsync(imageFile)
-      setIsUploading(false)
 
-      // Create banner
+      // Use the first slide as the main banner image (fallback/backward compatibility)
+      const mainImage = slides[0].image_url
+      const mainMobileImage = slides[0].mobile_image_url
+
+      // Create banner with slides
       await createMutation.mutateAsync({
         ...formData,
-        image_url: imageUrl,
-        is_active: !isDraft
+        start_date: formData.start_date || undefined,
+        end_date: formData.end_date || undefined,
+        image_url: mainImage,
+        mobile_image_url: mainMobileImage || "",
+        is_active: !isDraft,
+        // Include slides in the creation payload
+        slides: slides.map((slide, index) => ({
+          ...slide,
+          sort_order: index
+        }))
       })
 
+      toast.success(`Banner created with ${slides.length} slides`)
       router.push('/admin/banners')
     } catch (error) {
       console.error('Error creating banner:', error)
+      toast.error('Failed to create banner')
+    } finally {
       setIsUploading(false)
     }
   }
@@ -108,7 +103,7 @@ export default function CreateBannerPage() {
               Create Carousel Banner
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              Add a new banner to the All Products carousel for discovery navigation
+              Add a new banner to the Catalog Carousel for discovery navigation
             </p>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
@@ -149,9 +144,6 @@ export default function CreateBannerPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form - 2 columns */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Philosophy Card */}
-            <BannerPhilosophyCard />
-
             {/* Basic Info */}
             <Card>
               <CardHeader>
@@ -192,46 +184,11 @@ export default function CreateBannerPage() {
               </CardContent>
             </Card>
 
-            {/* Image Upload */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Banner Image *</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="image">Upload Image</Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="flex-1"
-                    />
-                    <Button variant="outline" onClick={() => document.getElementById('image')?.click()}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Browse
-                    </Button>
-                  </div>
-                </div>
-
-                {imagePreview && (
-                  <div className="border rounded-lg overflow-hidden">
-                    <img src={imagePreview} alt="Preview" className="w-full h-auto" />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="image_alt">Image Alt Text</Label>
-                  <Input
-                    id="image_alt"
-                    placeholder="Describe the image for accessibility"
-                    value={formData.image_alt}
-                    onChange={(e) => setFormData({ ...formData, image_alt: e.target.value })}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {/* Carousel Slides */}
+            <BannerSlideManager
+              slides={slides}
+              onSlidesChange={setSlides}
+            />
 
             {/* Call to Action */}
             <Card>
@@ -254,7 +211,7 @@ export default function CreateBannerPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="cta_style">Button Style</Label>
-                    <Select value={formData.cta_style} onValueChange={(value: BannerCtaStyle) => setFormData({ ...formData, cta_style: value })}>
+                    <Select value={formData.cta_style} onValueChange={(value) => setFormData({ ...formData, cta_style: value as BannerCtaStyle })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -280,7 +237,7 @@ export default function CreateBannerPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Link Type *</Label>
-                  <Select value={formData.link_type} onValueChange={(value: BannerLinkType) => setFormData({ ...formData, link_type: value, link_id: "" })}>
+                  <Select value={formData.link_type} onValueChange={(value) => setFormData({ ...formData, link_type: value as BannerLinkType, link_id: "" })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select link type" />
                     </SelectTrigger>
@@ -295,18 +252,11 @@ export default function CreateBannerPage() {
                 </div>
 
                 {formData.link_type && (
-                  <div className="space-y-2">
-                    <Label>Link ID *</Label>
-                    <Input
-                      placeholder={`Enter ${formData.link_type} ID`}
-                      value={formData.link_id}
-                      onChange={(e) => setFormData({ ...formData, link_id: e.target.value })}
-                      required
-                    />
-                    <p className="text-xs text-gray-500">
-                      The ID of the {formData.link_type} to link to
-                    </p>
-                  </div>
+                  <EntitySelector
+                    type={formData.link_type}
+                    value={formData.link_id}
+                    onChange={(value) => setFormData({ ...formData, link_id: value })}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -318,23 +268,35 @@ export default function CreateBannerPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">All Products Carousel</p>
+                  <p className="text-sm font-medium text-gray-900">Catalog Carousel</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Homepage carousel for product discovery navigation (3-5 slides recommended)
+                    Catalog carousel for product discovery navigation (3-5 slides recommended)
                   </p>
                 </div>
                 <p className="text-xs text-blue-600">
-                  ℹ️ All banners here are part of the homepage carousel
+                  ℹ️ All banners here are part of the catalog carousel
                 </p>
               </CardContent>
             </Card>
 
-            {/* Scheduling */}
+            {/* Scheduling & Display */}
             <Card>
               <CardHeader>
-                <CardTitle>Schedule</CardTitle>
+                <CardTitle>Schedule & Display</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="position">Position</Label>
+                  <Input
+                    id="position"
+                    type="number"
+                    min="0"
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: parseInt(e.target.value) || 0 })}
+                  />
+                  <p className="text-xs text-gray-500">Lower numbers appear first in carousel</p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="start_date">Start Date</Label>
                   <Input
@@ -353,48 +315,6 @@ export default function CreateBannerPage() {
                     value={formData.end_date}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                   />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Display Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Display Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Input
-                    id="position"
-                    type="number"
-                    min="0"
-                    value={formData.position}
-                    onChange={(e) => setFormData({ ...formData, position: parseInt(e.target.value) || 0 })}
-                  />
-                  <p className="text-xs text-gray-500">Lower numbers appear first</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="background_color">Background</Label>
-                    <Input
-                      id="background_color"
-                      type="color"
-                      value={formData.background_color}
-                      onChange={(e) => setFormData({ ...formData, background_color: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="text_color">Text Color</Label>
-                    <Input
-                      id="text_color"
-                      type="color"
-                      value={formData.text_color}
-                      onChange={(e) => setFormData({ ...formData, text_color: e.target.value })}
-                    />
-                  </div>
                 </div>
               </CardContent>
             </Card>

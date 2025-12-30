@@ -1,19 +1,17 @@
 /**
  * Banner Management Types for Cedar Elevators
  * 
- * PHILOSOPHY: Banners are navigation + context surfaces, NOT promotional assets
- * 
  * Banner Management handles ONLY:
- * - All Products Carousel (homepage discovery navigation)
+ * - Catalog Carousel
  * 
  * Entity banners (category/application/type headers) are managed in their respective modules.
  */
 
-// Banner placement - ONLY All Products Carousel
+// Banner placement - ONLY Catalog Carousel
 // Other placements moved to entity tables (categories.banner_image, etc.)
 export type BannerPlacement =
-    | 'hero-carousel'        // All Products Carousel - homepage/catalog discovery
-    | 'all-products-carousel' // Alias for hero-carousel (preferred name)
+    | 'hero-carousel'        // Catalog Carousel
+    | 'all-products-carousel' // Alias for hero-carousel
 
 // DEPRECATED placements (moved to entity modules):
 // - 'category-header' → categories.banner_image
@@ -63,6 +61,8 @@ export interface Banner {
     created_at: string
     updated_at: string
     created_by?: string | null
+    // New slides column - single table architecture
+    slides?: BannerSlide[] | null
 }
 
 /**
@@ -71,6 +71,23 @@ export interface Banner {
 export interface BannerWithStatus extends Banner {
     status: BannerStatus
 }
+
+/**
+ * Banner Slide entity - for multiple images per banner
+ */
+export interface BannerSlide {
+    id: string
+    banner_id: string
+    image_url: string
+    mobile_image_url?: string | null
+    image_alt?: string | null
+    sort_order: number
+    created_at?: string
+    updated_at?: string
+}
+
+// DEPRECATED: BannerWithSlides is now just Banner
+export type BannerWithSlides = Banner
 
 /**
  * Form data for creating/editing banners
@@ -98,6 +115,7 @@ export interface BannerFormData {
     position?: number
     background_color?: string
     text_color?: string
+    slides?: BannerSlide[]
 }
 
 /**
@@ -133,15 +151,13 @@ export interface PlacementConfig {
     icon: string
 }
 
-/**
- * Available banner placements with metadata
- * UPDATED: Only All Products Carousel is managed here
- */
+// Banner placement - ONLY Catalog Carousel
+// Other placements moved to entity tables (categories.banner_image, etc.)
 export const BANNER_PLACEMENTS: PlacementConfig[] = [
     {
-        id: 'hero-carousel',
-        label: 'All Products Carousel',
-        description: 'Homepage carousel for product discovery navigation (3-5 slides recommended)',
+        id: 'hero-carousel', // Internal ID kept for compatibility
+        label: 'Catalog Carousel',
+        description: 'Catalog carousel for product discovery navigation (3-5 slides recommended)',
         aspectRatio: '16:9',
         recommendedSize: '1920x1080',
         icon: 'Layout'

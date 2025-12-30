@@ -11,10 +11,12 @@ import type { ViewMode } from "@/modules/catalog/sections"
 import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
 import { getApplicationConfig, getCategoriesForApplication } from "@/lib/config/applications"
+import { BannerWithSlides } from "@/lib/types/banners"
 
 interface CatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
+  banners?: BannerWithSlides[]
   searchParams?: {
     type?: string
     category?: string
@@ -32,6 +34,7 @@ const ITEMS_PER_PAGE = 24
 export default function CatalogTemplate({
   products: initialProducts,
   categories,
+  banners = [],
   searchParams = {}
 }: CatalogTemplateProps) {
   // Determine catalog type
@@ -231,15 +234,21 @@ export default function CatalogTemplate({
 
       {/* Browse All Banner - Full Width (Only for browse-all type) */}
       {config.showBanner && !applicationData && !currentCategory && catalogType === "browse-all" && (
-        <CatalogBanner
-          title="Premium Elevator Components"
-          subtitle="ISO Certified Quality | Pan-India Delivery"
-          backgroundImage="/images/image.png"
-          categories={categories.slice(0, 10)}
-          type="category"
-          slug="all"
-          variant={config.bannerVariant || "simple"}
-        />
+        banners.length > 0 ? (
+          <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
+            <BannerCarousel banners={banners} />
+          </div>
+        ) : (
+          <CatalogBanner
+            title="Premium Elevator Components"
+            subtitle="ISO Certified Quality | Pan-India Delivery"
+            backgroundImage="/images/image.png"
+            categories={categories.slice(0, 10)}
+            type="category"
+            slug="all"
+            variant={config.bannerVariant || "simple"}
+          />
+        )
       )}
 
       {/* Main Content */}

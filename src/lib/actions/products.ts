@@ -166,8 +166,8 @@ export async function updateProduct(id: string, productData: Partial<ProductForm
     // Prepare update data ensuring technical_specs is properly formatted
     const updateData = {
         ...productData,
-        technical_specs: productData.technical_specs !== undefined 
-            ? productData.technical_specs 
+        technical_specs: productData.technical_specs !== undefined
+            ? productData.technical_specs
             : undefined,
     }
 
@@ -192,19 +192,25 @@ export async function updateProduct(id: string, productData: Partial<ProductForm
  * Delete product
  */
 export async function deleteProduct(id: string) {
-    const supabase = await createServerSupabase()
+    try {
+        const supabase = await createServerSupabase()
 
-    const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id)
+        const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id)
 
-    if (error) {
-        console.error('Error deleting product:', error)
-        throw new Error('Failed to delete product')
+        if (error) {
+            console.error('Error deleting product:', error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath('/admin/products')
+        return { success: true }
+    } catch (error) {
+        console.error('Error in deleteProduct:', error)
+        return { success: false, error: 'An unexpected error occurred' }
     }
-
-    revalidatePath('/admin/products')
 }
 
 /**
@@ -248,4 +254,29 @@ export async function getProductStats(): Promise<ProductStats> {
     })
 
     return stats
+}
+
+/**
+ * Fetch multiple products by IDs (for guest lists)
+ */
+export async function getProductsByIds(ids: string[]) {
+    if (!ids.length) return []
+
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', ids)
+
+    if (error) {
+        console.error('Error fetching products by IDs:', error)
+        return []
+    }
+
+    // Sort by input order if possible?
+    // Supabase .in() does not guarantee order.
+    // We can reorder in client or here.
+    const productMap = new Map(data.map(p => [p.id, p]))
+    return ids.map(id => productMap.get(id)).filter(Boolean) as Product[]
 }

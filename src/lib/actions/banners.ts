@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type {
     Banner,
     BannerWithStatus,
+    BannerWithSlides,
     BannerFormData,
     BannerFilters,
     BannerStats,
@@ -176,30 +177,32 @@ export async function createBanner(data: BannerFormData): Promise<{
         // VALIDATION: Only allow All Products Carousel
         const placement = data.placement || 'hero-carousel'
         if (placement !== 'hero-carousel' && placement !== 'all-products-carousel') {
-            return { 
-                success: false, 
-                error: 'Invalid placement. Only "hero-carousel" or "all-products-carousel" is allowed. Other banners are managed in their respective entity modules.' 
+            return {
+                success: false,
+                error: 'Invalid placement. Only "hero-carousel" or "all-products-carousel" is allowed. Other banners are managed in their respective entity modules.'
             }
         }
 
-        // VALIDATION: Carousel banners require CTA text
-        if (!data.cta_text || data.cta_text.trim() === '') {
-            return { 
-                success: false, 
-                error: 'CTA text is required for carousel banners' 
-            }
-        }
+        // VALIDATION: Carousel banners requires CTA text
+        // UPDATED: Made optional per user request
+        // if (!data.cta_text || data.cta_text.trim() === '') {
+        //     return { 
+        //         success: false, 
+        //         error: 'CTA text is required for carousel banners' 
+        //     }
+        // }
 
-        // VALIDATION: Carousel banners require link destination
+        // VALIDATION: Carousel banners requires link destination
+        // UPDATED: Made optional per user request
         const linkType = data.link_type || data.target_type
         const linkId = data.link_id || data.target_id
-        
-        if (!linkType || !linkId) {
-            return { 
-                success: false, 
-                error: 'Link destination is required. Please select link type (application/category/elevator-type/collection) and link ID.' 
-            }
-        }
+
+        // if (!linkType || !linkId) {
+        //     return { 
+        //         success: false, 
+        //         error: 'Link destination is required. Please select link type (application/category/elevator-type/collection) and link ID.' 
+        //     }
+        // }
 
         const { data: banner, error } = await supabase
             .from('banners')
@@ -221,7 +224,8 @@ export async function createBanner(data: BannerFormData): Promise<{
                 is_active: data.is_active ?? true,
                 position: data.position ?? 0,
                 background_color: data.background_color,
-                text_color: data.text_color || 'white'
+                text_color: data.text_color || 'white',
+                slides: (data as any).slides || [] // Save slides directly
             })
             .select()
             .single()
@@ -252,9 +256,29 @@ export async function updateBanner(id: string, data: Partial<BannerFormData>): P
     try {
         const supabase = await createClerkSupabaseClient()
 
+        // Prepare update data by mapping form fields to DB columns
+        const updateData: any = { ...data }
+
+        // Map link_type -> target_type
+        if ('link_type' in data) {
+            updateData.target_type = data.link_type
+            delete updateData.link_type
+        }
+
+        // Map link_id -> target_id
+        if ('link_id' in data) {
+            updateData.target_id = data.link_id
+            delete updateData.link_id
+        }
+
+        // Ensure slides are included if present
+        if ((data as any).slides) {
+            updateData.slides = (data as any).slides
+        }
+
         const { data: banner, error } = await supabase
             .from('banners')
-            .update(data)
+            .update(updateData)
             .eq('id', id)
             .select()
             .single()

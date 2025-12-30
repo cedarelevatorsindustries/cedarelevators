@@ -11,25 +11,14 @@ import Link from "next/link"
 import { useBanners, useDeleteBanner, useToggleBannerStatus } from "@/hooks/queries/useBanners"
 import { computeBannerStatus } from "@/lib/types/banners"
 import type { BannerWithStatus } from "@/lib/types/banners"
-import { BannerPhilosophyCard } from "@/components/admin/banner-philosophy-card"
 
 
 export default function BannersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-
-  const filters = {
-    search: searchQuery || undefined,
-    placement: 'hero-carousel' as const, // Always filter to All Products Carousel
-    status: statusFilter !== 'all' ? statusFilter : undefined,
-  }
-
-  const { data, isLoading, refetch } = useBanners(filters)
+  const { data, isLoading, refetch } = useBanners({ placement: 'hero-carousel' })
   const deleteMutation = useDeleteBanner()
   const toggleMutation = useToggleBannerStatus()
 
   const banners = data?.banners || []
-  const stats = data?.stats || { total: 0, active: 0, scheduled: 0, expired: 0 }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this banner?')) return
@@ -46,9 +35,9 @@ export default function BannersPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Products Carousel</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Catalog Carousel</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Manage homepage carousel banners for product discovery navigation
+              Manage catalog carousel banners for product discovery navigation
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -71,95 +60,6 @@ export default function BannersPage() {
           </div>
         </div>
 
-        {/* Philosophy Card */}
-        <BannerPhilosophyCard />
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Banners</CardTitle>
-              <ImageIcon className="h-4 w-4 text-gray-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-              <p className="text-xs text-gray-500 mt-1">All banners</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
-              <Eye className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.active}</div>
-              <p className="text-xs text-gray-500 mt-1">Currently live</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Scheduled</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.scheduled}</div>
-              <p className="text-xs text-gray-500 mt-1">Future dated</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Expired</CardTitle>
-              <Calendar className="h-4 w-4 text-gray-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.expired}</div>
-              <p className="text-xs text-gray-500 mt-1">Past end date</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold text-gray-900">Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Search</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search banners..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white border-gray-200"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-white border-gray-200">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="expired">Expired</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Banners List */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
@@ -177,9 +77,7 @@ export default function BannersPage() {
                 <ImageIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                 <h3 className="text-base font-medium text-gray-900 mb-2">No carousel banners found</h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  {searchQuery || statusFilter !== "all"
-                    ? "Try adjusting your filters."
-                    : "Get started by creating your first carousel banner for product discovery."}
+                  Get started by creating your first carousel banner for product discovery.
                 </p>
                 <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
                   <Link href="/admin/banners/create">

@@ -33,6 +33,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     parent_id: null as string | null,
     image_url: "",
     image_alt: "",
+    banner_image: "",
     icon: "",
     sort_order: 0,
     is_active: true,
@@ -46,6 +47,8 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null)
+  const [bannerImagePreview, setBannerImagePreview] = useState<string>("")
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
@@ -57,6 +60,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         parent_id: category.parent_id || null,
         image_url: category.image_url || "",
         image_alt: category.image_alt || "",
+        banner_image: category.banner_image || "",
         icon: category.icon || "",
         sort_order: category.sort_order || 0,
         is_active: category.is_active ?? true,
@@ -67,6 +71,9 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       })
       if (category.image_url) {
         setImagePreview(category.image_url)
+      }
+      if (category.banner_image) {
+        setBannerImagePreview(category.banner_image)
       }
     }
   }, [category])
@@ -85,9 +92,22 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     }
   }
 
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setBannerImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = async () => {
     try {
       let imageUrl = formData.image_url
+      let bannerImageUrl = formData.banner_image
 
       if (imageFile) {
         setIsUploading(true)
@@ -98,11 +118,21 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         setIsUploading(false)
       }
 
+      if (bannerImageFile) {
+        setIsUploading(true)
+        const result = await uploadMutation.mutateAsync(bannerImageFile)
+        if (result.success && result.url) {
+          bannerImageUrl = result.url
+        }
+        setIsUploading(false)
+      }
+
       const result = await updateMutation.mutateAsync({
         id: params.id,
         data: {
           ...formData,
-          image_url: imageUrl
+          image_url: imageUrl,
+          banner_image: bannerImageUrl
         }
       })
 
@@ -249,6 +279,35 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                     onChange={(e) => setFormData({ ...formData, image_alt: e.target.value })}
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Visual Identity</CardTitle>
+                <CardDescription>
+                  Banner image for category page header (optional, non-clickable)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="banner_image">Banner Image</Label>
+                  <Input
+                    id="banner_image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerImageChange}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Recommended: 1920x400px wide banner for category page header
+                  </p>
+                </div>
+
+                {bannerImagePreview && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img src={bannerImagePreview} alt="Banner Preview" className="w-full h-auto" />
+                  </div>
+                )}
               </CardContent>
             </Card>
 

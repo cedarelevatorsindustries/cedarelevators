@@ -5,8 +5,6 @@ import { sendOrderNotification } from './notifications'
 import { sendOrderStatusUpdate } from '@/lib/services/email'
 import type { OrderWithDetails } from '@/lib/types/orders'
 
-// Re-export OrderWithDetails for use in other modules
-export type { OrderWithDetails }
 
 /**
  * Get a single order by ID
@@ -205,7 +203,7 @@ export async function cancelOrder(
                     product_id: item.product_id,
                     quantity: item.quantity
                 })
-                
+
                 if (invError) {
                     console.error('Error restoring inventory:', invError)
                     // Continue even if inventory restoration fails

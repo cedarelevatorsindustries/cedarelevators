@@ -188,7 +188,7 @@ export default function OrderDetailPage() {
             </Badge>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>Placed on {new Date(created_at).toLocaleDateString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
+            <span>Placed on {new Date(created_at).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
             <span>•</span>
             <span>{formatDistanceToNow(new Date(created_at), { addSuffix: true })}</span>
           </div>

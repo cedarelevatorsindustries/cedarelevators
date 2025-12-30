@@ -5,12 +5,15 @@ import { useState } from "react"
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react"
 import ProductSectionHorizontal from "../../sections/mobile/product-section-horizontal"
 import ProductCard from "@/components/ui/product-card"
+import { BannerWithSlides } from "@/lib/types/banners"
+import { BannerCarousel } from "../../components/banner-carousel"
 
 interface ProductsTabProps {
   products: Product[]
+  banners?: BannerWithSlides[]
 }
 
-export default function ProductsTabTemplate({ products }: ProductsTabProps) {
+export default function ProductsTabTemplate({ products, banners = [] }: ProductsTabProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [showSort, setShowSort] = useState(false)
 
@@ -31,19 +34,23 @@ export default function ProductsTabTemplate({ products }: ProductsTabProps) {
     <div className="pb-20">
       {/* Banner - Smaller with Rounded Corners */}
       <div className="p-4">
-        <div className="relative aspect-[16/6] rounded-xl overflow-hidden">
-          <img
-            src="/images/image.png"
-            alt="Catalog Banner"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
-            <div className="px-6">
-              <h2 className="text-white text-xl font-bold mb-1">Premium Elevator Components</h2>
-              <p className="text-white/90 text-sm">Browse our complete catalog</p>
+        {banners.length > 0 ? (
+          <BannerCarousel banners={banners} />
+        ) : (
+          <div className="relative aspect-[16/6] rounded-xl overflow-hidden">
+            <img
+              src="/images/image.png"
+              alt="Catalog Banner"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
+              <div className="px-6">
+                <h2 className="text-white text-xl font-bold mb-1">Premium Elevator Components</h2>
+                <p className="text-white/90 text-sm">Browse our complete catalog</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Product Sections - Horizontal Scroll */}

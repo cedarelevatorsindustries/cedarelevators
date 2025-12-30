@@ -5,7 +5,7 @@ import { PROFILE_SECTIONS, type ProfileSection } from '@/lib/constants/profile'
 import ProfileTopbar from '../components/profile-topbar'
 import ProfileSidebar from '../components/profile-sidebar'
 import QuickActions from '../components/quick-actions'
-import RecommendedProducts from '../components/recommended-products'
+import RecentlyViewedList from '../components/recently-viewed-list'
 import { DashboardSection, PersonalInfoSection, AddressesSection, NotificationsSection, PasswordSection, CompanyInfoSection, BusinessVerificationSection } from '../components/sections'
 import QuotesSection from '../components/sections/quotes-section'
 import QuoteDetailSection from '../components/sections/quote-detail-section'
@@ -215,9 +215,9 @@ export default function ProfileDesktopTemplate() {
               {renderSection()}
             </div>
 
-            {/* Recommended Products Section */}
+            {/* Recently Viewed Section */}
             <div className="bg-white border-t border-gray-200 p-6 md:p-8">
-              <RecommendedProducts />
+              <RecentlyViewedList />
             </div>
           </main>
         </div>

@@ -3,6 +3,8 @@ import { listProducts } from "@/lib/data/products"
 import { listCategories } from "@/lib/data/categories"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
+import { getBannersByPlacement } from "@/lib/actions/banners"
+import { BannerWithSlides } from "@/lib/types/banners"
 
 export const metadata: Metadata = {
   title: "Product Catalog - Cedar Elevators | Premium Elevator Components",
@@ -44,6 +46,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     include_descendants_tree: true
   })
 
+  // Fetch banners for carousel
+  const { banners = [] } = await getBannersByPlacement('hero-carousel')
+
   return (
     <>
       {/* Desktop View */}
@@ -52,6 +57,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           products={products}
           categories={categories}
           searchParams={params}
+          banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={params.app}
         />
@@ -62,6 +68,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <MobileCatalogTemplate
           products={products}
           categories={categories}
+          banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={params.app}
         />

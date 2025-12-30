@@ -17,6 +17,7 @@ export function getCustomerName(guestName?: string | null, email?: string | null
 }
 
 export function getOrderNumber(orderId: string): string {
+    if (typeof orderId !== 'string') return '#UNKNOWN'
     return `#${orderId.slice(0, 8).toUpperCase()}`
 }
 

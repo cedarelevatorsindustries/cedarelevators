@@ -6,13 +6,12 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { TableCell } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Edit, MoreHorizontal, Eye, Copy, Archive, Trash2, LoaderCircle } from "lucide-react"
 import { deleteProduct } from "@/lib/actions/products"
 import { toast } from "sonner"
-import { VirtualizedTable } from "@/modules/admin/common/virtualized-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface Product {
   id: string
@@ -68,15 +67,15 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const toggleProduct = (productId: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId) 
+    setSelectedProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
         : [...prev, productId]
     )
   }
 
   const toggleAll = () => {
-    setSelectedProducts(prev => 
+    setSelectedProducts(prev =>
       prev.length === products.length ? [] : products.map(product => product.id)
     )
   }
@@ -112,7 +111,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
       try {
         const promises = selectedProducts.map(id => deleteProduct(id))
         const results = await Promise.all(promises)
-        
+
         const successful = results.filter(r => r.success).length
         const failed = results.filter(r => !r.success).length
 
@@ -143,7 +142,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
       header: '',
       render: (product: Product) => (
         <TableCell className="w-12">
-          <Checkbox 
+          <Checkbox
             checked={selectedProducts.includes(product.id)}
             onCheckedChange={() => toggleProduct(product.id)}
           />
@@ -157,13 +156,13 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
         const primaryImage = product.product_images?.find(img => img.is_primary) || product.product_images?.[0]
         return (
           <TableCell>
-            <Link 
+            <Link
               href={`/admin/products/${product.id}`}
               className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors"
             >
               <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                 {primaryImage ? (
-                  <Image 
+                  <Image
                     src={primaryImage.image_url}
                     alt={primaryImage.alt_text || product.title}
                     width={40}
@@ -217,11 +216,10 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
           <TableCell>
             <div className="flex items-center space-x-2">
               <span className="text-gray-700">{totalStock}</span>
-              <Badge className={`text-xs font-medium ${
-                stockStatus.color === 'destructive' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+              <Badge className={`text-xs font-medium ${stockStatus.color === 'destructive' ? 'bg-orange-100 text-orange-700 border-orange-200' :
                 stockStatus.color === 'secondary' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                'bg-green-100 text-green-700 border-green-200'
-              }`}>
+                  'bg-green-100 text-green-700 border-green-200'
+                }`}>
                 {stockStatus.label}
               </Badge>
             </div>
@@ -234,11 +232,10 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
       header: 'Status',
       render: (product: Product) => (
         <TableCell>
-          <Badge className={`font-medium capitalize ${
-            product.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
+          <Badge className={`font-medium capitalize ${product.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
             product.status === 'draft' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-            'bg-gray-100 text-gray-700 border-gray-200'
-          }`}>
+              'bg-gray-100 text-gray-700 border-gray-200'
+            }`}>
             {product.status || 'draft'}
           </Badge>
         </TableCell>
@@ -292,7 +289,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
               </DropdownMenuItem>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="text-orange-600 hover:bg-orange-50"
                     onSelect={(e) => e.preventDefault()}
                   >
@@ -311,7 +308,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                     <AlertDialogCancel className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                       Cancel
                     </AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={() => handleDelete(product.id)}
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                       disabled={deletingId === product.id}
@@ -357,9 +354,9 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
                   disabled={isPending}
                 >
@@ -382,7 +379,7 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
                   <AlertDialogCancel className="bg-white text-gray-900 border-gray-300 hover:bg-gray-50">
                     Cancel
                   </AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={handleBulkDelete}
                     className="bg-orange-600 hover:bg-orange-700 text-white"
                     disabled={isPending}
@@ -403,13 +400,33 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
         </div>
       )}
 
-      <div className="rounded-xl border border-gray-200/50 shadow-sm bg-white overflow-hidden relative">
-        <VirtualizedTable
-          data={products}
-          columns={columns}
-          estimatedRowHeight={100}
-          emptyMessage="No products found. Try adjusting your filters or create a new product."
-        />
+      <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+              <TableHead className="w-12 px-4">
+                <Checkbox
+                  checked={selectedProducts.length === products.length && products.length > 0}
+                  onCheckedChange={toggleAll}
+                />
+              </TableHead>
+              {columns.slice(1).map((column) => (
+                <TableHead key={column.key} className={column.key === 'actions' ? 'text-right' : ''}>
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                {columns.map((column) => (
+                  <column.render key={`${product.id}-${column.key}`} {...product} />
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   )

@@ -34,6 +34,7 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
     description: "",
     image_url: "",
     image_alt: "",
+    banner_image: "",
     type: "manual" as "manual" | "automatic",
     is_active: true,
     is_featured: false,
@@ -44,6 +45,8 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null)
+  const [bannerImagePreview, setBannerImagePreview] = useState<string>("")
   const [isUploading, setIsUploading] = useState(false)
 
   // Load collection data
@@ -55,6 +58,7 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
         description: collection.description || "",
         image_url: collection.image_url || "",
         image_alt: collection.image_alt || "",
+        banner_image: collection.banner_image || "",
         type: collection.type || "manual",
         is_active: collection.is_active ?? true,
         is_featured: collection.is_featured || false,
@@ -64,6 +68,9 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
       })
       if (collection.image_url) {
         setImagePreview(collection.image_url)
+      }
+      if (collection.banner_image) {
+        setBannerImagePreview(collection.banner_image)
       }
     }
   }, [collection])
@@ -80,6 +87,18 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
     }
   }
 
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setBannerImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleTitleChange = (title: string) => {
     setFormData({
       ...formData,
@@ -91,6 +110,7 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
   const handleSubmit = async () => {
     try {
       let imageUrl = formData.image_url
+      let bannerImageUrl = formData.banner_image
 
       // Upload new image if selected
       if (imageFile) {
@@ -102,12 +122,23 @@ export default function EditCollectionPage({ params }: { params: { id: string } 
         setIsUploading(false)
       }
 
+      // Upload banner image if selected
+      if (bannerImageFile) {
+        setIsUploading(true)
+        const result = await uploadMutation.mutateAsync(bannerImageFile)
+        if (result.success && result.url) {
+          bannerImageUrl = result.url
+        }
+        setIsUploading(false)
+      }
+
       // Update collection metadata
       const result = await updateMutation.mutateAsync({
         id: params.id,
         data: {
           ...formData,
-          image_url: imageUrl
+          image_url: imageUrl,
+          banner_image: bannerImageUrl
         }
       })
 

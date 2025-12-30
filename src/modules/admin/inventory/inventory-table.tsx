@@ -6,7 +6,7 @@ import { InventoryService } from '@/lib/services/inventory'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { TableCell } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
@@ -27,7 +27,6 @@ import {
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Edit, AlertTriangle } from 'lucide-react'
-import { VirtualizedTable } from '@/modules/admin/common/virtualized-table'
 
 interface InventoryTableProps {
   inventory: InventoryItem[]
@@ -150,10 +149,10 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
           <TableCell>
             <Badge
               className={`font-medium ${stockStatus.color === 'destructive'
-                  ? 'bg-orange-100 text-orange-700 border-orange-200'
-                  : stockStatus.color === 'secondary'
-                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                    : 'bg-green-100 text-green-700 border-green-200'
+                ? 'bg-orange-100 text-orange-700 border-orange-200'
+                : stockStatus.color === 'secondary'
+                  ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                  : 'bg-green-100 text-green-700 border-green-200'
                 }`}
             >
               {stockStatus.label}
@@ -296,14 +295,36 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <VirtualizedTable
-          data={inventory}
-          columns={columns}
-          estimatedRowHeight={80}
-          isLoading={isLoading}
-          emptyMessage="No inventory items found. Try adjusting your filters or add products first."
-          className="border-0"
-        />
+        <div className="border border-gray-200 shadow-sm bg-white overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                {columns.map((column) => (
+                  <TableHead key={column.key} className={column.key === 'actions' ? 'text-right' : ''}>
+                    {column.header}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {inventory.length > 0 ? (
+                inventory.map((item) => (
+                  <TableRow key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                    {columns.map((column) => (
+                      <column.render key={`${item.id}-${column.key}`} {...item} />
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
+                    No inventory items found. Try adjusting your filters or add products first.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   )

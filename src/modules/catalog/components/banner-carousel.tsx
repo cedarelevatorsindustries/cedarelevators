@@ -1,86 +1,123 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { BannerWithSlides, BannerSlide } from "@/lib/types/banners"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import Image from "next/image"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Autoplay, Pagination, EffectFade } from "swiper/modules"
 
-interface Banner {
-  id: string
-  title: string
-  subtitle: string
-  ctaText: string
-  ctaLink: string
-  bgGradient: string
+// Import Swiper styles
+import "swiper/css"
+import "swiper/css/pagination"
+import "swiper/css/effect-fade"
+
+interface BannerCarouselProps {
+  banners: BannerWithSlides[]
 }
 
-const DEFAULT_BANNERS: Banner[] = [
-  {
-    id: "1",
-    title: "Premium Elevator Components",
-    subtitle: "ISO Certified Quality | Pan-India Delivery",
-    ctaText: "Request Quote",
-    ctaLink: "/contact",
-    bgGradient: "from-orange-600 to-orange-800",
-  },
-  {
-    id: "2",
-    title: "New Arrivals This Month",
-    subtitle: "Latest Technology | Best Prices",
-    ctaText: "Explore Now",
-    ctaLink: "/catalog?type=new-arrival",
-    bgGradient: "from-blue-600 to-blue-800",
-  },
-  {
-    id: "3",
-    title: "Exclusive Business Deals",
-    subtitle: "Special Pricing for B2B Customers",
-    ctaText: "View Offers",
-    ctaLink: "/catalog?type=exclusive-business",
-    bgGradient: "from-purple-600 to-purple-800",
-  },
-]
+export function BannerCarousel({ banners }: BannerCarouselProps) {
+  // Flatten all slides from all banners while preserving banner context
+  const allSlides = banners.flatMap(banner =>
+    (banner.slides || []).map((slide: BannerSlide) => ({
+      ...slide,
+      bannerTitle: banner.title,
+      bannerSubtitle: banner.subtitle,
+      bannerCtaText: banner.cta_text,
+      bannerCtaStyle: banner.cta_style,
+      bannerTargetType: banner.target_type,
+      bannerTargetId: banner.target_id,
+      textColor: banner.text_color || 'white'
+    }))
+  ).sort((a, b) => a.sort_order - b.sort_order)
 
-export function BannerCarousel() {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  if (allSlides.length === 0) return null
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % DEFAULT_BANNERS.length)
-    }, 5000)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const currentBanner = DEFAULT_BANNERS[currentIndex]
+  // Helper to generate CTA link
+  const getCtaLink = (slide: typeof allSlides[0]) => {
+    if (!slide.bannerTargetType || !slide.bannerTargetId) return "/catalog"
+    return `/catalog?${slide.bannerTargetType}=${slide.bannerTargetId}`
+  }
 
   return (
-    <div className="mb-8 relative">
-      <div className={`bg-gradient-to-r ${currentBanner.bgGradient} rounded-xl overflow-hidden transition-all duration-500`}>
-        <div className="relative h-64 flex items-center justify-center">
-          <div className="text-center text-white px-8">
-            <h2 className="text-4xl font-bold mb-4">{currentBanner.title}</h2>
-            <p className="text-xl mb-6">{currentBanner.subtitle}</p>
-            <a
-              href={currentBanner.ctaLink}
-              className="inline-block bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              {currentBanner.ctaText}
-            </a>
-          </div>
-        </div>
-      </div>
+    <div className="mb-0 relative w-full overflow-hidden rounded-2xl group">
+      <Swiper
+        modules={[Autoplay, Pagination, EffectFade]}
+        spaceBetween={0}
+        slidesPerView={1}
+        effect="fade"
+        pagination={{
+          clickable: true,
+        }}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        loop={allSlides.length > 1}
+        className="w-full h-full aspect-[21/9] md:aspect-[24/7]"
+      >
+        {allSlides.map((slide) => (
+          <SwiperSlide key={slide.id} className="relative w-full h-full">
+            {/* Image */}
+            <div className="relative w-full h-full">
+              <Image
+                src={slide.image_url}
+                alt={slide.bannerTitle || "Banner"}
+                fill
+                className="object-cover"
+                priority={true}
+              />
 
-      {/* Carousel Indicators */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-        {DEFAULT_BANNERS.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex ? "bg-white w-8" : "bg-white/50"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/30" />
+
+              {/* Content Container */}
+              <div className="absolute inset-0 flex items-center px-8 md:px-16">
+                <div className="max-w-2xl" style={{ color: slide.textColor }}>
+                  <h2 className="text-2xl md:text-5xl font-bold mb-2 md:mb-4 animate-in fade-in slide-in-from-left-4 duration-700">
+                    {slide.bannerTitle}
+                  </h2>
+                  {slide.bannerSubtitle && (
+                    <p className="text-sm md:text-xl mb-4 md:mb-8 opacity-90 animate-in fade-in slide-in-from-left-6 duration-700 delay-100">
+                      {slide.bannerSubtitle}
+                    </p>
+                  )}
+                  {slide.bannerCtaText && (
+                    <div className="animate-in fade-in slide-in-from-left-8 duration-700 delay-200">
+                      <Button
+                        asChild
+                        size="lg"
+                        className={`${slide.bannerCtaStyle === 'outline'
+                          ? 'bg-transparent border-2 border-white text-white hover:bg-white/10'
+                          : 'bg-orange-600 hover:bg-orange-700 text-white border-none'
+                          } px-8 h-10 md:h-12 text-sm md:text-base`}
+                      >
+                        <Link href={getCtaLink(slide)}>
+                          {slide.bannerCtaText}
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
         ))}
-      </div>
+      </Swiper>
+
+      <style jsx global>{`
+        .swiper-pagination-bullet {
+          width: 8px;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.5);
+          opacity: 1;
+        }
+        .swiper-pagination-bullet-active {
+          width: 24px;
+          border-radius: 4px;
+          background: #ffffff;
+        }
+      `}</style>
     </div>
   )
 }

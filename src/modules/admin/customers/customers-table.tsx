@@ -1,13 +1,12 @@
 'use client'
 
 import { CustomerWithStats } from '@/lib/types/customers'
-import { TableCell } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Eye, Mail } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { VirtualizedTable } from '@/modules/admin/common/virtualized-table'
 
 interface CustomersTableProps {
   customers: CustomerWithStats[]
@@ -164,14 +163,40 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
 
   return (
     <div data-testid="customers-table">
-      <VirtualizedTable
-        data={customers}
-        columns={columns}
-        estimatedRowHeight={80}
-        isLoading={isLoading}
-        emptyMessage="No customers found. Try adjusting your filters or check back later."
-        onRowClick={(customer) => router.push(`/admin/customers/${customer.id}`)}
-      />
+      <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+              {columns.map((column) => (
+                <TableHead key={column.key} className={column.key === 'actions' || column.key === 'orders' || column.key === 'totalSpent' || column.key === 'avgOrder' ? 'text-right' : ''}>
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {customers.length > 0 ? (
+              customers.map((customer) => (
+                <TableRow
+                  key={customer.id}
+                  className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                  onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                >
+                  {columns.map((column) => (
+                    <column.render key={`${customer.id}-${column.key}`} {...customer} />
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
+                  No customers found. Try adjusting your filters or check back later.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

@@ -42,6 +42,8 @@ export default function EditApplicationPage({ params }: PageProps) {
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("")
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null)
+  const [bannerImagePreview, setBannerImagePreview] = useState<string>("")
   const [isUploading, setIsUploading] = useState(false)
 
   // Load application data
@@ -63,6 +65,9 @@ export default function EditApplicationPage({ params }: PageProps) {
         meta_description: app.meta_description || ""
       })
       setThumbnailPreview(app.thumbnail_image || app.image_url || "")
+      if (app.banner_image) {
+        setBannerImagePreview(app.banner_image)
+      }
     }
   }, [data])
 
@@ -73,6 +78,18 @@ export default function EditApplicationPage({ params }: PageProps) {
       const reader = new FileReader()
       reader.onloadend = () => {
         setThumbnailPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setBannerImagePreview(reader.result as string)
       }
       reader.readAsDataURL(file)
     }
@@ -101,6 +118,7 @@ export default function EditApplicationPage({ params }: PageProps) {
       }
 
       let thumbnailUrl = formData.thumbnail_image
+      let bannerImageUrl = formData.banner_image
 
       // Upload thumbnail if selected
       if (thumbnailFile) {
@@ -112,12 +130,23 @@ export default function EditApplicationPage({ params }: PageProps) {
         setIsUploading(false)
       }
 
+      // Upload banner image if selected
+      if (bannerImageFile) {
+        setIsUploading(true)
+        const result = await uploadMutation.mutateAsync(bannerImageFile)
+        if (result.success && result.url) {
+          bannerImageUrl = result.url
+        }
+        setIsUploading(false)
+      }
+
       // Update application
       const result = await updateMutation.mutateAsync({
         id: resolvedParams.id,
         data: {
           ...formData,
           thumbnail_image: thumbnailUrl,
+          banner_image: bannerImageUrl,
           image_url: thumbnailUrl // Backward compatibility
         }
       })
@@ -276,6 +305,35 @@ export default function EditApplicationPage({ params }: PageProps) {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Visual Identity</CardTitle>
+                <CardDescription>
+                  Banner image for application page header (optional, non-clickable)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="banner_image">Banner Image</Label>
+                  <Input
+                    id="banner_image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerImageChange}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Recommended: 1920x400px wide banner for application page header
+                  </p>
+                </div>
+
+                {bannerImagePreview && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <img src={bannerImagePreview} alt="Banner Preview" className="w-full h-auto" />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

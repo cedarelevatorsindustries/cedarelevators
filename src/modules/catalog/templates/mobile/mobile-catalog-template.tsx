@@ -6,10 +6,12 @@ import Tabs from "../../components/mobile/tabs"
 import ProductsTabTemplate from "./products-tab-template"
 import CategoriesTabTemplate from "./categories-tab-template"
 import { CategoryHeroGrid } from "@/components/store/category-hero-grid"
+import { BannerWithSlides } from "@/lib/types/banners"
 
 interface MobileCatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
+  banners?: BannerWithSlides[]
   tab?: string
   app?: string
 }
@@ -22,6 +24,7 @@ const tabs = [
 export default function MobileCatalogTemplate({
   products,
   categories,
+  banners = [],
   tab,
   app
 }: MobileCatalogTemplateProps) {
@@ -41,7 +44,7 @@ export default function MobileCatalogTemplate({
 
       {/* Tab Content */}
       {activeTab === "products" && (
-        <ProductsTabTemplate products={products} />
+        <ProductsTabTemplate products={products} banners={banners} />
       )}
 
       {activeTab === "categories" && (

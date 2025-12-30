@@ -1,5 +1,3 @@
-'use server'
-
 import { auth } from '@clerk/nextjs/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { AdminRole } from '@/types/b2b/quote'
@@ -20,6 +18,7 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 // =====================================================
 
 export async function getCurrentAdminUser() {
+  'use server'
   try {
     const { userId } = await auth()
     if (!userId) {
@@ -50,11 +49,13 @@ export async function getCurrentAdminUser() {
 }
 
 export async function getCurrentAdminRole(): Promise<AdminRole | null> {
+  'use server'
   const adminUser = await getCurrentAdminUser()
   return adminUser?.role || null
 }
 
 export async function hasRole(requiredRole: AdminRole): Promise<boolean> {
+  'use server'
   const currentRole = await getCurrentAdminRole()
   if (!currentRole) {
     return false
@@ -64,34 +65,42 @@ export async function hasRole(requiredRole: AdminRole): Promise<boolean> {
 }
 
 export async function canViewQuotes(): Promise<boolean> {
+  'use server'
   return await hasRole('staff') // All roles can view
 }
 
 export async function canPriceQuotes(): Promise<boolean> {
+  'use server'
   return await hasRole('manager') // Manager and above
 }
 
 export async function canApproveQuotes(): Promise<boolean> {
+  'use server'
   return await hasRole('manager') // Manager and above
 }
 
 export async function canConvertQuotes(): Promise<boolean> {
+  'use server'
   return await hasRole('manager') // Manager and above
 }
 
 export async function canApproveVerification(): Promise<boolean> {
+  'use server'
   return await hasRole('admin') // Admin and above
 }
 
 export async function canManageProducts(): Promise<boolean> {
+  'use server'
   return await hasRole('manager') // Manager and above for editing
 }
 
 export async function canAdjustInventory(): Promise<boolean> {
+  'use server'
   return await hasRole('manager') // Manager and above
 }
 
 export async function canManageAdminUsers(): Promise<boolean> {
+  'use server'
   return await hasRole('super_admin') // Super admin only
 }
 

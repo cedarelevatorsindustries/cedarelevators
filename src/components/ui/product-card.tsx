@@ -4,7 +4,9 @@ import { Product } from "@/lib/types/domain"
 import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useFavorites } from "@/hooks/use-favorites"
+import { useRecentlyViewed } from "@/hooks/use-recently-viewed"
 
 interface ProductCardProps {
   product: Product
@@ -18,7 +20,24 @@ export default function ProductCard({
   badge
 }: ProductCardProps) {
   const { user } = useUser()
-  const [isWishlisted, setIsWishlisted] = useState(false)
+  const { isFavorite, toggle } = useFavorites(product.id)
+  const { trackView } = useRecentlyViewed()
+
+  // Track view on mount (only for default/special variants, not mobile list to avoid spam?)
+  // User asked for "Recently Viewed - Help user resume browsing".
+  // Tracking every card render is bad. Tracking should be on CLICK or Detail Page View.
+  // "User clicks product" -> "Track view".
+  // ProductCard links to detail page.
+  // Ideally, tracking should happen on the PRODUCT DETAIL PAGE, not the card.
+  // Checking user request: "Logic: User clicks on product, Product ID stored".
+  // Since Link is wrapping the card/image, clicking it navigates.
+  // We can track on click.
+
+  const handleProductClick = () => {
+    trackView(product)
+  }
+
+  // NOTE: removed local state isWishlisted, using hook state
 
   // Determine user type and verification status
   const isGuest = !user
@@ -48,8 +67,8 @@ export default function ProductCard({
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
-    setIsWishlisted(!isWishlisted)
-    // TODO: Implement wishlist logic
+    e.stopPropagation() // Prevent navigation
+    toggle()
   }
 
   // Badge configuration
@@ -73,7 +92,7 @@ export default function ProductCard({
     return (
       <div className="group relative bg-gray-50 rounded-xl p-2 hover:shadow-xl transition-all duration-300">
         {/* Image Section */}
-        <Link href={`/products/${product.handle}`}>
+        <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
           <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-2 shadow-sm">
             {product.thumbnail ? (
               <img
@@ -100,7 +119,7 @@ export default function ProductCard({
               className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
             >
               <Heart
-                className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                className={`w-3 h-3 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
               />
             </button>
           </div>
@@ -108,7 +127,7 @@ export default function ProductCard({
 
         {/* Content Section */}
         <div className="space-y-1.5">
-          <Link href={`/products/${product.handle}`}>
+          <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
             {/* Title - Truncated to 1 line */}
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors leading-tight">
               {product.title}
@@ -197,7 +216,7 @@ export default function ProductCard({
     return (
       <div className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
         {/* Square Image with Badge */}
-        <Link href={`/products/${product.handle}`} className="block relative aspect-square overflow-hidden bg-gray-50">
+        <Link href={`/products/${product.handle}`} className="block relative aspect-square overflow-hidden bg-gray-50" onClick={handleProductClick}>
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -221,14 +240,14 @@ export default function ProductCard({
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
           >
             <Heart
-              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              className={`w-3.5 h-3.5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
             />
           </button>
         </Link>
 
         {/* Content Outside Image */}
         <div className="p-3 flex flex-col flex-1 gap-2">
-          <Link href={`/products/${product.handle}`} className="flex-1">
+          <Link href={`/products/${product.handle}`} className="flex-1" onClick={handleProductClick}>
             {/* Title */}
             <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight mb-1 group-hover:text-blue-600 transition-colors">
               {product.title}
@@ -285,7 +304,7 @@ export default function ProductCard({
   return (
     <div className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-xl transition-all duration-300">
       {/* Image Section - Separate with Rounded Corners */}
-      <Link href={`/products/${product.handle}`}>
+      <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
         <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm">
           {product.thumbnail ? (
             <img
@@ -312,7 +331,7 @@ export default function ProductCard({
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors z-10"
           >
             <Heart
-              className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
             />
           </button>
         </div>
@@ -320,7 +339,7 @@ export default function ProductCard({
 
       {/* Content Section - Direct on Background */}
       <div className="space-y-2">
-        <Link href={`/products/${product.handle}`}>
+        <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
           {/* Title - Truncated */}
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
             {product.title}
