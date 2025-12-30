@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Sidebar } from "@/components/common/sidebar"
 import { Header } from "@/components/common/header"
-import { Sheet, SheetContent } from "@/components/ui/admin-ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { QueryProvider } from "@/components/providers/query-provider"
 
 function LoadingScreen() {

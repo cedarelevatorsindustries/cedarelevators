@@ -25,8 +25,8 @@ import {
 import Link from "next/link"
 import { formatDistanceToNow, format } from "date-fns"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/admin-ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/admin-ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface AdminQuoteStats {
     total_quotes: number

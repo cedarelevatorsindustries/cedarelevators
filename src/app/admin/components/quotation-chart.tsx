@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { CustomReactSelect } from "@/components/ui/select"
 
 const dailyData = [
     { name: "Mon", count: 12 },
@@ -39,6 +39,12 @@ const monthlyData = [
 export function QuotationChart() {
     const [view, setView] = useState("monthly")
 
+    const options = [
+        { value: "daily", label: "Daily" },
+        { value: "weekly", label: "Weekly" },
+        { value: "monthly", label: "Monthly" }
+    ]
+
     const getData = () => {
         if (view === "daily") return dailyData
         if (view === "weekly") return weeklyData
@@ -48,19 +54,15 @@ export function QuotationChart() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <div>
-                    {/* Optional: Add legend or subtitle if needed */}
+                <div></div>
+                <div className="w-[120px]">
+                    <CustomReactSelect
+                        value={options.find(o => o.value === view)}
+                        onChange={(opt: any) => setView(opt?.value || "monthly")}
+                        options={options}
+                        isSearchable={false}
+                    />
                 </div>
-                <Select value={view} onValueChange={setView}>
-                    <SelectTrigger className="w-[120px] h-8 text-xs">
-                        <SelectValue placeholder="Select view" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
-                    </SelectContent>
-                </Select>
             </div>
             <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={getData()}>

@@ -2,8 +2,8 @@
 
 
 import Link from "next/link"
-import { Button } from "@/components/ui/admin-ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/admin-ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, Search, Command, Menu } from "lucide-react"
 import { GlobalSearch } from "./global-search"
 import { useEffect, useState } from "react"

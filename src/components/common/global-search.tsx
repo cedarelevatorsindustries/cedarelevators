@@ -9,7 +9,7 @@ import {
     CommandItem,
     CommandList,
     CommandSeparator,
-} from "@/components/ui/admin-ui/command"
+} from "@/components/ui/command"
 import {
     Search,
     Package,

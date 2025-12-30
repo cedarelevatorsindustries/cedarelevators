@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { SettingsSidebar } from "@/modules/admin/settings/settings-sidebar"
 import { SettingsHeader } from "@/modules/admin/settings/settings-header"
-import { Sheet, SheetContent } from "@/components/ui/admin-ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { QueryProvider } from "@/components/providers/query-provider"
 
 export default function SettingsLayout({

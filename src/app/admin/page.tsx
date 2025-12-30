@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Package, ShoppingCart, Users, Settings, FolderTree, FileText } from "lucide-react"
 import Link from "next/link"
 import { QuotationChart } from "./components/quotation-chart"
+import { RecentOrders } from "@/modules/admin/dashboard/recent-orders"
 
 // Simple placeholder stats
 const quickStats = [
@@ -22,9 +23,43 @@ const quickActions = [
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
+// Mock data for recent orders
+const mockOrders: any[] = [
+  {
+    id: "ord_1",
+    order_number: "ORD-001",
+    customer_name: "Rajesh Kumar",
+    customer_email: "rajesh@example.com",
+    items_count: 2,
+    total_amount: 45000,
+    status: "processing",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "ord_2",
+    order_number: "ORD-002",
+    customer_name: "Priya Sharma",
+    customer_email: "priya@example.com",
+    items_count: 1,
+    total_amount: 12000,
+    status: "pending",
+    created_at: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: "ord_3",
+    order_number: "ORD-003",
+    customer_name: "Amit Patel",
+    customer_email: "amit@example.com",
+    items_count: 5,
+    total_amount: 125000,
+    status: "delivered",
+    created_at: new Date(Date.now() - 172800000).toISOString()
+  }
+]
+
 export default function AdminDashboard() {
   return (
-    <div className="space-y-6" data-testid="admin-dashboard">
+    <div className="space-y-8" data-testid="admin-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -54,41 +89,42 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid gap-6 md:grid-cols-7">
+      {/* Quick Actions - Horizontal Bar */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+        <div className="flex flex-wrap items-center gap-4">
+          {quickActions.map((action) => (
+            <Button
+              key={action.title}
+              variant={action.primary ? "default" : "outline"}
+              className={`h-12 px-6 ${action.primary ? "bg-orange-600 hover:bg-orange-700 text-white" : "hover:bg-gray-50 bg-white border-gray-200"}`}
+              asChild
+            >
+              <Link href={action.href} className="flex items-center gap-2">
+                <action.icon className="h-5 w-5" />
+                <span className="font-medium">{action.title}</span>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content Sections */}
+      <div className="grid gap-8">
         {/* Chart Section */}
-        <Card className="md:col-span-4 border-gray-200">
+        <Card className="border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle>Quotations</CardTitle>
+            <CardTitle>Quotations Overview</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <QuotationChart />
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <Card className="md:col-span-3 border-gray-200 h-fit">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.title}
-                  variant={action.primary ? "default" : "outline"}
-                  className={`w-full justify-start ${action.primary ? "bg-orange-600 hover:bg-orange-700 text-white" : "hover:bg-gray-50"}`}
-                  asChild
-                >
-                  <Link href={action.href}>
-                    <action.icon className="mr-2 h-4 w-4" />
-                    {action.title}
-                  </Link>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recent Activities / Orders */}
+        <div>
+          <RecentOrders orders={mockOrders} />
+        </div>
       </div>
     </div>
   )

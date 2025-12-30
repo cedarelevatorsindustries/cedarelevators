@@ -1,16 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/admin-ui/button"
-import { Input } from "@/components/ui/admin-ui/input"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/admin-ui/select"
-import { Badge } from "@/components/ui/admin-ui/badge"
+} from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { Search, Filter, X } from "lucide-react"
 import { getCategories } from "@/lib/actions/products"
 

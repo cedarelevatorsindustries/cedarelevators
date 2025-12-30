@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
+import NextImage from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/admin-ui/button"
-import { ScrollArea } from "@/components/ui/admin-ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     LayoutDashboard,
     ShoppingCart,
@@ -136,8 +137,13 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                     "flex items-center",
                     collapsed ? "justify-center" : "space-x-2 lg:space-x-3"
                 )}>
-                    <div className="w-7 h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20 flex-shrink-0">
-                        <Store className="w-3.5 h-3.5 lg:w-4 lg:h-4 xl:w-5 xl:h-5 text-white" />
+                    <div className="relative w-8 h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex-shrink-0">
+                        <NextImage
+                            src="/logo/cedarelevators.png"
+                            alt="Cedar Elevators"
+                            fill
+                            className="object-contain"
+                        />
                     </div>
                     {!collapsed && (
                         <div className="min-w-0 flex-1">
@@ -337,4 +343,3 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         </div>
     )
 }
-
