@@ -29,6 +29,8 @@ export async function getStoreSettings(): Promise<{
 }> {
     try {
         const supabase = await createServerSupabase()
+        
+        console.log('📥 Fetching store settings...')
 
         const { data, error } = await supabase
             .from('store_settings')
@@ -36,13 +38,20 @@ export async function getStoreSettings(): Promise<{
             .single()
 
         if (error) {
-            console.error('Error fetching store settings:', error)
+            console.error('❌ Error fetching store settings:', error)
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            })
             return { success: false, error: error.message }
         }
 
+        console.log('✅ Store settings fetched successfully')
         return { success: true, data: data as StoreSettings }
     } catch (error: any) {
-        console.error('Error in getStoreSettings:', error)
+        console.error('❌ Exception in getStoreSettings:', error)
         return { success: false, error: error.message || 'Failed to fetch settings' }
     }
 }
