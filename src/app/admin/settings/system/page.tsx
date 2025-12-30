@@ -1,18 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
 import { AdminProfile } from '@/lib/admin-auth-client'
-import { SettingsService } from "@/lib/services/settings"
+import { getSystemSettings, updateSystemSettings } from "@/lib/services/settings"
 import { Tier1Guard } from "@/components/admin/settings-guards"
-import { Save, Settings as SettingsIcon, LoaderCircle, AlertTriangle, Flag, Bug } from "lucide-react"
+import { Save, LoaderCircle, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 
 export default function SystemSettingsPage() {
@@ -20,22 +18,13 @@ export default function SystemSettingsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [settingsId, setSettingsId] = useState<string | null>(null)
-  
-  // Feature Flags
-  const [featureFlags, setFeatureFlags] = useState({
+
+  const [formData, setFormData] = useState({
+    maintenance_mode_enabled: false,
+    maintenance_message: "We're currently performing system maintenance. We'll be back shortly!",
     bulk_operations_enabled: true,
     advanced_analytics_enabled: false,
     experimental_features_enabled: false,
-  })
-
-  // Maintenance Mode
-  const [maintenanceMode, setMaintenanceMode] = useState({
-    enabled: false,
-    message: "We're currently performing system maintenance. We'll be back shortly!",
-  })
-
-  // Debug Settings
-  const [debugSettings, setDebugSettings] = useState({
     debug_logging_enabled: false,
     show_detailed_errors: false,
   })
@@ -60,19 +49,15 @@ export default function SystemSettingsPage() {
 
   const loadSettings = async () => {
     try {
-      const result = await SettingsService.getSystemSettings()
+      const result = await getSystemSettings()
       if (result.success && result.data) {
         setSettingsId(result.data.id)
-        setFeatureFlags({
+        setFormData({
+          maintenance_mode_enabled: result.data.maintenance_mode_enabled,
+          maintenance_message: result.data.maintenance_message,
           bulk_operations_enabled: result.data.bulk_operations_enabled,
           advanced_analytics_enabled: result.data.advanced_analytics_enabled,
           experimental_features_enabled: result.data.experimental_features_enabled,
-        })
-        setMaintenanceMode({
-          enabled: result.data.maintenance_mode_enabled,
-          message: result.data.maintenance_message,
-        })
-        setDebugSettings({
           debug_logging_enabled: result.data.debug_logging_enabled,
           show_detailed_errors: result.data.show_detailed_errors,
         })
@@ -84,31 +69,26 @@ export default function SystemSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!settingsId) {
       toast.error('Settings not loaded')
       return
     }
-    
+
     setIsSaving(true)
-    
+
     try {
-      const result = await SettingsService.updateSystemSettings(settingsId, {
-        ...featureFlags,
-        maintenance_mode_enabled: maintenanceMode.enabled,
-        maintenance_message: maintenanceMode.message,
-        ...debugSettings,
-      })
-      
+      const result = await updateSystemSettings(settingsId, formData)
+
       if (result.success) {
-        toast.success('System settings updated successfully')
+        toast.success('System settings saved successfully')
         loadSettings()
       } else {
-        toast.error(result.error || 'Failed to update system settings')
+        toast.error(result.error || 'Failed to save system settings')
       }
     } catch (error) {
       console.error('Error saving system settings:', error)
-      toast.error('Failed to update system settings')
+      toast.error('Failed to save system settings')
     } finally {
       setIsSaving(false)
     }
@@ -132,171 +112,131 @@ export default function SystemSettingsPage() {
 
   return (
     <Tier1Guard userRole={profile.role}>
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">System Settings</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Feature flags, maintenance mode, and debug settings
+      <div className="max-w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">System</h1>
+          <p className="text-gray-500 mt-1">
+            Feature flags and maintenance mode
           </p>
         </div>
 
-        {/* Warning Alert */}
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-900">
-            <strong>Caution:</strong> These settings affect the entire platform. Changes should be made carefully and tested in a staging environment first.
+        <Alert className="mb-6 border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-900 text-sm">
+            <strong>Caution:</strong> These settings affect the entire platform. Changes should be made carefully.
           </AlertDescription>
         </Alert>
 
         <form onSubmit={handleSave} className="space-y-8">
-          {/* Feature Flags */}
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-                <Flag className="h-5 w-5" />
-                <span>Feature Flags</span>
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Enable or disable experimental features and modules
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-gray-900">Bulk Operations</Label>
-                  <p className="text-sm text-gray-600">
-                    Enable bulk import/export and batch operations
-                  </p>
-                </div>
-                <Switch 
-                  checked={featureFlags.bulk_operations_enabled}
-                  onCheckedChange={(checked) => setFeatureFlags(prev => ({ ...prev, bulk_operations_enabled: checked }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-gray-900">Advanced Analytics</Label>
-                  <p className="text-sm text-gray-600">
-                    Enable advanced analytics and reporting features
-                  </p>
-                </div>
-                <Switch 
-                  checked={featureFlags.advanced_analytics_enabled}
-                  onCheckedChange={(checked) => setFeatureFlags(prev => ({ ...prev, advanced_analytics_enabled: checked }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-amber-900">Experimental Features</Label>
-                  <p className="text-sm text-amber-700">
-                    ⚠️ Enable experimental features (may be unstable)
-                  </p>
-                </div>
-                <Switch 
-                  checked={featureFlags.experimental_features_enabled}
-                  onCheckedChange={(checked) => setFeatureFlags(prev => ({ ...prev, experimental_features_enabled: checked }))}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Maintenance Mode */}
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-                <SettingsIcon className="h-5 w-5" />
-                <span>Maintenance Mode</span>
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Put the platform in maintenance mode for updates
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-gray-900">Enable Maintenance Mode</Label>
-                  <p className="text-sm text-gray-600">
-                    Show maintenance page to all users except admins
-                  </p>
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900 border-b border-gray-100 pb-2">
+              Maintenance Mode
+            </h3>
+
+            <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label className="text-sm font-medium text-gray-900">Enable Maintenance Mode</Label>
+                <p className="text-xs text-gray-500">Show maintenance page to all users except admins</p>
+              </div>
+              <Switch
+                checked={formData.maintenance_mode_enabled}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, maintenance_mode_enabled: checked }))}
+              />
+            </div>
+
+            {formData.maintenance_mode_enabled && (
+              <div className="space-y-2">
+                <Label>Maintenance Message</Label>
+                <Textarea
+                  placeholder="Enter message to show users during maintenance"
+                  value={formData.maintenance_message}
+                  onChange={(e) => setFormData(prev => ({ ...prev, maintenance_message: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Feature Flags */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900 border-b border-gray-100 pb-2">
+              Feature Flags
+            </h3>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">Bulk Operations</Label>
+                  <p className="text-xs text-gray-500">Enable bulk import/export and batch operations</p>
                 </div>
-                <Switch 
-                  checked={maintenanceMode.enabled}
-                  onCheckedChange={(checked) => setMaintenanceMode(prev => ({ ...prev, enabled: checked }))}
+                <Switch
+                  checked={formData.bulk_operations_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, bulk_operations_enabled: checked }))}
                 />
               </div>
 
-              {maintenanceMode.enabled && (
-                <div className="space-y-2 p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                  <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
-                  <Textarea
-                    id="maintenanceMessage"
-                    placeholder="Enter message to show users during maintenance"
-                    value={maintenanceMode.message}
-                    onChange={(e) => setMaintenanceMode(prev => ({ ...prev, message: e.target.value }))}
-                    rows={3}
-                  />
-                  <p className="text-xs text-gray-500">This message will be displayed to users during maintenance</p>
+              <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">Advanced Analytics</Label>
+                  <p className="text-xs text-gray-500">Enable advanced analytics and reporting</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <Switch
+                  checked={formData.advanced_analytics_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, advanced_analytics_enabled: checked }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-3 px-4 bg-amber-50 rounded-lg border border-amber-200">
+                <div>
+                  <Label className="text-sm font-medium text-amber-900">Experimental Features</Label>
+                  <p className="text-xs text-amber-700">⚠️ Enable experimental features (may be unstable)</p>
+                </div>
+                <Switch
+                  checked={formData.experimental_features_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, experimental_features_enabled: checked }))}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Debug Settings */}
-          <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-                <Bug className="h-5 w-5" />
-                <span>Debug Settings</span>
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Configure debugging and error logging
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-gray-900">Debug Logging</Label>
-                  <p className="text-sm text-gray-600">
-                    Enable detailed debug logs in console and files
-                  </p>
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900 border-b border-gray-100 pb-2">
+              Debug Settings
+            </h3>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">Debug Logging</Label>
+                  <p className="text-xs text-gray-500">Enable detailed debug logs</p>
                 </div>
-                <Switch 
-                  checked={debugSettings.debug_logging_enabled}
-                  onCheckedChange={(checked) => setDebugSettings(prev => ({ ...prev, debug_logging_enabled: checked }))}
+                <Switch
+                  checked={formData.debug_logging_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, debug_logging_enabled: checked }))}
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-                <div className="space-y-0.5">
-                  <Label className="text-base font-semibold text-gray-900">Show Detailed Errors</Label>
-                  <p className="text-sm text-gray-600">
-                    Display detailed error messages (development only)
-                  </p>
+              <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">Show Detailed Errors</Label>
+                  <p className="text-xs text-gray-500">Display detailed error messages (development only)</p>
                 </div>
-                <Switch 
-                  checked={debugSettings.show_detailed_errors}
-                  onCheckedChange={(checked) => setDebugSettings(prev => ({ ...prev, show_detailed_errors: checked }))}
+                <Switch
+                  checked={formData.show_detailed_errors}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, show_detailed_errors: checked }))}
                 />
               </div>
-
-              <Alert className="border-amber-200 bg-amber-50">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-amber-900">
-                  <strong>Security Warning:</strong> Never enable detailed errors in production as they may expose sensitive information.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Save Button */}
-          <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={isSaving} 
-              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
+          <div className="pt-4 border-t border-gray-100">
+            <Button
+              type="submit"
+              disabled={isSaving}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Save className="mr-2 h-4 w-4" />
               {isSaving ? "Saving..." : "Save Changes"}

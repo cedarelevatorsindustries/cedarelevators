@@ -25,20 +25,20 @@ export interface MenuItem {
 export const guestMoreMenuItems: MenuItem[] = [
   { icon: Package, label: "Bulk Order", href: "/bulk-orders" },
   { icon: Truck, label: "Track Order", href: "/track" },
-  { icon: FileText, label: "Resources", href: "/resources" },
+
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
-  { icon: CircleHelp, label: "Help Center", href: "/help" }
+
 ]
 
 // Logged-in user more menu items (Contact and Help Center included for sticky navbar)
 export const loggedInMoreMenuItems: MenuItem[] = [
   { icon: Package, label: "Bulk Order", href: "/bulk-orders" },
   { icon: Truck, label: "Track Order", href: "/track" },
-  { icon: FileText, label: "Resources", href: "/resources" },
+
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
-  { icon: CircleHelp, label: "Help Center", href: "/help" }
+
 ]
 
 // Mobile hamburger menu items - Logged-in user
@@ -52,13 +52,13 @@ export const loggedInActivityItems: MenuItem[] = [
   { icon: FileText, label: "My Orders", href: "/account/orders" },
   { icon: Truck, label: "Track Order", href: "/track" },
   { icon: Bell, label: "My Notifications", href: "/notifications" },
-  { icon: FileText, label: "Resources (Manuals, Guides)", href: "/resources" }
+
 ]
 
 export const companyInfoItems: MenuItem[] = [
   { icon: Info, label: "About Cedar", href: "/about" },
   { icon: Phone, label: "Contact Us", href: "/contact" },
-  { icon: CircleHelp, label: "Help & FAQ", href: "/help" }
+
 ]
 
 export const legalPolicyItems: MenuItem[] = [
@@ -75,8 +75,8 @@ export const guestShoppingItems: MenuItem[] = [
 
 export const guestGetStartedItems: MenuItem[] = [
   { icon: ClipboardList, label: "Quick Quote Request", href: "/request-quote" },
-  { icon: FileText, label: "Browse Resources", href: "/resources" },
-  { icon: CircleHelp, label: "Help & FAQ", href: "/help" }
+
+
 ]
 
 export const guestAboutItems: MenuItem[] = [

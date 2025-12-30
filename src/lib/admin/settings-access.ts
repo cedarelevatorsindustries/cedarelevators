@@ -6,14 +6,13 @@ import { AdminRole } from '@/lib/admin-auth-client'
  */
 
 // Tier-1 (Critical): Super Admin ONLY
-// Can break payments, affect taxes, impact business trust
 const TIER_1_ROLES: AdminRole[] = ['super_admin']
 
 // Tier-2 (Operational): Admin + Manager + Staff
-// Can be adjusted safely during early operations
 const TIER_2_ROLES: AdminRole[] = ['super_admin', 'admin', 'manager', 'staff']
 
 export type SettingsTier = 'critical' | 'operational'
+export type SettingsGroup = 'store' | 'commerce' | 'access' | 'cms'
 
 export interface SettingsModule {
   id: string
@@ -23,48 +22,40 @@ export interface SettingsModule {
   tier: SettingsTier
   allowedRoles: AdminRole[]
   icon: string
-  hidden?: boolean // For system settings
+  group: SettingsGroup
+  hidden?: boolean
+}
+
+export interface SettingsGroupConfig {
+  id: SettingsGroup
+  title: string
+  defaultExpanded?: boolean
 }
 
 /**
+ * Settings group configuration
+ */
+export const SETTINGS_GROUPS: SettingsGroupConfig[] = [
+  { id: 'store', title: 'STORE', defaultExpanded: true },
+  { id: 'commerce', title: 'COMMERCE', defaultExpanded: true },
+  { id: 'access', title: 'ACCESS', defaultExpanded: true },
+  { id: 'cms', title: 'CMS', defaultExpanded: true }
+]
+
+/**
  * All settings modules configuration
+ * Order: General, Payments, Tax, Shipping, Admin Users (System hidden)
  */
 export const SETTINGS_MODULES: SettingsModule[] = [
   {
-    id: 'store',
-    title: 'Store & Branding',
-    href: '/admin/settings/store',
-    description: 'Identity & contact information',
+    id: 'general',
+    title: 'General',
+    href: '/admin/settings/general',
+    description: 'Store identity & contact info',
     tier: 'operational',
     allowedRoles: TIER_2_ROLES,
-    icon: 'Store'
-  },
-  {
-    id: 'pricing-rules',
-    title: 'Pricing Rules',
-    href: '/admin/settings/pricing-rules',
-    description: 'Control global pricing behavior',
-    tier: 'critical',
-    allowedRoles: TIER_1_ROLES,
-    icon: 'DollarSign'
-  },
-  {
-    id: 'payments',
-    title: 'Payments',
-    href: '/admin/settings/payments',
-    description: 'Payment method configuration',
-    tier: 'critical',
-    allowedRoles: TIER_1_ROLES,
-    icon: 'CreditCard'
-  },
-  {
-    id: 'tax',
-    title: 'Tax (GST)',
-    href: '/admin/settings/tax',
-    description: 'GST rates and tax rules',
-    tier: 'critical',
-    allowedRoles: TIER_1_ROLES,
-    icon: 'Receipt'
+    icon: 'Store',
+    group: 'store'
   },
   {
     id: 'shipping',
@@ -73,7 +64,28 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     description: 'Fulfillment and delivery settings',
     tier: 'operational',
     allowedRoles: TIER_2_ROLES,
-    icon: 'Truck'
+    icon: 'Truck',
+    group: 'commerce'
+  },
+  {
+    id: 'payments',
+    title: 'Payments',
+    href: '/admin/settings/payments',
+    description: 'Enable or disable payment methods',
+    tier: 'critical',
+    allowedRoles: TIER_1_ROLES,
+    icon: 'CreditCard',
+    group: 'commerce'
+  },
+  {
+    id: 'tax',
+    title: 'Taxes',
+    href: '/admin/settings/tax',
+    description: 'GST rates and tax rules',
+    tier: 'critical',
+    allowedRoles: TIER_1_ROLES,
+    icon: 'Receipt',
+    group: 'commerce'
   },
   {
     id: 'users',
@@ -82,7 +94,18 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     description: 'Manage admin access',
     tier: 'critical',
     allowedRoles: TIER_1_ROLES,
-    icon: 'UserCog'
+    icon: 'Users',
+    group: 'access'
+  },
+  {
+    id: 'policies',
+    title: 'Policies',
+    href: '/admin/settings/policies',
+    description: 'Privacy, Terms, Return policies',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'FileText',
+    group: 'cms'
   },
   {
     id: 'system',
@@ -92,13 +115,33 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     tier: 'critical',
     allowedRoles: TIER_1_ROLES,
     icon: 'Settings',
-    hidden: true // Not shown in sidebar, direct URL only
+    group: 'access',
+    hidden: true
   }
 ]
 
 /**
+ * Get modules grouped by section
+ */
+export function getGroupedModules(): Record<SettingsGroup, SettingsModule[]> {
+  const grouped: Record<SettingsGroup, SettingsModule[]> = {
+    store: [],
+    commerce: [],
+    access: [],
+    cms: []
+  }
+
+  SETTINGS_MODULES.forEach(module => {
+    if (!module.hidden) {
+      grouped[module.group].push(module)
+    }
+  })
+
+  return grouped
+}
+
+/**
  * Check if user can access Tier-1 (Critical) settings
- * Only Super Admin can access Tier-1
  */
 export function canAccessTier1(role: AdminRole): boolean {
   return TIER_1_ROLES.includes(role)
@@ -106,7 +149,6 @@ export function canAccessTier1(role: AdminRole): boolean {
 
 /**
  * Check if user can access Tier-2 (Operational) settings
- * Admin, Manager, Staff can access Tier-2
  */
 export function canAccessTier2(role: AdminRole): boolean {
   return TIER_2_ROLES.includes(role)
@@ -125,7 +167,7 @@ export function canAccessModule(role: AdminRole, moduleId: string): boolean {
  * Get all settings modules accessible to a user role
  */
 export function getAccessibleSettings(role: AdminRole): SettingsModule[] {
-  return SETTINGS_MODULES.filter(module => 
+  return SETTINGS_MODULES.filter(module =>
     !module.hidden && module.allowedRoles.includes(role)
   )
 }
@@ -134,7 +176,7 @@ export function getAccessibleSettings(role: AdminRole): SettingsModule[] {
  * Get settings modules for sidebar navigation
  */
 export function getSettingsSidebarItems(role: AdminRole): SettingsModule[] {
-  return SETTINGS_MODULES.filter(module => 
+  return SETTINGS_MODULES.filter(module =>
     !module.hidden && module.allowedRoles.includes(role)
   )
 }
@@ -151,8 +193,8 @@ export function isModuleRestricted(role: AdminRole, moduleId: string): boolean {
 /**
  * Get tier badge variant
  */
-export function getTierBadgeVariant(tier: SettingsTier): 'destructive' | 'warning' {
-  return tier === 'critical' ? 'destructive' : 'warning'
+export function getTierBadgeVariant(tier: SettingsTier): 'destructive' | 'secondary' {
+  return tier === 'critical' ? 'destructive' : 'secondary'
 }
 
 /**
@@ -160,7 +202,7 @@ export function getTierBadgeVariant(tier: SettingsTier): 'destructive' | 'warnin
  */
 export function getTierBadgeText(tier: SettingsTier): string {
   if (tier === 'critical') {
-    return '🔴 Restricted - Super Admin Only'
+    return 'Super Admin Only'
   }
-  return '🟡 Operational'
+  return ''
 }

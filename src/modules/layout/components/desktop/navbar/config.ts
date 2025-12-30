@@ -57,7 +57,7 @@ export interface NavbarConfig {
 
   // Simplified mode (for checkout)
   simplified?: boolean
-  showOnlyEssentials?: Array<'logo' | 'search' | 'cart' | 'help' | 'profile'>
+  showOnlyEssentials?: Array<'logo' | 'search' | 'cart' | 'profile'>
 }
 
 export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
@@ -263,7 +263,7 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
       scrolled: 1000,
     },
     simplified: true,
-    showOnlyEssentials: ['logo', 'cart', 'help'],
+    showOnlyEssentials: ['logo', 'cart'],
     mobile: {
       showLogo: true,
       showPageTitle: false,
@@ -384,8 +384,7 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   if (
     pathname.startsWith('/about') ||
     pathname.startsWith('/contact') ||
-    pathname.startsWith('/help') ||
-    pathname.startsWith('/resources') ||
+
     pathname.startsWith('/track') ||
     pathname.startsWith('/blog')
   ) {

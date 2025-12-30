@@ -417,6 +417,35 @@ export async function revokeAdminAction(userId: string) {
 }
 
 /**
+ * Get Current Admin Action
+ * Returns the current admin user and profile
+ */
+export async function getCurrentAdminAction() {
+    try {
+        const admin = await getCurrentAdmin()
+
+        if (!admin) {
+            return {
+                success: false,
+                error: 'Not authenticated'
+            }
+        }
+
+        return {
+            success: true,
+            user: admin.user,
+            profile: admin.profile
+        }
+    } catch (error: any) {
+        console.error('Get current admin error:', error)
+        return {
+            success: false,
+            error: 'An unexpected error occurred.'
+        }
+    }
+}
+
+/**
  * Check Setup Status Action
  */
 export async function checkSetupStatusAction() {

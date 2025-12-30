@@ -45,7 +45,7 @@ export default function SettingsLayout({
 
               <main className="flex-1 overflow-y-auto overflow-x-hidden">
                 <div className="p-4 lg:p-8 w-full max-w-full">
-                  <div className="max-w-7xl mx-auto w-full min-w-0">
+                  <div className="max-w-full mx-auto w-full min-w-0">
                     {children}
                   </div>
                 </div>

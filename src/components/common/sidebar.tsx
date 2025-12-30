@@ -20,7 +20,8 @@ import {
     Store,
     LogOut,
     FileText,
-    Tag
+    Tag,
+    ChevronDown
 } from "lucide-react"
 
 const mainNavItems = [
@@ -107,6 +108,8 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     const router = useRouter()
     const supabase = createClient()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+    const [catalogExpanded, setCatalogExpanded] = useState(true)
+    const [otherExpanded, setOtherExpanded] = useState(true)
 
     const handleLogout = async () => {
         setIsLoggingOut(true)
@@ -183,15 +186,26 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                         ))}
 
                         {/* Catalog Section */}
-                        {!collapsed && (
-                            <div className="pt-4 pb-2">
-                                <p className="px-2 lg:px-3 text-[10px] lg:text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                    Catalog
-                                </p>
-                            </div>
-                        )}
-                        
-                        {catalogNavItems.map((item) => (
+                        <div className="pt-4">
+                            {!collapsed ? (
+                                <button
+                                    onClick={() => setCatalogExpanded(!catalogExpanded)}
+                                    className="w-full flex items-center justify-between px-2 lg:px-3 py-2 text-[10px] lg:text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600"
+                                >
+                                    <span>Catalog</span>
+                                    <ChevronDown
+                                        className={cn(
+                                            "h-3 w-3 transition-transform duration-200",
+                                            catalogExpanded ? "" : "-rotate-90"
+                                        )}
+                                    />
+                                </button>
+                            ) : (
+                                <div className="h-px bg-gray-200 my-2" />
+                            )}
+                        </div>
+
+                        {(collapsed || catalogExpanded) && catalogNavItems.map((item) => (
                             <Button
                                 key={item.href}
                                 variant="ghost"
@@ -218,8 +232,27 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                             </Button>
                         ))}
 
-                        {/* Other Items */}
-                        {otherNavItems.map((item) => (
+                        {/* Other Section */}
+                        <div className="pt-4">
+                            {!collapsed ? (
+                                <button
+                                    onClick={() => setOtherExpanded(!otherExpanded)}
+                                    className="w-full flex items-center justify-between px-2 lg:px-3 py-2 text-[10px] lg:text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600"
+                                >
+                                    <span>Other</span>
+                                    <ChevronDown
+                                        className={cn(
+                                            "h-3 w-3 transition-transform duration-200",
+                                            otherExpanded ? "" : "-rotate-90"
+                                        )}
+                                    />
+                                </button>
+                            ) : (
+                                <div className="h-px bg-gray-200 my-2" />
+                            )}
+                        </div>
+
+                        {(collapsed || otherExpanded) && otherNavItems.map((item) => (
                             <Button
                                 key={item.href}
                                 variant="ghost"
@@ -250,7 +283,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             </div>
 
             <div className={cn(
-                "flex-shrink-0 py-2 lg:py-3 xl:py-4 mt-auto", // Removed border-t and bg color
+                "flex-shrink-0 py-2 lg:py-3 xl:py-4 mt-auto",
                 collapsed ? "px-2" : "px-2 lg:px-3 xl:px-4"
             )}>
                 <div className="space-y-1">

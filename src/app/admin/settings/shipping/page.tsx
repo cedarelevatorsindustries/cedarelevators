@@ -46,11 +46,11 @@ export default function ShippingSettingsPage() {
 
   return (
     <Tier2Guard userRole={profile.role}>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Shipping Settings</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Configure ST Courier rates and shipping zones
+      <div className="max-w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Shipping</h1>
+          <p className="text-gray-500 mt-1">
+            Fulfillment and delivery settings
           </p>
         </div>
         <ShippingSettingsForm />

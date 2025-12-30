@@ -78,31 +78,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Setup Notice */}
-      <Card className="border-orange-200 bg-orange-50">
-        <CardHeader>
-          <CardTitle className="text-lg text-orange-800">Getting Started</CardTitle>
-        </CardHeader>
-        <CardContent className="text-orange-700">
-          <p>
-            This admin panel has been set up with basic authentication. To enable full analytics
-            and dashboard features, you'll need to:
-          </p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Create the required database tables (admin_settings, admin_profiles)</li>
-            <li>Set up the analytics queries for your elevator product data</li>
-            <li>Configure environment variables (SUPABASE_SERVICE_ROLE_KEY, ADMIN_SETUP_KEY)</li>
-          </ul>
-          <div className="mt-4">
-            <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100" asChild>
-              <Link href="/admin/settings">
-                <Settings className="mr-2 h-4 w-4" />
-                Go to Settings
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }

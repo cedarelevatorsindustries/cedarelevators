@@ -46,11 +46,11 @@ export default function PaymentSettingsPage() {
 
   return (
     <Tier1Guard userRole={profile.role}>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Payment Settings</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Configure payment methods for Cedar platform
+      <div className="max-w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
+          <p className="text-gray-500 mt-1">
+            Enable or disable payment methods
           </p>
         </div>
         <PaymentSettingsForm />

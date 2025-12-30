@@ -19,6 +19,7 @@ export interface StoreSettings {
     invoice_prefix: string
     currency: string
     timezone: string
+    about_cedar: string | null
     created_at: string
     updated_at: string
 }
@@ -34,6 +35,7 @@ export interface UpdateStoreSettingsData {
     invoice_prefix: string
     currency: string
     timezone: string
+    about_cedar?: string
 }
 
 // =====================================================

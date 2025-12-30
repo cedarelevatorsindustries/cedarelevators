@@ -398,22 +398,8 @@ export async function updateSystemSettings(
     }
 }
 
-// =====================================================
-// SETTINGS SERVICE CLASS (for backward compatibility)
-// =====================================================
-
-export const SettingsService = {
-    getPaymentSettings,
-    updatePaymentSettings,
-    getTaxSettings,
-    updateTaxSettings,
-    getShippingSettings,
-    updateShippingSettings,
-    getSystemSettings,
-    updateSystemSettings,
-    getStoreSettings,
-    updateStoreSettings,
-    initializeStoreSettings,
-}
+// Note: Individual async functions are exported above
+// Import them directly instead of using a service object
+// e.g., import { getStoreSettings, updateStoreSettings } from '@/lib/services/settings'
 
 

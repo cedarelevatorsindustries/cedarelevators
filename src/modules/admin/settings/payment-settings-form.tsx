@@ -1,24 +1,61 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { SettingsService } from "@/lib/services/settings"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { getPaymentSettings, updatePaymentSettings } from "@/lib/services/settings"
 import { PaymentSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Save, CreditCard, Banknote, Building2, LoaderCircle, Info } from "lucide-react"
+import { Save, LoaderCircle, AlertTriangle } from "lucide-react"
 
 export function PaymentSettingsForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [settings, setSettings] = useState<PaymentSettings | null>(null)
-  const [formData, setFormData] = useState({
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+
+  // Payment Methods
+  const [paymentMethods, setPaymentMethods] = useState({
     razorpay_enabled: false,
     bank_transfer_enabled: false,
-    credit_terms_enabled: false,
+  })
+
+  // Payment Eligibility Rules
+  const [eligibilityRules, setEligibilityRules] = useState({
+    guest_payments_allowed: false,
+    individual_payments_allowed: false,
+    business_unverified_payments_allowed: false,
+    business_verified_payments_allowed: true,
+  })
+
+  // Payment Method Visibility
+  const [methodVisibility, setMethodVisibility] = useState({
+    razorpay_verified_only: true,
+    bank_transfer_unverified_allowed: true,
+  })
+
+  // Quote-Based Rules
+  const [quoteRules, setQuoteRules] = useState({
+    require_quote_approval: true,
+    require_verified_for_quote_payment: true,
+  })
+
+  // Order Value Rules
+  const [orderRules, setOrderRules] = useState({
+    minimum_order_value: 0,
+    block_above_enabled: false,
+    block_above_value: 0,
   })
 
   useEffect(() => {
@@ -28,16 +65,13 @@ export function PaymentSettingsForm() {
   const fetchSettings = async () => {
     setIsFetching(true)
     try {
-      const result = await SettingsService.getPaymentSettings()
+      const result = await getPaymentSettings()
       if (result.success && result.data) {
         setSettings(result.data)
-        setFormData({
+        setPaymentMethods({
           razorpay_enabled: result.data.razorpay_enabled,
           bank_transfer_enabled: result.data.bank_transfer_enabled,
-          credit_terms_enabled: result.data.credit_terms_enabled,
         })
-      } else {
-        toast.error(result.error || 'Failed to load payment settings')
       }
     } catch (error) {
       console.error('Error fetching payment settings:', error)
@@ -47,8 +81,12 @@ export function PaymentSettingsForm() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSaveClick = () => {
+    setShowConfirmModal(true)
+  }
+
+  const handleConfirmSave = async () => {
+    setShowConfirmModal(false)
     if (!settings) {
       toast.error('Settings not loaded')
       return
@@ -56,16 +94,20 @@ export function PaymentSettingsForm() {
 
     setIsLoading(true)
     try {
-      const result = await SettingsService.updatePaymentSettings(settings.id, formData)
+      const result = await updatePaymentSettings(settings.id, {
+        razorpay_enabled: paymentMethods.razorpay_enabled,
+        bank_transfer_enabled: paymentMethods.bank_transfer_enabled,
+        credit_terms_enabled: false,
+      })
       if (result.success) {
-        toast.success('Payment settings updated successfully')
+        toast.success('Payment settings saved successfully')
         fetchSettings()
       } else {
-        toast.error(result.error || 'Failed to update settings')
+        toast.error(result.error || 'Failed to save payment settings')
       }
     } catch (error) {
       console.error('Error updating payment settings:', error)
-      toast.error('Failed to update payment settings')
+      toast.error('Failed to save payment settings')
     } finally {
       setIsLoading(false)
     }
@@ -80,128 +122,248 @@ export function PaymentSettingsForm() {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <form onSubmit={handleSubmit} className="space-y-8 w-full">
-        {/* Info Alert */}
-        <Alert className="border-blue-200 bg-blue-50">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-900">
-            <strong>Configuration Note:</strong> Razorpay API keys must be set in environment variables (.env file). This page only controls which payment methods are enabled.
-          </AlertDescription>
-        </Alert>
+    <>
+      <div className="space-y-10">
+        {/* 1. Payment Methods */}
+        <div className="space-y-6">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+            Payment Methods
+          </h3>
 
-        {/* Razorpay Integration */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-              <CreditCard className="h-5 w-5" />
-              <span>Razorpay Integration</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Enable or disable online payments via Razorpay
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-              <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900">Enable Razorpay</Label>
-                <p className="text-sm text-gray-600">
-                  Accept online payments including UPI, Cards, Net Banking
-                </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Razorpay</Label>
+                <p className="text-sm text-gray-500 mt-1">Online payments (UPI, Cards, Netbanking)</p>
               </div>
-              <Switch 
-                checked={formData.razorpay_enabled}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, razorpay_enabled: checked }))}
+              <Switch
+                checked={paymentMethods.razorpay_enabled}
+                onCheckedChange={(checked) => setPaymentMethods(prev => ({ ...prev, razorpay_enabled: checked }))}
               />
             </div>
 
-            {formData.razorpay_enabled && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-                <p className="text-sm text-amber-900">
-                  <strong>Required Environment Variables:</strong>
-                  <br />
-                  • <code className="text-xs bg-amber-100 px-1 py-0.5 rounded">RAZORPAY_KEY_ID</code>
-                  <br />
-                  • <code className="text-xs bg-amber-100 px-1 py-0.5 rounded">RAZORPAY_KEY_SECRET</code>
-                  <br />
-                  <span className="text-xs text-amber-700 mt-1 block">
-                    These must be configured in your .env file before enabling Razorpay.
-                  </span>
-                </p>
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Bank Transfer</Label>
+                <p className="text-sm text-gray-500 mt-1">Manual payment via bank details</p>
+              </div>
+              <Switch
+                checked={paymentMethods.bank_transfer_enabled}
+                onCheckedChange={(checked) => setPaymentMethods(prev => ({ ...prev, bank_transfer_enabled: checked }))}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Payment Eligibility Rules */}
+        <div className="space-y-6">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+            Payment Eligibility
+          </h3>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Guest Users</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow payments (Recommended: OFF)</p>
+              </div>
+              <Switch
+                checked={eligibilityRules.guest_payments_allowed}
+                onCheckedChange={(checked) => setEligibilityRules(prev => ({ ...prev, guest_payments_allowed: checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Individual Users</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow direct checkout (Recommended: OFF)</p>
+              </div>
+              <Switch
+                checked={eligibilityRules.individual_payments_allowed}
+                onCheckedChange={(checked) => setEligibilityRules(prev => ({ ...prev, individual_payments_allowed: checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Business (Unverified)</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow payments (Recommended: OFF)</p>
+              </div>
+              <Switch
+                checked={eligibilityRules.business_unverified_payments_allowed}
+                onCheckedChange={(checked) => setEligibilityRules(prev => ({ ...prev, business_unverified_payments_allowed: checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Business (Verified)</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow payments</p>
+              </div>
+              <Switch
+                checked={eligibilityRules.business_verified_payments_allowed}
+                onCheckedChange={(checked) => setEligibilityRules(prev => ({ ...prev, business_verified_payments_allowed: checked }))}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Payment Method Visibility */}
+        <div className="space-y-6">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+            Payment Method Visibility
+          </h3>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Razorpay - Verified Business Only</Label>
+                <p className="text-sm text-gray-500 mt-1">Only show Razorpay to verified businesses</p>
+              </div>
+              <Switch
+                checked={methodVisibility.razorpay_verified_only}
+                onCheckedChange={(checked) => setMethodVisibility(prev => ({ ...prev, razorpay_verified_only: checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Bank Transfer - Unverified Allowed</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow bank transfer for unverified businesses</p>
+              </div>
+              <Switch
+                checked={methodVisibility.bank_transfer_unverified_allowed}
+                onCheckedChange={(checked) => setMethodVisibility(prev => ({ ...prev, bank_transfer_unverified_allowed: checked }))}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Quote-Based Payment Rules */}
+        <div className="space-y-6">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+            Quote-Based Payments
+          </h3>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Require Quote Approval</Label>
+                <p className="text-sm text-gray-500 mt-1">Allow payment only after quote approval</p>
+              </div>
+              <Switch
+                checked={quoteRules.require_quote_approval}
+                onCheckedChange={(checked) => setQuoteRules(prev => ({ ...prev, require_quote_approval: checked }))}
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Verified Business Required</Label>
+                <p className="text-sm text-gray-500 mt-1">Require verified business to pay approved quotes</p>
+              </div>
+              <Switch
+                checked={quoteRules.require_verified_for_quote_payment}
+                onCheckedChange={(checked) => setQuoteRules(prev => ({ ...prev, require_verified_for_quote_payment: checked }))}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Order Value Rules */}
+        <div className="space-y-6">
+          <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+            Order Value Rules
+          </h3>
+
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Minimum Order Value (₹)</Label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={orderRules.minimum_order_value}
+                onChange={(e) => setOrderRules(prev => ({ ...prev, minimum_order_value: parseFloat(e.target.value) || 0 }))}
+                className="max-w-sm h-12 text-base"
+              />
+            </div>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
+              <div>
+                <Label className="text-base font-medium text-gray-900">Block Orders Above</Label>
+                <p className="text-sm text-gray-500 mt-1">Use for risk control (optional)</p>
+              </div>
+              <Switch
+                checked={orderRules.block_above_enabled}
+                onCheckedChange={(checked) => setOrderRules(prev => ({ ...prev, block_above_enabled: checked }))}
+              />
+            </div>
+
+            {orderRules.block_above_enabled && (
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Maximum Order Value (₹)</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={orderRules.block_above_value}
+                  onChange={(e) => setOrderRules(prev => ({ ...prev, block_above_value: parseFloat(e.target.value) || 0 }))}
+                  className="max-w-sm h-12 text-base"
+                />
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Bank Transfer */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-              <Building2 className="h-5 w-5" />
-              <span>Bank Transfer</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Allow direct bank transfers for B2B customers
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-              <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900">Enable Bank Transfer</Label>
-                <p className="text-sm text-gray-600">
-                  Customers can pay via direct bank transfer
-                </p>
-              </div>
-              <Switch 
-                checked={formData.bank_transfer_enabled}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, bank_transfer_enabled: checked }))}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Credit Terms */}
-        <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50 hover:shadow-md transition-all duration-200">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-xl font-bold text-gray-900">
-              <Banknote className="h-5 w-5" />
-              <span>Credit Terms</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Allow verified business customers to buy on credit
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-gray-200/50">
-              <div className="space-y-0.5">
-                <Label className="text-base font-semibold text-gray-900">Enable Credit Terms</Label>
-                <p className="text-sm text-gray-600">
-                  Verified business accounts can purchase on credit (NET 30/60)
-                </p>
-              </div>
-              <Switch 
-                checked={formData.credit_terms_enabled}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, credit_terms_enabled: checked }))}
-              />
-            </div>
-
-            {formData.credit_terms_enabled && (
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-900">
-                  <strong>Note:</strong> Credit terms are only available to <strong>Verified Business</strong> accounts. Credit limits and payment terms must be configured manually per customer.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading} className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25">
-            <Save className="mr-2 h-4 w-4" />
+        {/* Save Button */}
+        <div className="pt-6 border-t border-gray-100">
+          <Button
+            onClick={handleSaveClick}
+            disabled={isLoading}
+            className="bg-orange-600 hover:bg-orange-700 text-white h-12 px-6 text-base"
+          >
+            <Save className="mr-2 h-5 w-5" />
             {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
-      </form>
-    </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Confirm Payment Settings Changes
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              These changes affect how customers can pay. Incorrect settings may block orders.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Alert className="border-orange-200 bg-orange-50">
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-900 text-sm">
+              {!paymentMethods.razorpay_enabled && !paymentMethods.bank_transfer_enabled
+                ? "Warning: All payment methods are disabled. Customers will not be able to complete orders."
+                : !paymentMethods.razorpay_enabled
+                  ? "Disabling Razorpay will stop all online payments."
+                  : "Review your changes carefully before saving."}
+            </AlertDescription>
+          </Alert>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmSave}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Confirm & Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

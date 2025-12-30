@@ -46,11 +46,11 @@ export default function TaxSettingsPage() {
 
   return (
     <Tier1Guard userRole={profile.role}>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Tax (GST) Settings</h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Simplified GST configuration for Indian B2B platform — India only, no multi-country logic
+      <div className="max-w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Taxes</h1>
+          <p className="text-gray-500 mt-1">
+            GST rates and tax rules
           </p>
         </div>
         <TaxSettingsFormSimplified />
