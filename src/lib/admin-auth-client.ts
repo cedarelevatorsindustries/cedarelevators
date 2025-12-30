@@ -13,6 +13,8 @@ export interface AdminProfile {
     approved_at: string | null
     created_at: string
     updated_at: string
+    display_name?: string | null
+    avatar_url?: string | null
 }
 
 export interface AdminSettings {

@@ -18,7 +18,8 @@ import {
     updateAdminSettings,
     approveAdminUser,
     revokeAdminAccess,
-    getCurrentAdmin
+    getCurrentAdmin,
+    updateAdminProfile
 } from '@/lib/admin-auth-server'
 import { revalidatePath } from 'next/cache'
 
@@ -454,5 +455,73 @@ export async function checkSetupStatusAction() {
         return { success: true, setupCompleted: completed }
     } catch (error) {
         return { success: false, setupCompleted: false }
+    }
+}
+
+/**
+ * Update Admin Profile Action
+ */
+export async function updateAdminProfileAction(
+    data: { display_name?: string; avatar_url?: string }
+) {
+    try {
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) {
+            return { success: false, error: 'Not authenticated' }
+        }
+
+        const result = await updateAdminProfile(admin.user.id, data)
+        if (!result.success) {
+            return { success: false, error: result.error }
+        }
+
+        revalidatePath('/admin/settings/profile')
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message }
+    }
+}
+
+/**
+ * Upload Admin Avatar Action
+ */
+export async function uploadAdminAvatarAction(formData: FormData) {
+    try {
+        const file = formData.get('file') as File
+        if (!file) return { success: false, error: 'No file uploaded' }
+
+        const admin = await getCurrentAdminAction()
+        if (!admin.success || !admin.user) {
+            return { success: false, error: 'Not authenticated' }
+        }
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${admin.user.id}-${Date.now()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabaseAdmin
+            .storage
+            .from('avatars')
+            .upload(filePath, file, {
+                contentType: file.type,
+                upsert: true
+            })
+
+        if (uploadError) {
+            return { success: false, error: uploadError.message }
+        }
+
+        const { data: { publicUrl } } = supabaseAdmin
+            .storage
+            .from('avatars')
+            .getPublicUrl(filePath)
+
+        return { success: true, publicUrl }
+    } catch (error: any) {
+        return { success: false, error: error.message }
     }
 }

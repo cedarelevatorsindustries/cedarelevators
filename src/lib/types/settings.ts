@@ -17,9 +17,18 @@ export interface StoreSettings {
     support_phone: string | null
     gst_number: string | null
     invoice_prefix: string
+    whatsapp_number: string | null
     currency: string
     timezone: string
     about_cedar: string | null
+    address_line1: string | null
+    address_line2: string | null
+    city: string | null
+    state: string | null
+    postal_code: string | null
+    country: string | null
+    business_hours: Record<string, string> | null
+    social_media: Record<string, string> | null
     created_at: string
     updated_at: string
 }
@@ -33,9 +42,18 @@ export interface UpdateStoreSettingsData {
     support_phone?: string
     gst_number?: string
     invoice_prefix: string
+    whatsapp_number?: string
     currency: string
     timezone: string
     about_cedar?: string
+    address_line1?: string
+    address_line2?: string
+    city?: string
+    state?: string
+    postal_code?: string
+    country?: string
+    business_hours?: Record<string, string>
+    social_media?: Record<string, string>
 }
 
 // =====================================================

@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/admin-ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/admin-ui/avatar"
 import { Bell, Search, Command, Menu } from "lucide-react"
 import { GlobalSearch } from "./global-search"
+import { useEffect, useState } from "react"
+import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
+import { AdminProfile } from '@/lib/admin-auth-client'
 
 interface HeaderProps {
     sidebarCollapsed: boolean
@@ -15,6 +18,23 @@ interface HeaderProps {
 }
 
 export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onToggleMobileMenu }: HeaderProps) {
+    const [profile, setProfile] = useState<AdminProfile | null>(null)
+    const [user, setUser] = useState<any>(null)
+
+    useEffect(() => {
+        getCurrentAdminAction().then(res => {
+            if (res.success) {
+                setProfile(res.profile)
+                setUser(res.user)
+            }
+        })
+    }, [])
+
+    const getInitial = (email: string) => {
+        return email?.charAt(0)?.toUpperCase() || 'A'
+    }
+
+    const displayName = profile?.display_name || user?.email?.split('@')[0] || "Admin"
 
     return (
         <header className="px-6 py-4 border-b border-gray-100" suppressHydrationWarning>
@@ -70,11 +90,17 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
                     </Button>
 
                     {/* Avatar - clickable to go to profile */}
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-lg hover:bg-gray-100" asChild>
+                    <Button variant="ghost" className="relative h-10 w-auto px-2 rounded-lg hover:bg-gray-100 gap-3" asChild>
                         <Link href="/admin/settings/profile">
+                            <div className="text-right hidden md:block">
+                                <p className="text-sm font-medium leading-none">{displayName}</p>
+                                <p className="text-xs text-gray-500 mt-1 capitalize">{profile ? profile.role.replace('_', ' ') : 'Loading...'}</p>
+                            </div>
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src="/avatars/admin.png" alt="Admin" />
-                                <AvatarFallback className="bg-red-100 text-red-700 font-semibold">AD</AvatarFallback>
+                                <AvatarImage src={profile?.avatar_url || "/avatars/admin.png"} alt={displayName} />
+                                <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
+                                    {getInitial(user?.email || "")}
+                                </AvatarFallback>
                             </Avatar>
                         </Link>
                     </Button>

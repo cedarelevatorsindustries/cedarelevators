@@ -234,3 +234,32 @@ export async function updateAdminSettings(
         return { success: false, error: error.message }
     }
 }
+
+/**
+ * Update admin profile (server-only)
+ */
+export async function updateAdminProfile(
+    userId: string,
+    updates: { display_name?: string; avatar_url?: string }
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+        const { error } = await supabaseAdmin
+            .from('admin_profiles')
+            .update(updates)
+            .eq('user_id', userId)
+
+        if (error) {
+            console.error('Error updating admin profile:', error)
+            return { success: false, error: error.message }
+        }
+
+        return { success: true }
+    } catch (error: any) {
+        console.error('Error in updateAdminProfile:', error)
+        return { success: false, error: error.message }
+    }
+}

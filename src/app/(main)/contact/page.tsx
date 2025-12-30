@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
     return (
-        <div className="bg-white min-h-screen pb-16">
+        <div className="bg-white min-h-screen pb-16 pt-32">
             {/* Header */}
             <div className="bg-gray-50 border-b border-gray-200 py-12 px-4">
                 <div className="container mx-auto max-w-4xl text-center">
@@ -86,10 +86,19 @@ export default function ContactPage() {
 
                     {/* Right Column: Address & Map */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-fit">
-                        {/* Mock Map */}
-                        <div className="h-64 bg-gray-100 w-full flex items-center justify-center relative">
-                            <MapPin size={48} className="text-orange-600" />
-                            <span className="absolute bottom-4 text-xs text-gray-500 font-semibold uppercase tracking-widest">Chennai HQ Map</span>
+                        {/* Real Map Integration */}
+                        <div className="h-80 w-full bg-gray-100 relative">
+                            <iframe
+                                src="https://maps.google.com/maps?q=67%2F37%20North%20Mada%20Street%2C%20Padi%2C%20Chennai%20-%20600050&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Cedar Elevators Location Map"
+                                aria-label="Map showing Cedar Elevators location in Padi, Chennai"
+                            ></iframe>
                         </div>
 
                         <div className="p-8 space-y-6">
