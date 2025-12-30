@@ -139,7 +139,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                 )}>
                     <div className="relative w-8 h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 flex-shrink-0">
                         <NextImage
-                            src="/logo/cedarelevators.png"
+                            src="/logo/CEIicon.png"
                             alt="Cedar Elevators"
                             fill
                             className="object-contain"

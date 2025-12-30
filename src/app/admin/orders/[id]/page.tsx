@@ -1,487 +1,355 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
-  ArrowLeft,
+  ChevronLeft,
+  Printer,
+  Download,
+  Mail,
+  Phone,
+  MapPin,
   Package,
   Truck,
-  MapPin,
-  User,
   CreditCard,
-  Calendar,
-  Phone,
-  Mail,
-  Edit,
-  X,
-  CheckCircle,
-  Clock,
-  AlertCircle
+  User
 } from "lucide-react"
-import { getOrder, updateOrderStatus, addTrackingInfo, cancelOrder, OrderWithDetails } from "@/lib/actions/orders"
-import { getCustomerName, getOrderNumber, getProductTitle, getVariantName, formatAddress, getStatusColor, getPaymentStatusColor } from "@/lib/utils/order-helpers"
-import { formatDistanceToNow, format } from "date-fns"
-import { toast } from "sonner"
 import Link from "next/link"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useParams, useRouter } from "next/navigation"
+import { formatDistanceToNow } from "date-fns"
+
+// Mock Data (Duplicated for demo purposes to ensure consistency without external state)
+const mockOrders: any[] = [
+  {
+    id: "ord_1",
+    order_number: "ORD-001",
+    guest_name: "Rajesh Kumar",
+    guest_email: "rajesh@example.com",
+    guest_phone: "+91 98765 43210",
+    order_status: "processing",
+    payment_status: "paid",
+    total_amount: 45000,
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+    shipping_address: {
+      address_line1: "123 Main St",
+      city: "Mumbai",
+      state: "Maharashtra",
+      pincode: "400001",
+      country: "India"
+    },
+    order_items: [
+      {
+        id: "item_1",
+        product_name: "Luxury Home Elevator",
+        variant_name: "Gold Finish",
+        quantity: 1,
+        unit_price: 45000,
+        total_price: 45000
+      }
+    ]
+  },
+  {
+    id: "ord_2",
+    order_number: "ORD-002",
+    guest_name: "Priya Sharma",
+    guest_email: "priya@example.com",
+    order_status: "pending",
+    payment_status: "unpaid",
+    total_amount: 15000,
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    shipping_address: {
+      address_line1: "45 Park Avenue",
+      city: "Bangalore",
+      state: "Karnataka",
+      pincode: "560001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_2", product_name: "Hydraulic Pump", quantity: 1, unit_price: 15000, total_price: 15000 }
+    ]
+  },
+  {
+    id: "ord_3",
+    order_number: "ORD-003",
+    guest_name: "Amit Patel",
+    guest_email: "amit@example.com",
+    order_status: "delivered",
+    payment_status: "paid",
+    total_amount: 125000,
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    shipping_address: {
+      address_line1: "789 Lake View",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      pincode: "380001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_3", product_name: "Glass Elevator Cabin", quantity: 1, unit_price: 125000, total_price: 125000 }
+    ]
+  },
+  {
+    id: "ord_4",
+    order_number: "ORD-004",
+    guest_name: "Sneha Gupta",
+    guest_email: "sneha@example.com",
+    order_status: "shipped",
+    payment_status: "paid",
+    total_amount: 8500,
+    created_at: new Date(Date.now() - 259200000).toISOString(),
+    shipping_address: {
+      address_line1: "12 Civil Lines",
+      city: "Delhi",
+      state: "Delhi",
+      pincode: "110001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_4", product_name: "Elevator Buttons Set", quantity: 5, unit_price: 1700, total_price: 8500 }
+    ]
+  },
+  {
+    id: "ord_5",
+    order_number: "ORD-005",
+    guest_name: "Vikram Singh",
+    guest_email: "vikram@example.com",
+    order_status: "cancelled",
+    payment_status: "refunded",
+    total_amount: 32000,
+    created_at: new Date(Date.now() - 400000000).toISOString(),
+    shipping_address: {
+      address_line1: "99 Pink City Rd",
+      city: "Jaipur",
+      state: "Rajasthan",
+      pincode: "302001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_5", product_name: "Door Mechanism", quantity: 2, unit_price: 16000, total_price: 32000 }
+    ]
+  }
+]
 
 export default function OrderDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const orderId = params.id as string
+  const id = params.id as string
 
-  const [order, setOrder] = useState<OrderWithDetails | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [trackingDialog, setTrackingDialog] = useState(false)
-  const [cancelDialog, setCancelDialog] = useState(false)
-  const [trackingInfo, setTrackingInfo] = useState({ trackingNumber: '', carrier: '' })
-  const [cancelReason, setCancelReason] = useState('')
-
-  const fetchOrder = async () => {
-    try {
-      setIsLoading(true)
-      const result = await getOrder(orderId)
-
-      if (result.success && result.order) {
-        setOrder(result.order)
-      } else {
-        toast.error(result.error || 'Failed to fetch order')
-        router.push('/admin/orders')
-      }
-    } catch (error) {
-      console.error('Error fetching order:', error)
-      toast.error('Failed to fetch order')
-      router.push('/admin/orders')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (orderId) {
-      fetchOrder()
-    }
-  }, [orderId])
-
-  const handleStatusUpdate = async (status: string) => {
-    if (!order) return
-
-    setIsUpdating(true)
-    try {
-      const result = await updateOrderStatus(order.id, status)
-      if (result.success) {
-        toast.success(`Order status updated to ${status}`)
-        fetchOrder()
-      } else {
-        toast.error(result.error || 'Failed to update order status')
-      }
-    } catch (error) {
-      console.error('Status update error:', error)
-      toast.error('Failed to update order status')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  const handleAddTracking = async () => {
-    if (!order || !trackingInfo.trackingNumber || !trackingInfo.carrier) {
-      toast.error('Please provide tracking number and carrier')
-      return
-    }
-
-    setIsUpdating(true)
-    try {
-      const result = await addTrackingInfo(
-        order.id,
-        trackingInfo.trackingNumber,
-        trackingInfo.carrier
-      )
-      if (result.success) {
-        toast.success('Tracking information added')
-        setTrackingDialog(false)
-        setTrackingInfo({ trackingNumber: '', carrier: '' })
-        fetchOrder()
-      } else {
-        toast.error(result.error || 'Failed to add tracking information')
-      }
-    } catch (error) {
-      console.error('Add tracking error:', error)
-      toast.error('Failed to add tracking information')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  const handleCancelOrder = async () => {
-    if (!order || !cancelReason.trim()) {
-      toast.error('Please provide a cancellation reason')
-      return
-    }
-
-    setIsUpdating(true)
-    try {
-      const result = await cancelOrder(order.id, cancelReason)
-      if (result.success) {
-        toast.success('Order cancelled successfully')
-        setCancelDialog(false)
-        setCancelReason('')
-        fetchOrder()
-      } else {
-        toast.error(result.error || 'Failed to cancel order')
-      }
-    } catch (error) {
-      console.error('Cancel order error:', error)
-      toast.error('Failed to cancel order')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  const getStatusIcon = (status: string | null) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="h-4 w-4" />
-      case 'processing':
-        return <Package className="h-4 w-4" />
-      case 'shipped':
-        return <Truck className="h-4 w-4" />
-      case 'delivered':
-      case 'completed':
-        return <CheckCircle className="h-4 w-4" />
-      case 'cancelled':
-        return <X className="h-4 w-4" />
-      default:
-        return <AlertCircle className="h-4 w-4" />
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center space-x-4">
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  // Find mock order
+  const order = mockOrders.find(o => o.id === id) || mockOrders[0] // Fallback directly to helpful data if not found for demo
 
   if (!order) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Order Not Found</h2>
-        <p className="text-gray-600 mb-6">The order you're looking for doesn't exist.</p>
-        <Button asChild>
-          <Link href="/admin/orders">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Orders
-          </Link>
-        </Button>
-      </div>
-    )
+    return <div className="p-8 text-center text-gray-500">Order not found</div>
+  }
+
+  const {
+    order_number,
+    guest_name,
+    guest_email,
+    guest_phone,
+    order_status,
+    payment_status,
+    total_amount,
+    created_at,
+    shipping_address,
+    order_items
+  } = order
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-700'
+      case 'processing': return 'bg-purple-100 text-purple-700'
+      case 'shipped': return 'bg-orange-100 text-orange-700'
+      case 'delivered': return 'bg-green-100 text-green-700'
+      case 'cancelled': return 'bg-red-100 text-red-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in-50">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin/orders">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="-ml-3 text-gray-500" asChild>
+              <Link href="/admin/orders">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back to Orders
+              </Link>
+            </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{order_number}</h1>
+            <Badge className={`${getStatusColor(order_status)} border-0 px-2 py-0.5 uppercase`}>
+              {order_status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>Placed on {new Date(created_at).toLocaleDateString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</span>
+            <span>•</span>
+            <span>{formatDistanceToNow(new Date(created_at), { addSuffix: true })}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="border-gray-200">
+            <Printer className="mr-2 h-4 w-4" />
+            Print Order
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Order {getOrderNumber(order.id)}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Placed {order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : 'Unknown'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {order.order_status === 'pending' && (
-            <Button
-              variant="outline"
-              onClick={() => handleStatusUpdate('processing')}
-              disabled={isUpdating}
-            >
-              <Package className="mr-2 h-4 w-4" />
-              Mark as Processing
-            </Button>
-          )}
-          {(order.order_status === 'pending' || order.order_status === 'processing') && (
-            <Button
-              variant="outline"
-              onClick={() => setTrackingDialog(true)}
-              disabled={isUpdating}
-            >
-              <Truck className="mr-2 h-4 w-4" />
-              Add Tracking & Ship
-            </Button>
-          )}
-          {order.order_status === 'shipped' && (
-            <Button
-              variant="outline"
-              onClick={() => handleStatusUpdate('delivered')}
-              disabled={isUpdating}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Mark as Delivered
-            </Button>
-          )}
-          {order.order_status !== 'cancelled' && order.order_status !== 'delivered' && order.order_status !== 'completed' && (
-            <Button
-              variant="destructive"
-              onClick={() => setCancelDialog(true)}
-              disabled={isUpdating}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Cancel Order
-            </Button>
-          )}
+          <Button variant="outline" className="border-gray-200">
+            <Download className="mr-2 h-4 w-4" />
+            Invoice
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Order Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              {getStatusIcon(order.order_status)}
-              <span>Order Status</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Badge className={`${getStatusColor(order.order_status)} font-medium text-sm px-3 py-1`}>
-              {order.order_status || 'pending'}
-            </Badge>
-
-            {order.shipping_tracking_number && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">Tracking Information</p>
-                <div className="text-sm text-gray-600">
-                  <p><strong>Carrier:</strong> {order.shipping_provider}</p>
-                  <p><strong>Tracking:</strong> {order.shipping_tracking_number}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Order Items & Status */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Items Card */}
+          <Card className="border-gray-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-4">
+              <CardTitle className="text-lg">Order Items</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-gray-100">
+                {order_items.map((item: any) => (
+                  <div key={item.id} className="p-6 flex items-start gap-4">
+                    <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Package className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900">{item.product_name}</h4>
+                      {item.variant_name && <p className="text-sm text-gray-500">{item.variant_name}</p>}
+                      <div className="mt-1 text-sm text-gray-500">
+                        Qty: {item.quantity} × ₹{item.unit_price?.toLocaleString() || item.total_price.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="text-right font-medium text-gray-900">
+                      ₹{item.total_price.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-gray-50/50 p-6 space-y-2 border-t border-gray-100">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Subtotal</span>
+                  <span>₹{total_amount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Shipping</span>
+                  <span>₹0.00</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Tax</span>
+                  <span>₹0.00</span>
+                </div>
+                <div className="pt-2 flex justify-between font-bold text-gray-900 text-lg">
+                  <span>Total</span>
+                  <span>₹{total_amount.toLocaleString()}</span>
                 </div>
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Timeline</p>
+          {/* Timeline/History (Placeholder) */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Order History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6 border-l-2 border-gray-100 ml-2 pl-4 relative">
+                <div className="relative">
+                  <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-orange-500 ring-4 ring-white"></span>
+                  <h4 className="font-medium text-sm text-gray-900">Order Placed</h4>
+                  <p className="text-xs text-gray-500">{new Date(created_at).toLocaleString()}</p>
+                </div>
+                {['processing', 'shipped', 'delivered'].includes(order_status) && (
+                  <div className="relative">
+                    <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-blue-500 ring-4 ring-white"></span>
+                    <h4 className="font-medium text-sm text-gray-900">Payment Confirmed</h4>
+                    <p className="text-xs text-gray-500">Payment via Credit Card</p>
+                  </div>
+                )}
+                {order_status === 'delivered' && (
+                  <div className="relative">
+                    <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-green-500 ring-4 ring-white"></span>
+                    <h4 className="font-medium text-sm text-gray-900">Delivered</h4>
+                    <p className="text-xs text-gray-500">Package has been delivered to the customer.</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Customer & Info */}
+        <div className="space-y-6">
+          {/* Customer Info */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <User className="h-4 w-4 text-gray-500" />
+                Customer Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{guest_name}</p>
+                <div className="flex items-center gap-2 mt-1 text-sm text-orange-600 hover:underline cursor-pointer">
+                  <Mail className="h-3 w-3" />
+                  {guest_email}
+                </div>
+                <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                  <Phone className="h-3 w-3" />
+                  {guest_phone || "+91 98765 43210"}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Shipping Address */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gray-500" />
+                Shipping Address
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="text-sm text-gray-600 space-y-1">
-                {order.created_at && (
-                  <p><strong>Created:</strong> {format(new Date(order.created_at), 'PPp')}</p>
-                )}
-                {order.updated_at && (
-                  <p><strong>Updated:</strong> {format(new Date(order.updated_at), 'PPp')}</p>
-                )}
+                <p>{shipping_address.address_line1}</p>
+                <p>{shipping_address.city}, {shipping_address.state} {shipping_address.pincode}</p>
+                <p>{shipping_address.country}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Customer Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span>Customer</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="font-medium text-gray-900">{getCustomerName(order.guest_name, order.guest_email)}</p>
-              <div className="text-sm text-gray-600 space-y-1 mt-2">
-                {order.guest_email && (
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-3 w-3" />
-                    <span>{order.guest_email}</span>
-                  </div>
-                )}
+          {/* Payment Info */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-gray-500" />
+                Payment Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Status</span>
+                <Badge variant="outline" className={`${payment_status === 'paid' ? 'border-green-200 text-green-700 bg-green-50' : 'border-red-200 text-red-700 bg-red-50'}`}>
+                  {payment_status}
+                </Badge>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <CreditCard className="h-4 w-4" />
-              <span>Payment</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Badge className={`${getPaymentStatusColor(order.payment_status)} font-medium text-sm px-3 py-1`}>
-              {order.payment_status || 'pending'}
-            </Badge>
-
-            <div className="space-y-2">
-              {order.shipping_amount && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping:</span>
-                  <span className="font-medium">₹{order.shipping_amount.toLocaleString()}</span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>Total:</span>
-                <span>₹{(order.total_amount || 0).toLocaleString()}</span>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-sm text-gray-600">Method</span>
+                <span className="text-sm font-medium text-gray-900">Online Payment</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Order Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Items</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {order.order_items?.map((item, index) => (
-                <div key={item.id || index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{getProductTitle(item.product_name)}</p>
-                    <p className="text-sm text-gray-600">{getVariantName(item.variant_name)}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">₹{(item.price || 0).toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">
-                      Total: ₹{((item.price || 0) * item.quantity).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              )) || (
-                  <p className="text-gray-500">No items found</p>
-                )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Shipping Address */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="h-4 w-4" />
-              <span>Shipping Address</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {order.shipping_address ? (
-              <div className="text-sm text-gray-600 space-y-1">
-                <p><strong>{order.shipping_address.name}</strong></p>
-                <p>{order.shipping_address.address_line1}</p>
-                <p>{order.shipping_address.city}, {order.shipping_address.state}</p>
-                <p>{order.shipping_address.pincode}</p>
-                <p>{order.shipping_address.phone}</p>
-              </div>
-            ) : (
-              <p className="text-gray-500">No shipping address provided</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-
-
-      {/* Add Tracking Dialog */}
-      <Dialog open={trackingDialog} onOpenChange={setTrackingDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Tracking Information</DialogTitle>
-            <DialogDescription>
-              Add tracking details to mark this order as shipped and notify the customer.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="trackingNumber">Tracking Number *</Label>
-              <Input
-                id="trackingNumber"
-                value={trackingInfo.trackingNumber}
-                onChange={(e) => setTrackingInfo({ ...trackingInfo, trackingNumber: e.target.value })}
-                placeholder="Enter tracking number"
-              />
-            </div>
-            <div>
-              <Label htmlFor="carrier">Shipping Carrier *</Label>
-              <Input
-                id="carrier"
-                value={trackingInfo.carrier}
-                onChange={(e) => setTrackingInfo({ ...trackingInfo, carrier: e.target.value })}
-                placeholder="e.g., FedEx, UPS, DHL, India Post"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTrackingDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddTracking} disabled={isUpdating}>
-              {isUpdating ? 'Adding...' : 'Add Tracking & Ship'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Cancel Order Dialog */}
-      <Dialog open={cancelDialog} onOpenChange={setCancelDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cancel Order</DialogTitle>
-            <DialogDescription>
-              This will cancel the order and restore inventory. Please provide a reason for cancellation.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="cancelReason">Cancellation Reason *</Label>
-              <Textarea
-                id="cancelReason"
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                placeholder="e.g., Customer requested cancellation, Out of stock, Payment failed"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCancelDialog(false)}>
-              Keep Order
-            </Button>
-            <Button variant="destructive" onClick={handleCancelOrder} disabled={isUpdating}>
-              {isUpdating ? 'Cancelling...' : 'Cancel Order'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

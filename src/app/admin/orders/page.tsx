@@ -19,6 +19,120 @@ interface OrderFilters {
   customer: string
 }
 
+
+// Mock Order Data
+const mockOrders: any[] = [
+  {
+    id: "ord_1",
+    order_number: "ORD-001",
+    guest_name: "Rajesh Kumar",
+    guest_email: "rajesh@example.com",
+    order_status: "processing",
+    payment_status: "paid",
+    total_amount: 45000,
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+    shipping_address: {
+      address_line1: "123 Main St",
+      city: "Mumbai",
+      state: "Maharashtra",
+      pincode: "400001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_1", product_name: "Luxury Home Elevator", quantity: 1, total_price: 45000 }
+    ]
+  },
+  {
+    id: "ord_2",
+    order_number: "ORD-002",
+    guest_name: "Priya Sharma",
+    guest_email: "priya@example.com",
+    order_status: "pending",
+    payment_status: "unpaid",
+    total_amount: 15000,
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    shipping_address: {
+      address_line1: "45 Park Avenue",
+      city: "Bangalore",
+      state: "Karnataka",
+      pincode: "560001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_2", product_name: "Hydraulic Pump", quantity: 1, total_price: 15000 }
+    ]
+  },
+  {
+    id: "ord_3",
+    order_number: "ORD-003",
+    guest_name: "Amit Patel",
+    guest_email: "amit@example.com",
+    order_status: "delivered",
+    payment_status: "paid",
+    total_amount: 125000,
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    shipping_address: {
+      address_line1: "789 Lake View",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      pincode: "380001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_3", product_name: "Glass Elevator Cabin", quantity: 1, total_price: 125000 }
+    ]
+  },
+  {
+    id: "ord_4",
+    order_number: "ORD-004",
+    guest_name: "Sneha Gupta",
+    guest_email: "sneha@example.com",
+    order_status: "shipped",
+    payment_status: "paid",
+    total_amount: 8500,
+    created_at: new Date(Date.now() - 259200000).toISOString(),
+    shipping_address: {
+      address_line1: "12 Civil Lines",
+      city: "Delhi",
+      state: "Delhi",
+      pincode: "110001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_4", product_name: "Elevator Buttons Set", quantity: 5, total_price: 8500 }
+    ]
+  },
+  {
+    id: "ord_5",
+    order_number: "ORD-005",
+    guest_name: "Vikram Singh",
+    guest_email: "vikram@example.com",
+    order_status: "cancelled",
+    payment_status: "refunded",
+    total_amount: 32000,
+    created_at: new Date(Date.now() - 400000000).toISOString(),
+    shipping_address: {
+      address_line1: "99 Pink City Rd",
+      city: "Jaipur",
+      state: "Rajasthan",
+      pincode: "302001",
+      country: "India"
+    },
+    order_items: [
+      { id: "item_5", product_name: "Door Mechanism", quantity: 2, total_price: 32000 }
+    ]
+  }
+]
+
+// Mock Stats based on mockOrders
+const mockStats = {
+  total: 5,
+  pending: 1,
+  processing: 1,
+  shipped: 1,
+  delivered: 1
+}
+
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState<OrderFilters>({
@@ -30,18 +144,16 @@ export default function OrdersPage() {
     customer: ''
   })
 
-  // React Query hooks
-  const { 
-    data: orders = [], 
-    isLoading,
-    refetch: refetchOrders 
-  } = useOrders(filters)
-  
-  const { 
-    data: stats,
-    isLoading: isLoadingStats,
-    refetch: refetchStats 
-  } = useOrderStats()
+  // Use mock data instead of hooks
+  const orders = mockOrders
+  const stats = mockStats
+  const isLoading = false
+  const isLoadingStats = false
+
+  // Placeholder refetch
+  const refetchOrders = async () => {
+    toast.success('Orders refreshed (Demo)')
+  }
 
   const handleFilterChange = (newFilters: OrderFilters) => {
     setFilters(newFilters)
@@ -49,22 +161,16 @@ export default function OrdersPage() {
   }
 
   const handleRefresh = async () => {
-    await Promise.all([refetchOrders(), refetchStats()])
-    toast.success('Orders refreshed')
+    await refetchOrders()
   }
 
   const handleExport = async () => {
     try {
-      // TODO: Implement export functionality using the query data
       toast.info('Export functionality coming soon')
     } catch (error) {
       console.error('Error exporting orders:', error)
       toast.error('Failed to export orders')
     }
-  }
-
-  const handleCreateOrder = () => {
-    toast.info('Create order functionality coming soon')
   }
 
   const hasOrders = orders.length > 0
@@ -80,8 +186,8 @@ export default function OrdersPage() {
         </div>
         <div className="flex items-center space-x-3">
           {hasOrders && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={isLoading || isLoadingStats}
@@ -92,7 +198,7 @@ export default function OrdersPage() {
               Refresh
             </Button>
           )}
-          <Button 
+          <Button
             variant="outline"
             className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
             onClick={handleExport}
@@ -100,13 +206,7 @@ export default function OrdersPage() {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button 
-            className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/25"
-            onClick={handleCreateOrder}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Order
-          </Button>
+          {/* Create Order Button Removed as per request */}
         </div>
       </div>
 
@@ -176,12 +276,12 @@ export default function OrdersPage() {
         </div>
       ) : hasOrders ? (
         <>
-          <OrdersFilters 
+          <OrdersFilters
             filters={filters}
             onFiltersChange={handleFilterChange}
             totalOrders={orders.length}
           />
-          <OrdersTable 
+          <OrdersTable
             orders={orders}
             onRefresh={refetchOrders}
           />

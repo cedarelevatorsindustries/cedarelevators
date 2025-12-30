@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Package, ShoppingCart, Users, Settings, FolderTree, FileText } from "lucide-react"
 import Link from "next/link"
 import { QuotationChart } from "./components/quotation-chart"
-import { RecentOrders } from "@/modules/admin/dashboard/recent-orders"
+import { RecentActivities, ActivityItem } from "@/modules/admin/dashboard/recent-activities"
 
 // Simple placeholder stats
 const quickStats = [
@@ -23,37 +23,50 @@ const quickActions = [
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
-// Mock data for recent orders
-const mockOrders: any[] = [
+// Mock data for recent activities
+const mockActivities: ActivityItem[] = [
   {
-    id: "ord_1",
-    order_number: "ORD-001",
-    customer_name: "Rajesh Kumar",
-    customer_email: "rajesh@example.com",
-    items_count: 2,
-    total_amount: 45000,
-    status: "processing",
-    created_at: new Date().toISOString()
+    id: "act_1",
+    action: "update",
+    entity: "product",
+    description: "Updated price for 'Glider 3000'",
+    user: "Admin User",
+    timestamp: new Date().toISOString(),
+    details: "Changed from ₹45,000 to ₹48,000"
   },
   {
-    id: "ord_2",
-    order_number: "ORD-002",
-    customer_name: "Priya Sharma",
-    customer_email: "priya@example.com",
-    items_count: 1,
-    total_amount: 12000,
-    status: "pending",
-    created_at: new Date(Date.now() - 86400000).toISOString()
+    id: "act_2",
+    action: "create",
+    entity: "quote",
+    description: "Created new quote for Customer #452",
+    user: "Sales Rep",
+    timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
   },
   {
-    id: "ord_3",
-    order_number: "ORD-003",
-    customer_name: "Amit Patel",
-    customer_email: "amit@example.com",
-    items_count: 5,
-    total_amount: 125000,
-    status: "delivered",
-    created_at: new Date(Date.now() - 172800000).toISOString()
+    id: "act_3",
+    action: "update",
+    entity: "settings",
+    description: "Updated General Settings",
+    user: "Admin User",
+    timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    details: "Updated WhatsApp number and Business Hours"
+  },
+  {
+    id: "act_4",
+    action: "delete",
+    entity: "category",
+    description: "Deleted unused category 'Old Parts'",
+    user: "System Admin",
+    timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+  },
+  {
+    id: "act_5",
+    action: "update",
+    entity: "order",
+    description: "Updated Order #ORD-003 Status",
+    user: "Admin User",
+    timestamp: new Date(Date.now() - 250000000).toISOString(), // ~3 days ago
+    details: "Status changed to Delivered"
   }
 ]
 
@@ -110,7 +123,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content Sections */}
-      <div className="grid gap-8">
+      <div className="space-y-8">
         {/* Chart Section */}
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
@@ -121,9 +134,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Activities / Orders */}
-        <div>
-          <RecentOrders orders={mockOrders} />
+        {/* Recent Activities */}
+        <div className="min-h-[400px]">
+          <RecentActivities activities={mockActivities} />
         </div>
       </div>
     </div>
