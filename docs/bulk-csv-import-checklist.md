@@ -272,11 +272,16 @@ This document tracks the implementation of a comprehensive Bulk CSV Import syste
 - [ ] Validate consistent product data across rows of same group
 
 ### 2.6 MRP vs Selling Price
-- [ ] Add `product_mrp` field to products table (if not exists)
-- [ ] Add `variant_mrp` field to product_variants table (if not exists)
+- [x] Use existing `compare_at_price` field as MRP ✅
+- [x] MRP = `compare_at_price` for products
+- [x] MRP = `compare_at_price` for variants
 - [ ] Ensure MRP is mandatory at product level
 - [ ] Ensure selling price (product_price) ≠ MRP
 - [ ] Display both on product detail pages
+
+**LOCKED DECISION:** 
+- `product_mrp` in CSV → maps to `products.compare_at_price`
+- `variant_mrp` in CSV → maps to `product_variants.compare_at_price`
 
 ### 2.7 Enhanced Validation Rules
 - [ ] Update validation to classify errors:
