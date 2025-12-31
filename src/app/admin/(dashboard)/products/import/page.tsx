@@ -118,9 +118,9 @@ export default function ProductImportPage() {
     if (!importResults?.errors) return
 
     const errorsCsv = [
-      ['Product Handle', 'Variant SKU', 'Error Message', 'Details'],
+      ['Product Title', 'Variant SKU', 'Error Message', 'Details'],
       ...importResults.errors.map((err: ImportError) => [
-        err.productHandle,
+        err.productTitle,
         err.variantSku || '',
         err.message,
         err.details || '',
