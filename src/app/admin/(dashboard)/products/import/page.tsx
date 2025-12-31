@@ -228,12 +228,40 @@ export default function ProductImportPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ Important Rules:</h4>
-                <ul className="text-sm text-orange-800 space-y-1">
+                <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ IMPORTANT: Pre-Import Checklist</h4>
+                <p className="text-xs text-orange-700 mb-3">CSV will NOT create catalog structure. Ensure these exist first:</p>
+                <ul className="text-sm text-orange-800 space-y-2">
+                  <li className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                    Applications created
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                    Categories & Subcategories created
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                    Elevator Types created
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                    Collections created (optional)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                    CSV follows template format
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-sm text-blue-900 mb-2">✅ Key Rules:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
                   <li>• <strong>One row = one variant</strong></li>
-                  <li>• Group variants by <code>product_handle</code></li>
-                  <li>• Preview before importing (mandatory)</li>
-                  <li>• SKU must be unique across all products</li>
+                  <li>• Group variants by same <code className="bg-blue-100 px-1 rounded">product_title</code></li>
+                  <li>• SKUs auto-generated if not provided</li>
+                  <li>• Variant data falls back to product data</li>
+                  <li>• Invalid references → saved as Draft</li>
                   <li>• Prices in Indian Rupees (₹)</li>
                 </ul>
               </div>
@@ -241,12 +269,12 @@ export default function ProductImportPage() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-sm text-gray-900 mb-2">Required Columns:</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• <strong>product_handle</strong> - Unique identifier</li>
-                  <li>• <strong>product_title</strong> - Product name</li>
-                  <li>• <strong>product_status</strong> - draft/published</li>
-                  <li>• <strong>product_variant_title</strong> - Variant name</li>
-                  <li>• <strong>product_variant_sku</strong> - Unique SKU</li>
-                  <li>• <strong>variant_price</strong> - Price in ₹</li>
+                  <li>• <strong>product_title</strong> - Product name (3+ chars)</li>
+                  <li>• <strong>short_description</strong> - Brief description</li>
+                  <li>• <strong>application_slug</strong> - Must exist in DB</li>
+                  <li>• <strong>category_slug</strong> - Must exist in DB</li>
+                  <li>• <strong>product_price</strong> - Selling price (₹)</li>
+                  <li>• <strong>product_mrp</strong> - Maximum retail price (₹)</li>
                 </ul>
               </div>
 
