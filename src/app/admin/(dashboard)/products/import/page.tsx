@@ -386,32 +386,78 @@ export default function ProductImportPage() {
             <CardHeader>
               <CardTitle>Products to Import</CardTitle>
               <CardDescription>
-                Grouped by product_handle - each product with its variants
+                Grouped by product_title - each product with its variants and catalog assignment
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {previewData.productGroups.slice(0, 20).map((group: ProductGroup, index: number) => (
                   <div key={index} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">{group.title}</h4>
-                        <p className="text-sm text-gray-600">Handle: {group.handle}</p>
+                        <p className="text-sm text-gray-600">Slug: {group.slug}</p>
+                        
+                        {/* Catalog Assignment Info */}
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                          {group.application_id ? (
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                              ✓ {group.application_slug}
+                            </span>
+                          ) : (
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                              ✗ {group.application_slug}
+                            </span>
+                          )}
+                          
+                          {group.category_id ? (
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                              ✓ {group.category_slug}
+                            </span>
+                          ) : (
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
+                              ✗ {group.category_slug}
+                            </span>
+                          )}
+                          
+                          {group.elevator_type_ids && group.elevator_type_ids.length > 0 && (
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              {group.elevator_type_ids.length} elevator types
+                            </span>
+                          )}
+                          
+                          {group.status === 'draft' && !group.application_id && (
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded font-medium">
+                              Will import as DRAFT
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 ml-4">
                         {group.variants.length} variant{group.variants.length !== 1 ? 's' : ''}
                       </div>
                     </div>
                     {group.errors.length > 0 && (
-                      <div className="text-xs text-orange-600 mb-2">
-                        ⚠️ {group.errors.length} error(s)
+                      <div className="text-xs text-red-600 mb-2 bg-red-50 p-2 rounded">
+                        ⚠️ {group.errors.length} error(s) - Review before importing
                       </div>
                     )}
                     <div className="space-y-1">
                       {group.variants.map((variant: ProductVariant, vIdx: number) => (
                         <div key={vIdx} className="text-sm text-gray-700 flex justify-between bg-gray-50 p-2 rounded">
-                          <span>{variant.title} - {variant.sku}</span>
-                          <span className="font-medium">₹{variant.price}</span>
+                          <span>
+                            {variant.title}
+                            {variant.option1_value && ` - ${variant.option1_value}`}
+                            {variant.option2_value && ` / ${variant.option2_value}`}
+                          </span>
+                          <div className="flex gap-3">
+                            <span className="font-medium">₹{variant.price.toLocaleString('en-IN')}</span>
+                            {variant.compare_at_price && (
+                              <span className="text-gray-500 line-through text-xs">
+                                ₹{variant.compare_at_price.toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
