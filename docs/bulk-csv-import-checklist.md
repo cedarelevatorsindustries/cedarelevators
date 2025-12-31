@@ -150,9 +150,9 @@ This document tracks the implementation of a comprehensive Bulk CSV Import syste
   - [ ] Collections → via comma-separated list lookup
   
 - [ ] Implement fallback logic:
-  - [ ] If any reference fails → Create as Draft
-  - [ ] Add to "Uncategorized" virtual collection
-  - [ ] Log assignment failures
+  - [ ] If any reference fails → Set application_id/category_id to NULL
+  - [ ] Set status to 'draft'
+  - [ ] Log assignment failures with details
   
 - [ ] No guessing or AI mapping
 - [ ] No automatic catalog creation
