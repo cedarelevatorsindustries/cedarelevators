@@ -44,8 +44,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatDistanceToNow, format } from "date-fns"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/admin-ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/admin-ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface AdminQuoteDetailProps {
     params: Promise<{ id: string }>
@@ -171,7 +171,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
 
     const handleApprove = async () => {
         if (!quote) return
-        
+
         // Validation
         if (editedItems.some(item => !item.unit_price || item.unit_price === 0)) {
             toast.error('All items must have pricing before approval')
@@ -194,7 +194,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                 validUntilDays: 30,
                 adminNotes: `Approved quote with total ₹${calculatedTotals.total.toLocaleString()}`
             })
-            
+
             if (result.success) {
                 toast.success('Quote approved successfully!')
                 loadQuote()
@@ -492,12 +492,11 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Account Type</p>
-                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
-                                        quote.user_type === 'verified' ? 'bg-green-100 text-green-700' :
-                                        quote.user_type === 'business' ? 'bg-purple-100 text-purple-700' :
-                                        quote.user_type === 'individual' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-gray-100 text-gray-700'
-                                    }`}>
+                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${quote.user_type === 'verified' ? 'bg-green-100 text-green-700' :
+                                            quote.user_type === 'business' ? 'bg-purple-100 text-purple-700' :
+                                                quote.user_type === 'individual' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-gray-100 text-gray-700'
+                                        }`}>
                                         {quote.user_type === 'verified' && <BadgeCheck className="w-3 h-3" />}
                                         {quote.user_type.charAt(0).toUpperCase() + quote.user_type.slice(1)}
                                     </span>
@@ -725,26 +724,24 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                             className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}
                                         >
                                             <div
-                                                className={`max-w-[75%] rounded-xl px-4 py-3 ${
-                                                    msg.is_internal
+                                                className={`max-w-[75%] rounded-xl px-4 py-3 ${msg.is_internal
                                                         ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
                                                         : msg.sender_type === 'admin'
-                                                        ? 'bg-orange-600 text-white'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                }`}
+                                                            ? 'bg-orange-600 text-white'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                    }`}
                                             >
                                                 {msg.is_internal && (
                                                     <p className="text-xs font-medium mb-1">📌 Internal Note</p>
                                                 )}
                                                 <p className="text-sm">{msg.message}</p>
                                                 <p
-                                                    className={`text-xs mt-1 ${
-                                                        msg.is_internal
+                                                    className={`text-xs mt-1 ${msg.is_internal
                                                             ? 'text-yellow-600'
                                                             : msg.sender_type === 'admin'
-                                                            ? 'text-orange-200'
-                                                            : 'text-gray-500'
-                                                    }`}
+                                                                ? 'text-orange-200'
+                                                                : 'text-gray-500'
+                                                        }`}
                                                 >
                                                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                                                 </p>
@@ -856,7 +853,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                     Start Review
                                 </Button>
                             )}
-                            
+
                             {quote.status === 'reviewing' && (
                                 <>
                                     <Button
@@ -987,7 +984,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                         <div className="space-y-4">
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <p className="text-sm text-blue-800">
-                                    <strong>Note:</strong> This feature will create an order from the approved quote. 
+                                    <strong>Note:</strong> This feature will create an order from the approved quote.
                                     The customer will be notified and the order will be ready for processing.
                                 </p>
                             </div>

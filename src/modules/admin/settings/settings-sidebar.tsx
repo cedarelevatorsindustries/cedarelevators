@@ -18,7 +18,8 @@ import {
   ChevronDown,
   LogOut,
   User,
-  FileText
+  FileText,
+  AlertTriangle
 } from "lucide-react"
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
 import { AdminProfile } from '@/lib/admin-auth-client'
@@ -39,7 +40,8 @@ const ICON_MAP: Record<string, any> = {
   Receipt,
   Users,
   Settings,
-  FileText
+  FileText,
+  AlertTriangle
 }
 
 interface SettingsSidebarProps {
@@ -54,7 +56,8 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
     store: true,
     commerce: true,
     access: true,
-    cms: true
+    cms: true,
+    system: true
   })
 
   useEffect(() => {

@@ -88,7 +88,7 @@ export default function CreateProductPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  
+
   const [formData, setFormData] = useState<ProductFormData>({
     // Step 1: Basic Information
     title: "",
@@ -149,7 +149,7 @@ export default function CreateProductPage() {
 
   const autoSaveDraft = async () => {
     if (!formData.title || isSaving) return
-    
+
     setIsSaving(true)
     try {
       // Save to localStorage as draft
@@ -172,11 +172,11 @@ export default function CreateProductPage() {
       try {
         const parsed = JSON.parse(draft)
         const { lastSaved: savedTime, ...draftData } = parsed
-        
+
         const shouldRestore = window.confirm(
           'Found an unsaved draft. Would you like to restore it?'
         )
-        
+
         if (shouldRestore) {
           setFormData(draftData)
           setLastSaved(new Date(savedTime))
@@ -236,28 +236,8 @@ export default function CreateProductPage() {
       })
     }
 
-    // Step 5: Classification
-    if (!formData.application_id) {
-      errors.push({
-        field: 'application_id',
-        message: 'Application selection is required',
-        step: 'classification'
-      })
-    }
-    if (!formData.category_id) {
-      errors.push({
-        field: 'category_id',
-        message: 'Category selection is required',
-        step: 'classification'
-      })
-    }
-    if (!formData.elevator_type_ids || formData.elevator_type_ids.length === 0) {
-      errors.push({
-        field: 'elevator_type_ids',
-        message: 'At least one elevator type must be selected',
-        step: 'classification'
-      })
-    }
+    // Step 5: Classification (Optional - products can exist without catalog placement)
+    // No validation errors for classification fields - they are all optional
 
     // Step 6: Pricing
     if (!formData.price || parseFloat(formData.price) <= 0) {
@@ -273,7 +253,7 @@ export default function CreateProductPage() {
 
   const handleSubmit = async (isDraft = false) => {
     setIsLoading(true)
-    
+
     try {
       // Validate only if publishing (not draft)
       if (!isDraft) {
@@ -305,7 +285,7 @@ export default function CreateProductPage() {
         price: parseFloat(formData.price) || 0,
         compare_at_price: formData.comparePrice ? parseFloat(formData.comparePrice) : undefined,
         cost_per_item: formData.cost ? parseFloat(formData.cost) : undefined,
-        
+
         // Inventory
         stock_quantity: parseInt(formData.stockQuantity) || 0,
         track_inventory: formData.trackInventory,
@@ -338,7 +318,7 @@ export default function CreateProductPage() {
         taxable: formData.taxable,
         bulk_pricing_available: formData.bulkPricingAvailable,
         bulk_pricing_note: formData.bulkPricingNote,
-        
+
         is_featured: false,
         view_count: 0,
         dimensions: { unit: 'cm' }
@@ -568,7 +548,7 @@ export default function CreateProductPage() {
                 <ArrowLeft className="h-4 w-4" />
                 Previous
               </Button>
-              
+
               {canGoNext ? (
                 <Button
                   onClick={goToNextTab}

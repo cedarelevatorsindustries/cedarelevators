@@ -533,9 +533,11 @@ export async function getQuoteById(quoteId: string): Promise<
       .single()
 
     if (error) {
+      // Silently return null if quote not found
       if (error.code === 'PGRST116') {
         return { success: true, quote: null }
       }
+      // Only log unexpected errors
       console.error('Error fetching quote:', error)
       return { success: false, error: error.message }
     }

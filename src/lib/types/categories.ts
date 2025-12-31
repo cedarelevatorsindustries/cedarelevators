@@ -11,17 +11,25 @@ export interface Category {
     name: string
     slug: string
     description?: string | null
-    parent_id?: string | null
+    subtitle?: string | null
+    parent_id?: string | null // NULL = Application, NOT NULL = Category/Subcategory
     // Visual Identity
     image_url?: string | null // DEPRECATED: Use thumbnail_image instead
     thumbnail_image?: string | null // Square/card image for category cards, grids, filters
     banner_image?: string | null // Wide banner for category PLP header (optional, non-clickable)
     image_alt?: string | null
     icon?: string | null
+    // Badge
+    badge_text?: string | null
+    badge_color?: string | null
+    // Display Rules
+    card_position?: string | null
+    default_sort?: string | null
     sort_order: number
     is_active: boolean
     status: CategoryStatus
-    application?: string | null // For top-level: residential, commercial, industrial
+    visibility?: string | null
+    // ❌ REMOVED: application field - now handled via application_categories junction table
     meta_title?: string | null
     meta_description?: string | null
     created_at: string
@@ -39,6 +47,7 @@ export interface CategoryFormData {
     name: string
     slug: string
     description?: string
+    subtitle?: string
     parent_id?: string | null
     // Visual Identity
     image_url?: string // DEPRECATED: Use thumbnail_image instead
@@ -46,10 +55,17 @@ export interface CategoryFormData {
     banner_image?: string // Wide banner for PLP header
     image_alt?: string
     icon?: string
+    // Badge
+    badge_text?: string
+    badge_color?: string
+    // Display Rules
+    card_position?: string
+    default_sort?: string
     sort_order?: number
     is_active?: boolean
     status?: CategoryStatus
-    application?: string
+    visibility?: string
+    // ❌ REMOVED: application field - categories are global
     meta_title?: string
     meta_description?: string
 }

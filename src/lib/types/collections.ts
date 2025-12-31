@@ -4,6 +4,7 @@
 
 export type CollectionType = 'manual' | 'automatic'
 export type CollectionStatus = 'active' | 'inactive'
+export type CollectionContextType = 'general' | 'category_specific' | 'business_specific'
 
 export interface Collection {
     id: string
@@ -22,6 +23,11 @@ export interface Collection {
     sort_order: number
     meta_title?: string | null
     meta_description?: string | null
+    // Context Fields (NEW)
+    collection_type: CollectionContextType // general, category_specific, business_specific
+    category_id?: string | null // For category_specific collections
+    is_business_only: boolean // For business hub filtering
+    display_order: number // Display order within context
     // Display Configuration
     display_location?: string[] | null // Where to show: ["House", "catalog", "product"]
     layout?: string | null // grid-5, grid-4, grid-3, horizontal-scroll, special
@@ -70,6 +76,11 @@ export interface CollectionFormData {
     sort_order?: number
     meta_title?: string
     meta_description?: string
+    // Context Fields
+    collection_type?: CollectionContextType
+    category_id?: string
+    is_business_only?: boolean
+    display_order?: number
     product_ids?: string[]
 }
 
@@ -78,6 +89,11 @@ export interface CollectionFilters {
     is_active?: boolean
     is_featured?: boolean
     search?: string
+    // Context Filters
+    collection_type?: CollectionContextType
+    category_id?: string
+    is_business_only?: boolean
+    limit?: number
 }
 
 export interface CollectionStats {

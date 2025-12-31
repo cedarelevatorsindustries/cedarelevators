@@ -13,8 +13,6 @@ import RecentlyViewedList from "@/modules/profile/components/recently-viewed-lis
 interface MobileHomepageLoggedInProps {
   products: Product[]
   categories: ProductCategory[]
-  products: Product[]
-  categories: ProductCategory[]
   userType?: "individual" | "business"
 }
 
@@ -79,47 +77,46 @@ export default function MobileHomepageLoggedIn({
             <FavoritesList />
           </div>
         </div>
-
-        {/* Recently Viewed Products */}
-        <RecentlyViewedList />
-
-        {/* Top Selling Components */}
-        {topSelling.length > 0 && (
-          <ProductSectionMobile
-            title="Top Selling Components"
-            products={topSelling}
-            viewAllLink="/products?sort=best-selling"
-          />
-        )}
-
-
-
-        {/* New Arrivals */}
-        {newArrivals.length > 0 && (
-          <ProductSectionMobile
-            title="New Arrivals"
-            products={newArrivals}
-            viewAllLink="/products?sort=newest"
-          />
-        )}
-
-        {/* Top Choices This Month */}
-        {topChoices.length > 0 && (
-          <ProductSectionMobile
-            title="Top Choices This Month"
-            products={topChoices}
-            viewAllLink="/products?filter=top-choices"
-          />
-        )}
-
-        {/* Trending Products */}
-        {trending.length > 0 && (
-          <ProductSectionMobile
-            title="Trending Products"
-            products={trending}
-            viewAllLink="/products?filter=trending"
-          />
-        )}
       </div>
-      )
+
+      {/* Recently Viewed Products */}
+      <RecentlyViewedList />
+
+      {/* Top Selling Components */}
+      {topSelling.length > 0 && (
+        <ProductSectionMobile
+          title="Top Selling Components"
+          products={topSelling}
+          viewAllLink="/products?sort=best-selling"
+        />
+      )}
+
+      {/* New Arrivals */}
+      {newArrivals.length > 0 && (
+        <ProductSectionMobile
+          title="New Arrivals"
+          products={newArrivals}
+          viewAllLink="/products?sort=newest"
+        />
+      )}
+
+      {/* Top Choices This Month */}
+      {topChoices.length > 0 && (
+        <ProductSectionMobile
+          title="Top Choices This Month"
+          products={topChoices}
+          viewAllLink="/products?filter=top-choices"
+        />
+      )}
+
+      {/* Trending Products */}
+      {trending.length > 0 && (
+        <ProductSectionMobile
+          title="Trending Products"
+          products={trending}
+          viewAllLink="/products?filter=trending"
+        />
+      )}
+    </div>
+  )
 }

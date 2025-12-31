@@ -11,9 +11,15 @@ export * from "./guest-quote-form"
 export * from "./individual-quote-form"
 export * from "./business-quote-form"
 export * from "./bottom-cta"
+
 // New Quote Features
 export { default as QuoteTemplates } from "./quote-templates"
-export { default as TawkChat, TawkSetupInstructions } from "./tawk-chat"
 export { default as QuoteToOrder } from "./quote-to-order"
 export { default as BulkQuoteHistory } from "./bulk-quote-history"
 
+// Business Hub Components (V2 - Desktop-First Design)
+export { BusinessHubHeaderV2 } from "./business-hub-header-v2"
+export { StatusStripV2 } from "./status-strip-v2"
+export { ActionCardsGrid } from "./action-cards-grid"
+export { ActionNeededV2 } from "./action-needed-v2"
+export { QuotesSidebar } from "./quotes-sidebar"

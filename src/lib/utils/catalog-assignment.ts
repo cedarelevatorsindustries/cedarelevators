@@ -3,7 +3,7 @@
  * Handles assignment of products to catalog structure
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { ValidationError, CatalogLookupResult } from '@/types/csv-import.types'
 
 /**
@@ -18,15 +18,19 @@ export async function resolveCatalogReferences(
   collectionSlugs: string[],
   rowNumber: number
 ): Promise<CatalogLookupResult> {
-  const supabase = await createClient()
+  const supabase = createServerSupabaseClient()
+
+  if (!supabase) {
+    throw new Error('Failed to create Supabase client. Check environment variables.')
+  }
   const errors: ValidationError[] = []
-  
+
   let application_id: string | null = null
   let category_id: string | null = null
   let subcategory_id: string | null = null
   const elevator_type_ids: string[] = []
   const collection_ids: string[] = []
-  
+
   // 1. Lookup Application (parent_id IS NULL in categories table)
   const { data: app, error: appError } = await supabase
     .from('categories')
@@ -34,18 +38,18 @@ export async function resolveCatalogReferences(
     .eq('slug', applicationSlug)
     .is('parent_id', null)
     .single()
-  
+
   if (appError || !app) {
     errors.push({
       row: rowNumber,
       field: 'application_slug',
-      message: `Application "${applicationSlug}" not found`,
-      severity: 'error'
+      message: `Application "${applicationSlug}" not found - product will be saved as draft`,
+      severity: 'warning'
     })
   } else {
     application_id = app.id
   }
-  
+
   // 2. Lookup Category (parent_id = application_id)
   if (application_id) {
     const { data: cat, error: catError } = await supabase
@@ -54,13 +58,13 @@ export async function resolveCatalogReferences(
       .eq('slug', categorySlug)
       .eq('parent_id', application_id)
       .single()
-    
+
     if (catError || !cat) {
       errors.push({
         row: rowNumber,
         field: 'category_slug',
-        message: `Category "${categorySlug}" not found under application "${applicationSlug}"`,
-        severity: 'error'
+        message: `Category "${categorySlug}" not found under application "${applicationSlug}" - product will be saved as draft`,
+        severity: 'warning'
       })
     } else {
       category_id = cat.id
@@ -69,11 +73,11 @@ export async function resolveCatalogReferences(
     errors.push({
       row: rowNumber,
       field: 'category_slug',
-      message: `Cannot lookup category "${categorySlug}" - application not found`,
-      severity: 'error'
+      message: `Cannot lookup category "${categorySlug}" - application not found. Product will be saved as draft`,
+      severity: 'warning'
     })
   }
-  
+
   // 3. Lookup Subcategory (if provided)
   if (subcategorySlug && category_id) {
     const { data: subcat, error: subcatError } = await supabase
@@ -82,7 +86,7 @@ export async function resolveCatalogReferences(
       .eq('slug', subcategorySlug)
       .eq('parent_id', category_id)
       .single()
-    
+
     if (subcatError || !subcat) {
       errors.push({
         row: rowNumber,
@@ -94,14 +98,14 @@ export async function resolveCatalogReferences(
       subcategory_id = subcat.id
     }
   }
-  
+
   // 4. Lookup Elevator Types
   if (elevatorTypeSlugs.length > 0) {
     const { data: types, error: typesError } = await supabase
       .from('elevator_types')
       .select('id, slug')
       .in('slug', elevatorTypeSlugs)
-    
+
     if (typesError) {
       errors.push({
         row: rowNumber,
@@ -111,7 +115,7 @@ export async function resolveCatalogReferences(
       })
     } else if (types) {
       elevator_type_ids.push(...types.map(t => t.id))
-      
+
       // Check for missing slugs
       const foundSlugs = types.map(t => t.slug)
       const missingSlugs = elevatorTypeSlugs.filter(s => !foundSlugs.includes(s))
@@ -125,14 +129,14 @@ export async function resolveCatalogReferences(
       }
     }
   }
-  
+
   // 5. Lookup Collections (optional)
   if (collectionSlugs.length > 0) {
     const { data: collections, error: collectionsError } = await supabase
       .from('collections')
       .select('id, slug')
       .in('slug', collectionSlugs)
-    
+
     if (collectionsError) {
       errors.push({
         row: rowNumber,
@@ -142,7 +146,7 @@ export async function resolveCatalogReferences(
       })
     } else if (collections) {
       collection_ids.push(...collections.map(c => c.id))
-      
+
       // Check for missing slugs
       const foundSlugs = collections.map(c => c.slug)
       const missingSlugs = collectionSlugs.filter(s => !foundSlugs.includes(s))
@@ -156,7 +160,7 @@ export async function resolveCatalogReferences(
       }
     }
   }
-  
+
   return {
     application_id,
     category_id,

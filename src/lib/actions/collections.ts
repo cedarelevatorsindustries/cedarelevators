@@ -37,8 +37,26 @@ export async function getCollections(filters?: CollectionFilters) {
             query = query.eq('is_featured', filters.is_featured)
         }
 
+        // Context filters
+        if (filters?.collection_type) {
+            query = query.eq('collection_type', filters.collection_type)
+        }
+
+        if (filters?.category_id) {
+            query = query.eq('category_id', filters.category_id)
+        }
+
+        if (filters?.is_business_only !== undefined) {
+            query = query.eq('is_business_only', filters.is_business_only)
+        }
+
         if (filters?.search) {
             query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+        }
+
+        // Apply limit if provided
+        if (filters?.limit) {
+            query = query.limit(filters.limit)
         }
 
         const { data, error } = await query
@@ -83,7 +101,13 @@ export async function getCollectionById(id: string) {
             .eq('id', id)
             .single()
 
-        if (error) throw error
+        // Silently return null if collection not found
+        if (error) {
+            if (error.code === 'PGRST116') {
+                return { collection: null, success: false }
+            }
+            throw error
+        }
 
         // Get products in this collection
         const { data: productCollections } = await supabase
@@ -107,6 +131,7 @@ export async function getCollectionById(id: string) {
 
         return { collection, success: true }
     } catch (error) {
+        // Only log unexpected errors
         console.error('Error fetching collection:', error)
         return { collection: null, error: 'Failed to fetch collection', success: false }
     }
@@ -127,7 +152,13 @@ export async function getCollectionBySlug(slug: string) {
             .eq('is_active', true)
             .single()
 
-        if (error) throw error
+        // Silently return null if collection not found (PGRST116 is "not found" error)
+        if (error) {
+            if (error.code === 'PGRST116') {
+                return { collection: null, success: false }
+            }
+            throw error
+        }
 
         // Get products
         const { data: productCollections } = await supabase
@@ -150,6 +181,7 @@ export async function getCollectionBySlug(slug: string) {
 
         return { collection, success: true }
     } catch (error) {
+        // Only log unexpected errors, not "not found" errors
         console.error('Error fetching collection:', error)
         return { collection: null, error: 'Failed to fetch collection', success: false }
     }
@@ -178,7 +210,12 @@ export async function createCollection(formData: CollectionFormData) {
                 is_featured: formData.is_featured || false,
                 sort_order: formData.sort_order || 0,
                 meta_title: formData.meta_title,
-                meta_description: formData.meta_description
+                meta_description: formData.meta_description,
+                // Context fields
+                collection_type: formData.collection_type || 'general',
+                category_id: formData.category_id || null,
+                is_business_only: formData.is_business_only || false,
+                display_order: formData.display_order || 0
             })
             .select()
             .single()
@@ -229,6 +266,11 @@ export async function updateCollection(id: string, formData: Partial<CollectionF
         if (formData.sort_order !== undefined) updateData.sort_order = formData.sort_order
         if (formData.meta_title !== undefined) updateData.meta_title = formData.meta_title
         if (formData.meta_description !== undefined) updateData.meta_description = formData.meta_description
+        // Context fields
+        if (formData.collection_type !== undefined) updateData.collection_type = formData.collection_type
+        if (formData.category_id !== undefined) updateData.category_id = formData.category_id
+        if (formData.is_business_only !== undefined) updateData.is_business_only = formData.is_business_only
+        if (formData.display_order !== undefined) updateData.display_order = formData.display_order
 
         const { data, error } = await supabase
             .from('collections')

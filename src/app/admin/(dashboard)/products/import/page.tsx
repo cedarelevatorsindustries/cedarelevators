@@ -4,6 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { toast } from 'sonner'
 import { ArrowLeft, Upload, Download, LoaderCircle, CircleCheck, XCircle, AlertTriangle, FileWarning } from 'lucide-react'
 import Link from 'next/link'
@@ -221,74 +227,82 @@ export default function ProductImportPage() {
             </CardContent>
           </Card>
 
-          <Card data-testid="template-card">
-            <CardHeader>
-              <CardTitle>CSV Template & Guidelines</CardTitle>
-              <CardDescription>Download the template to see the required format</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ IMPORTANT: Pre-Import Checklist</h4>
-                <p className="text-xs text-orange-700 mb-3">CSV will NOT create catalog structure. Ensure these exist first:</p>
-                <ul className="text-sm text-orange-800 space-y-2">
-                  <li className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                    Applications created
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                    Categories & Subcategories created
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                    Elevator Types created
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                    Collections created (optional)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                    CSV follows template format
-                  </li>
-                </ul>
-              </div>
+          <Accordion type="single" collapsible defaultValue="template">
+            <AccordionItem value="template" className="border-none">
+              <AccordionTrigger className="hover:no-underline py-0">
+                <CardHeader className="p-0 w-full text-left">
+                  <CardTitle>CSV Template & Guidelines</CardTitle>
+                  <CardDescription>Download the template to see the required format</CardDescription>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="pt-6">
+                <Card className="border-none shadow-none p-0">
+                  <CardContent className="space-y-6 p-0">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ IMPORTANT: Pre-Import Checklist</h4>
+                      <p className="text-xs text-orange-700 mb-3">CSV will NOT create catalog structure. Ensure these exist first:</p>
+                      <ul className="text-sm text-orange-800 space-y-2">
+                        <li className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                          Applications created
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                          Categories & Subcategories created
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                          Elevator Types created
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                          Collections created (optional)
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
+                          CSV follows template format
+                        </li>
+                      </ul>
+                    </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-sm text-blue-900 mb-2">✅ Key Rules:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• <strong>One row = one variant</strong></li>
-                  <li>• Group variants by same <code className="bg-blue-100 px-1 rounded">product_title</code></li>
-                  <li>• SKUs auto-generated if not provided</li>
-                  <li>• Variant data falls back to product data</li>
-                  <li>• Invalid references → saved as Draft</li>
-                  <li>• Prices in Indian Rupees (₹)</li>
-                </ul>
-              </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-sm text-blue-900 mb-2">✅ Key Rules:</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• <strong>One row = one variant</strong></li>
+                        <li>• Group variants by same <code className="bg-blue-100 px-1 rounded">product_title</code></li>
+                        <li>• SKUs auto-generated if not provided</li>
+                        <li>• Variant data falls back to product data</li>
+                        <li>• Invalid references → saved as Draft</li>
+                        <li>• Prices in Indian Rupees (₹)</li>
+                      </ul>
+                    </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-sm text-gray-900 mb-2">Required Columns:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• <strong>product_title</strong> - Product name (3+ chars)</li>
-                  <li>• <strong>short_description</strong> - Brief description</li>
-                  <li>• <strong>application_slug</strong> - Must exist in DB</li>
-                  <li>• <strong>category_slug</strong> - Must exist in DB</li>
-                  <li>• <strong>product_price</strong> - Selling price (₹)</li>
-                  <li>• <strong>product_mrp</strong> - Maximum retail price (₹)</li>
-                </ul>
-              </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-sm text-gray-900 mb-2">Required Columns:</h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        <li>• <strong>product_title</strong> - Product name (3+ chars)</li>
+                        <li>• <strong>short_description</strong> - Brief description</li>
+                        <li>• <strong>application_slug</strong> - Must exist in DB</li>
+                        <li>• <strong>category_slug</strong> - Must exist in DB</li>
+                        <li>• <strong>product_price</strong> - Selling price (₹)</li>
+                        <li>• <strong>product_mrp</strong> - Maximum retail price (₹)</li>
+                      </ul>
+                    </div>
 
-              <Button
-                onClick={downloadTemplate}
-                variant="outline"
-                className="w-full"
-                data-testid="download-template-button"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download CSV Template
-              </Button>
-            </CardContent>
-          </Card>
+                    <Button
+                      onClick={downloadTemplate}
+                      variant="outline"
+                      className="w-full"
+                      data-testid="download-template-button"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download CSV Template
+                    </Button>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       )}
 
@@ -397,7 +411,7 @@ export default function ProductImportPage() {
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">{group.title}</h4>
                         <p className="text-sm text-gray-600">Slug: {group.slug}</p>
-                        
+
                         {/* Catalog Assignment Info */}
                         <div className="mt-2 flex flex-wrap gap-2 text-xs">
                           {group.application_id ? (
@@ -409,7 +423,7 @@ export default function ProductImportPage() {
                               ✗ {group.application_slug}
                             </span>
                           )}
-                          
+
                           {group.category_id ? (
                             <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
                               ✓ {group.category_slug}
@@ -419,13 +433,13 @@ export default function ProductImportPage() {
                               ✗ {group.category_slug}
                             </span>
                           )}
-                          
+
                           {group.elevator_type_ids && group.elevator_type_ids.length > 0 && (
                             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
                               {group.elevator_type_ids.length} elevator types
                             </span>
                           )}
-                          
+
                           {group.status === 'draft' && !group.application_id && (
                             <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded font-medium">
                               Will import as DRAFT

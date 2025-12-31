@@ -6,15 +6,21 @@ export interface Application {
   name: string
   slug: string
   description?: string
+  subtitle?: string
   parent_id: null // Always null for applications
   image_url?: string
   thumbnail_image?: string
   banner_image?: string
   image_alt?: string
   icon?: string
+  badge_text?: string
+  badge_color?: string
+  card_position?: 'image-top' | 'image-left' | 'compact'
+  default_sort?: 'newest' | 'popular' | 'manual' | 'price-low' | 'price-high'
   sort_order: number
   is_active: boolean
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'draft' | 'archived'
+  visibility?: 'public' | 'hidden'
   application?: string
   meta_title?: string
   meta_description?: string
@@ -32,14 +38,20 @@ export interface ApplicationFormData {
   name: string
   slug: string
   description?: string
+  subtitle?: string
   image_url?: string
   thumbnail_image?: string
   banner_image?: string
   image_alt?: string
   icon?: string
+  badge_text?: string
+  badge_color?: string
+  card_position?: 'image-top' | 'image-left' | 'compact'
+  default_sort?: 'newest' | 'popular' | 'manual' | 'price-low' | 'price-high'
   sort_order: number
   is_active: boolean
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'draft' | 'archived'
+  visibility?: 'public' | 'hidden'
   meta_title?: string
   meta_description?: string
 }

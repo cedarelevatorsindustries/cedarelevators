@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
 import { listProducts, listCategories, listApplications, listElevatorTypes } from "@/lib/data"
 import { getCollectionsForDisplay, getCollectionBySlug } from "@/lib/actions/collections"
+import { getBusinessHubData } from "@/lib/actions/business-hub"
 import {
   DesktopHomepage,
   DesktopHomepageLoggedIn,
@@ -53,6 +54,15 @@ export default async function HomePage() {
   // Serialize to ensure only plain objects are passed to client components
   const topApplicationsCollection = rawTopApplicationsCollection ? JSON.parse(JSON.stringify(rawTopApplicationsCollection)) : null
 
+  // Fetch Business Hub data for business users
+  let businessHubData = null
+  if (userType === "business") {
+    const result = await getBusinessHubData()
+    if (result.success) {
+      businessHubData = result.data
+    }
+  }
+
   // Extract testimonials from product metadata (if available)
   const testimonials: any[] = []
   response.products.forEach((product: any) => {
@@ -85,6 +95,7 @@ export default async function HomePage() {
             collections={collections}
             trendingCollection={trendingCollection}
             topApplicationsCollection={topApplicationsCollection}
+            businessHubData={businessHubData}
           />
         </div>
 

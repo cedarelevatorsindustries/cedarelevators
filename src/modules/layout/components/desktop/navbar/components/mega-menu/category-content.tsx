@@ -3,6 +3,7 @@
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { ProductCategory } from "@/lib/types/domain"
 import { getCategoryIcon, getCategoryColors } from "./categories-data"
+import ProductCard from "@/components/ui/product-card"
 
 interface CategoryContentProps {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>
@@ -20,7 +21,7 @@ export function CategoryContent({
   categories
 }: CategoryContentProps) {
   return (
-    <div 
+    <div
       ref={scrollContainerRef}
       className="flex-1 overflow-y-auto"
       style={{ scrollBehavior: 'smooth' }}
@@ -28,25 +29,26 @@ export function CategoryContent({
     >
       <div className="p-6 space-y-12">
         {categories.map((category) => {
-          const IconComponent = getCategoryIcon(category.handle || category.slug || category.id)
-          const colors = getCategoryColors(category.handle || category.slug || category.id)
-          const imageSrc = category.thumbnail_image || category.image_url || '/images/image.png'
-          
+          const IconComponent = getCategoryIcon(category.handle || category.id)
+          const colors = getCategoryColors(category.handle || category.id)
+          // Use metadata for image if available, or fallback
+          const imageSrc = (category.metadata?.image as string) || '/images/image.png'
+
           return (
             <div
               key={category.id}
               ref={(el) => { categoryRefs.current[category.id] = el }}
               className="category-section"
             >
-              {/* Category Header */}
+              {/* Category Header with View All in top right */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
                   <IconComponent size={24} className={colors.color} />
                   <h2 className="text-xl font-bold text-gray-900">{category.name}</h2>
                 </div>
                 <LocalizedClientLink
-                  href={`/catalog?category=${category.handle || category.slug}`}
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm hover:underline transition-colors"
+                  href={`/catalog?category=${category.handle}`}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm hover:underline transition-colors flex items-center gap-1"
                   onClick={onClose}
                 >
                   View All →
@@ -58,34 +60,29 @@ export function CategoryContent({
                 <p className="text-gray-600 text-sm mb-4">{category.description}</p>
               )}
 
-              {/* Category Image/Placeholder */}
-              <div className="grid grid-cols-1 gap-4">
-                <div className="group block bg-white border border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-lg transition-all duration-200">
-                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={imageSrc}
-                      alt={category.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="mt-4 text-center">
-                    <h4 className="text-sm font-medium text-gray-900 group-hover:text-blue-700 transition-colors">
-                      Browse {category.name}
-                    </h4>
-                    {category.metadata?.product_count && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {category.metadata.product_count} products available
-                      </p>
-                    )}
-                  </div>
+              {/* Category Products - 5 per row */}
+              {category.products && category.products.length > 0 ? (
+                <div className="grid grid-cols-5 gap-4">
+                  {category.products.slice(0, 5).map((product) => (
+                    <div key={product.id} className="min-w-0">
+                      <ProductCard
+                        product={product}
+                        variant="mobile"
+                      />
+                    </div>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <div className="py-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No products found in this category.</p>
+                </div>
+              )}
+
             </div>
           )
         })}
-        
-        <div style={{ height: '30vh' }}></div>
+
+        <div className="h-8"></div>
       </div>
     </div>
   )

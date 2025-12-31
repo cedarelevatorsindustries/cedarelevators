@@ -1,106 +1,87 @@
 "use client"
 
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import { Plus, Upload, BarChart3, Users } from "lucide-react"
-import Link from "next/link"
-import {
-  StickyTopBar,
-  VerificationBanner,
-  PerformanceSnapshot,
-  QuickActionsBar,
-  SmartAlerts,
-  QuoteTimeline,
-  QuickReorder,
-  ExclusiveSection,
-  MiniAnalytics
-} from "../components"
+import { Product } from "@/lib/types/domain"
+import { BusinessHubHeaderV2 } from "../components/business-hub-header-v2"
+import { StatusStripV2 } from "../components/status-strip-v2"
+import { ActionCardsGrid } from "../components/action-cards-grid"
+import { ActionNeededV2 } from "../components/action-needed-v2"
+import { QuotesSidebar } from "../components/quotes-sidebar"
+import { BusinessCollections } from "@/modules/collections/business-collections"
 
 interface BusinessQuoteTemplateProps {
   products: Product[]
+  companyName?: string
+  isVerified?: boolean
+  isPending?: boolean
+  activeQuotes?: number
+  activeOrders?: number
 }
 
-export default function BusinessQuoteTemplate({ products }: BusinessQuoteTemplateProps) {
-  // Enhanced business actions
-  const businessActions = [
-    { label: "New Quote", icon: Plus, href: "/request-quote/create", color: "bg-blue-600" },
-    { label: "Bulk Upload", icon: Upload, href: "/request-quote/bulk", color: "bg-purple-600" },
-    { label: "Analytics", icon: BarChart3, href: "/profile/quotes", color: "bg-green-600" }
+export default function BusinessQuoteTemplate({
+  products,
+  companyName,
+  isVerified = false,
+  isPending = false,
+  activeQuotes = 0,
+  activeOrders = 0
+}: BusinessQuoteTemplateProps) {
+  // Example action items (would come from API)
+  const actionItems = [
+    // {
+    //   type: "approval" as const,
+    //   title: "Order #4421 Requires Approval",
+    //   subtitle: "Total: $12,450.00 • Pending manager review",
+    //   href: "/orders/4421",
+    //   ctaText: "Review"
+    // },
+    // {
+    //   type: "expiring" as const,
+    //   title: "Quote #Q-99 Expiring Soon",
+    //   subtitle: "Expires in 2 days • Custom steel fabrication",
+    //   href: "/quotes/Q-99",
+    //   ctaText: "View Quote"
+    // }
   ]
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 pb-24 relative">
-      {/* 1. Sticky Top Bar */}
-      <StickyTopBar title="Business Hub" pendingCount={3} />
+    <div className="relative flex min-h-screen w-full flex-col bg-slate-50">
+      {/* Header */}
+      <BusinessHubHeaderV2 companyName={companyName} />
 
-      {/* 2. Verification Banner */}
-      <VerificationBanner isVerified={false} isPending={false} />
+      {/* Main Content */}
+      <main className="flex-1 px-6 md:px-10 py-8 mx-auto w-full max-w-7xl">
+        {/* Verification Strip */}
+        <StatusStripV2
+          isVerified={isVerified}
+          isPending={isPending}
+          completionPercentage={80}
+        />
 
-      {/* 3. Quick Performance Snapshot */}
-      <PerformanceSnapshot />
+        {/* Action Cards Grid */}
+        <ActionCardsGrid />
 
-      {/* 4. Quick Actions Bar */}
-      <QuickActionsBar actions={businessActions} />
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Column: Action Needed & Collections */}
+          <div className="lg:col-span-2 flex flex-col gap-8">
+            {/* Action Needed Section */}
+            <ActionNeededV2 actions={actionItems} />
 
-      {/* 5. Smart Alerts */}
-      <SmartAlerts />
+            {/* Business Collections */}
+            <div>
+              <BusinessCollections />
+            </div>
+          </div>
 
-      {/* 6. Active / Pending Quotes & Orders Timeline */}
-      <QuoteTimeline />
-
-      {/* 7. Quick Reorder Carousel */}
-      <QuickReorder />
-
-      {/* 8. Exclusive to Business Section */}
-      <ExclusiveSection />
-
-      {/* 9. Mini Analytics */}
-      <MiniAnalytics />
-
-      {/* 10. Business Resources */}
-      <div className="mx-4 mt-6 bg-white rounded-xl p-4 border border-gray-200">
-        <h3 className="font-bold text-gray-900 mb-3">Business Resources</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Link
-            href="/resources"
-            className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            <Upload className="w-6 h-6 text-blue-600 mb-2" />
-            <span className="text-xs font-medium text-gray-700 text-center">Download Center</span>
-          </Link>
-          <Link
-            href="/profile/quotes"
-            className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <BarChart3 className="w-6 h-6 text-green-600 mb-2" />
-            <span className="text-xs font-medium text-gray-700 text-center">Full Analytics</span>
-          </Link>
-          <Link
-            href="/help"
-            className="flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-          >
-            <span className="text-xl mb-2">❓</span>
-            <span className="text-xs font-medium text-gray-700 text-center">Help Center</span>
-          </Link>
-          <Link
-            href="tel:+911234567890"
-            className="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-          >
-            <span className="text-xl mb-2">📞</span>
-            <span className="text-xs font-medium text-gray-700 text-center">Priority Support</span>
-          </Link>
+          {/* Sidebar: Quotes & Orders Summary */}
+          <div className="lg:col-span-1">
+            <QuotesSidebar
+              activeQuotes={activeQuotes}
+              activeOrders={activeOrders}
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Floating Action Button (FAB) - Always visible */}
-      <div className="fixed bottom-24 right-4 z-40">
-        <Link
-          href="/request-quote/bulk"
-          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-4 rounded-full shadow-xl shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all active:scale-95"
-        >
-          <Plus className="w-6 h-6" />
-          <span className="font-bold text-lg">Bulk Quote</span>
-        </Link>
-      </div>
+      </main>
     </div>
   )
 }

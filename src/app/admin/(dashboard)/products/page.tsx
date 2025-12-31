@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink } from "lucide-react"
+import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink, Upload } from "lucide-react"
 import Link from "next/link"
 import { useProducts, useProductStats, useDeleteProduct, useUpdateProduct } from "@/hooks/queries/useProducts"
 import type { Product } from "@/lib/types/products"
@@ -59,6 +59,12 @@ export default function ProductsPage() {
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button asChild variant="outline" size="sm" className="bg-white border-gray-200 hover:bg-gray-50 text-gray-700">
+              <Link href="/admin/products/import">
+                <Upload className="mr-2 h-4 w-4" />
+                Bulk Import
+              </Link>
             </Button>
             <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
               <Link href="/admin/products/create">
@@ -231,7 +237,7 @@ export default function ProductsPage() {
                       <div className="flex flex-row sm:flex-col justify-between sm:justify-center gap-1">
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${product.stock_quantity === 0 ? 'bg-red-500' :
-                              product.stock_quantity < 10 ? 'bg-yellow-500' : 'bg-green-500'
+                            product.stock_quantity < 10 ? 'bg-yellow-500' : 'bg-green-500'
                             }`} />
                           <span className="text-sm font-medium text-gray-700">
                             {product.stock_quantity} in stock
@@ -247,10 +253,10 @@ export default function ProductsPage() {
                         <Badge
                           variant="outline"
                           className={`capitalize ${product.status === 'active'
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : product.status === 'draft'
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-gray-50 text-gray-700 border-gray-200"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : product.status === 'draft'
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : "bg-gray-50 text-gray-700 border-gray-200"
                             }`}
                         >
                           {product.status}

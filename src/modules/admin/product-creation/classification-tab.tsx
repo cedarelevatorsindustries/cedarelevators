@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { CheckCircle2, AlertCircle, FolderTree } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2, AlertCircle, FolderTree, Plus, PackageX } from 'lucide-react'
 import { getApplications, getCategories, getSubcategories, getElevatorTypes, getCollections } from '@/lib/actions/catalog'
+import Link from 'next/link'
 
 interface ClassificationData {
   application_id?: string
@@ -128,25 +130,25 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
     onFormDataChange({ collection_ids: updated })
   }
 
-  const isValid = formData.application_id && formData.category_id && (formData.elevator_type_ids?.length || 0) > 0
+  const hasClassification = formData.application_id || formData.category_id || (formData.elevator_type_ids?.length || 0) > 0
 
   return (
     <div className="space-y-6">
       {/* Header Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-1">Step 5: Classification (Catalog Placement)</h3>
-        <p className="text-sm text-blue-700">Define where this product appears in your storefront</p>
+        <h3 className="font-semibold text-blue-900 mb-1">Step 5: Classification (Optional)</h3>
+        <p className="text-sm text-blue-700">Define where this product appears in your storefront catalog</p>
       </div>
 
-      {/* Warning */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+      {/* Info Notice */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-orange-900 mb-1">Required for Product Visibility</h4>
-            <p className="text-sm text-orange-700">
-              Products without proper classification will remain hidden from the catalog.
-              Ensure all required fields are filled before publishing.
+            <h4 className="font-semibold text-amber-900 mb-1">Classification is Optional</h4>
+            <p className="text-sm text-amber-700">
+              Products can be created without catalog placement. You can add classification later.
+              However, unclassified products won't appear in catalog browsing.
             </p>
           </div>
         </div>
@@ -157,96 +159,150 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <FolderTree className="h-5 w-5" />
-            Required Classification
-            <span className="text-red-500 text-sm">*</span>
-            {isValid && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+            Catalog Placement
+            {hasClassification && <CheckCircle2 className="h-5 w-5 text-green-500" />}
           </CardTitle>
           <CardDescription className="text-gray-500">
-            These fields determine product placement in the catalog hierarchy
+            Organize your product in the catalog hierarchy
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Application */}
           <div className="space-y-2">
             <Label htmlFor="application" className="flex items-center gap-2">
-              Application <span className="text-red-500">*</span>
+              Application
               {formData.application_id && <CheckCircle2 className="h-4 w-4 text-green-500" />}
             </Label>
-            <Select 
-              value={formData.application_id} 
-              onValueChange={(value) => {
-                onFormDataChange({ 
-                  application_id: value,
-                  category_id: undefined,
-                  subcategory_id: undefined
-                })
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an application" />
-              </SelectTrigger>
-              <SelectContent>
-                {applications.map((app) => (
-                  <SelectItem key={app.id} value={app.id}>
-                    {app.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">Top-level category (e.g., Passenger Elevators, Freight Elevators)</p>
+
+            {applications.length === 0 ? (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-700 mb-1">No Applications Found</h4>
+                <p className="text-sm text-gray-500 mb-4">
+                  Create an application first to organize your products
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin/applications/create" target="_blank">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Application
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Select
+                  value={formData.application_id}
+                  onValueChange={(value) => {
+                    onFormDataChange({
+                      application_id: value,
+                      category_id: undefined,
+                      subcategory_id: undefined
+                    })
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select an application" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {applications.map((app) => (
+                      <SelectItem key={app.id} value={app.id}>
+                        {app.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">Top-level category (e.g., Passenger Elevators, Freight Elevators)</p>
+              </>
+            )}
           </div>
 
           {/* Category */}
           <div className="space-y-2">
             <Label htmlFor="category" className="flex items-center gap-2">
-              Category <span className="text-red-500">*</span>
+              Category
               {formData.category_id && <CheckCircle2 className="h-4 w-4 text-green-500" />}
             </Label>
-            <Select 
-              value={formData.category_id} 
-              onValueChange={(value) => {
-                onFormDataChange({ 
-                  category_id: value,
-                  subcategory_id: undefined
-                })
-              }}
-              disabled={!formData.application_id}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={formData.application_id ? "Select a category" : "Select application first"} />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">Product category within the application</p>
+
+            {!formData.application_id ? (
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <p className="text-sm text-gray-500 text-center">Select an application first</p>
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <h4 className="font-semibold text-gray-700 mb-1">No Categories Found</h4>
+                <p className="text-sm text-gray-500 mb-4">
+                  Create a category for this application first
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/admin/categories/create" target="_blank">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Category
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Select
+                  value={formData.category_id}
+                  onValueChange={(value) => {
+                    onFormDataChange({
+                      category_id: value,
+                      subcategory_id: undefined
+                    })
+                  }}
+                  disabled={!formData.application_id}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">Product category within the application</p>
+              </>
+            )}
           </div>
 
           {/* Subcategory */}
           <div className="space-y-2">
             <Label htmlFor="subcategory">Subcategory (Optional)</Label>
-            <Select 
-              value={formData.subcategory_id} 
-              onValueChange={(value) => onFormDataChange({ subcategory_id: value })}
-              disabled={!formData.category_id}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={formData.category_id ? "Select a subcategory" : "Select category first"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {subcategories.map((subcat) => (
-                  <SelectItem key={subcat.id} value={subcat.id}>
-                    {subcat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">Further refinement of product category</p>
+
+            {!formData.category_id ? (
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <p className="text-sm text-gray-500 text-center">Select a category first</p>
+              </div>
+            ) : subcategories.length === 0 ? (
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <p className="text-sm text-gray-500 text-center">No subcategories available for this category</p>
+              </div>
+            ) : (
+              <>
+                <Select
+                  value={formData.subcategory_id}
+                  onValueChange={(value) => onFormDataChange({ subcategory_id: value })}
+                  disabled={!formData.category_id}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a subcategory" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {subcategories.map((subcat) => (
+                      <SelectItem key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">Further refinement of product category</p>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -256,7 +312,6 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
             Elevator Types
-            <span className="text-red-500 text-sm">*</span>
             {(formData.elevator_type_ids?.length || 0) > 0 && (
               <Badge variant="secondary">{formData.elevator_type_ids?.length} selected</Badge>
             )}
@@ -268,6 +323,20 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
         <CardContent>
           {loading ? (
             <p className="text-gray-500">Loading elevator types...</p>
+          ) : elevatorTypes.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <h4 className="font-semibold text-gray-700 mb-1">No Elevator Types Found</h4>
+              <p className="text-sm text-gray-500 mb-4">
+                Create elevator types to classify your products
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/elevator-types/create" target="_blank">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Elevator Type
+                </Link>
+              </Button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {elevatorTypes.map((type) => (
@@ -303,6 +372,20 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
         <CardContent>
           {loading ? (
             <p className="text-gray-500">Loading collections...</p>
+          ) : collections.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <h4 className="font-semibold text-gray-700 mb-1">No Collections Found</h4>
+              <p className="text-sm text-gray-500 mb-4">
+                Create collections to feature products in special sections
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/collections/create" target="_blank">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Collection
+                </Link>
+              </Button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {collections.map((collection) => (

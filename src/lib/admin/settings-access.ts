@@ -12,7 +12,7 @@ const TIER_1_ROLES: AdminRole[] = ['super_admin']
 const TIER_2_ROLES: AdminRole[] = ['super_admin', 'admin', 'manager', 'staff']
 
 export type SettingsTier = 'critical' | 'operational'
-export type SettingsGroup = 'store' | 'commerce' | 'access' | 'cms'
+export type SettingsGroup = 'store' | 'commerce' | 'access' | 'cms' | 'system'
 
 export interface SettingsModule {
   id: string
@@ -39,7 +39,8 @@ export const SETTINGS_GROUPS: SettingsGroupConfig[] = [
   { id: 'store', title: 'STORE', defaultExpanded: true },
   { id: 'commerce', title: 'COMMERCE', defaultExpanded: true },
   { id: 'access', title: 'ACCESS', defaultExpanded: true },
-  { id: 'cms', title: 'CMS', defaultExpanded: true }
+  { id: 'cms', title: 'CMS', defaultExpanded: true },
+  { id: 'system', title: 'SYSTEM', defaultExpanded: true }
 ]
 
 /**
@@ -128,7 +129,8 @@ export function getGroupedModules(): Record<SettingsGroup, SettingsModule[]> {
     store: [],
     commerce: [],
     access: [],
-    cms: []
+    cms: [],
+    system: []
   }
 
   SETTINGS_MODULES.forEach(module => {

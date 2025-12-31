@@ -22,6 +22,7 @@ interface DesktopHomepageLoggedInProps {
   collections: any[]
   trendingCollection: any
   topApplicationsCollection: any
+  businessHubData?: any
 }
 
 export default function DesktopHomepageLoggedIn({
@@ -33,7 +34,8 @@ export default function DesktopHomepageLoggedIn({
   elevatorTypes = [],
   collections = [],
   trendingCollection = null,
-  topApplicationsCollection = null
+  topApplicationsCollection = null,
+  businessHubData = null
 }: DesktopHomepageLoggedInProps) {
   const searchParams = useSearchParams()
   const app = searchParams.get('app')
@@ -83,7 +85,7 @@ export default function DesktopHomepageLoggedIn({
           </>
         )}
         {activeTab === "categories" && <CategoriesTab categories={categories} elevatorTypes={elevatorTypes} trendingCollection={trendingCollection} topApplicationsCollection={topApplicationsCollection} />}
-        {activeTab === "business-hub" && userType === "business" && <BusinessHubTab />}
+        {activeTab === "business-hub" && userType === "business" && businessHubData && <BusinessHubTab data={businessHubData} />}
       </div>
     </div>
   )

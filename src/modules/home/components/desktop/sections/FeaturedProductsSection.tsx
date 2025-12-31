@@ -1,5 +1,3 @@
-"use client"
-
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 import { getCollectionBySlug } from "@/lib/actions/collections"
 

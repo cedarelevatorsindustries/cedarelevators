@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { ProductCategory } from "@/lib/types/domain"
 import { MegaMenuTrigger } from "./mega-menu-trigger"
 import { MegaMenuPanel } from "./mega-menu-panel"
-import { listCategories } from "@/lib/data/categories"
+import { getMegaMenuData } from "@/lib/actions/mega-menu"
 
 interface MegaMenuProps {
   categories: ProductCategory[]
@@ -22,9 +22,13 @@ export function MegaMenu({ categories: initialCategories, isScrolled = false, on
     if (!initialCategories || initialCategories.length === 0) {
       const fetchCategories = async () => {
         try {
-          // Fetch only top-level categories (applications) that have is_active = true
-          const cats = await listCategories({ parent_id: null })
-          setCategories(cats.filter(cat => cat.is_active !== false))
+          if (result.success && result.categories) {
+            // Filter out categories with no products
+            const categoriesWithProducts = (result.categories as ProductCategory[]).filter(
+              cat => cat.products && cat.products.length > 0
+            )
+            setCategories(categoriesWithProducts)
+          }
         } catch (error) {
           console.error('Error fetching categories for mega menu:', error)
           setCategories([])

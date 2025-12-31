@@ -11,11 +11,13 @@ import { Save, Upload, ArrowLeft, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateCollection, useUploadCollectionImage } from "@/hooks/queries/useCollections"
-import type { CollectionFormData } from "@/lib/types/collections"
+import type { CollectionFormData, CollectionContextType } from "@/lib/types/collections"
 import { generateSlug } from "@/lib/types/collections"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
+import { useEffect, useState as useReactState } from "react"
+import { getCategories } from "@/lib/actions/catalog"
 
 export default function CreateCollectionPage() {
   const router = useRouter()
@@ -33,8 +35,30 @@ export default function CreateCollectionPage() {
     is_featured: false,
     sort_order: 0,
     meta_title: "",
-    meta_description: ""
+    meta_description: "",
+    // Context fields
+    collection_type: "general",
+    category_id: undefined,
+    is_business_only: false,
+    display_order: 0
   })
+
+  const [categories, setCategories] = useState<any[]>([])
+
+  // Load categories for category selector
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const result = await getCategories()
+        if (result.success && result.data) {
+          setCategories(result.data)
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      }
+    }
+    loadCategories()
+  }, [])
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
@@ -177,6 +201,102 @@ export default function CreateCollectionPage() {
                   </Select>
                   <p className="text-xs text-gray-500">
                     Manual: Products select this collection. Automatic: Products match rules.
+                  </p>
+                </div>
+
+                {/* Collection Context Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="collection_type">Collection Context *</Label>
+                  <Select
+                    value={formData.collection_type}
+                    onValueChange={(value: CollectionContextType) => {
+                      setFormData({
+                        ...formData,
+                        collection_type: value,
+                        // Reset category_id if not category_specific
+                        category_id: value === 'category_specific' ? formData.category_id : undefined
+                      })
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General (Homepage)</SelectItem>
+                      <SelectItem value="category_specific">Category-Specific</SelectItem>
+                      <SelectItem value="business_specific">Business Hub</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    {formData.collection_type === 'general' && 'Shows on homepage with general collections'}
+                    {formData.collection_type === 'category_specific' && 'Shows on specific category pages'}
+                    {formData.collection_type === 'business_specific' && 'Shows in business hub only'}
+                  </p>
+                </div>
+
+                {/* Category Selector (conditional) */}
+                {formData.collection_type === 'category_specific' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="category_id">Category *</Label>
+                    <Select
+                      value={formData.category_id || ''}
+                      onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      This collection will only appear on the selected category page
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Display Settings Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Settings</CardTitle>
+                <CardDescription>Control where and how this collection appears</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Business Only Checkbox */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="is_business_only">Business Hub Only</Label>
+                    <p className="text-xs text-gray-500">
+                      Restrict this collection to business hub users
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    id="is_business_only"
+                    checked={formData.is_business_only}
+                    onChange={(e) => setFormData({ ...formData, is_business_only: e.target.checked })}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                </div>
+
+                {/* Display Order */}
+                <div className="space-y-2">
+                  <Label htmlFor="display_order">Display Order</Label>
+                  <Input
+                    id="display_order"
+                    type="number"
+                    min="0"
+                    value={formData.display_order}
+                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Lower numbers appear first. Use 0 for default ordering.
                   </p>
                 </div>
               </CardContent>
