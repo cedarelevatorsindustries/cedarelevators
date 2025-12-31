@@ -616,13 +616,13 @@ export default function ProductImportPage() {
               <CardContent>
                 <div className="max-h-96 overflow-y-auto space-y-2">
                   {importResults.errors.map((error: ImportError, index: number) => (
-                    <div key={index} className="text-sm bg-orange-50 p-3 rounded border border-orange-200">
-                      <div className="font-medium text-orange-900">
-                        {error.productHandle} {error.variantSku && `(${error.variantSku})`}
+                    <div key={index} className="text-sm bg-red-50 p-3 rounded border border-red-200">
+                      <div className="font-medium text-red-900">
+                        {error.productTitle} {error.variantSku && `(${error.variantSku})`}
                       </div>
-                      <div className="text-orange-700">{error.message}</div>
+                      <div className="text-red-700">{error.message}</div>
                       {error.details && (
-                        <div className="text-orange-600 text-xs mt-1">{error.details}</div>
+                        <div className="text-red-600 text-xs mt-1 font-mono">{error.details.substring(0, 200)}</div>
                       )}
                     </div>
                   ))}
