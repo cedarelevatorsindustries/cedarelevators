@@ -1,37 +1,60 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { ProductEditForm } from '@/domains/admin/product-edit/product-edit-form'
-import { getProduct, getCategories, getCollections, getTags } from '@/lib/actions/products'
+import { ProductEditForm } from '@/modules/admin/product-edit/product-edit-form'
+import { getProduct, getProductVariants, getProductElevatorTypes, getProductCollections } from '@/lib/actions/products'
+import { getApplications, getCollections, getElevatorTypes } from '@/lib/actions/catalog'
 
 interface ProductEditPageProps {
   params: { id: string }
 }
 
 export default async function ProductEditPage({ params }: ProductEditPageProps) {
+  // In Next.js 15+, params is a Promise that must be awaited
+  const { id } = await params
+
   // Fetch all required data in parallel
-  const [productResult, categoriesResult, collectionsResult, tagsResult] = await Promise.all([
-    getProduct(params.id),
-    getCategories(),
+  const [
+    productResult,
+    variants,
+    productElevatorTypeIds,
+    productCollectionIds,
+    applicationsResult,
+    collectionsResult,
+    elevatorTypesResult
+  ] = await Promise.all([
+    getProduct(id),
+    getProductVariants(id),
+    getProductElevatorTypes(id),
+    getProductCollections(id),
+    getApplications(),
     getCollections(),
-    getTags(),
+    getElevatorTypes(),
   ])
-  
-  if (!productResult.success || !productResult.data) {
+
+  if (!productResult) {
     notFound()
   }
 
-  if (!categoriesResult.success || !collectionsResult.success || !tagsResult.success) {
+  if (!applicationsResult.success || !collectionsResult.success || !elevatorTypesResult.success) {
     throw new Error('Failed to load form data')
+  }
+
+  // Merge the association IDs into the product object
+  const product = {
+    ...productResult,
+    elevator_type_ids: productElevatorTypeIds,
+    collection_ids: productCollectionIds
   }
 
   return (
     <div className="max-w-7xl mx-auto">
       <Suspense fallback={<ProductEditSkeleton />}>
-        <ProductEditForm 
-          product={productResult.data}
-          categories={categoriesResult.data || []}
+        <ProductEditForm
+          product={product}
+          applications={applicationsResult.data || []}
           collections={collectionsResult.data || []}
-          tags={tagsResult.data || []}
+          elevatorTypes={elevatorTypesResult.data || []}
+          variants={variants}
         />
       </Suspense>
     </div>

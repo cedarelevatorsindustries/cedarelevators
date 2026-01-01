@@ -3,12 +3,14 @@ import type { Application } from "@/lib/data/applications"
 import type { ElevatorType } from "@/lib/data/elevator-types"
 import {
   HeroSection,
-  FeaturedProductsSection,
   QuickCategoriesSection,
-  WhyChooseCedarSection,
-  TestimonialsSection,
   BulkOrderSection
 } from "../../components/desktop/sections"
+import {
+  WhyCedarSection,
+  TestimonialsSection,
+  FeaturedProductsSection
+} from "@/components/shared/sections"
 import { ApplicationsSection } from "@/components/store/applications-section"
 import ShopByTypeSection from "@/components/store/shop-by-type-section"
 
@@ -39,7 +41,7 @@ export default function DesktopHomepage({ products, categories, testimonials, ap
       {/* Featured Products */}
       {products.length > 0 && (
         <div className="mt-12">
-          <FeaturedProductsSection products={products} />
+          <FeaturedProductsSection />
         </div>
       )}
 
@@ -50,7 +52,7 @@ export default function DesktopHomepage({ products, categories, testimonials, ap
 
       {/* Why Choose Cedar */}
       <div className="mt-12">
-        <WhyChooseCedarSection />
+        <WhyCedarSection />
       </div>
 
       {/* Bulk Order CTA / Quote Section */}

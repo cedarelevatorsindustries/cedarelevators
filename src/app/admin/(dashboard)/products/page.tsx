@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink, Upload } from "lucide-react"
+import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink, Upload, X } from "lucide-react"
 import Link from "next/link"
 import { useProducts, useProductStats, useDeleteProduct, useUpdateProduct } from "@/hooks/queries/useProducts"
 import type { Product } from "@/lib/types/products"
+import { useDebounce } from "@/hooks/useDebounce"
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchInput, setSearchInput] = useState("")  // User input
+  const debouncedSearch = useDebounce(searchInput, 400) // Debounced value (400ms)
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   // Note: We'll implement pagination later, for now fetching page 1
   const { data, isLoading, refetch } = useProducts({
-    search: searchQuery || undefined,
+    search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? (statusFilter as 'active' | 'draft' | 'archived') : undefined,
   })
 
@@ -145,11 +147,22 @@ export default function ProductsPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search products by name or SKU..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white border-gray-200"
+                    placeholder="Search by name, SKU, or handle..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="pl-10 pr-10 bg-white border-gray-200"
                   />
+                  {searchInput && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 hover:bg-gray-100"
+                      onClick={() => setSearchInput("")}
+                      title="Clear search"
+                    >
+                      <X className="h-4 w-4 text-gray-400" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -188,7 +201,7 @@ export default function ProductsPage() {
                 <Package className="mx-auto h-12 w-12 text-gray-300 mb-4" />
                 <h3 className="text-base font-medium text-gray-900 mb-2">No products found</h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  {searchQuery || statusFilter !== "all"
+                  {searchInput || statusFilter !== "all"
                     ? "Try adjusting your filters."
                     : "Get started by creating your first product."}
                 </p>
@@ -207,24 +220,28 @@ export default function ProductsPage() {
                     className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
                   >
                     {/* Image */}
-                    {product.thumbnail || (product.images && product.images.length > 0) ? (
-                      <img
-                        src={product.thumbnail || product.images[0].url}
-                        alt={product.name}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover flex-shrink-0 bg-gray-100"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                        <Package className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-                      </div>
-                    )}
+                    <Link href={`/admin/products/${product.id}`} className="flex-shrink-0">
+                      {product.thumbnail || (product.images && Array.isArray(product.images) && product.images.length > 0) ? (
+                        <img
+                          src={product.thumbnail || (Array.isArray(product.images) && product.images[0]?.url) || ''}
+                          alt={product.name}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
+                          <Package className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
+                        </div>
+                      )}
+                    </Link>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Title & SKU */}
                       <div className="col-span-1 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-gray-900 truncate" title={product.name}>{product.name}</h3>
+                          <Link href={`/admin/products/${product.id}`}>
+                            <h3 className="font-medium text-gray-900 truncate hover:text-orange-600 transition-colors cursor-pointer" title={product.name}>{product.name}</h3>
+                          </Link>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">

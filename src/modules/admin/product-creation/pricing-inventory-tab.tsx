@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { DollarSign, Package, AlertCircle, CheckCircle2 } from "lucide-react"
+import { IndianRupee, Package, AlertCircle, CheckCircle2 } from "lucide-react"
 
 interface PricingInventoryData {
   // Pricing
@@ -16,7 +16,7 @@ interface PricingInventoryData {
   taxable: boolean
   bulkPricingAvailable: boolean
   bulkPricingNote: string
-  
+
   // Inventory
   trackInventory: boolean
   stockQuantity: string
@@ -34,7 +34,7 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
   const calculateDiscount = () => {
     const price = parseFloat(formData.price) || 0
     const comparePrice = parseFloat(formData.comparePrice) || 0
-    
+
     if (price > 0 && comparePrice > price) {
       const discount = ((comparePrice - price) / comparePrice) * 100
       return Math.round(discount)
@@ -45,7 +45,7 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
   const calculateMargin = () => {
     const price = parseFloat(formData.price) || 0
     const cost = parseFloat(formData.cost) || 0
-    
+
     if (price > 0 && cost > 0 && price > cost) {
       const margin = ((price - cost) / price) * 100
       return Math.round(margin)
@@ -83,7 +83,7 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
+            <IndianRupee className="h-5 w-5" />
             Product Pricing
             {hasPrice && <CheckCircle2 className="h-5 w-5 text-green-500" />}
           </CardTitle>
@@ -113,11 +113,11 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
                 step="0.01"
                 value={formData.price}
                 onChange={(e) => onFormDataChange({ price: e.target.value })}
-                className={`w-full ${hasPrice ? 'border-green-300' : ''}`}
+                className="w-full"
               />
               <p className="text-xs text-gray-500">Display price in catalog</p>
             </div>
-            
+
             <div className="space-y-2 min-w-0">
               <Label htmlFor="comparePrice">Compare at Price (MRP) (₹)</Label>
               <Input
@@ -131,7 +131,7 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
               />
               <p className="text-xs text-gray-500">Original price (for discounts)</p>
             </div>
-            
+
             <div className="space-y-2 min-w-0">
               <Label htmlFor="cost">Cost per Item (₹)</Label>
               <Input
@@ -163,7 +163,7 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
                   </div>
                 </div>
               )}
-              
+
               {margin > 0 && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center justify-between">
@@ -181,8 +181,8 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
           )}
 
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="taxable" 
+            <Checkbox
+              id="taxable"
               checked={formData.taxable}
               onCheckedChange={(checked) => onFormDataChange({ taxable: !!checked })}
             />
@@ -201,8 +201,8 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="bulkPricing" 
+            <Checkbox
+              id="bulkPricing"
               checked={formData.bulkPricingAvailable}
               onCheckedChange={(checked) => onFormDataChange({ bulkPricingAvailable: !!checked })}
             />
@@ -247,8 +247,8 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
           )}
 
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="trackInventory" 
+            <Checkbox
+              id="trackInventory"
               checked={formData.trackInventory}
               onCheckedChange={(checked) => onFormDataChange({ trackInventory: !!checked })}
             />
@@ -288,8 +288,8 @@ export function PricingInventoryTab({ formData, onFormDataChange, hasVariants }:
           )}
 
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="backorders" 
+            <Checkbox
+              id="backorders"
               checked={formData.allowBackorders}
               onCheckedChange={(checked) => onFormDataChange({ allowBackorders: !!checked })}
             />

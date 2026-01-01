@@ -3,10 +3,10 @@
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroLiteMobile,
-  ElevatorTypesMobile,
   ProductSectionMobile,
   QuickAccessCategoriesSection
 } from "../../components/mobile"
+import { ElevatorTypesSection } from "@/components/shared/sections"
 import FavoritesList from "@/modules/profile/components/favorites-list"
 import RecentlyViewedList from "@/modules/profile/components/recently-viewed-list"
 
@@ -36,7 +36,7 @@ export default function MobileHomepageLoggedIn({
       <QuickAccessCategoriesSection categories={categories} />
 
       {/* Shop by Elevator Type - FIRST - Always show */}
-      <ElevatorTypesMobile />
+      <ElevatorTypesSection variant="mobile" />
 
       {/* Your Favorites */}
       <div className="px-4 py-4">

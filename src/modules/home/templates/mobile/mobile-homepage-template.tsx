@@ -3,13 +3,15 @@ import {
   HeroGuestMobile as HeroSection,
   HeroButtonsMobile as HeroButtonsSection,
   QuickAccessCategoriesSection,
-  FeaturedProductsSection,
   CategoryBlocksSection,
   QuickQuoteSection,
-  WhyCedarSection,
-  CustomerReviewsSection,
   NeedHelpSection
 } from "../../components/mobile"
+import {
+  WhyCedarSection,
+  TestimonialsSection,
+  FeaturedProductsSection
+} from "@/components/shared/sections"
 
 interface MobileHomepageProps {
   products: Product[]
@@ -30,7 +32,7 @@ export default function MobileHomepage({ products, testimonials }: MobileHomepag
 
       {/* Featured Products */}
       {products.length > 0 && (
-        <FeaturedProductsSection products={products} />
+        <FeaturedProductsSection variant="mobile" />
       )}
 
       {/* Category Blocks */}
@@ -40,11 +42,11 @@ export default function MobileHomepage({ products, testimonials }: MobileHomepag
       <QuickQuoteSection />
 
       {/* Why Cedar */}
-      <WhyCedarSection />
+      <WhyCedarSection variant="mobile" />
 
       {/* Customer Reviews - No padding, touches Why Cedar */}
       {testimonials.length > 0 && (
-        <CustomerReviewsSection testimonials={testimonials} />
+        <TestimonialsSection testimonials={testimonials} variant="mobile" />
       )}
 
       {/* Need Help Section - Removed (testimonials touch footer) */}

@@ -71,15 +71,24 @@ export function MegaMenu({ categories: initialCategories, isScrolled = false, on
       />
 
       {isOpen && (
-        <MegaMenuPanel
-          isScrolled={isScrolled}
-          activeCategory={activeCategory}
-          setActiveCategory={setActiveCategory}
-          onMouseEnter={() => updateIsOpen(true)}
-          onMouseLeave={() => updateIsOpen(false)}
-          onClose={() => updateIsOpen(false)}
-          categories={categories}
-        />
+        <>
+          {/* Background Overlay */}
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            style={{ top: isScrolled ? '70px' : '80px' }}
+            onClick={() => updateIsOpen(false)}
+          />
+
+          <MegaMenuPanel
+            isScrolled={isScrolled}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+            onMouseEnter={() => updateIsOpen(true)}
+            onMouseLeave={() => updateIsOpen(false)}
+            onClose={() => updateIsOpen(false)}
+            categories={categories}
+          />
+        </>
       )}
     </div>
   )

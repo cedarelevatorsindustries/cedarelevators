@@ -1,12 +1,14 @@
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroGuestMobile as HeroSection,
-  FeaturedProductsSection,
-  WhyCedarSection,
-  CustomerReviewsSection,
-  CategoriesMobile,
-  ElevatorTypesMobile
+  CategoriesMobile
 } from "../../components/mobile"
+import {
+  ElevatorTypesSection,
+  WhyCedarSection,
+  TestimonialsSection,
+  FeaturedProductsSection
+} from "@/components/shared/sections"
 
 interface MobileHomepageGuestProps {
   products: Product[]
@@ -29,18 +31,18 @@ export default function MobileHomepageGuest({
 
       {/* Featured Products - 2 products with View More button */}
       {products.length > 0 && (
-        <FeaturedProductsSection products={products} />
+        <FeaturedProductsSection variant="mobile" />
       )}
 
       {/* Shop by Elevator Type - 6 cards, 2 per row */}
-      <ElevatorTypesMobile />
+      <ElevatorTypesSection variant="mobile" />
 
       {/* Why Cedar */}
-      <WhyCedarSection />
+      <WhyCedarSection variant="mobile" />
 
       {/* Customer Reviews - Short testimonial */}
       {testimonials.length > 0 && (
-        <CustomerReviewsSection testimonials={testimonials.slice(0, 1)} />
+        <TestimonialsSection testimonials={testimonials.slice(0, 1)} variant="mobile" />
       )}
     </div>
   )

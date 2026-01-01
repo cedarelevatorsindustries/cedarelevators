@@ -25,7 +25,10 @@ export interface ProductImage {
     url: string
     alt: string
     is_primary: boolean
+    isPrimary?: boolean // Frontend compatibility
     sort_order: number
+    public_id?: string
+    base64?: string // For deferred upload
 }
 
 // Product Entity from Database
@@ -35,23 +38,23 @@ export interface Product {
     slug: string
     description?: string
     short_description?: string
-    
+
     // Legacy field (deprecated)
     category?: string // Can be UUID or text
-    
+
     // New relationship fields (Cedar Interconnection Logic)
     application_id?: string
     category_id?: string
     subcategory_id?: string
     is_categorized: boolean
-    
+
     // Cedar-specific technical fields (Phase 3)
     voltage?: string // Operating voltage (e.g., 220V, 380V, 415V)
     load_capacity_kg?: number // Maximum load capacity in kilograms
     speed_ms?: number // Operating speed in meters per second
     variant_group?: string // Group identifier for product variants
     technical_specs?: Record<string, any> // Additional technical specifications as JSON
-    
+
     status: ProductStatus
     thumbnail?: string
     images: ProductImage[]
@@ -59,11 +62,19 @@ export interface Product {
     compare_at_price?: number
     cost_per_item?: number
     stock_quantity: number
+    track_inventory: boolean
+    allow_backorders: boolean
+    low_stock_threshold: number
+    bulk_pricing_available: boolean
+    bulk_pricing_note?: string
+    taxable: boolean
     sku?: string
     barcode?: string
     weight?: number
     dimensions?: ProductDimensions
     specifications?: ProductSpecification[]
+    meta_title?: string
+    meta_description?: string
     tags?: string[]
     is_featured: boolean
     view_count: number
@@ -75,7 +86,7 @@ export interface Product {
 export interface ProductWithDetails extends Product {
     // Legacy
     category_name?: string
-    
+
     // New hierarchy details
     application_name?: string
     category_name_new?: string
@@ -90,29 +101,35 @@ export interface ProductFormData {
     slug: string
     description?: string
     short_description?: string
-    
+
     // Legacy (deprecated)
     category?: string
-    
+
     // New relationship fields (Cedar Interconnection Logic)
     application_id?: string
     category_id?: string
     subcategory_id?: string
     elevator_type_ids?: string[] // Multi-select
     collection_ids?: string[] // Multi-select (optional)
-    
+
     // Cedar-specific technical fields (Phase 3)
     voltage?: string // Operating voltage
     load_capacity_kg?: number // Load capacity in kg
     speed_ms?: number // Speed in m/s
     variant_group?: string // Variant grouping
-    technical_specs?: Record<string, any> // Additional tech specs
-    
+    technical_specs?: Record<string, any> // Additional tech specs (already exists in Product)
+
     status: ProductStatus
     price: number
     compare_at_price?: number
     cost_per_item?: number
     stock_quantity: number
+    track_inventory: boolean
+    allow_backorders: boolean
+    low_stock_threshold: number
+    bulk_pricing_available: boolean
+    bulk_pricing_note?: string
+    taxable: boolean
     sku?: string
     barcode?: string
     weight?: number
@@ -121,6 +138,9 @@ export interface ProductFormData {
     tags: string[]
     is_featured: boolean
     images: ProductImage[]
+    variants?: any[] // Product variants
+    meta_title?: string
+    meta_description?: string
 }
 
 export interface ProductFilters {

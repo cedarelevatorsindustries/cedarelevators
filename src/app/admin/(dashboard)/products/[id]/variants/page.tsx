@@ -1,11 +1,11 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { VariantsListView } from '@/domains/admin/variants/variants-list-view'
-import { getProduct } from '@/lib/actions/products'
+import { VariantsListView } from '@/modules/admin/variants/variants-list-view'
+import { getProductWithVariants } from '@/lib/actions/products'
 
 interface VariantsListPageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ 
+  searchParams: Promise<{
     search?: string
     option?: string
     stock?: string
@@ -16,18 +16,16 @@ interface VariantsListPageProps {
 export default async function VariantsListPage({ params, searchParams }: VariantsListPageProps) {
   const { id } = await params
   const filters = await searchParams
-  const result = await getProduct(id)
-  
-  if (!result.success || !result.data) {
+  const product = await getProductWithVariants(id)
+
+  if (!product) {
     notFound()
   }
-
-  const product = result.data
 
   return (
     <div className="space-y-6">
       <Suspense fallback={<VariantsListSkeleton />}>
-        <VariantsListView 
+        <VariantsListView
           product={product}
           filters={{
             search: filters.search,

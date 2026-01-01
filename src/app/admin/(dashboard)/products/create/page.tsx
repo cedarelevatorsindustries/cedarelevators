@@ -8,6 +8,7 @@ import { createProduct } from "@/lib/actions/products"
 import { toast } from "sonner"
 import { ProductTabs } from "@/modules/admin/product-creation/product-tabs"
 import { ProductPreview } from "@/modules/admin/product-creation/product-preview"
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog"
 
 // Import all tab components
 import { BasicInformationTab } from "@/modules/admin/product-creation/basic-information-tab"
@@ -26,6 +27,7 @@ interface ProductImage {
   url: string
   alt: string
   isPrimary: boolean
+  base64?: string
 }
 
 interface ProductAttribute {
@@ -75,6 +77,9 @@ interface ProductFormData {
   metaTitle: string
   metaDescription: string
   urlHandle: string
+
+  // Technical specs
+  technical_specs?: Record<string, any>
 }
 
 interface ValidationError {
@@ -88,6 +93,9 @@ export default function CreateProductPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+  // Initialize confirmation dialog
+  const { confirm, ConfirmDialog } = useConfirmDialog()
 
   const [formData, setFormData] = useState<ProductFormData>({
     // Step 1: Basic Information
@@ -173,23 +181,31 @@ export default function CreateProductPage() {
         const parsed = JSON.parse(draft)
         const { lastSaved: savedTime, ...draftData } = parsed
 
-        const shouldRestore = window.confirm(
-          'Found an unsaved draft. Would you like to restore it?'
-        )
+        // Use async function to handle promise-based confirm
+        const checkRestore = async () => {
+          const shouldRestore = await confirm({
+            title: 'Restore Draft?',
+            description: 'Found an unsaved draft. Would you like to restore it?',
+            confirmText: 'Restore',
+            cancelText: 'Discard'
+          })
 
-        if (shouldRestore) {
-          setFormData(draftData)
-          setLastSaved(new Date(savedTime))
-          toast.success('Draft restored')
-        } else {
-          localStorage.removeItem('product-draft')
+          if (shouldRestore) {
+            setFormData(draftData)
+            setLastSaved(new Date(savedTime))
+            toast.success('Draft restored')
+          } else {
+            localStorage.removeItem('product-draft')
+          }
         }
+
+        checkRestore()
       } catch (error) {
         console.error('Error loading draft:', error)
         localStorage.removeItem('product-draft')
       }
     }
-  }, [])
+  }, [confirm])
 
   // Validation
   const validateForm = (): ValidationError[] => {
@@ -268,7 +284,7 @@ export default function CreateProductPage() {
 
       // Map form data to API format
       const productPayload: any = {
-        title: formData.title,
+        name: formData.title,
         slug: formData.urlHandle || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
         description: formData.description,
         short_description: formData.shortDescription,
@@ -298,6 +314,7 @@ export default function CreateProductPage() {
           url: img.url,
           alt: img.alt,
           is_primary: img.isPrimary,
+          base64: img.base64,
           sort_order: index
         })),
 
@@ -321,7 +338,13 @@ export default function CreateProductPage() {
 
         is_featured: false,
         view_count: 0,
-        dimensions: { unit: 'cm' }
+        dimensions: { unit: 'cm' },
+
+        // Technical Specs and Extras
+        technical_specs: formData.technical_specs || {},
+
+        // Variants
+        variants: formData.variants || []
       }
 
       const result = await createProduct(productPayload)
@@ -331,7 +354,7 @@ export default function CreateProductPage() {
         localStorage.removeItem('product-draft')
         window.location.href = '/admin/products'
       } else {
-        throw new Error(result.error || 'Failed to create product')
+        throw new Error((result as any).error || 'Failed to create product')
       }
 
     } catch (error: any) {
@@ -552,7 +575,7 @@ export default function CreateProductPage() {
               {canGoNext ? (
                 <Button
                   onClick={goToNextTab}
-                  className="gap-2 bg-orange-600 hover:bg-orange-700"
+                  className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
                 >
                   Next
                   <ArrowRight className="h-4 w-4" />
@@ -561,7 +584,7 @@ export default function CreateProductPage() {
                 <Button
                   onClick={() => handleSubmit(false)}
                   disabled={isLoading || !canPublish()}
-                  className="gap-2 bg-green-600 hover:bg-green-700"
+                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Save className="h-4 w-4" />
                   {isLoading ? "Publishing..." : "Publish Product"}
@@ -585,6 +608,9 @@ export default function CreateProductPage() {
           </div>
         </div>
       </div>
+
+      {/* Custom Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   )
 }

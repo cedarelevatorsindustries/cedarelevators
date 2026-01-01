@@ -1,32 +1,40 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createServerSupabase } from "@/lib/supabase/server"
 
 export async function getApplications() {
   try {
-    const supabase = await createClient()
+    console.log('getApplications: Initializing Supabase client...')
+    const supabase = await createServerSupabase()
+    console.log('getApplications: Client initialized. Fetching data...')
+
     const { data, error } = await supabase
       .from('applications')
       .select('*')
-      .eq('is_active', true)
-      .order('name')
+      .eq('status', 'active')
+      .order('title')
 
-    if (error) throw error
+    if (error) {
+      console.error('getApplications: Supabase error raw:', error)
+      console.error('getApplications: Supabase error string:', JSON.stringify(error))
+      throw error
+    }
 
+    console.log('getApplications: Success, rows:', data?.length)
     return { success: true, data }
   } catch (error: any) {
     console.error('Error fetching applications:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error.message || 'Unknown error' }
   }
 }
 
 export async function getCategories(applicationId: string) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const { data, error } = await supabase
       .from('categories')
       .select('*')
-      .eq('application_id', applicationId)
+      .eq('application', applicationId)
       .eq('is_active', true)
       .order('name')
 
@@ -41,13 +49,13 @@ export async function getCategories(applicationId: string) {
 
 export async function getSubcategories(categoryId: string) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const { data, error } = await supabase
       .from('subcategories')
       .select('*')
       .eq('category_id', categoryId)
       .eq('is_active', true)
-      .order('name')
+      .order('title')
 
     if (error) throw error
 
@@ -60,7 +68,7 @@ export async function getSubcategories(categoryId: string) {
 
 export async function getElevatorTypes() {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const { data, error } = await supabase
       .from('elevator_types')
       .select('*')
@@ -78,7 +86,7 @@ export async function getElevatorTypes() {
 
 export async function getCollections() {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const { data, error } = await supabase
       .from('collections')
       .select('*')

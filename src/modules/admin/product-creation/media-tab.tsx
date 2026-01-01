@@ -1,18 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Upload, X, Image as ImageIcon, Star } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface ProductImage {
   id: string
   url: string
   alt: string
   isPrimary: boolean
+  publicId?: string // Cloudinary public ID for deletion
+  base64?: string // Base64 string for deferred upload to Cloudinary
 }
 
 interface MediaTabProps {
@@ -22,19 +25,94 @@ interface MediaTabProps {
 
 export function MediaTab({ images, onImagesChange }: MediaTabProps) {
   const [dragOver, setDragOver] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return
-    
-    // In a real app, you'd upload to your storage service here
-    // For now, we'll create placeholder URLs
-    const newImages: ProductImage[] = Array.from(files).map((file, index) => ({
-      id: `temp-${Date.now()}-${index}`,
-      url: URL.createObjectURL(file),
-      alt: file.name,
-      isPrimary: images.length === 0 && index === 0 // First image is primary if no images exist
-    }))
-    
+  // Validation constants
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+  const MIN_DIMENSION = 1200
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      images.forEach(img => {
+        if (img.url.startsWith('blob:')) {
+          URL.revokeObjectURL(img.url)
+        }
+      })
+    }
+  }, [images])
+
+  const validateFile = async (file: File): Promise<{ valid: boolean; error?: string }> => {
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return { valid: false, error: `${file.name}: File size exceeds 10MB` }
+    }
+
+    // Check file type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return { valid: false, error: `${file.name}: Only JPG, PNG, and GIF files are allowed` }
+    }
+
+    // Check image dimensions
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        if (img.width < MIN_DIMENSION || img.height < MIN_DIMENSION) {
+          resolve({
+            valid: true, // Still allow but warn
+            error: `${file.name}: Image is ${img.width}x${img.height}px. Recommended: 1200x1200px minimum`
+          })
+        } else {
+          resolve({ valid: true })
+        }
+      }
+      img.onerror = () => resolve({ valid: false, error: `${file.name}: Invalid image file` })
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+
+    setValidationError(null)
+
+    const fileArray = Array.from(files)
+    const validationResults = await Promise.all(fileArray.map(validateFile))
+
+    // Check for validation errors
+    const errors = validationResults.filter(r => !r.valid).map(r => r.error)
+    const warnings = validationResults.filter(r => r.valid && r.error).map(r => r.error)
+
+    if (errors.length > 0) {
+      setValidationError(errors.join(', '))
+      return
+    }
+
+    if (warnings.length > 0) {
+      console.warn('Image warnings:', warnings.join(', '))
+    }
+
+    // Convert files to base64 and create blob URLs for preview
+    const newImagesPromises = fileArray.map(async (file, index) => {
+      // Create blob URL for immediate preview
+      const blobUrl = URL.createObjectURL(file)
+
+      // Convert to base64 for server transmission
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      const base64 = `data:${file.type};base64,${buffer.toString('base64')}`
+
+      return {
+        id: `temp-${Date.now()}-${index}`,
+        url: blobUrl,
+        alt: file.name.replace(/\.[^/.]+$/, ''),
+        isPrimary: images.length === 0 && index === 0,
+        base64: base64
+      }
+    })
+
+    const newImages = await Promise.all(newImagesPromises)
     onImagesChange([...images, ...newImages])
   }
 
@@ -56,7 +134,7 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
   }
 
   const updateAltText = (imageId: string, alt: string) => {
-    const updatedImages = images.map(img => 
+    const updatedImages = images.map(img =>
       img.id === imageId ? { ...img, alt } : img
     )
     onImagesChange(updatedImages)
@@ -73,12 +151,17 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {validationError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{validationError}</p>
+            </div>
+          )}
+
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              dragOver 
-                ? 'border-orange-400 bg-orange-50' 
-                : 'border-gray-300 hover:border-orange-300 hover:bg-orange-50/50'
-            }`}
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragOver
+              ? 'border-orange-400 bg-orange-50'
+              : 'border-gray-300 hover:border-orange-300 hover:bg-orange-50/50'
+              }`}
             onDragOver={(e) => {
               e.preventDefault()
               setDragOver(true)
@@ -99,9 +182,9 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
                 PNG, JPG, GIF up to 10MB each. Recommended: 1200x1200px
               </p>
             </div>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               className="mt-4"
               onClick={() => {
                 const input = document.createElement('input')
@@ -141,7 +224,23 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  
+
+                  {/* Set Primary Button - Top Left */}
+                  {!image.isPrimary && (
+                    <div className="absolute top-2 left-2">
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        onClick={() => setPrimaryImage(image.id)}
+                      >
+                        <Star className="w-3 h-3 mr-1" />
+                        Set Primary
+                      </Button>
+                    </div>
+                  )}
+
                   {/* Image Controls */}
                   <div className="absolute top-2 right-2 flex space-x-1">
                     {image.isPrimary && (
@@ -162,19 +261,7 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
                   </div>
 
                   {/* Primary Image Button */}
-                  {!image.isPrimary && (
-                    <div className="absolute bottom-2 left-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setPrimaryImage(image.id)}
-                      >
-                        <Star className="w-3 h-3 mr-1" />
-                        Set Primary
-                      </Button>
-                    </div>
-                  )}
+
 
                   {/* Alt Text */}
                   <div className="mt-2">
@@ -196,33 +283,37 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
         </Card>
       )}
 
-      {/* Image Guidelines */}
+      {/* Image Guidelines - Accordion */}
       <Card className="border-0 shadow-sm bg-gradient-to-b from-white to-orange-50 border-orange-100/50">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-gray-900">Image Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Best Practices</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Use high-resolution images (1200x1200px minimum)</li>
-                <li>• Show product from multiple angles</li>
-                <li>• Include lifestyle and detail shots</li>
-                <li>• Use consistent lighting and background</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Technical Requirements</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Formats: JPG, PNG, GIF</li>
-                <li>• Max file size: 10MB per image</li>
-                <li>• Square aspect ratio recommended</li>
-                <li>• Alt text for accessibility</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="guidelines" className="border-0">
+            <AccordionTrigger className="px-6 py-4 hover:no-underline">
+              <CardTitle className="text-lg font-bold text-gray-900">Image Guidelines</CardTitle>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Best Practices</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Use high-resolution images (1200x1200px minimum)</li>
+                    <li>• Show product from multiple angles</li>
+                    <li>• Include lifestyle and detail shots</li>
+                    <li>• Use consistent lighting and background</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Technical Requirements</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Formats: JPG, PNG, GIF</li>
+                    <li>• Max file size: 10MB per image</li>
+                    <li>• Square aspect ratio recommended</li>
+                    <li>• Alt text for accessibility</li>
+                  </ul>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Card>
     </div>
   )

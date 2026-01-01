@@ -219,16 +219,30 @@ export async function cancelOrder(
 }
 
 /**
- * Fetch orders with optional filters
+ * Fetch orders with optional filters and pagination
  */
 export async function fetchOrders(filters?: {
     status?: string
     paymentStatus?: string
     search?: string
+    page?: number
     limit?: number
-}): Promise<{ success: boolean; orders?: OrderWithDetails[]; error?: string }> {
+    dateFrom?: string
+    dateTo?: string
+}): Promise<{
+    success: boolean
+    orders?: OrderWithDetails[]
+    total?: number
+    page?: number
+    limit?: number
+    totalPages?: number
+    error?: string
+}> {
     try {
         const supabase = await createServerSupabase()
+
+        const page = filters?.page || 1
+        const limit = filters?.limit || 20
 
         let query = supabase
             .from('orders')
@@ -245,8 +259,9 @@ export async function fetchOrders(filters?: {
           variant_name,
           variant_sku
         )
-      `)
+      `, { count: 'exact' })
             .order('created_at', { ascending: false })
+            .range((page - 1) * limit, page * limit - 1)
 
         if (filters?.status && filters.status !== 'all') {
             query = query.eq('order_status', filters.status)
@@ -257,21 +272,33 @@ export async function fetchOrders(filters?: {
         }
 
         if (filters?.search) {
-            query = query.or(`guest_email.ilike.%${filters.search}%,guest_name.ilike.%${filters.search}%`)
+            const searchTerm = filters.search.trim()
+            query = query.or(`order_number.ilike.%${searchTerm}%,guest_email.ilike.%${searchTerm}%,guest_name.ilike.%${searchTerm}%`)
         }
 
-        if (filters?.limit) {
-            query = query.limit(filters.limit)
+        if (filters?.dateFrom) {
+            query = query.gte('created_at', filters.dateFrom)
         }
 
-        const { data, error } = await query
+        if (filters?.dateTo) {
+            query = query.lte('created_at', filters.dateTo)
+        }
+
+        const { data, error, count } = await query
 
         if (error) {
             console.error('Error fetching orders:', error)
             return { success: false, error: error.message }
         }
 
-        return { success: true, orders: data as OrderWithDetails[] }
+        return {
+            success: true,
+            orders: data as OrderWithDetails[],
+            total: count || 0,
+            page,
+            limit,
+            totalPages: Math.ceil((count || 0) / limit)
+        }
     } catch (error: any) {
         console.error('Error in fetchOrders:', error)
         return { success: false, error: error.message || 'Failed to fetch orders' }

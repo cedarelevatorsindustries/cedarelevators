@@ -75,14 +75,7 @@ export function SettingsHeader({
             <span className="lg:hidden">{isSaving ? "Saving..." : "Save"}</span>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-8 w-8 lg:h-10 lg:w-10 rounded-lg hover:bg-gray-100"
-          >
-            <Bell className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-            <span className="absolute -top-1 -right-1 h-2.5 w-2.5 lg:h-3 lg:w-3 bg-orange-500 rounded-full border-2 border-white"></span>
-          </Button>
+
         </div>
       </div>
     </header>

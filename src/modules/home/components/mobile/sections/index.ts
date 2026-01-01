@@ -9,12 +9,10 @@ export { default as QuickAccessCategoriesSection } from "./QuickAccessCategories
 export { default as CategoryBlocksSection } from "./CategoryBlocksSection"
 
 // Product sections
-export { default as ElevatorTypesMobile } from "./elevator-types-mobile"
+// Note: ElevatorTypesMobile, FeaturedProductsSection, WhyCedarSection, CustomerReviewsSection
+// have been moved to @/components/shared/sections for consolidation
 export { default as ProductSectionMobile } from "./product-section-mobile"
-export { default as FeaturedProductsSection } from "./FeaturedProductsSection"
 
 // Other sections
-export { default as WhyCedarSection } from "./WhyCedarSection"
 export { default as QuickQuoteSection } from "./QuickQuoteSection"
-export { default as CustomerReviewsSection } from "./CustomerReviewsSection"
 export { default as NeedHelpSection } from "./NeedHelpSection"

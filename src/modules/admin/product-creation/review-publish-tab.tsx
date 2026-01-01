@@ -11,12 +11,12 @@ import {
   Image as ImageIcon,
   Package,
   FolderTree,
-  DollarSign,
   FileText,
   Globe,
-  ArrowLeft
+  ArrowLeft,
+  IndianRupee
 } from 'lucide-react'
-import Image from 'next/image'
+
 
 interface ValidationError {
   field: string
@@ -161,15 +161,16 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
           {formData.images?.length > 0 ? (
             <div className="flex gap-2">
               {formData.images.slice(0, 4).map((img: any, index: number) => (
-                <div key={img.id} className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
-                  <Image
-                    src={img.url}
-                    alt={img.alt || `Product image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
+                <div key={img.id} className="flex flex-col items-center gap-1">
+                  <div className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 ${img.isPrimary ? 'border-yellow-500 shadow-md shadow-yellow-100' : 'border-gray-200'}`}>
+                    <img
+                      src={img.url}
+                      alt={img.alt || `Product image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   {img.isPrimary && (
-                    <Badge className="absolute top-1 left-1 text-xs">Primary</Badge>
+                    <span className="text-[10px] font-medium text-yellow-600 uppercase tracking-wider">Primary</span>
                   )}
                 </div>
               ))}
@@ -215,19 +216,21 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
             {filledAttributes > 0 && (
               <div>
                 <p className="text-xs text-gray-500 mb-2">Attributes</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
                   {formData.attributes
                     .filter((attr: any) => attr.key && attr.value)
-                    .slice(0, 4)
+                    .slice(0, 6)
                     .map((attr: any) => (
-                      <div key={attr.id} className="bg-gray-50 p-2 rounded">
-                        <p className="text-xs font-medium text-gray-700">{attr.key}</p>
-                        <p className="text-xs text-gray-600">{attr.value}</p>
+                      <div key={attr.id} className="flex items-center justify-between p-3 bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <span className="text-xs font-medium text-gray-500 capitalize">{attr.key}</span>
+                        <span className="text-sm font-medium text-gray-900">{attr.value}</span>
                       </div>
                     ))}
                 </div>
-                {filledAttributes > 4 && (
-                  <p className="text-xs text-gray-500 mt-2">+{filledAttributes - 4} more attributes</p>
+                {filledAttributes > 6 && (
+                  <p className="text-xs text-center text-gray-500 mt-2 bg-gray-50 py-1 rounded border border-gray-100">
+                    +{filledAttributes - 6} more attributes
+                  </p>
                 )}
               </div>
             )}
@@ -317,7 +320,7 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <IndianRupee className="h-5 w-5" />
               Pricing & Inventory
             </CardTitle>
             <CardDescription>Pricing and stock management</CardDescription>

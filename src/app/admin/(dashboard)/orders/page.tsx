@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Download, RefreshCw, Package, Clock, Truck, CircleCheck } from "lucide-react"
 import { useOrders, useOrderStats } from "@/hooks/queries/useOrders"
 import { toast } from "sonner"
+import { useDebounce } from "@/hooks/useDebounce"
 
 interface OrderFilters {
   search: string
@@ -19,122 +20,10 @@ interface OrderFilters {
   customer: string
 }
 
-
-// Mock Order Data
-const mockOrders: any[] = [
-  {
-    id: "ord_1",
-    order_number: "ORD-001",
-    guest_name: "Rajesh Kumar",
-    guest_email: "rajesh@example.com",
-    order_status: "processing",
-    payment_status: "paid",
-    total_amount: 45000,
-    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    shipping_address: {
-      address_line1: "123 Main St",
-      city: "Mumbai",
-      state: "Maharashtra",
-      pincode: "400001",
-      country: "India"
-    },
-    order_items: [
-      { id: "item_1", product_name: "Luxury Home Elevator", quantity: 1, total_price: 45000 }
-    ]
-  },
-  {
-    id: "ord_2",
-    order_number: "ORD-002",
-    guest_name: "Priya Sharma",
-    guest_email: "priya@example.com",
-    order_status: "pending",
-    payment_status: "unpaid",
-    total_amount: 15000,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    shipping_address: {
-      address_line1: "45 Park Avenue",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560001",
-      country: "India"
-    },
-    order_items: [
-      { id: "item_2", product_name: "Hydraulic Pump", quantity: 1, total_price: 15000 }
-    ]
-  },
-  {
-    id: "ord_3",
-    order_number: "ORD-003",
-    guest_name: "Amit Patel",
-    guest_email: "amit@example.com",
-    order_status: "delivered",
-    payment_status: "paid",
-    total_amount: 125000,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    shipping_address: {
-      address_line1: "789 Lake View",
-      city: "Ahmedabad",
-      state: "Gujarat",
-      pincode: "380001",
-      country: "India"
-    },
-    order_items: [
-      { id: "item_3", product_name: "Glass Elevator Cabin", quantity: 1, total_price: 125000 }
-    ]
-  },
-  {
-    id: "ord_4",
-    order_number: "ORD-004",
-    guest_name: "Sneha Gupta",
-    guest_email: "sneha@example.com",
-    order_status: "shipped",
-    payment_status: "paid",
-    total_amount: 8500,
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-    shipping_address: {
-      address_line1: "12 Civil Lines",
-      city: "Delhi",
-      state: "Delhi",
-      pincode: "110001",
-      country: "India"
-    },
-    order_items: [
-      { id: "item_4", product_name: "Elevator Buttons Set", quantity: 5, total_price: 8500 }
-    ]
-  },
-  {
-    id: "ord_5",
-    order_number: "ORD-005",
-    guest_name: "Vikram Singh",
-    guest_email: "vikram@example.com",
-    order_status: "cancelled",
-    payment_status: "refunded",
-    total_amount: 32000,
-    created_at: new Date(Date.now() - 400000000).toISOString(),
-    shipping_address: {
-      address_line1: "99 Pink City Rd",
-      city: "Jaipur",
-      state: "Rajasthan",
-      pincode: "302001",
-      country: "India"
-    },
-    order_items: [
-      { id: "item_5", product_name: "Door Mechanism", quantity: 2, total_price: 32000 }
-    ]
-  }
-]
-
-// Mock Stats based on mockOrders
-const mockStats = {
-  total: 5,
-  pending: 1,
-  processing: 1,
-  shipped: 1,
-  delivered: 1
-}
-
 export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchInput, setSearchInput] = useState('')
+  const debouncedSearch = useDebounce(searchInput, 400)
   const [filters, setFilters] = useState<OrderFilters>({
     search: '',
     status: 'all',
@@ -144,24 +33,28 @@ export default function OrdersPage() {
     customer: ''
   })
 
-  // Use mock data instead of hooks
-  const orders = mockOrders
-  const stats = mockStats
-  const isLoading = false
-  const isLoadingStats = false
+  // Use real API hooks
+  const { data: ordersData, isLoading, refetch } = useOrders({
+    search: debouncedSearch || undefined,
+    status: filters.status !== 'all' ? filters.status : undefined,
+    paymentStatus: filters.paymentStatus !== 'all' ? filters.paymentStatus : undefined,
+    dateFrom: filters.dateFrom || undefined,
+    dateTo: filters.dateTo || undefined,
+  })
 
-  // Placeholder refetch
-  const refetchOrders = async () => {
-    toast.success('Orders refreshed (Demo)')
-  }
+  const { data: stats, isLoading: isLoadingStats } = useOrderStats()
+
+  const orders = ordersData || []
 
   const handleFilterChange = (newFilters: OrderFilters) => {
     setFilters(newFilters)
+    setSearchInput(newFilters.search)
     setCurrentPage(1)
   }
 
   const handleRefresh = async () => {
-    await refetchOrders()
+    await refetch()
+    toast.success('Orders refreshed')
   }
 
   const handleExport = async () => {
@@ -283,7 +176,7 @@ export default function OrdersPage() {
           />
           <OrdersTable
             orders={orders}
-            onRefresh={refetchOrders}
+            onRefresh={refetch}
           />
         </>
       ) : (

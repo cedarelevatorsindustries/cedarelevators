@@ -17,9 +17,9 @@ import {
   Warehouse,
   Image as ImageIcon,
   AlertTriangle,
-  Trash2
+  Trash2,
+  IndianRupee
 } from 'lucide-react'
-import { createServerSupabase } from '@/lib/supabase/server'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -76,36 +76,12 @@ export function VariantDetailView({ product, variant }: VariantDetailViewProps) 
   const handleSave = async () => {
     startTransition(async () => {
       try {
-        const supabase = await createServerSupabase()
+        // TODO: Create server action for updating variant
+        // const result = await updateVariantAction(variant.id, formData)
 
-        // Update inventory (backend handles validation and business logic)
-        const { data: inventoryResult } = await supabase
-          .from('product_variants')
-          .update({
-            stock: formData.stock,
-            track_quantity: formData.track_quantity,
-            allow_backorders: formData.allow_backorders,
-            low_stock_threshold: formData.low_stock_threshold,
-            cost: formData.cost ? parseFloat(formData.cost.toString()) : undefined,
-            sku: formData.sku,
-            barcode: formData.barcode || undefined,
-          })
-
-        if (!inventoryResult) {
-          throw new Error('Failed to update variant stock')
-        }
-
-        // Update variant (would need a separate domain function)
-        // const variantResult = await updateVariant(variant.id, {
-        //   sku: formData.sku,
-        //   price: formData.price,
-        //   discount_price: formData.discount_price ? parseFloat(formData.discount_price.toString()) : null,
-        //   active: formData.active,
-        // })
-
-        toast.success('Variant updated successfully')
+        toast.info('Variant update functionality coming soon')
         setIsEditing(false)
-        router.refresh() // Refresh to get updated data
+        // router.refresh()
       } catch (error) {
         toast.error('Failed to update variant')
         console.error('Error updating variant:', error)

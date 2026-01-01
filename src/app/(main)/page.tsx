@@ -79,6 +79,12 @@ export default async function HomePage() {
   const serializedElevatorTypes = JSON.parse(JSON.stringify(elevatorTypes))
   const serializedTestimonials = JSON.parse(JSON.stringify(testimonials))
 
+  // Extract popular search terms from product names (limit to 7)
+  const popularSearchTerms = serializedProducts
+    .filter((p: any) => p.status === 'active' && p.name)
+    .slice(0, 7)
+    .map((p: any) => p.name)
+
   // For logged-in users, show the dashboard-style layout
   if (userType !== "guest") {
     return (
@@ -96,6 +102,7 @@ export default async function HomePage() {
             trendingCollection={trendingCollection}
             topApplicationsCollection={topApplicationsCollection}
             businessHubData={businessHubData}
+            popularSearchTerms={popularSearchTerms}
           />
         </div>
 

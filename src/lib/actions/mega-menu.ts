@@ -1,42 +1,60 @@
 "use server"
 
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export async function getMegaMenuData() {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createServerSupabaseClient()
 
-        // 1. Fetch active top-level categories
-        const { data: categories, error: catError } = await supabase
-            .from('categories')
+        if (!supabase) {
+            console.error('MegaMenu: Failed to create Supabase client')
+            return { success: false, categories: [], error: 'Failed to create client' }
+        }
+
+        // 1. Fetch active applications
+        const { data: applications, error: appError } = await supabase
+            .from('applications')
             .select('*')
-            .is('parent_id', null)
-            .eq('is_active', true)
-            .order('name', { ascending: true })
+            .eq('status', 'active')
+            .order('title', { ascending: true })
 
-        if (catError) throw catError
+        if (appError) throw appError
 
-        // 2. For each category, fetch 5 top products
-        const categoriesWithProducts = await Promise.all(
-            (categories || []).map(async (category) => {
-                // Fetch products for this category
-                // We use the same logic as listProducts: assuming category_id column
-                // We also want to ensure we get valid products (published/status)
+        // 2. For each application, fetch its categories with products
+        const applicationsWithProducts = await Promise.all(
+            (applications || []).map(async (application) => {
+                // Get category IDs for this application
+                const { data: appCategories } = await supabase
+                    .from('application_categories')
+                    .select('category_id')
+                    .eq('application_id', application.id)
+                    .order('sort_order', { ascending: true })
+
+                const categoryIds = (appCategories || []).map(ac => ac.category_id)
+
+                if (categoryIds.length === 0) {
+                    return {
+                        ...application,
+                        products: []
+                    }
+                }
+
+                // Fetch products from these categories (and their subcategories)
                 const { data: products } = await supabase
                     .from('products')
-                    .select('id, title, handle, thumbnail, price, description, metadata')
-                    .eq('category_id', category.id)
-                    .eq('status', 'published')
+                    .select('id, name, slug, thumbnail, price, short_description, sku')
+                    .in('category_id', categoryIds)
+                    .eq('status', 'active')
                     .limit(5)
 
                 return {
-                    ...category,
+                    ...application,
                     products: products || []
                 }
             })
         )
 
-        return { success: true, categories: categoriesWithProducts }
+        return { success: true, categories: applicationsWithProducts }
     } catch (error) {
         console.error('Error fetching mega menu data:', error)
         return { success: false, categories: [], error }

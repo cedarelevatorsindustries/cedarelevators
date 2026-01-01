@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -93,37 +93,14 @@ export function BasicInformationTab({ formData, onFormDataChange }: BasicInforma
               placeholder="e.g., Monarch NICE 3000+ Integrated Controller"
               value={formData.title}
               onChange={(e) => onFormDataChange({ title: e.target.value })}
-              className={`w-full ${
-                formData.title && !validationState.title
-                  ? 'border-orange-300 focus:border-orange-500'
-                  : validationState.title
-                  ? 'border-green-300'
-                  : ''
-              }`}
+              className="w-full"
             />
             <p className="text-xs text-gray-500">
               {formData.title.length > 0 ? `${formData.title.length} characters` : 'Minimum 3 characters required'}
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="sku" className="flex items-center gap-2">
-              SKU (Stock Keeping Unit) <span className="text-red-500">*</span>
-              {validationState.sku && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-            </Label>
-            <Input
-              id="sku"
-              placeholder="Auto-generated from title (editable)"
-              value={formData.sku}
-              onChange={(e) => onFormDataChange({ sku: e.target.value })}
-              className={`w-full ${
-                validationState.sku ? 'border-green-300' : ''
-              }`}
-            />
-            <p className="text-xs text-gray-500">
-              Unique identifier for inventory tracking
-            </p>
-          </div>
+
         </CardContent>
       </Card>
 
@@ -153,9 +130,7 @@ export function BasicInformationTab({ formData, onFormDataChange }: BasicInforma
               onChange={(e) => onFormDataChange({ shortDescription: e.target.value })}
               rows={3}
               maxLength={200}
-              className={`w-full ${
-                validationState.shortDescription ? 'border-green-300' : ''
-              }`}
+              className="w-full"
             />
             <p className="text-xs text-gray-500">
               {formData.shortDescription.length}/200 characters • Keep it concise and informative
@@ -175,29 +150,14 @@ export function BasicInformationTab({ formData, onFormDataChange }: BasicInforma
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value: "draft" | "active" | "archived") => onFormDataChange({ status: value })}>
-              <SelectTrigger className="w-full">
+            <Select value={formData.status} onValueChange={(value) => onFormDataChange({ status: value as "draft" | "active" | "archived" })}>
+              <SelectTrigger className="w-full border-orange-200 focus:ring-orange-500">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">Draft</Badge>
-                    <span className="text-sm text-gray-600">Hidden from catalog</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="active">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-500">Active</Badge>
-                    <span className="text-sm text-gray-600">Visible in catalog</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="archived">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">Archived</Badge>
-                    <span className="text-sm text-gray-600">Discontinued</span>
-                  </div>
-                </SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>

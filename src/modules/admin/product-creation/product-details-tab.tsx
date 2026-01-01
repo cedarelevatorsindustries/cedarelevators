@@ -91,13 +91,7 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
               value={formData.description}
               onChange={(e) => onFormDataChange({ description: e.target.value })}
               rows={8}
-              className={`w-full ${
-                formData.description.length > 0 && !hasDescription
-                  ? 'border-orange-300 focus:border-orange-500'
-                  : hasDescription
-                  ? 'border-green-300'
-                  : ''
-              }`}
+              className="w-full"
             />
             <p className="text-xs text-gray-500">
               {formData.description.length} characters • Minimum 50 characters recommended
@@ -120,19 +114,7 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-            <h4 className="font-medium text-gray-900 text-sm">Common Attributes Examples:</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-              <Badge variant="outline">Voltage</Badge>
-              <Badge variant="outline">Load Capacity</Badge>
-              <Badge variant="outline">Speed</Badge>
-              <Badge variant="outline">Controller Type</Badge>
-              <Badge variant="outline">Door Type</Badge>
-              <Badge variant="outline">Protocol</Badge>
-              <Badge variant="outline">Warranty</Badge>
-              <Badge variant="outline">Certification</Badge>
-            </div>
-          </div>
+
 
           <div className="space-y-3">
             {formData.attributes.length === 0 ? (

@@ -52,6 +52,24 @@ interface VariantsTabProps {
 
 export function VariantsTab({ options, variants, onOptionsChange, onVariantsChange }: VariantsTabProps) {
   const [activeTab, setActiveTab] = useState("configure")
+  const [bulkPrice, setBulkPrice] = useState("")
+  const [bulkStock, setBulkStock] = useState("")
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false)
+
+  const applyBulkEdit = () => {
+    const updates: Partial<ProductVariant> = {}
+    if (bulkPrice) updates.price = bulkPrice
+    if (bulkStock) updates.stock = bulkStock
+
+    if (Object.keys(updates).length > 0) {
+      onVariantsChange(
+        variants.map(variant => ({ ...variant, ...updates }))
+      )
+    }
+    setIsBulkEditOpen(false)
+    setBulkPrice("")
+    setBulkStock("")
+  }
 
   const addOption = () => {
     const newOption: VariantOption = {
@@ -300,12 +318,53 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                   Reconfigure Options
                 </Button>
               </CardHeader>
+
+              {/* Bulk Edit Section */}
+              <div className="bg-gray-50 border-b border-gray-200 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-medium text-gray-900">Bulk Edit Variants</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsBulkEditOpen(!isBulkEditOpen)}
+                    className="text-orange-600"
+                  >
+                    {isBulkEditOpen ? "Hide Bulk Edit" : "Show Bulk Edit"}
+                  </Button>
+                </div>
+
+                {isBulkEditOpen && (
+                  <div className="flex items-end gap-4 p-4 bg-white rounded-md border border-gray-200">
+                    <div className="space-y-2 flex-1">
+                      <Label htmlFor="bulk-price" className="text-xs">Price for All</Label>
+                      <Input
+                        id="bulk-price"
+                        placeholder="0.00"
+                        value={bulkPrice}
+                        onChange={(e) => setBulkPrice(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <Label htmlFor="bulk-stock" className="text-xs">Stock for All</Label>
+                      <Input
+                        id="bulk-stock"
+                        placeholder="0"
+                        value={bulkStock}
+                        onChange={(e) => setBulkStock(e.target.value)}
+                      />
+                    </div>
+                    <Button onClick={applyBulkEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
+                      Apply to All
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
-                      <TableHead className="w-[30%]">Variant</TableHead>
-                      <TableHead>SKU</TableHead>
+                      <TableHead className="w-[40%]">Variant</TableHead>
                       <TableHead>Price (₹)</TableHead>
                       <TableHead>Stock</TableHead>
                       <TableHead className="w-[100px]">Status</TableHead>
@@ -325,13 +384,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                             })}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Input
-                            value={variant.sku}
-                            onChange={(e) => updateVariant(variant.id, { sku: e.target.value })}
-                            className="h-8 font-mono text-xs"
-                          />
-                        </TableCell>
+
                         <TableCell>
                           <Input
                             type="number"
@@ -364,7 +417,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
             </Card>
           </TabsContent>
         </div>
-      </Tabs>
-    </div>
+      </Tabs >
+    </div >
   )
 }

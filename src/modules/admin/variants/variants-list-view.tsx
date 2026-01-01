@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Switch } from '@/components/ui/switch'
-import { 
+import {
   ArrowLeft,
   Plus,
   Search,
@@ -31,7 +31,7 @@ import {
   DollarSign,
   Warehouse
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -50,26 +50,26 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [searchQuery, setSearchQuery] = useState(filters.search || '')
-  
+
   // Filter variants based on current filters (frontend filtering for immediate feedback)
   const filteredVariants = product.product_variants?.filter((variant: any) => {
-    if (searchQuery && !variant.name?.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !variant.sku.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (searchQuery && !variant.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !variant.sku.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
-    
+
     if (filters.status && filters.status !== 'all') {
-      if (filters.status === 'active' && !variant.active) return false
-      if (filters.status === 'inactive' && variant.active) return false
+      if (filters.status === 'active' && variant.status !== 'active') return false
+      if (filters.status === 'inactive' && variant.status === 'active') return false
     }
-    
+
     if (filters.stock && filters.stock !== 'all') {
-      const stock = variant.stock || 0
+      const stock = variant.inventory_quantity || 0
       if (filters.stock === 'in_stock' && stock === 0) return false
       if (filters.stock === 'low_stock' && (stock === 0 || stock >= 10)) return false
       if (filters.stock === 'out_of_stock' && stock > 0) return false
     }
-    
+
     return true
   }) || []
 
@@ -77,11 +77,16 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
   const handleStockUpdate = async (variantId: string, newStock: number) => {
     startTransition(async () => {
       try {
+        if (!supabase) {
+          toast.error('Database connection not available')
+          return
+        }
+
         const { data, error } = await supabase
           .from('product_variants')
-          .update({ stock: newStock })
+          .update({ inventory_quantity: newStock })
           .eq('id', variantId)
-        
+
         const result = { success: !error, error: error?.message }
         if (result.success) {
           toast.success('Stock updated successfully')
@@ -122,11 +127,11 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
       value: vov.product_option_values?.name,
       color: vov.product_option_values?.hex_color,
     })) || []
-    
+
     return options.map((option: any, index: number) => (
       <span key={index} className="inline-flex items-center space-x-1">
         {option.color && (
-          <div 
+          <div
             className="w-3 h-3 rounded-full border border-gray-300"
             style={{ backgroundColor: option.color }}
           />
@@ -141,29 +146,29 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
     <div className="space-y-6">
       {/* Header - FRONTEND: Navigation and actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {product.name} - Variants
+          </h1>
+          <p className="text-gray-500">
+            {filteredVariants.length} of {product.product_variants?.length || 0} variants
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/admin/products/${product.id}`}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Product
             </Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {product.title} - Variants
-            </h1>
-            <p className="text-gray-500">
-              {filteredVariants.length} of {product.product_variants?.length || 0} variants
-            </p>
-          </div>
+          <Button asChild>
+            <Link href={`/admin/products/${product.id}/variants/create`}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Variant
+            </Link>
+          </Button>
         </div>
-        
-        <Button asChild>
-          <Link href={`/admin/products/${product.id}/variants/create`}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Variant
-          </Link>
-        </Button>
       </div>
 
       {/* Filters - FRONTEND: Filter UI */}
@@ -181,7 +186,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                 />
               </div>
             </div>
-            
+
             <Select value={filters.status || 'all'}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by status" />
@@ -192,7 +197,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={filters.stock || 'all'}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by stock" />
@@ -233,7 +238,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                 {filteredVariants.map((variant: any) => (
                   <TableRow key={variant.id}>
                     <TableCell>
-                      <Link 
+                      <Link
                         href={`/admin/products/${product.id}/variants/${variant.id}`}
                         className="block hover:bg-gray-50 p-2 rounded-lg transition-colors"
                       >
@@ -245,13 +250,13 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                         </div>
                       </Link>
                     </TableCell>
-                    
+
                     <TableCell>
                       <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                         {variant.sku}
                       </code>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
@@ -263,25 +268,25 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                         />
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-2">
                           <Warehouse className="w-4 h-4 text-gray-400" />
                           <InlineEdit
-                            value={variant.stock}
+                            value={variant.inventory_quantity || 0}
                             onSave={(value) => handleStockUpdate(variant.id, value)}
                             type="number"
                             disabled={isPending}
                           />
                         </div>
-                        {getStockBadge(variant.stock || 0)}
+                        {getStockBadge(variant.inventory_quantity || 0)}
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <Switch
-                        checked={variant.active}
+                        checked={variant.status === 'active'}
                         onCheckedChange={(checked) => {
                           // Handle status toggle
                           console.log('Toggle variant status:', variant.id, checked)
@@ -289,7 +294,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                         disabled={isPending}
                       />
                     </TableCell>
-                    
+
                     <TableCell>
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/admin/products/${product.id}/variants/${variant.id}`}>
@@ -309,7 +314,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
                 No variants found
               </h3>
               <p className="text-gray-500 mb-4">
-                {product.product_variants?.length === 0 
+                {product.product_variants?.length === 0
                   ? "This product doesn't have any variants yet."
                   : "No variants match your current filters."
                 }

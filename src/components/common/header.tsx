@@ -84,11 +84,6 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-lg hover:bg-gray-100">
-                        <Bell className="h-4 w-4" />
-                        <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white"></span>
-                    </Button>
-
                     {/* Avatar - clickable to go to profile */}
                     <Button variant="ghost" className="relative h-10 w-auto px-2 rounded-lg hover:bg-gray-100 gap-3" asChild>
                         <Link href="/admin/settings/profile">

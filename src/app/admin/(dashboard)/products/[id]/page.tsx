@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { ProductDetailView } from '@/domains/admin/product-detail/product-detail-view'
+import { ProductDetailView } from '@/modules/admin/product-detail/product-detail-view'
 import { getProduct } from '@/lib/actions/products'
 
 interface ProductDetailPageProps {
@@ -10,22 +10,17 @@ interface ProductDetailPageProps {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   try {
     const { id } = await params
-    const result = await getProduct(id)
-    
-    if (!result.success) {
-      console.error('Failed to fetch product:', result.error)
-      notFound()
-    }
+    const product = await getProduct(id)
 
-    if (!result.data) {
-      console.log('Product data is null for ID:', id)
+    if (!product) {
+      console.log('Product not found for ID:', id)
       notFound()
     }
 
     return (
       <div className="space-y-6">
         <Suspense fallback={<ProductDetailSkeleton />}>
-          <ProductDetailView product={result.data} />
+          <ProductDetailView product={product} />
         </Suspense>
       </div>
     )

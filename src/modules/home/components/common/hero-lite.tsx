@@ -8,6 +8,7 @@ import { Search } from "lucide-react"
 type HeroLiteProps = {
   userType: "individual" | "business"
   categories?: ProductCategory[]
+  popularSearchTerms?: string[]
 }
 
 const searchPlaceholders = [
@@ -20,7 +21,7 @@ const searchPlaceholders = [
   "Search limit switches..."
 ]
 
-export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
+export default function HeroLite({ userType, categories = [], popularSearchTerms = [] }: HeroLiteProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "business-hub">("products")
   const [searchValue, setSearchValue] = useState("")
@@ -42,16 +43,6 @@ export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
       { id: "categories" as const, label: "Categories" },
     ]
 
-  // Elevator-related frequently searched items (7 items)
-  const frequentlySearched = [
-    "Elevator Motors",
-    "Control Panels",
-    "Door Operators",
-    "Safety Sensors",
-    "Guide Rails",
-    "ARD Systems",
-    "Limit Switches"
-  ]
 
   // Animated placeholder effect
   useEffect(() => {
@@ -174,25 +165,27 @@ export default function HeroLite({ userType, categories = [] }: HeroLiteProps) {
           </div>
         </div>
 
-        {/* Frequently Searched - Show for all tabs */}
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-start gap-3 flex-wrap">
-            <span className="text-white font-normal text-sm whitespace-nowrap">
-              Frequently searched:
-            </span>
-            <div className="flex flex-wrap gap-3">
-              {frequentlySearched.map((item) => (
-                <a
-                  key={item}
-                  href={`/search?q=${encodeURIComponent(item)}`}
-                  className="text-white/95 hover:text-white text-sm underline hover:no-underline transition-all"
-                >
-                  {item}
-                </a>
-              ))}
+        {/* Frequently Searched - Show only if there are search terms */}
+        {popularSearchTerms.length > 0 && (
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-start gap-3 flex-wrap">
+              <span className="text-white font-normal text-sm whitespace-nowrap">
+                Frequently searched:
+              </span>
+              <div className="flex flex-wrap gap-3">
+                {popularSearchTerms.map((item) => (
+                  <a
+                    key={item}
+                    href={`/search?q=${encodeURIComponent(item)}`}
+                    className="text-white/95 hover:text-white text-sm underline hover:no-underline transition-all"
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

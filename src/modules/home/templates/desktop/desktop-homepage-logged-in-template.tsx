@@ -23,6 +23,7 @@ interface DesktopHomepageLoggedInProps {
   trendingCollection: any
   topApplicationsCollection: any
   businessHubData?: any
+  popularSearchTerms?: string[]
 }
 
 export default function DesktopHomepageLoggedIn({
@@ -35,7 +36,8 @@ export default function DesktopHomepageLoggedIn({
   collections = [],
   trendingCollection = null,
   topApplicationsCollection = null,
-  businessHubData = null
+  businessHubData = null,
+  popularSearchTerms = []
 }: DesktopHomepageLoggedInProps) {
   const searchParams = useSearchParams()
   const app = searchParams.get('app')
@@ -68,7 +70,7 @@ export default function DesktopHomepageLoggedIn({
   return (
     <div className="w-full">
       {/* Hero Lite - Compact hero for logged-in users with built-in tabs */}
-      <HeroLite userType={userType} categories={categories} />
+      <HeroLite userType={userType} categories={categories} popularSearchTerms={popularSearchTerms} />
 
       {/* Welcome Section with Quick Stats */}
       <WelcomeSection userType={userType} />

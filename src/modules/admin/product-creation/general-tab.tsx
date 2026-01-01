@@ -21,7 +21,7 @@ import {
   Edit,
   ExternalLink,
   Package,
-  DollarSign,
+  IndianRupee,
   Warehouse,
   Image as ImageIcon,
   List,
@@ -365,7 +365,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <DollarSign className="w-5 h-5 mr-2" />
+                <IndianRupee className="w-5 h-5 mr-2" />
                 Pricing Summary
               </CardTitle>
             </CardHeader>

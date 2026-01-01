@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadToCloudinary } from '@/lib/cloudinary/upload'
 
 /**
  * Upload file endpoint
- * Saves files to public/uploads directory
- * In production, you should use cloud storage like Cloudinary, S3, etc.
+ * Uploads files to Cloudinary cloud storage
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +15,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const folder = formData.get('folder') as string || 'uploads'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -32,42 +30,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024
+    // Validate file size (max 10MB for Cloudinary)
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File too large. Maximum size is 5MB.' },
+        { error: 'File too large. Maximum size is 10MB.' },
         { status: 400 }
       )
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
+    // Upload to Cloudinary
+    const result = await uploadToCloudinary(file, folder)
 
-    // Generate unique filename
-    const timestamp = Date.now()
-    const randomString = Math.random().toString(36).substring(7)
-    const extension = file.name.split('.').pop()
-    const filename = `${timestamp}-${randomString}.${extension}`
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Upload failed' },
+        { status: 500 }
+      )
     }
-
-    // Save file
-    const filepath = join(uploadsDir, filename)
-    await writeFile(filepath, buffer)
-
-    // Return public URL
-    const url = `/uploads/${filename}`
 
     return NextResponse.json({
       success: true,
-      url,
-      filename,
+      url: result.url,
+      filename: file.name,
       size: file.size,
       type: file.type,
     })
@@ -92,6 +77,7 @@ export async function PUT(request: NextRequest) {
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
+    const folder = formData.get('folder') as string || 'uploads'
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 })
@@ -106,12 +92,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-    const maxSize = 5 * 1024 * 1024
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
-
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+    const maxSize = 10 * 1024 * 1024
 
     const uploadedFiles = []
 
@@ -126,23 +107,17 @@ export async function PUT(request: NextRequest) {
         continue // Skip large files
       }
 
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(file, folder)
 
-      const timestamp = Date.now()
-      const randomString = Math.random().toString(36).substring(7)
-      const extension = file.name.split('.').pop()
-      const filename = `${timestamp}-${randomString}.${extension}`
-
-      const filepath = join(uploadsDir, filename)
-      await writeFile(filepath, buffer)
-
-      uploadedFiles.push({
-        url: `/uploads/${filename}`,
-        filename,
-        size: file.size,
-        type: file.type,
-      })
+      if (result.success && result.url) {
+        uploadedFiles.push({
+          url: result.url,
+          filename: file.name,
+          size: file.size,
+          type: file.type,
+        })
+      }
     }
 
     return NextResponse.json({

@@ -1,26 +1,25 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { VariantDetailView } from '@/domains/admin/variants/variant-detail-view'
-import { getProduct } from '@/lib/actions/products'
+import { VariantDetailView } from '@/modules/admin/variants/variant-detail-view'
+import { getProductWithVariants } from '@/lib/actions/products'
 
 interface VariantDetailPageProps {
-  params: Promise<{ 
+  params: Promise<{
     id: string
-    variantId: string 
+    variantId: string
   }>
 }
 
 export default async function VariantDetailPage({ params }: VariantDetailPageProps) {
   const { id, variantId } = await params
-  const result = await getProduct(id)
-  
-  if (!result.success || !result.data) {
+  const product = await getProductWithVariants(id)
+
+  if (!product) {
     notFound()
   }
 
-  const product = result.data
   const variant = product.product_variants?.find(v => v.id === variantId)
-  
+
   if (!variant) {
     notFound()
   }
@@ -28,7 +27,7 @@ export default async function VariantDetailPage({ params }: VariantDetailPagePro
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Suspense fallback={<VariantDetailSkeleton />}>
-        <VariantDetailView 
+        <VariantDetailView
           product={product}
           variant={variant}
         />

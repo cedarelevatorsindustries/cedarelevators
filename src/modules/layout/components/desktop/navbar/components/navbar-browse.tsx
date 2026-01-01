@@ -6,6 +6,8 @@ import LocalizedClientLink from "@components/ui/localized-client-link"
 import { MegaMenu } from "./mega-menu/index"
 import type { NavbarConfig } from "../config"
 
+import { usePathname } from "next/navigation"
+
 interface NavbarBrowseProps {
   categories: ProductCategory[]
   config: NavbarConfig
@@ -16,8 +18,12 @@ interface NavbarBrowseProps {
 }
 
 export function NavbarBrowse({ categories, config, isTransparent, isScrolled, onMegaMenuChange, isLoggedIn = false }: NavbarBrowseProps) {
+  const pathname = usePathname()
+  const isHomepage = pathname === "/"
+
   // When scrolled (navbar is white/fixed), show Browse Products button instead of mega menu
-  if (isScrolled && config.showMegaMenu) {
+  // ONLY if on homepage
+  if (isScrolled && config.showMegaMenu && isHomepage) {
     return (
       <LocalizedClientLink
         href="/catalog"
@@ -44,7 +50,8 @@ export function NavbarBrowse({ categories, config, isTransparent, isScrolled, on
   }
 
   // Show Browse Products button for other pages
-  if (config.showBrowseProducts) {
+  // ONLY if on homepage
+  if (config.showBrowseProducts && isHomepage) {
     return (
       <LocalizedClientLink
         href="/catalog"

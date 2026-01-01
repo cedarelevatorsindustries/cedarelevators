@@ -36,7 +36,7 @@ export function ProductPreview({
   const primaryImage = images.find(img => img.isPrimary)
   const displayPrice = parseFloat(price) || 0
   const displayComparePrice = parseFloat(comparePrice) || 0
-  const discount = displayComparePrice > displayPrice
+  const discount = (displayPrice > 0 && displayComparePrice > 0 && displayComparePrice > displayPrice)
     ? Math.round(((displayComparePrice - displayPrice) / displayComparePrice) * 100)
     : 0
 
@@ -66,11 +66,11 @@ export function ProductPreview({
 
         {/* Product Info */}
         <div className="space-y-2">
-          <h3 className="font-semibold text-gray-900">
+          <h3 className="font-semibold text-gray-900 truncate">
             {productName || "Product Name"}
           </h3>
           {productSubtitle && (
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 truncate">
               {productSubtitle}
             </p>
           )}
@@ -88,7 +88,7 @@ export function ProductPreview({
                   <span className="text-sm text-gray-500 line-through">
                     ₹{displayComparePrice.toFixed(2)}
                   </span>
-                  <Badge className="bg-green-600 text-white text-xs">
+                  <Badge className="bg-green-600 text-white text-[9px] px-1 py-0.5 h-auto leading-none">
                     {discount}% OFF
                   </Badge>
                 </>
@@ -120,11 +120,11 @@ export function ProductPreview({
           <Badge
             variant={status === "active" ? "default" : status === "draft" ? "secondary" : "outline"}
             className={
-              status === "active"
+              `text-xs px-2 py-0.5 ${status === "active"
                 ? "bg-green-100 text-green-700 border-green-200"
                 : status === "draft"
                   ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                  : "bg-gray-100 text-gray-700 border-gray-200"
+                  : "bg-gray-100 text-gray-700 border-gray-200"}`
             }
           >
             {status}

@@ -57,6 +57,9 @@ const nextConfig: NextConfig = {
   // Experimental features
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
   },
 };
 
