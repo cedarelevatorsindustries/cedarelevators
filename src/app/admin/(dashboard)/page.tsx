@@ -1,20 +1,14 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Package, ShoppingCart, Users, Settings, FolderTree, FileText } from "lucide-react"
+import { Plus, Package, ShoppingCart, Users, Settings, FolderTree, FileText, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { QuotationChart } from "./components/quotation-chart"
-import { RecentActivities, ActivityItem } from "@/modules/admin/dashboard/recent-activities"
-
-// Simple placeholder stats
-const quickStats = [
-  { title: "Total Products", value: "—", icon: Package, href: "/admin/products" },
-  { title: "Total Orders", value: "—", icon: ShoppingCart, href: "/admin/orders" },
-  { title: "Quote Requests", value: "—", icon: FileText, href: "/admin/quotes" },
-  { title: "Categories", value: "—", icon: FolderTree, href: "/admin/categories" },
-  { title: "Customers", value: "—", icon: Users, href: "/admin/customers" },
-]
+import { RecentActivities } from "@/modules/admin/dashboard/recent-activities"
+import { getQuickStats, QuickStats } from "@/lib/actions/admin-dashboard"
+import { getRecentActivity, RecentActivity } from "@/lib/actions/analytics"
 
 const quickActions = [
   { title: "Add Product", href: "/admin/products/create", icon: Plus, primary: true },
@@ -23,54 +17,45 @@ const quickActions = [
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
-// Mock data for recent activities
-const mockActivities: ActivityItem[] = [
-  {
-    id: "act_1",
-    action: "update",
-    entity: "product",
-    description: "Updated price for 'Glider 3000'",
-    user: "Admin User",
-    timestamp: new Date().toISOString(),
-    details: "Changed from ₹45,000 to ₹48,000"
-  },
-  {
-    id: "act_2",
-    action: "create",
-    entity: "quote",
-    description: "Created new quote for Customer #452",
-    user: "Sales Rep",
-    timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-  },
-  {
-    id: "act_3",
-    action: "update",
-    entity: "settings",
-    description: "Updated General Settings",
-    user: "Admin User",
-    timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    details: "Updated WhatsApp number and Business Hours"
-  },
-  {
-    id: "act_4",
-    action: "delete",
-    entity: "category",
-    description: "Deleted unused category 'Old Parts'",
-    user: "System Admin",
-    timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-  },
-  {
-    id: "act_5",
-    action: "update",
-    entity: "order",
-    description: "Updated Order #ORD-003 Status",
-    user: "Admin User",
-    timestamp: new Date(Date.now() - 250000000).toISOString(), // ~3 days ago
-    details: "Status changed to Delivered"
-  }
-]
-
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<QuickStats | null>(null)
+  const [activities, setActivities] = useState<RecentActivity[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      const [statsData, activitiesData] = await Promise.all([
+        getQuickStats(),
+        getRecentActivity(10)
+      ])
+      setStats(statsData)
+      setActivities(activitiesData)
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
+
+  const handleRefresh = () => {
+    setIsRefreshing(true)
+    loadDashboardData()
+  }
+
+  const quickStats = [
+    { title: "Total Products", value: stats?.totalProducts || 0, icon: Package, href: "/admin/products" },
+    { title: "Total Orders", value: stats?.totalOrders || 0, icon: ShoppingCart, href: "/admin/orders" },
+    { title: "Quote Requests", value: stats?.quoteRequests || 0, icon: FileText, href: "/admin/quotes" },
+    { title: "Categories", value: stats?.totalCategories || 0, icon: FolderTree, href: "/admin/categories" },
+    { title: "Customers", value: stats?.totalCustomers || 0, icon: Users, href: "/admin/customers" },
+  ]
+
   return (
     <div className="space-y-8" data-testid="admin-dashboard">
       {/* Header */}
@@ -81,6 +66,16 @@ export default function AdminDashboard() {
             Welcome to Cedar Elevators Admin Panel
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Quick Stats Grid - 5 Columns */}
@@ -95,7 +90,13 @@ export default function AdminDashboard() {
                 <stat.icon className="h-4 w-4 text-orange-600" />
               </CardHeader>
               <CardContent className="p-4 pt-0">
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {isLoading ? (
+                    <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    stat.value
+                  )}
+                </div>
               </CardContent>
             </Card>
           </Link>
@@ -136,7 +137,7 @@ export default function AdminDashboard() {
 
         {/* Recent Activities */}
         <div className="min-h-[400px]">
-          <RecentActivities activities={mockActivities} />
+          <RecentActivities activities={activities} isLoading={isLoading} />
         </div>
       </div>
     </div>
