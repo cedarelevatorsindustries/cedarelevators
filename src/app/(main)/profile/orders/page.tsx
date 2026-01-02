@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation"
+
+export const dynamic = 'force-dynamic'
 import { getCustomerOrders, getOrderSummary } from "@/lib/data/orders"
 import OrderHistoryTemplate from "@/modules/orders/templates/order-history-template"
 import { auth } from "@clerk/nextjs/server"

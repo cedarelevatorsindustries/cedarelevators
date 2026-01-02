@@ -50,6 +50,8 @@ export interface ProductCategory {
     products?: Product[]
     metadata?: Record<string, any>
     is_active?: boolean
+    icon?: string
+    thumbnail?: string
 }
 
 export interface Order {
