@@ -12,8 +12,23 @@ export const metadata: Metadata = {
   description: "Get a quote for elevator components",
 }
 
-export default async function RequestQuotePage() {
+interface RequestQuotePageProps {
+  searchParams: {
+    productId?: string
+    variantId?: string
+    quantity?: string
+    source?: string
+  }
+}
+
+export default async function RequestQuotePage({ searchParams }: RequestQuotePageProps) {
   const userType = await getUserType()
+
+  // Extract URL params for pre-filling
+  const productId = searchParams.productId
+  const variantId = searchParams.variantId
+  const quantity = searchParams.quantity ? parseInt(searchParams.quantity) : undefined
+  const source = searchParams.source
 
   // Fetch products for best selling carousel (guest) or recommendations
   let products: any[] = []
@@ -26,15 +41,39 @@ export default async function RequestQuotePage() {
     console.error("Error fetching products:", error)
   }
 
+  // Fetch pre-filled product if productId is provided
+  let prefilledProduct = null
+  if (productId) {
+    try {
+      // Find product from products list or fetch it separately
+      prefilledProduct = products.find(p => p.id === productId)
+      
+      // If not found in list, you might want to fetch it separately
+      // For now, we'll just use what we have
+    } catch (error) {
+      console.error("Error fetching prefilled product:", error)
+    }
+  }
+
+  const templateProps = {
+    products,
+    prefilledProduct: prefilledProduct ? {
+      id: productId!,
+      variantId,
+      quantity,
+      source
+    } : undefined
+  }
+
   // Render based on user type
   if (userType === "guest") {
-    return <GuestQuoteTemplate products={products} />
+    return <GuestQuoteTemplate {...templateProps} />
   }
 
   if (userType === "business") {
-    return <BusinessQuoteTemplate products={products} />
+    return <BusinessQuoteTemplate {...templateProps} />
   }
 
   // Individual user
-  return <IndividualQuoteTemplate products={products} />
+  return <IndividualQuoteTemplate {...templateProps} />
 }
