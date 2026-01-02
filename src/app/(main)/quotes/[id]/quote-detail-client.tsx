@@ -162,7 +162,7 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                 </div>
 
                 {/* Actions */}
-                {quote.status === 'approved' && (
+                {quote.status === 'approved' && userType === 'verified' && (
                     <div className="mt-6 pt-4 border-t border-gray-100">
                         <button
                             onClick={handleConvertToOrder}
@@ -176,6 +176,23 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                             )}
                             Convert to Order
                         </button>
+                    </div>
+                )}
+                {quote.status === 'approved' && userType !== 'verified' && (
+                    <div className="mt-6 pt-4 border-t border-gray-100">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <p className="text-sm text-orange-800">
+                                {userType === 'business'
+                                    ? 'Complete business verification to convert quotes to orders'
+                                    : 'Upgrade to a verified business account to convert quotes to orders'}
+                            </p>
+                            <Link
+                                href="/profile?tab=business"
+                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+                            >
+                                {userType === 'business' ? 'Complete Verification' : 'Upgrade Account'}
+                            </Link>
+                        </div>
                     </div>
                 )}
             </div>
