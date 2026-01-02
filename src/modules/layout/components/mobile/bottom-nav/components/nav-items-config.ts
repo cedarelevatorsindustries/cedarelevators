@@ -18,7 +18,7 @@ export const navItems: NavItemConfig[] = [
  * Get intelligent quote tab label based on user type
  * Single entry point principle: /quotes for all users
  */
-export function getQuoteTabLabel(userType: "guest" | "individual" | "business"): string {
+export function getQuoteTabLabel(userType: "guest" | "individual" | "business" | "verified"): string {
   // Guest: "Get Quote" - encourages lead capture
   // All logged-in users: "Quotes" - simple and consistent
   return userType === "guest" ? "Get Quote" : "Quotes"

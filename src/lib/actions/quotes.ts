@@ -668,11 +668,35 @@ export async function convertQuoteToOrder(quoteId: string): Promise<
       `)
       .eq('id', quoteId)
       .eq('clerk_user_id', userId)
-      .eq('status', 'accepted')
       .single()
 
     if (quoteError || !quote) {
-      return { success: false, error: 'Quote not found or not accepted' }
+      return { success: false, error: 'Quote not found' }
+    }
+
+    // Validate quote status is 'approved'
+    if (quote.status !== 'approved') {
+      return { success: false, error: 'Only approved quotes can be converted to orders' }
+    }
+
+    // Validate user is verified business
+    if (quote.user_type !== 'verified') {
+      return { success: false, error: 'Only verified business users can convert quotes to orders' }
+    }
+
+    // Check if quote is already converted
+    if (quote.converted_order_id) {
+      return { success: false, error: 'Quote has already been converted' }
+    }
+
+    // Validate quote has items
+    if (!quote.items || quote.items.length === 0) {
+      return { success: false, error: 'Quote has no items to convert' }
+    }
+
+    // Validate pricing is visible
+    if (!quote.pricing_visible) {
+      return { success: false, error: 'Pricing must be visible before conversion' }
     }
 
     // Create cart with quote items
@@ -702,16 +726,42 @@ export async function convertQuoteToOrder(quoteId: string): Promise<
       unit_price: item.unit_price
     }))
 
-    await supabase.from('cart_items').insert(cartItems)
+    const { error: cartItemsError } = await supabase.from('cart_items').insert(cartItems)
 
-    // Update quote status
-    await supabase
+    if (cartItemsError) {
+      console.error('Error adding items to cart:', cartItemsError)
+      // Rollback cart creation
+      await supabase.from('carts').delete().eq('id', cartId)
+      return { success: false, error: 'Failed to add items to cart' }
+    }
+
+    // Update quote status to 'converted' and lock it
+    const { error: updateError } = await supabase
       .from('quotes')
       .update({
         status: 'converted',
-        converted_order_id: cartId
+        converted_order_id: cartId,
+        converted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', quoteId)
+
+    if (updateError) {
+      console.error('Error updating quote status:', updateError)
+      // Rollback cart creation
+      await supabase.from('cart_items').delete().eq('cart_id', cartId)
+      await supabase.from('carts').delete().eq('id', cartId)
+      return { success: false, error: 'Failed to update quote status' }
+    }
+
+    // Add audit log entry for conversion
+    try {
+      const { logQuoteConversion } = await import('@/lib/services/quote-audit')
+      await logQuoteConversion(quoteId, cartId)
+    } catch (auditError) {
+      // Log error but don't fail the conversion
+      console.error('Failed to create audit log:', auditError)
+    }
 
     revalidatePath('/quotes')
     revalidatePath('/cart')
@@ -754,10 +804,17 @@ export async function updateQuoteStatus(
       return { success: false, error: 'Quote not found' }
     }
 
-    // Validate status transition (basic validation)
-    const validStatuses: QuoteStatus[] = ['pending', 'reviewing', 'approved', 'rejected', 'converted']
-    if (!validStatuses.includes(newStatus as QuoteStatus)) {
-      return { success: false, error: 'Invalid status' }
+    // Import state machine validation
+    const { isValidTransition, validateTransition, QuoteStatus } = await import('@/lib/quote-state-machine')
+
+    // Validate status transition using state machine
+    const validation = validateTransition(
+      quote.status as QuoteStatus,
+      newStatus as QuoteStatus
+    )
+
+    if (!validation.valid) {
+      return { success: false, error: validation.error || 'Invalid status transition' }
     }
 
     // Update the status
@@ -772,6 +829,15 @@ export async function updateQuoteStatus(
     if (error) {
       console.error('Error updating quote status:', error)
       return { success: false, error: error.message }
+    }
+
+    // Add audit log entry
+    try {
+      const { logStatusChange } = await import('@/lib/services/quote-audit')
+      await logStatusChange(quoteId, quote.status as QuoteStatus, newStatus as QuoteStatus)
+    } catch (auditError) {
+      // Log error but don't fail the status update
+      console.error('Failed to create audit log:', auditError)
     }
 
     revalidatePath('/quotes')

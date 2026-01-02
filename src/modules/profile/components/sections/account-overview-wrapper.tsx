@@ -1,7 +1,8 @@
 'use client'
 
-import { useProfile } from '@/lib/hooks/useProfile'
+import { useUser } from '@/lib/auth/client'
 import AccountOverviewSection from './account-overview-section'
+import { BusinessVerificationCard } from '@/components/business-verification-card'
 import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { PROFILE_SECTIONS } from '@/lib/constants/profile'
@@ -17,13 +18,13 @@ const sectionToRoute: Record<string, string> = {
   [PROFILE_SECTIONS.WISHLISTS]: '/profile/wishlist',
   [PROFILE_SECTIONS.QUOTES]: '/profile/quotes',
   [PROFILE_SECTIONS.ORDER_HISTORY]: '/profile/orders',
-  [PROFILE_SECTIONS.APPROVALS]: '/profile/verification',
+  [PROFILE_SECTIONS.APPROVALS]: '/profile/business/verification',
   [PROFILE_SECTIONS.SECURITY]: '/profile/password',
 }
 
 export default function AccountOverviewWrapper() {
   const router = useRouter()
-  const { user, accountType, isLoading } = useProfile()
+  const { user, isLoading, clerkUser } = useUser()
 
   const handleNavigate = (section: string) => {
     const route = sectionToRoute[section]
@@ -44,16 +45,40 @@ export default function AccountOverviewWrapper() {
   }
 
   // Guest users or no user shouldn't see the account overview
-  if (!user || accountType === 'guest') {
+  if (!user || user.userType === 'guest') {
     return null
   }
 
+  // Convert user data to old UserProfile format for compatibility
+  const userProfile = {
+    first_name: user.name?.split(' ')[0] || '',
+    last_name: user.name?.split(' ').slice(1).join(' ') || '',
+    email: user.email || '',
+    avatar_url: user.imageUrl || clerkUser?.imageUrl || null,
+    company_name: user.business?.name || null,
+    verification_status: user.business?.verification_status || null
+  }
+
+  const accountType = user.activeProfile?.profile_type === 'business' ? 'business' : 'individual'
+
   return (
-    <AccountOverviewSection
-      user={user}
-      accountType={accountType as 'individual' | 'business'}
-      verificationStatus={user.verification_status as any || 'incomplete'}
-      onNavigate={handleNavigate}
-    />
+    <div className="space-y-6">
+      <AccountOverviewSection
+        user={userProfile as any}
+        accountType={accountType}
+        verificationStatus={
+          user.business?.verification_status === 'verified' ? 'approved' :
+            user.business?.verification_status === 'pending' ? 'pending' :
+              user.business?.verification_status === 'rejected' ? 'rejected' : 'incomplete'
+        }
+        onNavigate={handleNavigate}
+      />
+
+      {/* Business Verification Card */}
+      {accountType === 'business' && user.business && (
+        <BusinessVerificationCard business={user.business} />
+      )}
+    </div>
   )
 }
+

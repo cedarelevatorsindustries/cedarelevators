@@ -83,3 +83,24 @@ export function createServerSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey)
 }
 
+/**
+ * Create a Supabase client with Service Role access (Admin)
+ * Use ONLY in secure server-side contexts (API routes, Server Actions)
+ * Bypasses Row Level Security (RLS)
+ */
+export function createAdminClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is missing')
+    throw new Error('Supabase Service Role Key is required for admin operations')
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
+}
+

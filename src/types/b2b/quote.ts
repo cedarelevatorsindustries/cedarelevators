@@ -187,6 +187,7 @@ export interface Quote {
   discount_total: number
   tax_total: number
   estimated_total: number
+  pricing_visible: boolean // Controls if verified business can see pricing
   admin_notes?: string
   admin_response_at?: string
   responded_by?: string
@@ -195,7 +196,12 @@ export interface Quote {
   converted_at?: string
   approved_by?: string
   approved_at?: string
+  rejected_by?: string // Admin who rejected
+  rejected_at?: string // When rejected
   rejected_reason?: string
+  reviewing_started_at?: string // When review started
+  reviewing_by?: string // Admin who started review
+  expired_at?: string // When quote expired
   created_at: string
   updated_at: string
   // Relations

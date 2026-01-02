@@ -193,9 +193,16 @@ export default function QuotesPageClient({
                             Submit Quote Request
                         </button>
 
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                            <p className="text-sm text-blue-800 text-center">
+                                <strong>Want to track your quote in real-time?</strong><br />
+                                Create an account after submitting to view status updates, message our team, and manage all your quotes in one place.
+                            </p>
+                        </div>
+
                         <p className="text-center text-sm text-gray-500">
                             Already have an account?{" "}
-                            <Link href="/sign-in" className="text-[#ff3705] hover:underline">
+                            <Link href="/sign-in" className="text-[#ff3705] hover:underline font-medium">
                                 Sign in
                             </Link>
                         </p>

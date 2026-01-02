@@ -10,11 +10,18 @@ import { useUser } from "@/lib/auth/client"
 import Link from "next/link"
 
 interface BusinessQuoteFormProps {
+    products?: any[]
+    prefilledProduct?: {
+        id: string
+        variantId?: string
+        quantity?: number
+        source?: string
+    }
     onSuccess?: (quoteNumber: string) => void
     isVerified?: boolean
 }
 
-export const BusinessQuoteForm = ({ onSuccess, isVerified = false }: BusinessQuoteFormProps) => {
+export const BusinessQuoteForm = ({ products, prefilledProduct, onSuccess, isVerified = false }: BusinessQuoteFormProps) => {
     const { user } = useUser()
     const { items, removeItem, updateQuantity, toggleBulkPricing, clearBasket, isLoading: basketLoading } = useQuoteBasket()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -309,8 +316,8 @@ export const BusinessQuoteForm = ({ onSuccess, isVerified = false }: BusinessQuo
                                 type="button"
                                 onClick={() => toggleBulkPricing(item.id)}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${item.bulk_pricing_requested
-                                        ? "bg-green-100 text-green-700 border border-green-200"
-                                        : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
+                                    ? "bg-green-100 text-green-700 border border-green-200"
+                                    : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
                                     }`}
                             >
                                 <CheckSquare className={`w-3.5 h-3.5 ${item.bulk_pricing_requested ? "fill-green-500" : ""}`} />

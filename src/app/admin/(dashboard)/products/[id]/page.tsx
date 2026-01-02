@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { ProductDetailView } from '@/modules/admin/product-detail/product-detail-view'
-import { getProduct } from '@/lib/actions/products'
+import { getProductWithVariants } from '@/lib/actions/products'
 
 interface ProductDetailPageProps {
   params: Promise<{ id: string }>
@@ -10,7 +10,7 @@ interface ProductDetailPageProps {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   try {
     const { id } = await params
-    const product = await getProduct(id)
+    const product = await getProductWithVariants(id)
 
     if (!product) {
       console.log('Product not found for ID:', id)
@@ -20,7 +20,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     return (
       <div className="space-y-6">
         <Suspense fallback={<ProductDetailSkeleton />}>
-          <ProductDetailView product={product} />
+          <ProductDetailView
+            product={product}
+            variants={product.product_variants || []}
+          />
         </Suspense>
       </div>
     )

@@ -30,10 +30,19 @@ export default async function QuoteDetailPage({ params }: QuoteDetailPageProps) 
         notFound()
     }
 
+    // Check if user is verified business
+    const isVerified = userType === "verified"
+
+    // TODO: Implement proper admin check - for now, set to false
+    // This should check against admin_profiles table or Clerk metadata
+    const isAdmin = false
+
     return (
         <QuoteDetailClient
             quote={result.quote}
             userType={userType}
+            isVerified={isVerified}
+            isAdmin={isAdmin}
         />
     )
 }

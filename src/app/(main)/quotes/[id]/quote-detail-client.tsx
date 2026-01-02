@@ -3,6 +3,9 @@
 import { useState } from "react"
 import { Quote, QuoteStatus, UserType, QuoteMessage } from "@/types/b2b/quote"
 import { addQuoteMessage, convertQuoteToOrder } from "@/lib/actions/quotes"
+import { getQuotePermissions } from "@/lib/quote-permissions"
+import { getStatusLabel, getStatusColor } from "@/lib/quote-state-machine"
+import QuoteStatusTimeline from "@/modules/quote/components/quote-status-timeline"
 import {
     FileText,
     Clock,
@@ -15,7 +18,8 @@ import {
     MessageSquare,
     ShoppingCart,
     Download,
-    Building2
+    Building2,
+    AlertCircle
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -25,6 +29,8 @@ import { toast } from "sonner"
 interface QuoteDetailClientProps {
     quote: Quote
     userType: UserType
+    isVerified?: boolean
+    isAdmin?: boolean
 }
 
 const getStatusConfig = (status: QuoteStatus) => {
@@ -44,12 +50,25 @@ const getStatusConfig = (status: QuoteStatus) => {
     }
 }
 
-export default function QuoteDetailClient({ quote, userType }: QuoteDetailClientProps) {
+export default function QuoteDetailClient({
+    quote,
+    userType,
+    isVerified = false,
+    isAdmin = false
+}: QuoteDetailClientProps) {
     const router = useRouter()
     const [message, setMessage] = useState('')
     const [isSending, setIsSending] = useState(false)
     const [isConverting, setIsConverting] = useState(false)
     const [messages, setMessages] = useState<QuoteMessage[]>(quote.messages || [])
+
+    // Calculate permissions using centralized utility
+    const permissions = getQuotePermissions(
+        userType,
+        quote.status as QuoteStatus,
+        isVerified,
+        isAdmin
+    )
 
     const statusConfig = getStatusConfig(quote.status)
     const StatusIcon = statusConfig.icon
@@ -147,13 +166,13 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                     <div>
                         <p className="text-sm text-gray-500">Estimated Total</p>
                         <p className="text-lg font-semibold text-gray-900">
-                            {userType === 'verified' && quote.estimated_total > 0
+                            {permissions.canViewPricing && quote.estimated_total > 0
                                 ? `₹${quote.estimated_total.toLocaleString()}`
-                                : userType === 'verified'
+                                : permissions.canViewPricing
                                     ? 'Pending'
                                     : '—'}
                         </p>
-                        {(userType === 'business' || userType === 'individual') && (
+                        {!permissions.canViewPricing && (
                             <p className="text-xs text-orange-600 mt-1">
                                 {userType === 'business' ? 'Complete verification to view pricing' : 'Upgrade to business account for pricing'}
                             </p>
@@ -162,7 +181,7 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                 </div>
 
                 {/* Actions */}
-                {quote.status === 'approved' && userType === 'verified' && (
+                {permissions.canConvertToOrder && (
                     <div className="mt-6 pt-4 border-t border-gray-100">
                         <button
                             onClick={handleConvertToOrder}
@@ -178,7 +197,7 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                         </button>
                     </div>
                 )}
-                {quote.status === 'approved' && userType !== 'verified' && (
+                {quote.status === 'approved' && !permissions.canConvertToOrder && (
                     <div className="mt-6 pt-4 border-t border-gray-100">
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                             <p className="text-sm text-orange-800">
@@ -196,6 +215,18 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                     </div>
                 )}
             </div>
+
+            {/* Status Timeline */}
+            <QuoteStatusTimeline
+                status={quote.status as QuoteStatus}
+                createdAt={quote.created_at}
+                reviewingStartedAt={quote.reviewing_started_at}
+                approvedAt={quote.approved_at}
+                rejectedAt={quote.rejected_at}
+                rejectedBy={quote.rejected_by}
+                convertedAt={quote.converted_at}
+                expiredAt={quote.expired_at}
+            />
 
             {/* Company Details (Business users) */}
             {quote.company_details && (
@@ -273,12 +304,12 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                                 {/* Quantity and Price */}
                                 <div className="text-right">
                                     <p className="font-medium text-gray-900">Qty: {item.quantity}</p>
-                                    {userType === 'verified' && item.unit_price > 0 && (
+                                    {permissions.canViewPricing && item.unit_price > 0 && (
                                         <p className="text-sm text-gray-500">
                                             ₹{item.unit_price.toLocaleString()} each
                                         </p>
                                     )}
-                                    {userType !== 'verified' && (
+                                    {!permissions.canViewPricing && (
                                         <p className="text-sm text-gray-400">
                                             Pricing not available
                                         </p>

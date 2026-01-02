@@ -11,13 +11,14 @@ import {
   Edit,
   ExternalLink,
   Package,
-  DollarSign,
+  IndianRupee,
   Warehouse,
   Image as ImageIcon,
   List,
   MoreHorizontal,
   Archive,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -27,12 +28,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { ProductImageCarousel } from '@/components/product-image-carousel'
+import { Switch } from '@/components/ui/switch'
 
 interface ProductDetailViewProps {
   product: any // Type from domain
+  variants?: any[] // Product variants
 }
 
-export function ProductDetailView({ product }: ProductDetailViewProps) {
+export function ProductDetailView({ product, variants = [] }: ProductDetailViewProps) {
+  // State for variant status toggles
+  const [variantStatuses, setVariantStatuses] = useState<Record<string, boolean>>(
+    variants.reduce((acc, variant) => ({
+      ...acc,
+      [variant.id]: variant.status === 'active'
+    }), {})
+  )
+  // Handler for variant status toggle
+  const handleVariantStatusToggle = (variantId: string) => {
+    setVariantStatuses(prev => ({
+      ...prev,
+      [variantId]: !prev[variantId]
+    }))
+    // TODO: Call API to update variant status in database
+    console.log(`Toggle variant ${variantId} to ${!variantStatuses[variantId] ? 'active' : 'inactive'}`)
+  }
+
   // FRONTEND RESPONSIBILITY: Display state, navigation, read-only calculations
 
   // Calculate display values (read-only, no business logic)
@@ -58,81 +87,102 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header - FRONTEND: Navigation and actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-            {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
-              <Image
-                src={primaryImage}
-                alt={product.name}
-                width={48}
-                height={48}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Package className="w-6 h-6 text-gray-400" />
-            )}
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <Badge
-                variant={product.status === 'active' ? 'default' : 'secondary'}
-                className="capitalize"
-              >
-                {product.status || 'draft'}
-              </Badge>
-              <span className="text-sm text-gray-500">#{product.id.slice(-8)}</span>
+      {/* Header - Modern design with product image */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-4">
+            {/* Product Image - Larger and more prominent */}
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
+              {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
+                <Image
+                  src={primaryImage}
+                  alt={product.name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Package className="w-10 h-10 text-gray-400" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              <div className="flex items-center space-x-3">
+                <Badge
+                  variant={product.status === 'active' ? 'default' : 'secondary'}
+                  className="capitalize"
+                >
+                  {product.status || 'draft'}
+                </Badge>
+                <span className="text-sm text-gray-500">#{product.id.slice(-8)}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" asChild>
-            <Link href={`/products/${product.slug}`}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              View Storefront
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href={`/admin/products/${product.id}/edit`}>
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Product
-            </Link>
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>
-                <Archive className="w-4 h-4 mr-2" />
-                Archive Product
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-orange-600">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Product
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/products/${product.slug}`}>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Storefront
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              className="bg-[#ff3705] hover:bg-[#e63305] text-white"
+              asChild
+            >
+              <Link href={`/admin/products/${product.id}/edit`}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Product
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem>
+                  <Archive className="w-4 h-4 mr-2" />
+                  Archive Product
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Product
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Product Summary - FRONTEND: Read-only display */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Package className="w-5 h-5 mr-2" />
-                Product Summary
-              </CardTitle>
+          {/* Product Summary - Modern card design */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="bg-gray-50/100 border-b border-gray-200">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                  {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
+                    <Image
+                      src={primaryImage}
+                      alt={product.name}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Package className="w-4 h-4 text-[#ff3705]" />
+                  )}
+                </div>
+                <CardTitle className="text-base font-semibold">
+                  Product Summary
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -192,38 +242,52 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             </CardContent>
           </Card>
 
-          {/* Pricing Summary - FRONTEND: Display calculated values */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <DollarSign className="w-5 h-5 mr-2" />
-                Pricing Summary
-              </CardTitle>
+          {/* Pricing Summary - Modern design with rupee symbols */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="bg-gray-50/100 border-b border-gray-200">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                  {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
+                    <Image
+                      src={primaryImage}
+                      alt={product.name}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <IndianRupee className="w-4 h-4 text-[#ff3705]" />
+                  )}
+                </div>
+                <CardTitle className="text-base font-semibold">
+                  Pricing Summary
+                </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Price</span>
-                  <span className="font-semibold">₹{product.price?.toLocaleString('en-IN') || 'N/A'}</span>
+                  <span className="text-sm font-medium text-gray-600">Price</span>
+                  <span className="text-lg font-bold text-gray-900">₹{product.price?.toLocaleString('en-IN') || 'N/A'}</span>
                 </div>
                 {product.compare_at_price && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Compare Price</span>
-                    <span className="text-gray-500 line-through">
+                    <span className="text-sm font-medium text-gray-600">Compare Price</span>
+                    <span className="text-sm text-gray-500 line-through">
                       ₹{product.compare_at_price.toLocaleString('en-IN')}
                     </span>
                   </div>
                 )}
                 {discountPercent > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Discount</span>
+                    <span className="text-sm font-medium text-gray-600">Discount</span>
                     <Badge className="bg-green-600 text-white">{discountPercent}% OFF</Badge>
                   </div>
                 )}
                 {product.cost_per_item && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Cost per Item</span>
-                    <span className="text-sm">₹{product.cost_per_item.toLocaleString('en-IN')}</span>
+                    <span className="text-sm font-medium text-gray-600">Cost per Item</span>
+                    <span className="text-sm font-semibold text-gray-900">₹{product.cost_per_item.toLocaleString('en-IN')}</span>
                   </div>
                 )}
               </div>
@@ -232,12 +296,26 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
 
           {/* Product Specifications */}
           {specifications.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <List className="w-5 h-5 mr-2" />
-                  Specifications
-                </CardTitle>
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="bg-gray-50/100 border-b border-gray-200">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                    {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
+                      <Image
+                        src={primaryImage}
+                        alt={product.name}
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <List className="w-4 h-4 text-[#ff3705]" />
+                    )}
+                  </div>
+                  <CardTitle className="text-base font-semibold">
+                    Specifications
+                  </CardTitle>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -248,6 +326,108 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Product Variants - Modern table design */}
+          {variants.length > 0 && (
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="bg-gray-50/100 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                      {primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
+                        <Image
+                          src={primaryImage}
+                          alt={product.name}
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package className="w-4 h-4 text-[#ff3705]" />
+                      )}
+                    </div>
+                    <CardTitle className="text-base font-semibold">
+                      Product Variants ({variants.length})
+                    </CardTitle>
+                  </div>
+                  <Button size="sm" className="bg-[#ff3705] hover:bg-[#e63305] text-white" asChild>
+                    <Link href={`/admin/products/${product.id}/variants/create`}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Variant
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-semibold">Variant</TableHead>
+                      <TableHead className="font-semibold">SKU</TableHead>
+                      <TableHead className="font-semibold">Price</TableHead>
+                      <TableHead className="font-semibold">Stock</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {variants.map((variant: any) => (
+                      <TableRow key={variant.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div className="font-medium text-gray-900">
+                            {variant.name || 'Default Variant'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                            {variant.sku}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <IndianRupee className="w-4 h-4 text-gray-500" />
+                            <span className="font-semibold text-gray-900">{variant.price?.toLocaleString('en-IN') || 'N/A'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Warehouse className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">{variant.inventory_quantity || 0}</span>
+                            {variant.inventory_quantity === 0 && (
+                              <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
+                            )}
+                            {variant.inventory_quantity > 0 && variant.inventory_quantity < 10 && (
+                              <Badge variant="secondary" className="text-xs">Low Stock</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={variantStatuses[variant.id] || false}
+                              onCheckedChange={() => handleVariantStatusToggle(variant.id)}
+                              className="data-[state=checked]:bg-green-600"
+                            />
+                            <span className="text-sm text-gray-600">
+                              {variantStatuses[variant.id] ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}/variants/${variant.id}`}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           )}
@@ -295,62 +475,20 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
                     Manage Inventory
                   </Link>
                 </Button>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href={`/admin/products/${product.id}/variants`}>
-                    <List className="w-4 h-4 mr-2" />
-                    View Variants
-                  </Link>
-                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Media Preview - FRONTEND: Display images */}
+          {/* Product Images - FRONTEND: Display images carousel */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <ImageIcon className="w-5 h-5 mr-2" />
-                Media Preview
+                Product Images
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {images.length > 0 && primaryImage && typeof primaryImage === 'string' && primaryImage.trim() !== '' ? (
-                <div className="space-y-3">
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <Image
-                      src={primaryImage}
-                      alt={product.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {images.length > 1 && (
-                    <div className="flex space-x-2">
-                      {images.slice(1, 4).filter((url: string) => url && typeof url === 'string' && url.trim() !== '').map((imageUrl: string, index: number) => (
-                        <div key={index} className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
-                          <Image
-                            src={imageUrl}
-                            alt={`Product image ${index + 2}`}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                      {images.filter((url: string) => url && typeof url === 'string' && url.trim() !== '').length > 4 && (
-                        <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{images.filter((url: string) => url && typeof url === 'string' && url.trim() !== '').length - 4}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                  <ImageIcon className="w-12 h-12 text-gray-400" />
-                </div>
-              )}
+              <ProductImageCarousel images={images} productName={product.name} />
             </CardContent>
           </Card>
 

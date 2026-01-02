@@ -38,8 +38,11 @@ import {
     BadgeCheck,
     TrendingUp,
     Calendar,
-    ShoppingCart
+    ShoppingCart,
+    ArrowRight
 } from "lucide-react"
+import { QuoteStatusTimeline } from "@/modules/quote/components/quote-status-timeline"
+import { getAllowedNextStates, getStatusLabel } from "@/lib/quote-state-machine"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatDistanceToNow, format } from "date-fns"
@@ -346,6 +349,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     const priorityConfig = getPriorityConfig(quote.priority)
     const StatusIcon = statusConfig.icon
 
+    // Get allowed next states from state machine
+    const allowedNextStates = getAllowedNextStates(quote.status)
+
     return (
         <div className="space-y-6" data-testid="admin-quote-detail">
             {/* Back Button */}
@@ -536,6 +542,41 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                     >
                                         View Customer Profile →
                                     </Link>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Quote Status Timeline */}
+                    <Card data-testid="quote-status-timeline">
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-blue-600" />
+                                Quote Progress
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <QuoteStatusTimeline quote={quote} />
+
+                            {/* Allowed Next States */}
+                            {allowedNextStates.length > 0 && (
+                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <p className="text-sm font-medium text-gray-700 mb-3">Allowed Transitions:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {allowedNextStates.map((nextStatus) => {
+                                            const nextConfig = getStatusConfig(nextStatus)
+                                            const NextIcon = nextConfig.icon
+                                            return (
+                                                <div
+                                                    key={nextStatus}
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${nextConfig.color}`}
+                                                >
+                                                    <NextIcon className="w-3.5 h-3.5" />
+                                                    {getStatusLabel(nextStatus)}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
                             )}
                         </CardContent>
