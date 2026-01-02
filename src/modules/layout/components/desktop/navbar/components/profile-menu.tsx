@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { User, FileText, Settings, LogOut, Building2 } from "lucide-react"
-import { useClerk, useUser } from "@clerk/nextjs"
+import { User, FileText, Settings, LogOut, Building2, UserCircle } from "lucide-react"
+import { useClerk } from "@clerk/nextjs"
+import { useUser } from "@/lib/auth/client"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import Image from "next/image"
+import { toast } from "sonner"
 
 interface ProfileMenuProps {
   isTransparent: boolean
@@ -17,7 +19,7 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const { signOut } = useClerk()
-  const { user } = useUser()
+  const { user, clerkUser, switchProfile, createBusinessProfile } = useUser()
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -37,39 +39,54 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
     }
   }, [])
 
-  const avatarUrl = user?.imageUrl
-  const userName = user?.fullName || user?.firstName || "User"
+  const avatarUrl = user?.imageUrl || clerkUser?.imageUrl
+  const userName = user?.name || clerkUser?.fullName || clerkUser?.firstName || "User"
 
-  // Check both publicMetadata and unsafeMetadata for account type, with fallback to 'individual'
-  const accountType = (user?.publicMetadata?.accountType as string) ||
-    (user?.unsafeMetadata?.accountType as string) ||
-    'individual'
-  const isIndividual = accountType === "individual"
+  const isIndividual = user?.activeProfile?.profile_type === 'individual'
+  const isBusiness = user?.activeProfile?.profile_type === 'business'
+  const hasBusinessProfile = user?.hasBusinessProfile
 
-  // Debug logging
-  console.log("User publicMetadata:", user?.publicMetadata)
-  console.log("User unsafeMetadata:", user?.unsafeMetadata)
-  console.log("Account type:", accountType)
-  console.log("Is individual:", isIndividual)
+  const handleSwitch = async () => {
+    if (isSwitching) return
 
-  const handleSwitchToBusiness = async () => {
-    if (!user || isSwitching) return
+    console.log('=== PROFILE SWITCH DEBUG ===')
+    console.log('Current user:', user)
+    console.log('isBusiness:', isBusiness)
+    console.log('isIndividual:', isIndividual)
+    console.log('hasBusinessProfile:', hasBusinessProfile)
+    console.log('userName:', userName)
 
     setIsSwitching(true)
     try {
-      await user.update({
-        unsafeMetadata: {
-          ...user.unsafeMetadata,
-          accountType: "business",
-          is_verified: false // Business accounts need verification
+      if (isBusiness) {
+        console.log('Switching from business to individual...')
+        // Switch to individual
+        await switchProfile('individual')
+        toast.success('Switched to Individual profile')
+      } else {
+        console.log('Switching from individual to business...')
+        // Switch to business (create if doesn't exist)
+        if (hasBusinessProfile) {
+          console.log('Business profile exists, switching...')
+          await switchProfile('business')
+          toast.success('Switched to Business profile')
+        } else {
+          console.log('Creating new business profile...')
+          // Create business profile with minimal data
+          const result = await createBusinessProfile({
+            name: `${userName}'s Business`,
+            gst_number: '',
+            pan_number: ''
+          })
+          console.log('Create business profile result:', result)
+          toast.success('Business profile created! Complete your details in profile.')
         }
-      })
-
-      // Reload the page to reflect the changes
-      window.location.reload()
-    } catch (error) {
-      console.error("Error switching to business account:", error)
-      alert("Failed to switch account type. Please try again.")
+      }
+      console.log('Switch successful, reloading page...')
+      window.location.href = window.location.href
+    } catch (error: any) {
+      console.error("Error switching profile:", error)
+      toast.error(error.message || "Failed to switch profile")
     } finally {
       setIsSwitching(false)
     }
@@ -131,20 +148,26 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
               My Orders
             </LocalizedClientLink>
 
-            {/* Switch to Business Account - Only for Individual Users */}
-            {isIndividual && (
-              <>
-                <div className="border-t border-gray-200 my-1"></div>
-                <button
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleSwitchToBusiness}
-                  disabled={isSwitching}
-                >
+            <div className="border-t border-gray-200 my-1"></div>
+
+            {/* Simple Switch Button */}
+            <button
+              className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors w-full text-left disabled:opacity-50"
+              onClick={handleSwitch}
+              disabled={isSwitching}
+            >
+              {isBusiness ? (
+                <>
+                  <UserCircle size={16} />
+                  {isSwitching ? "Switching..." : "Switch to Individual"}
+                </>
+              ) : (
+                <>
                   <Building2 size={16} />
                   {isSwitching ? "Switching..." : "Switch to Business"}
-                </button>
-              </>
-            )}
+                </>
+              )}
+            </button>
 
             <div className="border-t border-gray-200 my-1"></div>
             <LocalizedClientLink

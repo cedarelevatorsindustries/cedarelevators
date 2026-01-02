@@ -41,9 +41,10 @@ export default function BusinessVerificationPage() {
             <div className="max-w-2xl mx-auto py-12 px-4">
                 <Card>
                     <CardContent className="p-12 text-center">
-                        <p className="text-gray-600">You need a business profile to apply for verification.</p>
-                        <Link href="/profile/business/create">
-                            <Button className="mt-4">Create Business Profile</Button>
+                        <p className="text-gray-600 mb-4">You need a business profile to apply for verification.</p>
+                        <p className="text-sm text-gray-500">Use the profile switcher to create a business profile.</p>
+                        <Link href="/profile">
+                            <Button className="mt-4">Go to Profile</Button>
                         </Link>
                     </CardContent>
                 </Card>

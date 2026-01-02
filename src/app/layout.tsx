@@ -1,7 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata } from "next"
 import "@/styles/globals.css"
-import { RoleSyncProvider } from "@/components/providers"
 import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
 import { Toaster } from "@/components/ui/sonner"
@@ -118,10 +117,8 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://img.clerk.com" />
         </head>
         <body className={spaceGrotesk.variable}>
-          <RoleSyncProvider>
-            {children}
-            <Toaster />
-          </RoleSyncProvider>
+          {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

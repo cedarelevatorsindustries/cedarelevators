@@ -4,11 +4,9 @@ import { useState } from "react"
 import { useUser } from "@/lib/auth/client"
 import { Building2, User, ChevronDown, Check, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 
 export function ProfileSwitcher() {
-  const { user, isLoading, switchProfile } = useUser()
-  const router = useRouter()
+  const { user, isLoading, switchProfile, createBusinessProfile } = useUser()
   const [isOpen, setIsOpen] = useState(false)
   const [isSwitching, setIsSwitching] = useState(false)
 
@@ -24,9 +22,23 @@ export function ProfileSwitcher() {
 
     // Check if user has business profile
     if (profileType === 'business' && !user.hasBusinessProfile) {
-      toast.error('Please create a business profile first')
-      router.push('/profile/business/create')
-      setIsOpen(false)
+      // Auto-create business profile
+      setIsSwitching(true)
+      try {
+        const userName = user.name || user.email?.split('@')[0] || 'User'
+        await createBusinessProfile({
+          name: `${userName}'s Business`,
+          gst_number: '',
+          pan_number: ''
+        })
+        toast.success('Business profile created! Complete your details in profile.')
+        setIsOpen(false)
+        window.location.href = window.location.href
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to create business profile')
+      } finally {
+        setIsSwitching(false)
+      }
       return
     }
 
@@ -35,6 +47,7 @@ export function ProfileSwitcher() {
       await switchProfile(profileType)
       toast.success(`Switched to ${profileType} profile`)
       setIsOpen(false)
+      window.location.href = window.location.href
     } catch (error: any) {
       toast.error(error.message || 'Failed to switch profile')
     } finally {
@@ -92,11 +105,10 @@ export function ProfileSwitcher() {
               <button
                 onClick={() => handleSwitch('individual')}
                 disabled={isSwitching}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  currentProfile === 'individual'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${currentProfile === 'individual'
                     ? 'bg-blue-50 text-blue-700'
                     : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               >
                 <User className="w-4 h-4" />
                 <div className="flex-1">
@@ -112,11 +124,10 @@ export function ProfileSwitcher() {
               <button
                 onClick={() => handleSwitch('business')}
                 disabled={isSwitching}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  currentProfile === 'business'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${currentProfile === 'business'
                     ? 'bg-purple-50 text-purple-700'
                     : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               >
                 <Building2 className="w-4 h-4" />
                 <div className="flex-1">
@@ -129,28 +140,13 @@ export function ProfileSwitcher() {
                     )}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {user.business?.name || 'Create business profile'}
+                    {user.business?.name || 'Click to create'}
                   </p>
                 </div>
                 {currentProfile === 'business' && (
                   <Check className="w-4 h-4 text-purple-600" />
                 )}
               </button>
-
-              {/* Create Business Profile */}
-              {!user.hasBusinessProfile && (
-                <div className="mt-2 pt-2 border-t border-gray-100">
-                  <button
-                    onClick={() => {
-                      router.push('/profile/business/create')
-                      setIsOpen(false)
-                    }}
-                    className="w-full px-3 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                  >
-                    + Create Business Profile
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </>

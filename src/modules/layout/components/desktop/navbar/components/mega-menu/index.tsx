@@ -15,29 +15,29 @@ interface MegaMenuProps {
 export function MegaMenu({ categories: initialCategories, isScrolled = false, onOpenChange }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string>("")
-  const [categories, setCategories] = useState<ProductCategory[]>(initialCategories)
+  const [categories, setCategories] = useState<ProductCategory[]>([])
 
-  // Fetch categories on mount if not provided or empty
+  // Always fetch categories with products on mount
   useEffect(() => {
-    if (!initialCategories || initialCategories.length === 0) {
-      const fetchCategories = async () => {
-        try {
-          const result = await getMegaMenuData()
-          if (result.success && result.categories) {
-            // Filter out categories with no products
-            const categoriesWithProducts = (result.categories as ProductCategory[]).filter(
-              cat => cat.products && cat.products.length > 0
-            )
-            setCategories(categoriesWithProducts)
+    const fetchCategories = async () => {
+      try {
+        const result = await getMegaMenuData()
+        if (result.success && result.categories) {
+          // The getMegaMenuData already filters categories with products
+          setCategories(result.categories as ProductCategory[])
+
+          // Set first category as active if we have categories
+          if (result.categories.length > 0) {
+            setActiveCategory(result.categories[0].id)
           }
-        } catch (error) {
-          console.error('Error fetching categories for mega menu:', error)
-          setCategories([])
         }
+      } catch (error) {
+        console.error('Error fetching categories for mega menu:', error)
+        setCategories([])
       }
-      fetchCategories()
     }
-  }, [initialCategories])
+    fetchCategories()
+  }, []) // Empty dependency array - fetch only once on mount
 
   const updateIsOpen = (newIsOpen: boolean) => {
     setIsOpen(newIsOpen)

@@ -15,9 +15,9 @@ export function WelcomeSection({ userType }: WelcomeSectionProps) {
 
     useEffect(() => {
         if (user) {
-            const firstName = user.firstName || ""
-            const lastName = user.lastName || ""
-            setUserName(`${firstName} ${lastName}`.trim() || user.emailAddresses[0]?.emailAddress?.split('@')[0] || "User")
+            // Use name from EnhancedUser, or extract from email
+            const displayName = user.name || user.email?.split('@')[0] || "User"
+            setUserName(displayName)
         }
     }, [user])
 

@@ -45,6 +45,11 @@ export interface EnhancedUser {
     hasBusinessProfile: boolean
 }
 
+// Request deduplication - prevent multiple simultaneous calls
+let profileFetchPromise: Promise<EnhancedUser | null> | null = null
+let profileCache: { data: EnhancedUser | null; timestamp: number } | null = null
+const CACHE_DURATION = 60000 // 60 seconds
+
 /**
  * Enhanced useUser hook with profile management
  */
@@ -61,22 +66,51 @@ export function useUser() {
             if (!clerkUser) {
                 setEnhancedUser(null)
                 setIsLoading(false)
+                profileCache = null
+                profileFetchPromise = null
                 return
             }
 
             try {
-                // Fetch user profile from API
-                const response = await fetch('/api/auth/profile')
-                if (!response.ok) {
-                    throw new Error('Failed to fetch profile')
+                // Check cache first
+                if (profileCache && Date.now() - profileCache.timestamp < CACHE_DURATION) {
+                    setEnhancedUser(profileCache.data)
+                    setIsLoading(false)
+                    return
                 }
 
-                const data = await response.json()
+                // If there's already a request in flight, wait for it
+                if (profileFetchPromise) {
+                    const data = await profileFetchPromise
+                    setEnhancedUser(data)
+                    setIsLoading(false)
+                    return
+                }
+
+                // Create new request
+                profileFetchPromise = (async () => {
+                    const response = await fetch('/api/auth/profile')
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch profile')
+                    }
+                    const data = await response.json()
+
+                    // Update cache
+                    profileCache = {
+                        data,
+                        timestamp: Date.now()
+                    }
+
+                    return data
+                })()
+
+                const data = await profileFetchPromise
                 setEnhancedUser(data)
             } catch (error) {
                 console.error('Error loading user profile:', error)
                 setEnhancedUser(null)
             } finally {
+                profileFetchPromise = null
                 setIsLoading(false)
             }
         }
@@ -102,9 +136,20 @@ export function useUser() {
                 throw new Error(error.error || 'Failed to switch profile')
             }
 
+            // Invalidate cache
+            profileCache = null
+            profileFetchPromise = null
+
             // Reload profile
             const profileResponse = await fetch('/api/auth/profile')
             const data = await profileResponse.json()
+
+            // Update cache
+            profileCache = {
+                data,
+                timestamp: Date.now()
+            }
+
             setEnhancedUser(data)
 
             // Refresh the page to update all components
@@ -139,9 +184,20 @@ export function useUser() {
 
             const result = await response.json()
 
+            // Invalidate cache
+            profileCache = null
+            profileFetchPromise = null
+
             // Reload profile
             const profileResponse = await fetch('/api/auth/profile')
             const data = await profileResponse.json()
+
+            // Update cache
+            profileCache = {
+                data,
+                timestamp: Date.now()
+            }
+
             setEnhancedUser(data)
 
             return result

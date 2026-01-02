@@ -45,16 +45,29 @@ export interface UserWithProfile {
     business?: Business
 }
 
+// Import User type
+import { User } from '@clerk/nextjs/server'
+
 /**
  * Get or create user in Supabase from Clerk user
  * This is the core sync function that runs on every auth check
+ * @param clerkUserId - The Clerk User ID
+ * @param clerkUserObj - Optional Clerk User object (if already fetched)
  */
-export async function getOrCreateUser(clerkUserId: string): Promise<SupabaseUser | null> {
+export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User | null): Promise<SupabaseUser | null> {
     try {
         const supabase = createAdminClient()
-        const clerkUser = await currentUser()
+
+        // If user object not provided, fetch it
+        const clerkUser = clerkUserObj !== undefined ? clerkUserObj : await currentUser()
 
         if (!clerkUser) return null
+
+        // Ensure the ID matches if both provided
+        if (clerkUserObj && clerkUser.id !== clerkUserId) {
+            console.warn('Id mismatch in getOrCreateUser', { provided: clerkUserId, fetched: clerkUser.id })
+            return null
+        }
 
         // Try to find existing user
         const { data: existingUser } = await supabase
@@ -136,10 +149,12 @@ export async function getActiveProfile(userId: string): Promise<UserProfile | nu
 
 /**
  * Get user with their active profile and business (if applicable)
+ * @param clerkUserId - The Clerk User ID
+ * @param clerkUserObj - Optional Clerk User object (if already fetched)
  */
-export async function getUserWithProfile(clerkUserId: string): Promise<UserWithProfile | null> {
+export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: User | null): Promise<UserWithProfile | null> {
     try {
-        const user = await getOrCreateUser(clerkUserId)
+        const user = await getOrCreateUser(clerkUserId, clerkUserObj)
         if (!user) return null
 
         const activeProfile = await getActiveProfile(user.id)
@@ -272,13 +287,20 @@ export async function createBusinessProfile(
                 role: 'owner'
             })
 
-        // Create business profile
+        // Deactivate individual profile
+        await supabase
+            .from('user_profiles')
+            .update({ is_active: false })
+            .eq('user_id', userId)
+            .eq('profile_type', 'individual')
+
+        // Create and activate business profile
         const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
                 user_id: userId,
                 profile_type: 'business',
-                is_active: false // Don't auto-activate, let user switch
+                is_active: true // Auto-activate business profile
             })
 
         if (profileError) {
