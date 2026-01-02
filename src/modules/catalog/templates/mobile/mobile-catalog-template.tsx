@@ -11,6 +11,7 @@ import { BannerWithSlides } from "@/lib/types/banners"
 interface MobileCatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
+  activeCategory?: ProductCategory
   banners?: BannerWithSlides[]
   tab?: string
   app?: string
@@ -24,6 +25,7 @@ const tabs = [
 export default function MobileCatalogTemplate({
   products,
   categories,
+  activeCategory,
   banners = [],
   tab,
   app

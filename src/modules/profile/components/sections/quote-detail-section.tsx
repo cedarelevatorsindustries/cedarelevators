@@ -153,6 +153,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
     discount_total: 148800,
     estimated_total: 1240000,
     bulk_pricing_requested: false,
+    pricing_visible: true,
     items: [
       {
         id: '1',
@@ -255,11 +256,13 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
   const getStatusBadge = () => {
     const configs: Record<QuoteStatus, { label: string; color: string; icon: any }> = {
+      draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700', icon: FileText },
       pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700', icon: Clock },
       reviewing: { label: 'Under Review', color: 'bg-blue-100 text-blue-700', icon: MessageSquare },
       approved: { label: 'Approved', color: 'bg-green-100 text-green-700', icon: CircleCheck },
       rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: X },
       converted: { label: 'Converted', color: 'bg-purple-100 text-purple-700', icon: TrendingUp },
+      expired: { label: 'Expired', color: 'bg-gray-100 text-gray-500', icon: AlertCircle },
     }
     return configs[quote.status]
   }

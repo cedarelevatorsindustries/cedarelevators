@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Save, Upload, ArrowLeft, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCreateCollection, useUploadCollectionImage } from "@/hooks/queries/useCollections"
-import type { CollectionFormData, CollectionContextType } from "@/lib/types/collections"
+import type { CollectionFormData, CollectionContextType, CollectionDisplayType, SpecialCollectionLocation } from "@/lib/types/collections"
 import { generateSlug } from "@/lib/types/collections"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -40,7 +42,10 @@ export default function CreateCollectionPage() {
     collection_type: "general",
     category_id: undefined,
     is_business_only: false,
-    display_order: 0
+    display_order: 0,
+    // Display type system
+    display_type: "normal",
+    special_locations: []
   })
 
   const [categories, setCategories] = useState<any[]>([])
@@ -88,6 +93,12 @@ export default function CreateCollectionPage() {
     try {
       if (!formData.title || !formData.slug) {
         toast.error('Please fill in required fields')
+        return
+      }
+
+      // Validate special collections have at least one location
+      if (formData.display_type === 'special' && (!formData.special_locations || formData.special_locations.length === 0)) {
+        toast.error('Special collections must have at least one display location selected')
         return
       }
 
@@ -268,6 +279,87 @@ export default function CreateCollectionPage() {
                 <CardDescription>Control where and how this collection appears</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Display Type Selector */}
+                <div className="space-y-3">
+                  <Label>Display Type *</Label>
+                  <RadioGroup
+                    value={formData.display_type}
+                    onValueChange={(value: CollectionDisplayType) => {
+                      setFormData({
+                        ...formData,
+                        display_type: value,
+                        // Clear special_locations if changing to normal
+                        special_locations: value === 'normal' ? [] : formData.special_locations
+                      })
+                    }}
+                  >
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <RadioGroupItem value="normal" id="normal" className="mt-0.5" />
+                      <div className="flex-1">
+                        <Label htmlFor="normal" className="font-medium cursor-pointer">Normal Collection</Label>
+                        <p className="text-xs text-gray-500 mt-1">Displayed on the homepage</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
+                      <RadioGroupItem value="special" id="special" className="mt-0.5" />
+                      <div className="flex-1">
+                        <Label htmlFor="special" className="font-medium cursor-pointer">Special Collection</Label>
+                        <p className="text-xs text-gray-500 mt-1">Displayed in Categories tab and/or Business Hub</p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {/* Special Locations - Only show if display_type is 'special' */}
+                {formData.display_type === 'special' && (
+                  <div className="space-y-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <div>
+                      <Label className="text-orange-900">Display Locations *</Label>
+                      <p className="text-xs text-orange-700 mt-1">Select where this collection should appear (at least one required)</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="categories"
+                          checked={formData.special_locations?.includes('categories')}
+                          onCheckedChange={(checked) => {
+                            const locations = formData.special_locations || []
+                            if (checked) {
+                              setFormData({ ...formData, special_locations: [...locations, 'categories'] })
+                            } else {
+                              setFormData({ ...formData, special_locations: locations.filter(l => l !== 'categories') })
+                            }
+                          }}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <Label htmlFor="categories" className="font-medium cursor-pointer">Categories Tab</Label>
+                          <p className="text-xs text-gray-600 mt-1">Show in the Categories section</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="business_hub"
+                          checked={formData.special_locations?.includes('business_hub')}
+                          onCheckedChange={(checked) => {
+                            const locations = formData.special_locations || []
+                            if (checked) {
+                              setFormData({ ...formData, special_locations: [...locations, 'business_hub'] })
+                            } else {
+                              setFormData({ ...formData, special_locations: locations.filter(l => l !== 'business_hub') })
+                            }
+                          }}
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <Label htmlFor="business_hub" className="font-medium cursor-pointer">Business Hub Tab</Label>
+                          <p className="text-xs text-gray-600 mt-1">Show in the Business Hub section</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Business Only Checkbox */}
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">

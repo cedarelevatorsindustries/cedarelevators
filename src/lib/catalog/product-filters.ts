@@ -39,11 +39,8 @@ export function filterProductsByType(
       break
 
     case "category":
-      if (category) {
-        primary = products.filter((p) =>
-          p.categories?.some((cat) => cat.id === category || cat.handle === category)
-        )
-      }
+      // Server-side already filters by category, so we just pass through
+      primary = products
       break
 
     case "application":

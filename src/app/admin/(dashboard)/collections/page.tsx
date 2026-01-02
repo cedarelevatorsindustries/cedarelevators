@@ -226,6 +226,21 @@ export default function CollectionsPage() {
                         <Badge variant="outline" className="text-xs capitalize bg-gray-50 border-gray-200">
                           {collection.type}
                         </Badge>
+                        <Badge
+                          variant={collection.display_type === 'normal' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {collection.display_type === 'normal' ? 'Normal' : 'Special'}
+                        </Badge>
+                        {collection.display_type === 'special' && collection.special_locations && collection.special_locations.length > 0 && (
+                          <div className="flex gap-1">
+                            {collection.special_locations.map((location: string) => (
+                              <Badge key={location} variant="outline" className="text-xs bg-orange-50 border-orange-200 text-orange-700">
+                                {location === 'categories' ? 'Categories' : 'Business Hub'}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         <span>{collection.product_count || 0} products</span>
                       </div>
                     </div>

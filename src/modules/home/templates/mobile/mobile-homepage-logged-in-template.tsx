@@ -13,7 +13,7 @@ import RecentlyViewedList from "@/modules/profile/components/recently-viewed-lis
 interface MobileHomepageLoggedInProps {
   products: Product[]
   categories: ProductCategory[]
-  userType?: "individual" | "business"
+  userType?: "individual" | "business" | "verified"
 }
 
 export default function MobileHomepageLoggedIn({

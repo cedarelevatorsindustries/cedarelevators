@@ -59,7 +59,7 @@ const QuickCategoriesSection = ({ categories = [] }: QuickCategoriesSectionProps
           ) : (
             categories.map((category) => {
               const IconComponent = getCategoryIcon(category)
-              const href = `/categories/${category.handle}`
+              const href = `/catalog?category=${category.handle}`
 
               return (
                 <a

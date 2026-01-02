@@ -6,7 +6,7 @@ import { ProductCategory } from "@/lib/types/domain"
 import { Search } from "lucide-react"
 
 type HeroLiteProps = {
-  userType: "individual" | "business"
+  userType: "individual" | "business" | "verified"
   categories?: ProductCategory[]
   popularSearchTerms?: string[]
 }
@@ -31,8 +31,8 @@ export default function HeroLite({ userType, categories = [], popularSearchTerms
   const [charIndex, setCharIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
 
-  // Define tabs based on user type
-  const tabs = userType === "business"
+  // Define tabs based on user type (verified treated same as business)
+  const tabs = (userType === "business" || userType === "verified")
     ? [
       { id: "products" as const, label: "Products" },
       { id: "categories" as const, label: "Categories" },

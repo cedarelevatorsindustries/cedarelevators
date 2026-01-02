@@ -63,14 +63,20 @@ export async function getCategory(idOrHandle: string): Promise<ProductCategory |
     if (isId) {
       query = query.eq('id', idOrHandle)
     } else {
-      query = query.eq('handle', idOrHandle)
+      // Use slug field (categories table doesn't have handle field)
+      query = query.eq('slug', idOrHandle)
     }
 
     const { data, error } = await query.single()
 
     if (error || !data) return null
 
-    return data as ProductCategory
+    // Map slug to handle for compatibility with ProductCategory interface
+    return {
+      ...data,
+      handle: data.slug, // Map slug to handle
+      slug: data.slug
+    } as ProductCategory
   } catch (error) {
     console.error("Error fetching category from Supabase:", error)
     return null

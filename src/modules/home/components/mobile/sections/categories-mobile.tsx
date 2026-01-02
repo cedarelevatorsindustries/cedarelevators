@@ -27,7 +27,7 @@ export default function CategoriesMobile({ categories = [] }: CategoriesMobilePr
           ) : (
             categories.map((category) => {
               const IconComponent = getCategoryIcon(category)
-              const href = `/categories/${category.handle}`
+              const href = `/catalog?category=${category.handle}`
 
               return (
                 <a

@@ -2,10 +2,10 @@
 
 import { Package, Heart, MapPin, Bell, User, ShoppingBag } from "lucide-react"
 import Link from "next/link"
-import type { AuthUser } from "@/lib/auth/server"
+import type { EnhancedAuthUser } from "@/lib/auth/server"
 
 interface IndividualDashboardProps {
-  user: AuthUser
+  user: EnhancedAuthUser
 }
 
 export default function IndividualDashboard({ user }: IndividualDashboardProps) {
@@ -22,7 +22,7 @@ export default function IndividualDashboard({ user }: IndividualDashboardProps) 
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {user.firstName || "there"}!
+          Welcome back, {user.clerkUser.firstName || "there"}!
         </h1>
         <p className="text-gray-600">
           Manage your orders, wishlist, and account settings
@@ -63,7 +63,7 @@ export default function IndividualDashboard({ user }: IndividualDashboardProps) 
             View All
           </Link>
         </div>
-        
+
         <div className="text-center py-8 text-gray-500">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No orders yet</p>

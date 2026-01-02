@@ -120,13 +120,13 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
               return (
                 <LocalizedClientLink
                   key={category.id}
-                  href={`/categories/${category.handle}`}
+                  href={`/catalog?category=${category.slug}`}
                   className="flex flex-col gap-3 items-center min-w-[140px] group"
                 >
-                  <div className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm">
-                    {/* If thumbnail is available, use it, otherwise use icon */}
-                    {category.thumbnail ? (
-                      <img src={category.thumbnail} alt={category.name} className="w-16 h-16 object-contain" />
+                  <div className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm overflow-hidden">
+                    {/* Use thumbnail_image from database, fallback to icon */}
+                    {category.thumbnail_image ? (
+                      <img src={category.thumbnail_image} alt={category.name} className="w-full h-full object-cover" />
                     ) : (
                       <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
                     )}
@@ -147,13 +147,13 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
                 return (
                   <LocalizedClientLink
                     key={category.id}
-                    href={`/categories/${category.handle}`}
+                    href={`/catalog?category=${category.slug}`}
                     className="flex flex-col gap-3 items-center min-w-[140px] group"
                   >
-                    <div className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm">
-                      {/* If thumbnail is available, use it, otherwise use icon */}
-                      {category.thumbnail ? (
-                        <img src={category.thumbnail} alt={category.name} className="w-16 h-16 object-contain" />
+                    <div className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm overflow-hidden">
+                      {/* Use thumbnail_image from database, fallback to icon */}
+                      {category.thumbnail_image ? (
+                        <img src={category.thumbnail_image} alt={category.name} className="w-full h-full object-cover" />
                       ) : (
                         <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
                       )}

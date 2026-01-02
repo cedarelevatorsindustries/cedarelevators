@@ -15,13 +15,13 @@ import { ApplicationsSection } from "@/components/store/applications-section"
 interface DesktopHomepageLoggedInProps {
   products: Product[]
   testimonials: any[]
-  userType: "individual" | "business"
+  userType: "individual" | "business" | "verified"
   categories: ProductCategory[]
   applications?: Application[]
   elevatorTypes?: ElevatorType[]
   collections: any[]
-  trendingCollection: any
-  topApplicationsCollection: any
+  categoriesCollections: any[]
+  businessHubCollections: any[]
   businessHubData?: any
   popularSearchTerms?: string[]
 }
@@ -34,8 +34,8 @@ export default function DesktopHomepageLoggedIn({
   applications = [],
   elevatorTypes = [],
   collections = [],
-  trendingCollection = null,
-  topApplicationsCollection = null,
+  categoriesCollections = [],
+  businessHubCollections = [],
   businessHubData = null,
   popularSearchTerms = []
 }: DesktopHomepageLoggedInProps) {
@@ -86,8 +86,8 @@ export default function DesktopHomepageLoggedIn({
             <ProductsTab products={products} collections={collections} />
           </>
         )}
-        {activeTab === "categories" && <CategoriesTab categories={categories} elevatorTypes={elevatorTypes} trendingCollection={trendingCollection} topApplicationsCollection={topApplicationsCollection} />}
-        {activeTab === "business-hub" && userType === "business" && businessHubData && <BusinessHubTab data={businessHubData} />}
+        {activeTab === "categories" && <CategoriesTab categories={categories} elevatorTypes={elevatorTypes} collections={categoriesCollections} />}
+        {activeTab === "business-hub" && userType === "business" && businessHubData && <BusinessHubTab data={businessHubData} collections={businessHubCollections} />}
       </div>
     </div>
   )

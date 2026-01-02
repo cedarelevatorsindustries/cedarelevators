@@ -39,7 +39,7 @@ export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevato
             </div>
 
             <LocalizedClientLink
-              href={`/catalog?type=${type.slug}`}
+              href={`/catalog?application=${type.slug}`}
               className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 aspect-square"
             >
               {/* Background Image */}

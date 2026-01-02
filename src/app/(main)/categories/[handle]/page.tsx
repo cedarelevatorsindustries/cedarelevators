@@ -42,6 +42,15 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     notFound()
   }
 
+  // Fetch children for this category to show in banner
+  const children = await listCategories({ parent_id: category.id })
+
+  // Construct activeCategory with children
+  const activeCategory = {
+    ...category,
+    category_children: children
+  }
+
   // Build query params
   const queryParams: any = {
     limit: 100,
@@ -55,6 +64,19 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   // Fetch products in this category
   const { response } = await listProducts({ queryParams })
   const products = response.products
+
+  // Debug logging
+  console.log('Category Page Debug:', {
+    categoryId: category.id,
+    categoryName: category.name,
+    productsCount: products.length,
+    childrenCount: children.length,
+    queryParams,
+    firstProduct: products[0] ? {
+      id: products[0].id,
+      title: products[0].title
+    } : null
+  })
 
   // Get all categories for filter sidebar
   const categories = await listCategories({
@@ -77,6 +99,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <CatalogTemplate
           products={products}
           categories={categories}
+          activeCategory={activeCategory}
           searchParams={catalogSearchParams}
         />
       </div>
@@ -86,6 +109,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <MobileCatalogTemplate
           products={products}
           categories={categories}
+          activeCategory={activeCategory}
         />
       </div>
     </>

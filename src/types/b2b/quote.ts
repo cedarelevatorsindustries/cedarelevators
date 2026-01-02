@@ -8,13 +8,15 @@
 export type UserType = 'guest' | 'individual' | 'business' | 'verified'
 
 // Quote Status - Simplified Cedar B2B Workflow
-// Flow: pending → reviewing → approved → converted (or rejected at any stage)
+// Flow: draft → pending → reviewing → approved → converted (or rejected at any stage)
 export type QuoteStatus =
-  | 'pending'      // Initial state when quote is submitted
-  | 'reviewing'    // Admin is reviewing and pricing
-  | 'approved'     // Quote approved and sent to customer
-  | 'rejected'     // Quote rejected (reason required)
-  | 'converted'    // Quote converted to order (verified business only)
+  | 'draft'       // Initial state before submission
+  | 'pending'     // Initial state when quote is submitted
+  | 'reviewing'   // Admin is reviewing and pricing
+  | 'approved'    // Quote approved and sent to customer
+  | 'rejected'    // Quote rejected (reason required)
+  | 'converted'   // Quote converted to order (verified business only)
+  | 'expired'     // Quote expired
 
 export type QuotePriority = 'low' | 'medium' | 'high'
 

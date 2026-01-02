@@ -10,6 +10,9 @@ export type QuoteStatus =
     | 'converted'
     | 'expired'
 
+// Named export for backward compatibility
+export { type QuoteStatus as QuoteStatusType }
+
 export type UserType = 'guest' | 'individual' | 'business' | 'verified'
 
 // Valid state transitions map

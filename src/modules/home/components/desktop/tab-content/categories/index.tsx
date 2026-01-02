@@ -11,18 +11,16 @@ import CategoryHelp from "./sections/category-help"
 interface CategoriesTabProps {
   categories?: ProductCategory[]
   elevatorTypes?: ElevatorType[]
-  trendingCollection: any
-  topApplicationsCollection: any
+  collections: any[]
 }
 
 export default function CategoriesTab({
   categories = [],
   elevatorTypes = [],
-  trendingCollection: dbCollection,
-  topApplicationsCollection: dbTopAppsCollection
+  collections = []
 }: CategoriesTabProps) {
-  // Transform database collection to match expected format
-  const trendingCollection = dbCollection ? {
+  // Transform database collections to match expected format
+  const transformedCollections = collections.map((dbCollection) => ({
     id: dbCollection.id,
     title: dbCollection.title,
     description: dbCollection.description,
@@ -30,7 +28,7 @@ export default function CategoriesTab({
     displayLocation: [],
     layout: 'grid-4',
     icon: 'trending',
-    viewAllLink: '/products?sort=trending',
+    viewAllLink: `/collections/${dbCollection.slug}`,
     products: (dbCollection.products || []).map((pc: any) => {
       const product = pc.product
       return {
@@ -49,55 +47,20 @@ export default function CategoriesTab({
     sortOrder: dbCollection.sort_order,
     showViewAll: true,
     metadata: { variant: 'special' }
-  } : null
-
-  // Transform top applications collection
-  const topApplicationsCollection = dbTopAppsCollection ? {
-    id: dbTopAppsCollection.id,
-    title: dbTopAppsCollection.title,
-    description: dbTopAppsCollection.description,
-    slug: dbTopAppsCollection.slug,
-    displayLocation: [],
-    layout: 'grid-4',
-    icon: 'star',
-    viewAllLink: '/applications',
-    products: (dbTopAppsCollection.products || []).map((pc: any) => {
-      const product = pc.product
-      return {
-        id: product.id,
-        title: product.name,
-        name: product.name,
-        slug: product.slug,
-        handle: product.slug,
-        thumbnail: product.thumbnail,
-        price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
-        variants: [],
-        metadata: { variant: 'special', category: product.metadata?.category || 'Featured' }
-      }
-    }),
-    isActive: dbTopAppsCollection.is_active,
-    sortOrder: dbTopAppsCollection.sort_order,
-    showViewAll: true,
-    metadata: { variant: 'special' }
-  } : null
+  }))
 
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-12">
       {/* 1. Shop by Categories - 2 line horizontal scroll */}
       <ShopByCategories categories={categories} />
 
-      {/* 2. Trending Collections - From database */}
-      {trendingCollection && (
-        <DynamicCollectionSection collection={trendingCollection} />
-      )}
+      {/* 2. Special Collections for Categories - From database */}
+      {transformedCollections.map((collection) => (
+        <DynamicCollectionSection key={collection.id} collection={collection} />
+      ))}
 
       {/* 3. Shop by Elevator Type - From database */}
       <ShopByElevatorType elevatorTypes={elevatorTypes} />
-
-      {/* 4. Top Applications - From database */}
-      {topApplicationsCollection && (
-        <DynamicCollectionSection collection={topApplicationsCollection} />
-      )}
 
       <CategoryHelp />
     </div>

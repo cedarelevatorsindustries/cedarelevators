@@ -41,7 +41,7 @@ import {
     ShoppingCart,
     ArrowRight
 } from "lucide-react"
-import { QuoteStatusTimeline } from "@/modules/quote/components/quote-status-timeline"
+import QuoteStatusTimeline from "@/modules/quote/components/quote-status-timeline"
 import { getAllowedNextStates, getStatusLabel } from "@/lib/quote-state-machine"
 import Link from "next/link"
 import { useRouter } from "next/navigation"

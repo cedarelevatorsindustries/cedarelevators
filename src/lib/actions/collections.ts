@@ -195,6 +195,28 @@ export async function createCollection(formData: CollectionFormData) {
     try {
         const supabase = await createClerkSupabaseClient()
 
+        // Validate display_type and special_locations
+        const displayType = formData.display_type || 'normal'
+        const specialLocations = formData.special_locations || []
+
+        // Validation: special collections must have at least one location
+        if (displayType === 'special' && specialLocations.length === 0) {
+            return {
+                collection: null,
+                error: 'Special collections must have at least one location selected',
+                success: false
+            }
+        }
+
+        // Validation: normal collections cannot have special locations
+        if (displayType === 'normal' && specialLocations.length > 0) {
+            return {
+                collection: null,
+                error: 'Normal collections cannot have special locations',
+                success: false
+            }
+        }
+
         const { data, error } = await supabase
             .from('collections')
             .insert({
@@ -215,7 +237,10 @@ export async function createCollection(formData: CollectionFormData) {
                 collection_type: formData.collection_type || 'general',
                 category_id: formData.category_id || null,
                 is_business_only: formData.is_business_only || false,
-                display_order: formData.display_order || 0
+                display_order: formData.display_order || 0,
+                // Display type system
+                display_type: displayType,
+                special_locations: specialLocations
             })
             .select()
             .single()
@@ -271,6 +296,30 @@ export async function updateCollection(id: string, formData: Partial<CollectionF
         if (formData.category_id !== undefined) updateData.category_id = formData.category_id
         if (formData.is_business_only !== undefined) updateData.is_business_only = formData.is_business_only
         if (formData.display_order !== undefined) updateData.display_order = formData.display_order
+
+        // Display type system fields
+        if (formData.display_type !== undefined) {
+            updateData.display_type = formData.display_type
+
+            // Validate: if changing to special, must have locations
+            if (formData.display_type === 'special') {
+                const specialLocations = formData.special_locations || []
+                if (specialLocations.length === 0) {
+                    return {
+                        collection: null,
+                        error: 'Special collections must have at least one location selected',
+                        success: false
+                    }
+                }
+                updateData.special_locations = specialLocations
+            } else {
+                // If changing to normal, clear special_locations
+                updateData.special_locations = []
+            }
+        } else if (formData.special_locations !== undefined) {
+            // If only updating special_locations, validate against current display_type
+            updateData.special_locations = formData.special_locations
+        }
 
         const { data, error } = await supabase
             .from('collections')

@@ -16,6 +16,7 @@ import { BannerWithSlides } from "@/lib/types/banners"
 interface CatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
+  activeCategory?: ProductCategory
   banners?: BannerWithSlides[]
   searchParams?: {
     type?: string
@@ -34,11 +35,19 @@ const ITEMS_PER_PAGE = 24
 export default function CatalogTemplate({
   products: initialProducts,
   categories,
+  activeCategory,
   banners = [],
   searchParams = {}
 }: CatalogTemplateProps) {
   // Determine catalog type
-  const catalogType = (searchParams.type || "browse-all") as CatalogType
+  let resolvedType = searchParams.type
+  if (!resolvedType) {
+    if (searchParams.category) resolvedType = "category"
+    else if (searchParams.application) resolvedType = "application"
+    else if (searchParams.search) resolvedType = "search"
+    else resolvedType = "browse-all"
+  }
+  const catalogType = resolvedType as CatalogType
   const config = CATALOG_CONFIGS[catalogType] || CATALOG_CONFIGS["browse-all"]
 
   // State
@@ -84,13 +93,17 @@ export default function CatalogTemplate({
 
   // Get current category/application for hero
   const currentCategory = useMemo(() => {
+    // Priority: use explicit activeCategory pass from server
+    if (activeCategory) return activeCategory
+
+    // Fallback: looked up from categories list (only works for top level)
     if (catalogType === "category" && searchParams.category) {
       return categories.find(
         (cat) => cat.id === searchParams.category || cat.handle === searchParams.category
       )
     }
     return null
-  }, [catalogType, searchParams.category, categories])
+  }, [catalogType, searchParams.category, categories, activeCategory])
 
   // Get application config and categories
   const applicationData = useMemo(() => {

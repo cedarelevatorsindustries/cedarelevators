@@ -26,7 +26,7 @@ export default function QuickAccessCategoriesSection({ categories = [] }: QuickA
           ) : (
             categories.map((category) => {
               const IconComponent = getCategoryIcon(category)
-              const href = `/categories/${category.handle}`
+              const href = `/catalog?category=${category.handle}`
 
               return (
                 <a

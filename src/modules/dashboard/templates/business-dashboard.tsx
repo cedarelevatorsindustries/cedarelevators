@@ -1,20 +1,20 @@
 "use client"
 
-import { 
-  Package, 
-  FileText, 
-  Building2, 
-  Users, 
-  TrendingUp, 
+import {
+  Package,
+  FileText,
+  Building2,
+  Users,
+  TrendingUp,
   ClipboardList,
   CreditCard,
   Settings
 } from "lucide-react"
 import Link from "next/link"
-import type { AuthUser } from "@/lib/auth/server"
+import type { EnhancedAuthUser } from "@/lib/auth/server"
 
 interface BusinessDashboardProps {
-  user: AuthUser
+  user: EnhancedAuthUser
   companyName?: string | null
 }
 
@@ -50,7 +50,7 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
               {companyName || "Business Dashboard"}
             </h1>
             <p className="text-gray-600">
-              Welcome back, {user.firstName || "there"}!
+              Welcome back, {user.clerkUser.firstName || "there"}!
             </p>
           </div>
         </div>

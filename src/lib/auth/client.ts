@@ -43,6 +43,14 @@ export interface EnhancedUser {
     userType: UserType
     isVerified: boolean
     hasBusinessProfile: boolean
+    // Convenience properties for backward compatibility
+    id: string  // Same as clerkId
+    firstName: string | null
+    lastName: string | null
+    unsafeMetadata: {
+        accountType?: string
+        is_verified?: boolean
+    }
 }
 
 // Request deduplication - prevent multiple simultaneous calls

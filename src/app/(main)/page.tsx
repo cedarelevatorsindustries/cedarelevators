@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
 import { listProducts, listCategories, listApplications, listElevatorTypes } from "@/lib/data"
-import { getCollectionsForDisplay, getCollectionBySlug } from "@/lib/actions/collections"
+import { getCollectionsWithProductsByDisplayContext } from "@/lib/actions/collections-display-context"
 import { getBusinessHubData } from "@/lib/actions/business-hub"
 import {
   DesktopHomepage,
@@ -39,20 +39,17 @@ export default async function HomePage() {
   // Fetch elevator types
   const elevatorTypes = await listElevatorTypes()
 
-  // Fetch collections for the "House" location (for ProductsTab)
-  const { collections: rawCollections } = await getCollectionsForDisplay("House")
-  // Serialize to ensure only plain objects are passed to client components
+  // Fetch normal collections WITH PRODUCTS for homepage (ProductsTab)
+  const { collections: rawCollections } = await getCollectionsWithProductsByDisplayContext("homepage")
   const collections = JSON.parse(JSON.stringify(rawCollections))
 
-  // Fetch trending collection (for CategoriesTab)
-  const { collection: rawTrendingCollection } = await getCollectionBySlug("trending")
-  // Serialize to ensure only plain objects are passed to client components
-  const trendingCollection = rawTrendingCollection ? JSON.parse(JSON.stringify(rawTrendingCollection)) : null
+  // Fetch special collections WITH PRODUCTS for Categories Tab
+  const { collections: rawCategoriesCollections } = await getCollectionsWithProductsByDisplayContext("categories")
+  const categoriesCollections = JSON.parse(JSON.stringify(rawCategoriesCollections))
 
-  // Fetch top applications collection (for CategoriesTab)
-  const { collection: rawTopApplicationsCollection } = await getCollectionBySlug("top-applications")
-  // Serialize to ensure only plain objects are passed to client components
-  const topApplicationsCollection = rawTopApplicationsCollection ? JSON.parse(JSON.stringify(rawTopApplicationsCollection)) : null
+  // Fetch special collections WITH PRODUCTS for Business Hub
+  const { collections: rawBusinessHubCollections } = await getCollectionsWithProductsByDisplayContext("business_hub")
+  const businessHubCollections = JSON.parse(JSON.stringify(rawBusinessHubCollections))
 
   // Fetch Business Hub data for business users
   let businessHubData = null
@@ -99,8 +96,8 @@ export default async function HomePage() {
             applications={serializedApplications}
             elevatorTypes={serializedElevatorTypes}
             collections={collections}
-            trendingCollection={trendingCollection}
-            topApplicationsCollection={topApplicationsCollection}
+            categoriesCollections={categoriesCollections}
+            businessHubCollections={businessHubCollections}
             businessHubData={businessHubData}
             popularSearchTerms={popularSearchTerms}
           />

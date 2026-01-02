@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
 
 interface WelcomeSectionProps {
-    userType: "individual" | "business"
+    userType: "individual" | "business" | "verified"
 }
 
 export function WelcomeSection({ userType }: WelcomeSectionProps) {

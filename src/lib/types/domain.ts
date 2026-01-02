@@ -44,6 +44,7 @@ export interface ProductCategory {
     id: string
     name: string
     handle: string
+    slug: string // Added for compatibility with database
     parent_id?: string | null
     description?: string
     category_children?: ProductCategory[]
@@ -52,6 +53,7 @@ export interface ProductCategory {
     is_active?: boolean
     icon?: string
     thumbnail?: string
+    thumbnail_image?: string // Added for category images from database
 }
 
 export interface Order {

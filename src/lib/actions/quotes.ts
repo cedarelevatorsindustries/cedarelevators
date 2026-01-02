@@ -805,12 +805,13 @@ export async function updateQuoteStatus(
     }
 
     // Import state machine validation
-    const { isValidTransition, validateTransition, QuoteStatus } = await import('@/lib/quote-state-machine')
+    const { isValidTransition, validateTransition } = await import('@/lib/quote-state-machine')
+    type QuoteStatusType = import('@/lib/quote-state-machine').QuoteStatus
 
     // Validate status transition using state machine
     const validation = validateTransition(
-      quote.status as QuoteStatus,
-      newStatus as QuoteStatus
+      quote.status as QuoteStatusType,
+      newStatus as QuoteStatusType
     )
 
     if (!validation.valid) {
@@ -833,8 +834,9 @@ export async function updateQuoteStatus(
 
     // Add audit log entry
     try {
+      type AuditQuoteStatus = import('@/lib/quote-state-machine').QuoteStatus
       const { logStatusChange } = await import('@/lib/services/quote-audit')
-      await logStatusChange(quoteId, quote.status as QuoteStatus, newStatus as QuoteStatus)
+      await logStatusChange(quoteId, quote.status as AuditQuoteStatus, newStatus as AuditQuoteStatus)
     } catch (auditError) {
       // Log error but don't fail the status update
       console.error('Failed to create audit log:', auditError)

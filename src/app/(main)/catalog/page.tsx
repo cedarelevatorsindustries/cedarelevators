@@ -33,8 +33,28 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     queryParams.q = params.search
   }
 
+  // Active category state
+  let activeCategory = null
+
+  // If category slug is provided, look up the category to get its ID
   if (params.category) {
-    queryParams.category_id = [params.category]
+    const { getCategory, listCategories } = await import('@/lib/data/categories')
+    const category = await getCategory(params.category)
+    if (category) {
+      queryParams.category_id = [category.id]
+
+      // Fetch children for this category to show in banner
+      const children = await listCategories({ parent_id: category.id })
+      activeCategory = {
+        ...category,
+        category_children: children
+      }
+    }
+  }
+
+  // If application slug is provided, add to query params for server-side filtering
+  if (params.app) {
+    queryParams.application = params.app
   }
 
   // Fetch from Medusa
@@ -56,6 +76,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <CatalogTemplate
           products={products}
           categories={categories}
+          activeCategory={activeCategory || undefined}
           searchParams={params}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
@@ -68,6 +89,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <MobileCatalogTemplate
           products={products}
           categories={categories}
+          activeCategory={activeCategory || undefined}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={params.app}
