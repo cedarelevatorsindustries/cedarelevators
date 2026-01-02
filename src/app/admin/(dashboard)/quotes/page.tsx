@@ -234,12 +234,13 @@ export default function AdminQuotesPage() {
                 getAdminQuoteStats()
             ])
 
-            if (quotesResult.success && quotesResult.quotes.length > 0) {
-                setQuotes(quotesResult.quotes)
+            if (quotesResult.success) {
+                setQuotes(quotesResult.quotes || [])
             } else {
-                // Use mock data as fallback
-                setQuotes(mockQuotes)
+                setQuotes([])
+                console.error('Error loading quotes:', quotesResult.error)
             }
+            
             if (statsResult.success) {
                 // Map reviewing_count to in_review_count for local interface
                 setStats({
@@ -247,14 +248,13 @@ export default function AdminQuotesPage() {
                     in_review_count: statsResult.stats.reviewing_count
                 })
             } else {
-                // Use mock stats as fallback
-                setStats(mockStats)
+                setStats(null)
+                console.error('Error loading stats:', statsResult.error)
             }
         } catch (error) {
             console.error('Error loading quotes:', error)
-            // Use mock data on error
-            setQuotes(mockQuotes)
-            setStats(mockStats)
+            setQuotes([])
+            setStats(null)
         } finally {
             setIsLoading(false)
             setIsRefreshing(false)
