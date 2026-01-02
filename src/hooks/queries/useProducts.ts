@@ -48,7 +48,7 @@ export function useUpdateProduct() {
         mutationFn: ({ id, data }: { id: string; data: Partial<ProductFormData> }) => updateProduct(id, data),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['products'] })
-            queryClient.invalidateQueries({ queryKey: ['product', data.id] })
+            queryClient.invalidateQueries({ queryKey: ['product', data.data?.id] })
             queryClient.invalidateQueries({ queryKey: ['products-stats'] })
             toast.success("Product updated successfully")
         },

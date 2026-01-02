@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Invalidate product cache
-    await invalidateCache(INVALIDATION_PATTERNS.ALL_PRODUCTS)
+    await invalidateCache(INVALIDATION_PATTERNS.PRODUCTS)
 
     const result: ImportResult<any> = {
       success: successCount > 0,

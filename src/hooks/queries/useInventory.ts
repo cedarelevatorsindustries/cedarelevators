@@ -2,6 +2,7 @@
  * Inventory Hooks
  */
 
+import { LowStockItem } from '@/lib/actions/analytics'
 import { InventoryItem } from '@/lib/types/inventory'
 
 export const useInventory = (filters: any, page?: number, limit?: number) => {
@@ -30,7 +31,7 @@ export const useInventoryStats = () => {
 
 export const useLowStockAlerts = () => {
     return {
-        data: [] as InventoryItem[],
+        data: [] as LowStockItem[],
         isLoading: false,
         error: null,
         refetch: async () => { },

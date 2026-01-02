@@ -58,20 +58,3 @@ export function preloadComponent<T extends ComponentType<any>>(
   })
 }
 
-/**
- * Common lazy loaded components
- */
-export const LazyComponents = {
-  // Admin components
-  AdminDashboard: () => lazyWithRetry(() => import('@/domains/admin/dashboard/AdminDashboard')),
-  ProductForm: () => lazyWithRetry(() => import('@/domains/admin/products/ProductForm')),
-  OrderDetails: () => lazyWithRetry(() => import('@/domains/admin/orders/OrderDetails')),
-  
-  // Analytics components
-  AnalyticsDashboard: () => lazyWithRetry(() => import('@/domains/admin/analytics/AnalyticsDashboard')),
-  SalesChart: () => lazyWithRetry(() => import('@/domains/admin/analytics/SalesChart')),
-  
-  // User components
-  UserDashboard: () => lazyWithRetry(() => import('@/domains/user/dashboard/UserDashboard')),
-  ProfileSettings: () => lazyWithRetry(() => import('@/domains/user/profile/ProfileSettings')),
-}

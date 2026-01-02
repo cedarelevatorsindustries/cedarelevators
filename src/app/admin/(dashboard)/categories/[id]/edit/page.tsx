@@ -38,7 +38,6 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     sort_order: 0,
     is_active: true,
     status: "active" as "active" | "inactive",
-    application: "",
     meta_title: "",
     meta_description: ""
   })
@@ -65,7 +64,6 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         sort_order: category.sort_order || 0,
         is_active: category.is_active ?? true,
         status: category.status || "active",
-        application: category.application || "",
         meta_title: category.meta_title || "",
         meta_description: category.meta_description || ""
       })
@@ -374,17 +372,6 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                     </SelectContent>
                   </Select>
                 </div>
-
-                {!formData.parent_id && (
-                  <div className="space-y-2">
-                    <Label htmlFor="application">Application Type</Label>
-                    <Input
-                      id="application"
-                      value={formData.application}
-                      onChange={(e) => setFormData({ ...formData, application: e.target.value })}
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
 

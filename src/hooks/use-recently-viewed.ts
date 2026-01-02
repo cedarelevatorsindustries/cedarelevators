@@ -43,7 +43,7 @@ export function useRecentlyViewed() {
                 // Auth: Server
                 const res = await getRecentlyViewed()
                 if (res.success && res.products) {
-                    setProducts(res.products as Product[])
+                    setProducts(res.products as unknown as Product[])
                 }
             }
             setLoading(false)
@@ -53,7 +53,7 @@ export function useRecentlyViewed() {
     }, [user, isLoaded])
 
     // Track view
-    const trackView = async (product: Product) => {
+    const trackView = async (product: { id: string }) => {
         // Prevent tracking if same as last view?
 
         if (!user) {

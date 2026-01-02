@@ -26,7 +26,7 @@ export default function BusinessQuoteTemplate({
   activeOrders = 0
 }: BusinessQuoteTemplateProps) {
   // Example action items (would come from API)
-  const actionItems = [
+  const actionItems: any[] = [
     // {
     //   type: "approval" as const,
     //   title: "Order #4421 Requires Approval",

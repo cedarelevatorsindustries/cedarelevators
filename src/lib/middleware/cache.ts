@@ -13,6 +13,17 @@ export interface CacheOptions {
 }
 
 /**
+ * Common cache invalidation patterns
+ */
+export const INVALIDATION_PATTERNS = {
+  PRODUCTS: 'products:*',
+  CATEGORIES: 'categories:*',
+  ORDERS: 'orders:*',
+  USERS: 'users:*',
+  ALL: '*'
+}
+
+/**
  * Wrapper for caching API responses
  */
 export async function withCache<T>(
@@ -67,12 +78,12 @@ export function cacheMiddleware(handler: Function, options: CacheOptions) {
 
     // Execute handler
     const response = await handler(req)
-    
+
     // Cache the response if successful
     if (response.ok) {
       const data = await response.json()
       await cacheService.set(key, data, ttl)
-      
+
       return NextResponse.json(data, {
         headers: {
           'X-Cache': 'MISS',
@@ -90,7 +101,7 @@ export function cacheMiddleware(handler: Function, options: CacheOptions) {
  */
 export async function invalidateCache(patterns: string | string[]) {
   const patternArray = Array.isArray(patterns) ? patterns : [patterns]
-  
+
   for (const pattern of patternArray) {
     await cacheService.delPattern(pattern)
     console.log(`Cache invalidated: ${pattern}`)
@@ -110,7 +121,7 @@ export function cached(ttl?: number) {
 
     descriptor.value = async function (...args: any[]) {
       const cacheKey = `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`
-      
+
       const cached = await cacheService.get(cacheKey)
       if (cached) {
         return cached
@@ -118,7 +129,7 @@ export function cached(ttl?: number) {
 
       const result = await originalMethod.apply(this, args)
       await cacheService.set(cacheKey, result, ttl)
-      
+
       return result
     }
 

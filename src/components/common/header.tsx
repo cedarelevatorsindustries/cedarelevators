@@ -24,7 +24,7 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
     useEffect(() => {
         getCurrentAdminAction().then(res => {
             if (res.success) {
-                setProfile(res.profile)
+                setProfile(res.profile || null)
                 setUser(res.user)
             }
         })

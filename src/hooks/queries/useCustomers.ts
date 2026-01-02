@@ -21,3 +21,17 @@ export const useCustomerStats = () => {
         refetch: async () => { },
     }
 }
+
+/**
+ * Hook for fetching a single customer by ID
+ */
+export const useCustomer = (customerId: string) => {
+    return {
+        data: null as CustomerWithStats | null,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: async () => { },
+    }
+}
+

@@ -22,11 +22,8 @@ export async function GET(request: NextRequest) {
     const tree = searchParams.get('tree') === 'true'
 
     if (tree) {
-      const result = await getCategoryTree()
-      if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 500 })
-      }
-      return NextResponse.json({ success: true, tree: result.tree })
+      const categories = await getCategoryTree()
+      return NextResponse.json({ success: true, tree: categories })
     }
 
     const search = searchParams.get('search') || undefined
@@ -36,20 +33,16 @@ export async function GET(request: NextRequest) {
       : undefined
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
 
-    const result = await fetchCategories({
+    const categories = await fetchCategories({
       search,
       parent_id,
       is_active,
       limit,
     })
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
     return NextResponse.json({
       success: true,
-      categories: result.categories,
+      categories,
     })
   } catch (error: any) {
     console.error('Error fetching categories:', error)

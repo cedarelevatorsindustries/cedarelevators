@@ -12,6 +12,7 @@ export interface CMSPolicy {
     title: string
     slug: string
     content: string
+    meta_description?: string
     status: PolicyStatus
     created_at: string
     updated_at: string
@@ -22,6 +23,7 @@ export interface CreatePolicyData {
     title: string
     slug?: string
     content: string
+    meta_description?: string
     status?: PolicyStatus
 }
 
@@ -29,5 +31,6 @@ export interface UpdatePolicyData {
     title?: string
     slug?: string
     content?: string
+    meta_description?: string
     status?: PolicyStatus
 }

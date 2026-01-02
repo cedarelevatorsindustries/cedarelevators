@@ -93,6 +93,8 @@ export async function createProduct(productData: ProductFormData) {
     const productToInsert = {
         ...mainProductData,
         is_categorized,
+        thumbnail_url: mainProductData.thumbnail_url || processedImages.find(img => img.is_primary)?.url || processedImages[0]?.url,
+        tags: mainProductData.tags || [],
         technical_specs: mainProductData.technical_specs || {},
         images: processedImages,
     }
@@ -151,10 +153,10 @@ export async function createProduct(productData: ProductFormData) {
             name: variant.name || 'Default',
             sku: variant.sku || `${product.sku || 'SKU'}-${Math.random().toString(36).substr(2, 9)}`,
             price: parseFloat(variant.price) || product.price || 0,
-            compare_at_price: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+            compare_at_price: variant.compareAtPrice || variant.mrp ? parseFloat(variant.compareAtPrice || variant.mrp) : null,
             cost_per_item: variant.cost ? parseFloat(variant.cost) : null,
-            inventory_quantity: parseInt(variant.quantity) || 0,
-            status: variant.status || 'active',
+            inventory_quantity: parseInt(variant.quantity || variant.stock) || 0,
+            status: variant.status || (variant.active ? 'active' : 'draft'),
             barcode: variant.barcode || null,
             weight: variant.weight ? parseFloat(variant.weight) : null,
             image_url: variant.image || null,
@@ -238,6 +240,10 @@ export async function updateProduct(productId: string, productData: any) {
             .from('products')
             .update({
                 ...productToUpdate,
+                is_categorized: !!(productToUpdate.application_id && productToUpdate.category_id && productToUpdate.application_id !== 'general' && productToUpdate.category_id !== 'uncategorized'),
+                thumbnail_url: productToUpdate.thumbnail_url || processedImages.find(img => img.is_primary)?.url || processedImages[0]?.url,
+                tags: productToUpdate.tags || [],
+                technical_specs: productToUpdate.technical_specs || {},
                 images: processedImages,
                 updated_at: new Date().toISOString()
             })
@@ -331,3 +337,44 @@ export async function deleteProduct(id: string) {
         return { success: false, error: error.message }
     }
 }
+
+/**
+ * Bulk delete products
+ */
+export async function bulkDeleteProducts(productIds: string[]) {
+    const supabase = await createServerSupabase()
+
+    const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', productIds)
+
+    if (error) {
+        console.error('Error bulk deleting products:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/admin/products')
+    return { success: true }
+}
+
+/**
+ * Bulk update product status
+ */
+export async function bulkUpdateProductStatus(productIds: string[], status: string) {
+    const supabase = await createServerSupabase()
+
+    const { error } = await supabase
+        .from('products')
+        .update({ status, updated_at: new Date().toISOString() })
+        .in('id', productIds)
+
+    if (error) {
+        console.error('Error bulk updating product status:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/admin/products')
+    return { success: true }
+}
+

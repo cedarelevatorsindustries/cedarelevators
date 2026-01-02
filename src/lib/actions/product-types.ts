@@ -14,7 +14,7 @@ import type {
  */
 export async function assignTypeToProduct(data: CreateProductTypeData) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Check if already assigned
         const { data: existing } = await supabase
@@ -61,7 +61,7 @@ export async function assignTypeToProduct(data: CreateProductTypeData) {
  */
 export async function removeTypeFromProduct(assignmentId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { error } = await supabase
             .from('product_types')
@@ -85,7 +85,7 @@ export async function removeTypeFromProduct(assignmentId: string) {
  */
 export async function getProductTypes(productId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('product_types')
@@ -107,7 +107,7 @@ export async function getProductTypes(productId: string) {
 
         return {
             success: true,
-            types: data as ProductTypeWithDetails[]
+            types: data as unknown as ProductTypeWithDetails[]
         }
     } catch (error) {
         console.error('Error fetching product types:', error)
@@ -125,7 +125,7 @@ export async function getProductTypes(productId: string) {
  */
 export async function getTypeProducts(typeId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('product_types')
@@ -167,7 +167,7 @@ export async function getTypeProducts(typeId: string) {
  */
 export async function updateProductTypes(data: ProductTypesUpdate) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Delete existing assignments
         await supabase

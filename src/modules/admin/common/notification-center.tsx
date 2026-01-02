@@ -47,7 +47,7 @@ export function NotificationCenter() {
         <Button variant="outline" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
+            <Badge
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-orange-600 border-white"
               variant="destructive"
             >
@@ -61,9 +61,9 @@ export function NotificationCenter() {
           <div className="flex items-center justify-between">
             <SheetTitle>Notifications</SheetTitle>
             {notifications.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={clearAll}
                 className="text-xs text-gray-600 hover:text-gray-900"
               >
@@ -85,15 +85,14 @@ export function NotificationCenter() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-lg border transition-all ${
-                    notification.read 
-                      ? 'bg-gray-50 border-gray-200' 
+                  className={`p-4 rounded-lg border transition-all ${notification.read
+                      ? 'bg-gray-50 border-gray-200'
                       : 'bg-white border-gray-300 shadow-sm'
-                  }`}
+                    }`}
                   onClick={() => !notification.read && markAsRead(notification.id)}
                 >
                   <div className="flex items-start space-x-3">
-                    <div className={`p-2 rounded-lg ${getPriorityColor(notification.priority)}`}>
+                    <div className={`p-2 rounded-lg ${getPriorityColor(notification.priority || 'low')}`}>
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -111,7 +110,7 @@ export function NotificationCenter() {
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        {new Date(notification.created_at).toLocaleString()}
+                        {notification.created_at ? new Date(notification.created_at).toLocaleString() : 'Just now'}
                       </p>
                     </div>
                   </div>

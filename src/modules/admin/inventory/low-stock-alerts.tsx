@@ -64,9 +64,9 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 py-4">No low stock alerts at this time</p>
-          <Button 
-            variant="outline" 
-            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
+          <Button
+            variant="outline"
+            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
             asChild
           >
             <Link href="/admin/inventory">
@@ -96,8 +96,8 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         {items.map((item) => (
-          <div 
-            key={item.id} 
+          <div
+            key={item.id}
             className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 hover:bg-gray-100/50 transition-colors"
           >
             <div className="flex-1 min-w-0">
@@ -105,30 +105,29 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
               <p className="text-xs text-gray-600">{item.variant_name} • {item.sku}</p>
             </div>
             <div className="flex items-center space-x-3">
-              <Badge 
+              <Badge
                 variant={item.status === "out_of_stock" ? "destructive" : "secondary"}
-                className={`${
-                  item.status === "out_of_stock" 
-                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                className={`${item.status === "out_of_stock"
+                    ? 'bg-orange-100 text-orange-700 border-orange-200'
                     : 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                } font-medium`}
+                  } font-medium`}
               >
                 {item.current_stock} left
               </Badge>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-8 w-8 p-0 hover:bg-gray-200"
-                onClick={() => handleItemAction(item.product_title)}
+                onClick={() => handleItemAction(item.product_title || item.name)}
               >
                 <Package className="h-4 w-4" />
               </Button>
             </div>
           </div>
         ))}
-        <Button 
-          variant="outline" 
-          className="w-full mt-4 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
+        <Button
+          variant="outline"
+          className="w-full mt-4 border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
           asChild
         >
           <Link href="/admin/inventory">

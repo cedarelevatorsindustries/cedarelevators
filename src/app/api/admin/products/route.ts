@@ -6,6 +6,7 @@ import {
   bulkDeleteProducts,
   createProduct,
 } from '@/lib/actions/products'
+import { ProductStatus } from '@/lib/types/products'
 
 /**
  * GET /api/admin/products - Fetch products with filters
@@ -25,20 +26,18 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || undefined
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
 
-    const result = await fetchProducts({
+    const data = await fetchProducts({
       search,
       category,
-      status,
-      limit,
-    })
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
+      status: status as ProductStatus,
+    }, 1, limit)
 
     return NextResponse.json({
       success: true,
-      products: result.products,
+      products: data.products,
+      total: data.total,
+      page: data.page,
+      totalPages: data.totalPages,
     })
   } catch (error: any) {
     console.error('Error fetching products:', error)
@@ -64,9 +63,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const result = await createProduct(body)
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 })
-    }
+
 
     return NextResponse.json({
       success: true,

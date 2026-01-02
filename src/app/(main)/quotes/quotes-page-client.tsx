@@ -35,12 +35,10 @@ const getStatusConfig = (status: QuoteStatus) => {
     switch (status) {
         case 'pending':
             return { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: 'Pending' }
-        case 'in_review':
+        case 'reviewing':
             return { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: FileText, label: 'In Review' }
-        case 'negotiation':
-            return { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: FileText, label: 'Negotiation' }
-        case 'accepted':
-            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CircleCheck, label: 'Accepted' }
+        case 'approved':
+            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CircleCheck, label: 'Approved' }
         case 'rejected':
             return { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Rejected' }
         case 'converted':
@@ -248,21 +246,19 @@ export default function QuotesPageClient({
             <div className="flex gap-2 mb-6 border-b border-gray-200">
                 <button
                     onClick={() => setActiveTab('list')}
-                    className={`px-6 py-3 font-medium transition-colors relative ${
-                        activeTab === 'list'
-                            ? 'text-[#ff3705] border-b-2 border-[#ff3705]'
-                            : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                    className={`px-6 py-3 font-medium transition-colors relative ${activeTab === 'list'
+                        ? 'text-[#ff3705] border-b-2 border-[#ff3705]'
+                        : 'text-gray-600 hover:text-gray-900'
+                        }`}
                 >
                     My Quotes
                 </button>
                 <button
                     onClick={() => setActiveTab('new')}
-                    className={`px-6 py-3 font-medium transition-colors relative ${
-                        activeTab === 'new'
-                            ? 'text-[#ff3705] border-b-2 border-[#ff3705]'
-                            : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                    className={`px-6 py-3 font-medium transition-colors relative ${activeTab === 'new'
+                        ? 'text-[#ff3705] border-b-2 border-[#ff3705]'
+                        : 'text-gray-600 hover:text-gray-900'
+                        }`}
                 >
                     New Quote
                 </button>
@@ -334,8 +330,8 @@ export default function QuotesPageClient({
                                 </div>
                                 <div>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {isVerified && stats.total_value > 0 
-                                            ? `₹${(stats.total_value / 1000).toFixed(1)}K` 
+                                        {isVerified && stats.total_value > 0
+                                            ? `₹${(stats.total_value / 1000).toFixed(1)}K`
                                             : '-'}
                                     </p>
                                     <p className="text-sm text-gray-500">Total Value</p>
@@ -362,15 +358,14 @@ export default function QuotesPageClient({
                             {/* Status Filter */}
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Filter className="w-5 h-5 text-gray-400" />
-                                {(['all', 'pending', 'in_review', 'accepted', 'rejected'] as const).map((status) => (
+                                {(['all', 'pending', 'reviewing', 'approved', 'rejected'] as const).map((status) => (
                                     <button
                                         key={status}
                                         onClick={() => handleFilterChange(status)}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                            statusFilter === status
-                                                ? 'bg-[#ff3705] text-white'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${statusFilter === status
+                                            ? 'bg-[#ff3705] text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
                                     >
                                         {status === 'all' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                     </button>

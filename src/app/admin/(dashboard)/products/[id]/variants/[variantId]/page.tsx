@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { VariantDetailView } from '@/modules/admin/variants/variant-detail-view'
 import { getProductWithVariants } from '@/lib/actions/products'
 
+import { ProductVariant } from '@/lib/types/products'
+
 interface VariantDetailPageProps {
   params: Promise<{
     id: string
@@ -18,7 +20,7 @@ export default async function VariantDetailPage({ params }: VariantDetailPagePro
     notFound()
   }
 
-  const variant = product.product_variants?.find(v => v.id === variantId)
+  const variant = product.product_variants?.find((v: ProductVariant) => v.id === variantId)
 
   if (!variant) {
     notFound()

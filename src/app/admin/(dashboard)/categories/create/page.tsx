@@ -53,7 +53,6 @@ export default function CreateCategoryPage() {
     sort_order: 0,
     is_active: true,
     status: "active",
-    application: "",
     meta_title: "",
     meta_description: ""
   })
@@ -98,8 +97,7 @@ export default function CreateCategoryPage() {
     setCreationType(type)
     setFormData(prev => ({
       ...prev,
-      parent_id: null,
-      application: type === 'elevator-type' ? 'elevator-type' : ''
+      parent_id: null
     }))
     setSelectedAppForSubcat("")
     setCurrentStep(2)
@@ -127,7 +125,6 @@ export default function CreateCategoryPage() {
       let finalData = { ...formData }
 
       if (creationType === 'elevator-type') {
-        finalData.application = 'elevator-type'
         finalData.parent_id = null
       }
 
@@ -630,6 +627,6 @@ export default function CreateCategoryPage() {
         </div>
       )}
     </div>
-    </div >
+
   )
 }

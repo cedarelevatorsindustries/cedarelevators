@@ -78,7 +78,9 @@ interface ProductFormData {
   metaDescription: string
   urlHandle: string
 
-  // Technical specs
+  // Additional fields
+  thumbnail_url?: string
+  tags?: string[]
   technical_specs?: Record<string, any>
 }
 
@@ -137,7 +139,12 @@ export default function CreateProductPage() {
     // Step 7: SEO
     metaTitle: "",
     metaDescription: "",
-    urlHandle: ""
+    urlHandle: "",
+
+    // Additional fields
+    thumbnail_url: "",
+    tags: [],
+    technical_specs: {}
   })
 
   const updateFormData = (updates: Partial<ProductFormData>) => {
@@ -484,7 +491,9 @@ export default function CreateProductPage() {
             {activeTab === "media" && (
               <MediaTab
                 images={formData.images}
-                onImagesChange={(images: ProductImage[]) => updateFormData({ images })}
+                onImagesChange={(images: ProductImage[], thumbnailUrl?: string) => {
+                  updateFormData({ images, thumbnail_url: thumbnailUrl })
+                }}
               />
             )}
 
@@ -492,7 +501,9 @@ export default function CreateProductPage() {
               <ProductDetailsTab
                 formData={{
                   description: formData.description,
-                  attributes: formData.attributes
+                  attributes: formData.attributes,
+                  tags: formData.tags,
+                  technical_specs: formData.technical_specs
                 }}
                 onFormDataChange={(updates) => updateFormData(updates)}
               />

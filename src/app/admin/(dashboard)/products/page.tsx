@@ -221,9 +221,9 @@ export default function ProductsPage() {
                   >
                     {/* Image */}
                     <Link href={`/admin/products/${product.id}`} className="flex-shrink-0">
-                      {product.thumbnail || (product.images && Array.isArray(product.images) && product.images.length > 0) ? (
+                      {product.thumbnail_url || (product.images && Array.isArray(product.images) && product.images.length > 0) ? (
                         <img
-                          src={product.thumbnail || (Array.isArray(product.images) && product.images[0]?.url) || ''}
+                          src={product.thumbnail_url || (Array.isArray(product.images) && product.images[0]?.url) || ''}
                           alt={product.name}
                           className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
                         />

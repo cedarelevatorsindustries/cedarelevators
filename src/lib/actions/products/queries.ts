@@ -240,3 +240,41 @@ export async function getProductStats() {
     return stats
 }
 
+// Backwards compatibility aliases for API routes
+export const fetchProducts = getProducts
+export const getLowStockProducts = async (threshold = 10) => {
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .lte('stock_quantity', threshold)
+        .order('stock_quantity', { ascending: true })
+
+    if (error) {
+        console.error('Error fetching low stock products:', error)
+        return { success: false, error: error.message }
+    }
+
+    return { success: true, products: data }
+}
+
+export const updateProductInventory = async (productId: string, quantity: number) => {
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('products')
+        .update({ stock_quantity: quantity, updated_at: new Date().toISOString() })
+        .eq('id', productId)
+        .select()
+        .single()
+
+    if (error) {
+        console.error('Error updating product inventory:', error)
+        return { success: false, error: error.message }
+    }
+
+    return { success: true, product: data }
+}
+
+

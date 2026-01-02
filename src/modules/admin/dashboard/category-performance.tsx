@@ -19,9 +19,7 @@ export function CategoryPerformance() {
   const fetchData = async () => {
     setLoading(true)
     const result = await AnalyticsService.getCategoryPerformance()
-    if (result.success && result.data) {
-      setCategories(result.data.slice(0, 6))
-    }
+    setCategories(result.slice(0, 6))
     setLoading(false)
   }
 
@@ -55,7 +53,7 @@ export function CategoryPerformance() {
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

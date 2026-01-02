@@ -11,7 +11,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import RecommendedProducts from '../recommended-products'
 
 interface DashboardSectionProps {
   user: UserProfile
@@ -459,11 +458,7 @@ export default function DashboardSection({
           </Link>
         </div>
       </div>
-
-      {/* Recommended Products - Only on Dashboard */}
-      <div className="border-t pt-8 mt-12">
-        <RecommendedProducts />
-      </div>
     </div>
   )
 }
+

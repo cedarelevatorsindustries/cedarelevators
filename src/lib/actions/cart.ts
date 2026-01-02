@@ -183,3 +183,22 @@ export async function removeLineItem(lineId: string) {
   if (error) throw error
   return getCart()
 }
+
+/**
+ * Clear all items from cart
+ */
+export async function clearCart(cartId?: string) {
+  const supabase = await createClerkSupabaseClient()
+  const id = cartId || (await cookies()).get("cart_id")?.value
+
+  if (!id) return null
+
+  const { error } = await supabase
+    .from('cart_items')
+    .delete()
+    .eq('cart_id', id)
+
+  if (error) throw error
+  return getCart(id)
+}
+

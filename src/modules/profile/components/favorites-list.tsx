@@ -19,7 +19,7 @@ export default function FavoritesList() {
         title: p.name,
         handle: p.slug,
         description: p.description || "",
-        thumbnail: p.thumbnail || "",
+        thumbnail: p.thumbnail_url || "",
         images: [], // TODO: map images if needed
         price: { amount: p.price || 0, currency_code: "INR" },
         // Default values for required fields
@@ -35,7 +35,7 @@ export default function FavoritesList() {
                 // Auth
                 const res = await getFavorites()
                 if (res.success && res.products) {
-                    setProducts((res.products as DBProduct[]).map(mapProduct))
+                    setProducts((res.products as unknown as DBProduct[]).map(mapProduct))
                 }
             } else {
                 // Guest

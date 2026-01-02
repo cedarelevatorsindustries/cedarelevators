@@ -15,7 +15,7 @@ import type {
  */
 export async function addProductToCollection(data: CreateCollectionProductData) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Check if already in collection
         const { data: existing } = await supabase
@@ -75,7 +75,7 @@ export async function addProductToCollection(data: CreateCollectionProductData) 
  */
 export async function removeProductFromCollection(collectionProductId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { error } = await supabase
             .from('collection_products')
@@ -99,7 +99,7 @@ export async function removeProductFromCollection(collectionProductId: string) {
  */
 export async function getCollectionProducts(collectionId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('collection_products')
@@ -125,7 +125,7 @@ export async function getCollectionProducts(collectionId: string) {
 
         return {
             success: true,
-            products: data as CollectionProductWithDetails[]
+            products: data as unknown as CollectionProductWithDetails[]
         }
     } catch (error) {
         console.error('Error fetching collection products:', error)
@@ -145,7 +145,7 @@ export async function updateCollectionProductPosition(
     data: UpdateCollectionProductData
 ) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { error } = await supabase
             .from('collection_products')
@@ -169,7 +169,7 @@ export async function updateCollectionProductPosition(
  */
 export async function reorderCollectionProducts(data: ReorderCollectionProductsData) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Update each product's position
         const updates = data.product_orders.map(({ product_id, position }) =>
@@ -197,7 +197,7 @@ export async function reorderCollectionProducts(data: ReorderCollectionProductsD
  */
 export async function getProductCollections(productId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('collection_products')

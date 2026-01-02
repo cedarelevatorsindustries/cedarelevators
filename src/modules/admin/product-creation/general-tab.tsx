@@ -172,7 +172,7 @@ export function GeneralTab({ formData, onFormDataChange }: GeneralTabProps) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value: "draft" | "active" | "archived") => onFormDataChange({ status: value })}>
+            <Select value={formData.status} onValueChange={(value) => onFormDataChange({ status: value as "draft" | "active" | "archived" })}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>

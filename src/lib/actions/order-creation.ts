@@ -45,69 +45,69 @@ export async function createOrderFromCart(
   console.log('🛒 [Order Creation] Starting order creation process')
   console.log('🛒 [Order Creation] Cart ID:', input.cartId)
   console.log('🛒 [Order Creation] Payment method:', input.paymentMethod)
-  
+
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     console.log('👤 [Order Creation] User ID:', userId || 'Guest')
-    
+
     // 1. Get cart with items
     console.log('📦 [Order Creation] Step 1: Fetching cart')
     const cart = await getCart(input.cartId)
-    
+
     if (!cart || !cart.items || cart.items.length === 0) {
       console.log('❌ [Order Creation] Cart is empty')
       return { success: false, error: 'Cart is empty' }
     }
-    
+
     console.log(`📋 [Order Creation] Cart has ${cart.items.length} items`)
-    
+
     // 2. Validate inventory
     console.log('🔍 [Order Creation] Step 2: Validating inventory')
     const validation = await validateCartInventory(input.cartId)
-    
+
     if (!validation.valid) {
       console.log('❌ [Order Creation] Inventory validation failed')
       console.log('⚠️  [Order Creation] Issues:', validation.issues)
-      
+
       const issueMessages = validation.issues
         .map(i => `${i.title}: requested ${i.requested}, available ${i.available}`)
         .join(', ')
-      
+
       return {
         success: false,
         error: `Insufficient stock for: ${issueMessages}`
       }
     }
-    
+
     console.log('✅ [Order Creation] Inventory validated successfully')
-    
+
     // 3. Calculate totals
     console.log('💰 [Order Creation] Step 3: Calculating totals')
     const summaryResult = await getCartSummary(input.cartId)
-    
+
     if (!summaryResult.success || !summaryResult.summary) {
       console.log('❌ [Order Creation] Failed to calculate cart summary')
       return { success: false, error: 'Failed to calculate order totals' }
     }
-    
+
     const { subtotal, tax, shippingCost, total } = summaryResult.summary
-    
+
     console.log('💵 [Order Creation] Subtotal: ₹', subtotal)
     console.log('💵 [Order Creation] Tax: ₹', tax)
     console.log('💵 [Order Creation] Shipping: ₹', shippingCost)
     console.log('💵 [Order Creation] Total: ₹', total)
-    
+
     // 4. Generate order number
     console.log('🔢 [Order Creation] Step 4: Generating order number')
     let orderNumber: string
-    
+
     try {
       // Try to use sequence
       const { data: seqData, error: seqError } = await supabase
         .rpc('nextval', { sequence_name: 'order_number_seq' })
-      
+
       if (seqError) {
         console.log('⚠️  [Order Creation] Sequence not available, using timestamp')
         orderNumber = `ORD-${Date.now()}`
@@ -118,22 +118,22 @@ export async function createOrderFromCart(
       console.log('⚠️  [Order Creation] Sequence error, using timestamp fallback')
       orderNumber = `ORD-${Date.now()}`
     }
-    
+
     console.log('📄 [Order Creation] Order number:', orderNumber)
-    
+
     // 5. Create Razorpay order if needed (placeholder for now)
     let razorpayOrderId: string | undefined
-    
+
     if (input.paymentMethod === 'razorpay') {
       console.log('💳 [Order Creation] Step 5: Creating Razorpay order')
       // This will be handled by frontend calling /api/payments/create-order
       // We'll store the order first and update with razorpay_order_id later
       console.log('💳 [Order Creation] Razorpay order will be created via API')
     }
-    
+
     // 6. Create order in database
     console.log('💾 [Order Creation] Step 6: Creating order record')
-    
+
     const orderData = {
       order_number: orderNumber,
       clerk_user_id: userId || null,
@@ -153,25 +153,25 @@ export async function createOrderFromCart(
       billing_address: input.billingAddress || input.shippingAddress,
       notes: input.notes || null
     }
-    
+
     console.log('📝 [Order Creation] Order data prepared')
-    
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert(orderData)
       .select()
       .single()
-    
+
     if (orderError) {
       console.error('❌ [Order Creation] Failed to create order:', orderError)
       throw orderError
     }
-    
+
     console.log('✅ [Order Creation] Order created with ID:', order.id)
-    
+
     // 7. Create order items
     console.log('📦 [Order Creation] Step 7: Creating order items')
-    
+
     const orderItems = cart.items.map(item => ({
       order_id: order.id,
       product_id: item.product_id,
@@ -183,30 +183,30 @@ export async function createOrderFromCart(
       unit_price: item.unit_price,
       total_price: item.unit_price * item.quantity
     }))
-    
+
     const { error: itemsError } = await supabase
       .from('order_items')
       .insert(orderItems)
-    
+
     if (itemsError) {
       console.error('❌ [Order Creation] Failed to create order items:', itemsError)
-      
+
       // Rollback: delete the order
       await supabase.from('orders').delete().eq('id', order.id)
-      
+
       throw itemsError
     }
-    
+
     console.log(`✅ [Order Creation] ${orderItems.length} order items created`)
-    
+
     // 8. Decrement inventory
     console.log('📉 [Order Creation] Step 8: Decrementing inventory')
-    
+
     for (const item of cart.items) {
       const productId = item.product_id
       const variantId = item.variant_id
       const quantity = item.quantity
-      
+
       try {
         if (variantId) {
           // Update variant inventory
@@ -229,14 +229,14 @@ export async function createOrderFromCart(
         // This can be handled manually by admin
       }
     }
-    
+
     console.log('✅ [Order Creation] Inventory decremented')
-    
+
     // 9. Clear cart
     console.log('🧹 [Order Creation] Step 9: Clearing cart')
     await clearCart(input.cartId)
     console.log('✅ [Order Creation] Cart cleared')
-    
+
     // 10. Fetch complete order with items
     console.log('📥 [Order Creation] Step 10: Fetching complete order')
     const { data: completeOrder } = await supabase
@@ -247,7 +247,7 @@ export async function createOrderFromCart(
       `)
       .eq('id', order.id)
       .single()
-    
+
     if (!completeOrder) {
       console.log('⚠️  [Order Creation] Could not fetch complete order')
       return {
@@ -255,16 +255,16 @@ export async function createOrderFromCart(
         order: order as OrderWithDetails
       }
     }
-    
+
     console.log('✅ [Order Creation] Complete order fetched')
-    
+
     // 11. Send order confirmation email and notification
     console.log('📧 [Order Creation] Step 11: Sending order confirmation email')
-    
-    const emailAddress = userId 
-      ? input.shippingAddress.email 
+
+    const emailAddress = userId
+      ? input.shippingAddress.email
       : input.shippingAddress.email
-    
+
     if (emailAddress) {
       try {
         const emailResult = await sendOrderConfirmation(emailAddress, {
@@ -273,7 +273,7 @@ export async function createOrderFromCart(
           total: completeOrder.total_amount,
           shippingAddress: completeOrder.shipping_address
         })
-        
+
         if (emailResult.success) {
           console.log('✅ [Order Creation] Order confirmation email sent')
         } else {
@@ -286,7 +286,7 @@ export async function createOrderFromCart(
     } else {
       console.log('⚠️  [Order Creation] No email address provided, skipping email')
     }
-    
+
     // 12. Send notification to user (if logged in)
     if (userId) {
       try {
@@ -303,21 +303,21 @@ export async function createOrderFromCart(
         // Don't fail order creation if notification fails
       }
     }
-    
+
     console.log('🎉 [Order Creation] Order creation completed successfully!')
     console.log('🎉 [Order Creation] Order number:', orderNumber)
     console.log('🎉 [Order Creation] Order ID:', order.id)
-    
+
     return {
       success: true,
       order: completeOrder as OrderWithDetails,
       razorpayOrderId
     }
-    
+
   } catch (error: any) {
     console.error('❌ [Order Creation] Fatal error:', error)
     console.error('❌ [Order Creation] Error stack:', error.stack)
-    
+
     return {
       success: false,
       error: error.message || 'Failed to create order'
@@ -334,10 +334,10 @@ export async function getOrderById(orderId: string): Promise<{
   error?: string
 }> {
   console.log('🔍 [Order Fetch] Fetching order:', orderId)
-  
+
   try {
     const supabase = await createServerSupabase()
-    
+
     const { data: order, error } = await supabase
       .from('orders')
       .select(`
@@ -346,14 +346,14 @@ export async function getOrderById(orderId: string): Promise<{
       `)
       .eq('id', orderId)
       .single()
-    
+
     if (error) {
       console.error('❌ [Order Fetch] Error:', error)
       return { success: false, error: error.message }
     }
-    
+
     console.log('✅ [Order Fetch] Order found:', order.order_number)
-    
+
     return {
       success: true,
       order: order as OrderWithDetails
@@ -376,10 +376,10 @@ export async function getOrderByNumber(orderNumber: string): Promise<{
   error?: string
 }> {
   console.log('🔍 [Order Fetch] Fetching order by number:', orderNumber)
-  
+
   try {
     const supabase = await createServerSupabase()
-    
+
     const { data: order, error } = await supabase
       .from('orders')
       .select(`
@@ -388,14 +388,14 @@ export async function getOrderByNumber(orderNumber: string): Promise<{
       `)
       .eq('order_number', orderNumber)
       .single()
-    
+
     if (error) {
       console.error('❌ [Order Fetch] Error:', error)
       return { success: false, error: error.message }
     }
-    
+
     console.log('✅ [Order Fetch] Order found:', order.id)
-    
+
     return {
       success: true,
       order: order as OrderWithDetails
@@ -408,3 +408,30 @@ export async function getOrderByNumber(orderNumber: string): Promise<{
     }
   }
 }
+
+/**
+ * Get user orders (backwards compatibility alias)
+ */
+export async function getUserOrders(userId: string) {
+  try {
+    const supabase = await createServerSupabase()
+
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .eq('clerk_user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, orders: orders as OrderWithDetails[] }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+

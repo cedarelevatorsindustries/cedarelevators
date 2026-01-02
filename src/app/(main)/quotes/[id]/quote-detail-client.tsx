@@ -31,14 +31,10 @@ const getStatusConfig = (status: QuoteStatus) => {
     switch (status) {
         case 'pending':
             return { color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: 'Pending Review' }
-        case 'in_review':
+        case 'reviewing':
             return { color: 'bg-blue-100 text-blue-700 border-blue-200', icon: FileText, label: 'Under Review' }
-        case 'negotiation':
-            return { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: MessageSquare, label: 'In Negotiation' }
-        case 'revised':
-            return { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: FileText, label: 'Quote Revised' }
-        case 'accepted':
-            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Accepted' }
+        case 'approved':
+            return { color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle, label: 'Approved' }
         case 'rejected':
             return { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Rejected' }
         case 'converted':
@@ -157,7 +153,7 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                 </div>
 
                 {/* Actions */}
-                {quote.status === 'accepted' && (
+                {quote.status === 'approved' && (
                     <div className="mt-6 pt-4 border-t border-gray-100">
                         <button
                             onClick={handleConvertToOrder}
@@ -334,8 +330,8 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                             >
                                 <div
                                     className={`max-w-[75%] rounded-xl px-4 py-3 ${msg.sender_type === 'user'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-800'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-800'
                                         }`}
                                 >
                                     <p className="text-sm">{msg.message}</p>

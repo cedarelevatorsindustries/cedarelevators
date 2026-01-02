@@ -62,7 +62,7 @@ export function generateMetadata(config: SEOConfig = {}): Metadata {
         },
       ],
       locale: 'en_IN',
-      type,
+      type: type === 'product' ? 'website' : type,
     },
     twitter: {
       card: 'summary_large_image',

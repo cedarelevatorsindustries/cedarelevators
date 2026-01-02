@@ -19,7 +19,7 @@ export default function RecentlyViewedList() {
         title: p.name,
         handle: p.slug,
         description: p.description || "",
-        thumbnail: p.thumbnail || "",
+        thumbnail: p.thumbnail_url || "",
         images: [],
         price: { amount: p.price || 0, currency_code: "INR" },
         created_at: p.created_at
@@ -34,7 +34,7 @@ export default function RecentlyViewedList() {
                 // Auth
                 const res = await getRecentlyViewed()
                 if (res.success && res.products) {
-                    setProducts((res.products as DBProduct[]).map(mapProduct))
+                    setProducts((res.products as unknown as DBProduct[]).map(mapProduct))
                 }
             } else {
                 // Guest

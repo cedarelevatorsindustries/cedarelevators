@@ -58,7 +58,6 @@ export default function CreateCategoryPage() {
     sort_order: 0,
     is_active: true,
     status: "active",
-    application: "",
     meta_title: "",
     meta_description: ""
   })
@@ -101,8 +100,7 @@ export default function CreateCategoryPage() {
     setCreationType(type)
     setFormData(prev => ({
       ...prev,
-      parent_id: null,
-      application: type === 'elevator-type' ? 'elevator-type' : ''
+      parent_id: null
     }))
     setSelectedAppForSubcat("")
     setCurrentStep(2)
@@ -130,7 +128,6 @@ export default function CreateCategoryPage() {
       let finalData = { ...formData }
 
       if (creationType === 'elevator-type') {
-        finalData.application = 'elevator-type'
         finalData.parent_id = null
       }
 
@@ -192,8 +189,8 @@ export default function CreateCategoryPage() {
           <Alert className="bg-blue-50 border-blue-200">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Cedar Golden Rule:</strong> Categories define structure only. 
-              Products assign themselves to categories during product creation/editing. 
+              <strong>Cedar Golden Rule:</strong> Categories define structure only.
+              Products assign themselves to categories during product creation/editing.
               You will NOT select products here.
             </AlertDescription>
           </Alert>

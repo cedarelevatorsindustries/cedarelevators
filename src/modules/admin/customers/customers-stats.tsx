@@ -74,7 +74,7 @@ export function CustomersStats({ stats, isLoading }: CustomersStatsProps) {
     },
     {
       title: 'New This Month',
-      value: (stats.newThisMonth || 0).toLocaleString(),
+      value: (stats.new_this_month || 0).toLocaleString(),
       icon: TrendingUp,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',

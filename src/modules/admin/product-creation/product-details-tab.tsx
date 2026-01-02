@@ -18,6 +18,8 @@ interface ProductAttribute {
 interface ProductDetailsData {
   description: string
   attributes: ProductAttribute[]
+  tags?: string[]
+  technical_specs?: Record<string, any>
 }
 
 interface ProductDetailsTabProps {
@@ -96,6 +98,147 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
             <p className="text-xs text-gray-500">
               {formData.description.length} characters • Minimum 50 characters recommended
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tags Section */}
+      <Card className="bg-white border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900">Tags</CardTitle>
+          <CardDescription className="text-gray-500">
+            Add tags for better product categorization and search (Optional)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="tags">Product Tags</Label>
+            <Input
+              id="tags"
+              placeholder="Enter tags separated by commas (e.g., hydraulic, commercial, energy-efficient)"
+              value={(formData.tags || []).join(', ')}
+              onChange={(e) => {
+                const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+                onFormDataChange({ tags: tagsArray })
+              }}
+              className="w-full"
+            />
+            {formData.tags && formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTags = formData.tags?.filter((_, i) => i !== index)
+                        onFormDataChange({ tags: newTags })
+                      }}
+                      className="ml-1 hover:text-red-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Technical Specifications Section */}
+      <Card className="bg-white border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900">Technical Specifications</CardTitle>
+          <CardDescription className="text-gray-500">
+            Add detailed technical specs as key-value pairs (Optional)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {Object.entries(formData.technical_specs || {}).length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p className="mb-4">No technical specifications added yet</p>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const newSpecs = { ...formData.technical_specs, [`spec_${Date.now()}`]: '' }
+                    onFormDataChange({ technical_specs: newSpecs })
+                  }}
+                  variant="outline"
+                  className="border-dashed"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add First Specification
+                </Button>
+              </div>
+            ) : (
+              <>
+                {Object.entries(formData.technical_specs || {}).map(([key, value], index) => (
+                  <div key={key} className="flex items-start gap-2">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor={`spec-key-${key}`} className="text-xs text-gray-600">
+                          Specification Name
+                        </Label>
+                        <Input
+                          id={`spec-key-${key}`}
+                          placeholder="e.g., Motor Power, Control System"
+                          value={key.startsWith('spec_') ? '' : key}
+                          onChange={(e) => {
+                            const newSpecs = { ...formData.technical_specs }
+                            delete newSpecs[key]
+                            newSpecs[e.target.value || `spec_${Date.now()}`] = value
+                            onFormDataChange({ technical_specs: newSpecs })
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`spec-value-${key}`} className="text-xs text-gray-600">
+                          Value
+                        </Label>
+                        <Input
+                          id={`spec-value-${key}`}
+                          placeholder="e.g., 15 kW, VVVF Drive"
+                          value={value as string}
+                          onChange={(e) => {
+                            const newSpecs = { ...formData.technical_specs, [key]: e.target.value }
+                            onFormDataChange({ technical_specs: newSpecs })
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newSpecs = { ...formData.technical_specs }
+                        delete newSpecs[key]
+                        onFormDataChange({ technical_specs: newSpecs })
+                      }}
+                      className="mt-6 text-gray-500 hover:text-red-600 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const newSpecs = { ...formData.technical_specs, [`spec_${Date.now()}`]: '' }
+                    onFormDataChange({ technical_specs: newSpecs })
+                  }}
+                  className="w-full border-dashed"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Another Specification
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

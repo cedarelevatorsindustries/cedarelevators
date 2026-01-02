@@ -25,7 +25,7 @@ export function CategorySidebar({
   isScrollingProgrammatically,
   categories
 }: CategorySidebarProps) {
-  
+
   // Initialize active category
   useEffect(() => {
     if (!activeCategory && categories.length > 0) {
@@ -38,7 +38,7 @@ export function CategorySidebar({
     if (element && scrollContainerRef.current) {
       isScrollingProgrammatically.current = true
       setActiveCategory(categoryId)
-      
+
       const offsetTop = element.offsetTop - 24
       scrollContainerRef.current.scrollTo({
         top: offsetTop,
@@ -56,25 +56,24 @@ export function CategorySidebar({
       <div className="p-6 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-bold text-gray-900">Browse Categories</h3>
       </div>
-      <div 
+      <div
         ref={leftSidebarRef}
         className="flex-1 overflow-y-auto"
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="p-4 space-y-1">
           {categories.map((category) => {
-            const IconComponent = getCategoryIcon(category.handle || category.slug || category.id)
+            const IconComponent = getCategoryIcon(category.handle || (category as any).slug || category.id)
             const isActive = activeCategory === category.id
-            
+
             return (
               <button
                 key={category.id}
                 ref={(el) => { categoryButtonRefs.current[category.id] = el }}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm rounded-lg transition-all duration-300 ease-in-out transform ${
-                  isActive 
-                    ? 'bg-blue-600 text-white shadow-lg scale-105' 
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm rounded-lg transition-all duration-300 ease-in-out transform ${isActive
+                    ? 'bg-blue-600 text-white shadow-lg scale-105'
                     : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:scale-102'
-                }`}
+                  }`}
                 onClick={() => handleCategoryClick(category.id)}
               >
                 <IconComponent size={16} className={isActive ? 'text-white' : 'text-gray-500'} />

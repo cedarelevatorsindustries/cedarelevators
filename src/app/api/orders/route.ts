@@ -11,24 +11,24 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const { searchParams } = new URL(request.url)
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
-    
-    const result = await getUserOrders(limit)
-    
+
+    const result = await getUserOrders(userId)
+
     if (!result.success) {
       return NextResponse.json(
         { error: result.error },
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       orders: result.orders
     })
-    
+
   } catch (error: any) {
     console.error('Get orders error:', error)
     return NextResponse.json(
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
+
     const body = await request.json()
     const {
       cartId,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       notes
     } = body
-    
+
     // Validate required fields
     if (!cartId || !shippingAddress || !paymentMethod) {
       return NextResponse.json(
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
     // Validate shipping address
     const requiredAddressFields = ['name', 'address_line1', 'city', 'state', 'postal_code', 'country', 'phone']
     for (const field of requiredAddressFields) {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         )
       }
     }
-    
+
     // Create order
     const result = await createOrderFromCart({
       cartId,
@@ -84,20 +84,20 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       notes
     })
-    
+
     if (!result.success) {
       return NextResponse.json(
         { error: result.error },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       order: result.order,
       razorpayOrderId: result.razorpayOrderId
     })
-    
+
   } catch (error: any) {
     console.error('Create order error:', error)
     return NextResponse.json(

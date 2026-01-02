@@ -77,6 +77,7 @@ export interface CategoryFilters {
     is_active?: boolean
     search?: string
     level?: CategoryLevel
+    limit?: number
 }
 
 export interface CategoryStats {

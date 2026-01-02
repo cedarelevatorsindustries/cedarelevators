@@ -19,18 +19,18 @@ export default function CustomersPage() {
   const [page, setPage] = useState(1)
 
   // React Query hooks
-  const { 
-    data: customers = [], 
+  const {
+    data: customers = [],
     isLoading: isLoadingCustomers,
     error: customersError,
-    refetch: refetchCustomers 
+    refetch: refetchCustomers
   } = useCustomers(filters, page, 20)
-  
-  const { 
+
+  const {
     data: stats,
     isLoading: isLoadingStats,
     error: statsError,
-    refetch: refetchStats 
+    refetch: refetchStats
   } = useCustomerStats()
 
   const exportMutation = useExportCustomers()
@@ -126,7 +126,7 @@ export default function CustomersPage() {
       ) : hasCustomers ? (
         <>
           {/* Stats Cards */}
-          <CustomersStats stats={stats} isLoading={isLoadingStats} />
+          <CustomersStats stats={stats || undefined} isLoading={isLoadingStats} />
 
           {/* Filters */}
           <CustomersFilters

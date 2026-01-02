@@ -12,7 +12,7 @@ import { useMemo } from "react"
 
 export default function CategoryDetailPage({ params }: { params: { id: string } }) {
   const { data: categoryData, isLoading: isLoadingCategory } = useCategory(params.id)
-  const { data: productsData, isLoading: isLoadingProducts } = useProducts({}, 1, 1000)
+  const { data: productsData, isLoading: isLoadingProducts } = useProducts({}, 1)
 
   const category = categoryData?.category
   const allProducts = productsData?.products || []
@@ -21,20 +21,20 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
   // Using the NEW category_id field (Cedar Interconnection Logic)
   const assignedProducts = useMemo(() => {
     if (!category) return []
-    
+
     return allProducts.filter(p => {
       // Check new hierarchy fields first (Cedar Interconnection Logic)
-      if (p.category_id === params.id || 
-          p.application_id === params.id || 
-          p.subcategory_id === params.id) {
+      if (p.category_id === params.id ||
+        p.application_id === params.id ||
+        p.subcategory_id === params.id) {
         return true
       }
-      
+
       // Fallback to legacy category field for backward compatibility
       if (p.category === params.id) {
         return true
       }
-      
+
       return false
     })
   }, [allProducts, params.id, category])
@@ -117,12 +117,7 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
                   </div>
                 )}
 
-                {category.application && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Application Type</p>
-                    <Badge variant="outline">{category.application}</Badge>
-                  </div>
-                )}
+
 
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Sort Order</p>
@@ -157,8 +152,8 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
                 </CardHeader>
                 <CardContent>
                   <div className="rounded-lg overflow-hidden border border-gray-200">
-                    <img 
-                      src={category.image_url} 
+                    <img
+                      src={category.image_url}
                       alt={category.image_alt || category.name}
                       className="w-full h-auto"
                     />
@@ -259,9 +254,9 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
                             <div className="flex gap-4">
                               {/* Product Image */}
                               <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                {product.thumbnail ? (
-                                  <img 
-                                    src={product.thumbnail} 
+                                {product.thumbnail_url ? (
+                                  <img
+                                    src={product.thumbnail_url}
                                     alt={product.name}
                                     className="h-full w-full object-cover"
                                   />
@@ -286,7 +281,7 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
                                       ${product.price.toFixed(2)}
                                     </span>
                                   )}
-                                  <Badge 
+                                  <Badge
                                     variant={product.status === 'active' ? 'default' : 'secondary'}
                                     className={`text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : ''}`}
                                   >

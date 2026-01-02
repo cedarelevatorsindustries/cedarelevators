@@ -722,3 +722,167 @@ export async function convertQuoteToOrder(quoteId: string): Promise<
     return { success: false, error: error.message || 'Failed to convert quote' }
   }
 }
+
+// =====================================================
+// UPDATE QUOTE STATUS
+// =====================================================
+
+export async function updateQuoteStatus(
+  quoteId: string,
+  newStatus: string
+): Promise<
+  | { success: true }
+  | { success: false; error: string }
+> {
+  try {
+    const { userId } = await auth()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const supabase = await createClerkSupabaseClient()
+
+    // Verify user owns the quote
+    const { data: quote } = await supabase
+      .from('quotes')
+      .select('id, status')
+      .eq('id', quoteId)
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!quote) {
+      return { success: false, error: 'Quote not found' }
+    }
+
+    // Validate status transition (basic validation)
+    const validStatuses: QuoteStatus[] = ['pending', 'reviewing', 'approved', 'rejected', 'converted']
+    if (!validStatuses.includes(newStatus as QuoteStatus)) {
+      return { success: false, error: 'Invalid status' }
+    }
+
+    // Update the status
+    const { error } = await supabase
+      .from('quotes')
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', quoteId)
+
+    if (error) {
+      console.error('Error updating quote status:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath('/quotes')
+    revalidatePath(`/quotes/${quoteId}`)
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error in updateQuoteStatus:', error)
+    return { success: false, error: error.message || 'Failed to update status' }
+  }
+}
+
+// =====================================================
+// GENERATE QUOTE PDF
+// =====================================================
+
+export async function generateQuotePDF(
+  quoteNumber: string
+): Promise<
+  | { success: true; url: string }
+  | { success: false; error: string }
+> {
+  try {
+    const { userId } = await auth()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const supabase = await createClerkSupabaseClient()
+
+    // Verify user owns the quote
+    const { data: quote } = await supabase
+      .from('quotes')
+      .select('id, quote_number')
+      .eq('quote_number', quoteNumber)
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!quote) {
+      return { success: false, error: 'Quote not found' }
+    }
+
+    // For now, return a placeholder URL
+    // TODO: Implement actual PDF generation using jsPDF or similar
+    const pdfUrl = `/api/quotes/${quote.quote_number}/pdf`
+
+    return { success: true, url: pdfUrl }
+  } catch (error: any) {
+    console.error('Error in generateQuotePDF:', error)
+    return { success: false, error: error.message || 'Failed to generate PDF' }
+  }
+}
+
+// =====================================================
+// EXPORT QUOTES TO CSV
+// =====================================================
+
+export async function exportQuotesToCSV(): Promise<
+  | { success: true; csv: string }
+  | { success: false; error: string }
+> {
+  try {
+    const { userId } = await auth()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const supabase = await createClerkSupabaseClient()
+
+    const { data: quotes, error } = await supabase
+      .from('quotes')
+      .select(`
+        quote_number,
+        status,
+        user_type,
+        created_at,
+        estimated_total,
+        items:quote_items(product_name, quantity, unit_price)
+      `)
+      .eq('clerk_user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching quotes for export:', error)
+      return { success: false, error: error.message }
+    }
+
+    // Generate CSV
+    const headers = ['Quote Number', 'Status', 'User Type', 'Date', 'Total', 'Items']
+    const rows = quotes.map((quote: any) => {
+      const itemCount = quote.items?.length || 0
+      const itemNames = quote.items?.map((item: any) => item.product_name).join('; ') || ''
+      return [
+        quote.quote_number,
+        quote.status,
+        quote.user_type,
+        new Date(quote.created_at).toLocaleDateString(),
+        quote.estimated_total || 0,
+        `${itemCount} items: ${itemNames}`
+      ]
+    })
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+
+    return { success: true, csv }
+  } catch (error: any) {
+    console.error('Error in exportQuotesToCSV:', error)
+    return { success: false, error: error.message || 'Failed to export quotes' }
+  }
+}
+

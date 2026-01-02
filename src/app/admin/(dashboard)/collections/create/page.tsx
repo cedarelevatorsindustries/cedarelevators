@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
 import { useEffect, useState as useReactState } from "react"
-import { getCategories } from "@/lib/actions/catalog"
+import { getCategories } from "@/lib/actions/categories"
 
 export default function CreateCollectionPage() {
   const router = useRouter()
@@ -50,8 +50,8 @@ export default function CreateCollectionPage() {
     const loadCategories = async () => {
       try {
         const result = await getCategories()
-        if (result.success && result.data) {
-          setCategories(result.data)
+        if (result.success && result.categories) {
+          setCategories(result.categories)
         }
       } catch (error) {
         console.error('Error loading categories:', error)
@@ -209,10 +209,10 @@ export default function CreateCollectionPage() {
                   <Label htmlFor="collection_type">Collection Context *</Label>
                   <Select
                     value={formData.collection_type}
-                    onValueChange={(value: CollectionContextType) => {
+                    onValueChange={(value) => {
                       setFormData({
                         ...formData,
-                        collection_type: value,
+                        collection_type: value as CollectionContextType,
                         // Reset category_id if not category_specific
                         category_id: value === 'category_specific' ? formData.category_id : undefined
                       })

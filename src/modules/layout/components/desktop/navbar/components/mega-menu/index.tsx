@@ -22,6 +22,7 @@ export function MegaMenu({ categories: initialCategories, isScrolled = false, on
     if (!initialCategories || initialCategories.length === 0) {
       const fetchCategories = async () => {
         try {
+          const result = await getMegaMenuData()
           if (result.success && result.categories) {
             // Filter out categories with no products
             const categoriesWithProducts = (result.categories as ProductCategory[]).filter(

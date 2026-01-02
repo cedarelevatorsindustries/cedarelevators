@@ -14,7 +14,7 @@ interface RecentOrdersProps {
 
 const statusColors = {
   pending: "destructive",
-  processing: "secondary", 
+  processing: "secondary",
   shipped: "default",
   delivered: "outline",
 } as const
@@ -57,10 +57,10 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
             <CardTitle className="text-xl font-semibold text-gray-900">Orders Needing Action</CardTitle>
             <p className="text-sm text-gray-600 mt-1">No recent orders found</p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
             asChild
           >
             <Link href="/admin/orders">
@@ -82,10 +82,10 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
           <CardTitle className="text-xl font-semibold text-gray-900">Orders Needing Action</CardTitle>
           <p className="text-sm text-gray-600 mt-1">Recent orders requiring your attention</p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300" 
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
           asChild
         >
           <Link href="/admin/orders">
@@ -121,18 +121,17 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
                   </TableCell>
                   <TableCell className="text-gray-700">{order.items_count}</TableCell>
                   <TableCell className="font-semibold text-gray-900">
-                    ₹{order.total_amount.toLocaleString()}
+                    ₹{(order.total_amount || order.total || 0).toLocaleString()}
                   </TableCell>
                   <TableCell>
-                    <Badge 
+                    <Badge
                       variant={statusColors[order.status as keyof typeof statusColors] || "secondary"}
-                      className={`${
-                        order.status === 'pending' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                        order.status === 'processing' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                        order.status === 'shipped' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                        order.status === 'delivered' || order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
-                        'bg-gray-100 text-gray-700 border-gray-200'
-                      } font-medium`}
+                      className={`${order.status === 'pending' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                          order.status === 'processing' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                            order.status === 'shipped' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                              order.status === 'delivered' || order.status === 'completed' ? 'bg-green-100 text-green-700 border-green-200' :
+                                'bg-gray-100 text-gray-700 border-gray-200'
+                        } font-medium`}
                     >
                       {order.status}
                     </Badge>
@@ -142,17 +141,17 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="h-8 w-8 p-0 hover:bg-gray-100"
                         onClick={() => handleOrderAction(order.id, 'view')}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="h-8 w-8 p-0 hover:bg-gray-100"
                         onClick={() => handleOrderAction(order.id, 'process')}
                       >

@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { InventoryFilters } from '@/lib/types/inventory'
-import { InventoryTable } from '@/domains/admin/inventory/inventory-table'
-import { InventoryFilters as InventoryFiltersComponent } from '@/domains/admin/inventory/inventory-filters'
-import { LowStockAlerts } from '@/domains/admin/inventory/low-stock-alerts'
-import { BulkImportDialog } from '@/domains/admin/inventory/bulk-import-dialog'
+import { InventoryTable } from '@/modules/admin/inventory/inventory-table'
+import { InventoryFilters as InventoryFiltersComponent } from '@/modules/admin/inventory/inventory-filters'
+import { LowStockAlerts } from '@/modules/admin/inventory/low-stock-alerts'
+import { BulkImportDialog } from '@/modules/admin/inventory/bulk-import-dialog'
 import { InventoryEmptyState } from '@/components/common/empty-states'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,16 +22,16 @@ export default function InventoryPage() {
   const [page, setPage] = useState(1)
 
   // React Query hooks
-  const { 
-    data: inventory = [], 
+  const {
+    data: inventory = [],
     isLoading,
-    refetch: refetchInventory 
+    refetch: refetchInventory
   } = useInventory(filters, page, 50)
-  
-  const { 
+
+  const {
     data: stats,
     isLoading: isLoadingStats,
-    refetch: refetchStats 
+    refetch: refetchStats
   } = useInventoryStats()
 
   const {

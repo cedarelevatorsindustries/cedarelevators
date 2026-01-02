@@ -4,7 +4,7 @@ export interface MobileMenuItem {
   label: string
   icon: string
   href?: string
-  onClick?: () => void
+  onClick?: (() => void) | string
   badge?: string
   chevron?: boolean
 }
@@ -30,7 +30,7 @@ export function getMobileProfileMenu(
   accountType: AccountType,
   isVerified: boolean = false
 ): MobileMenuSection[] {
-  
+
   // GUEST USER MENU (5 items total)
   if (accountType === 'guest') {
     return [
@@ -48,7 +48,7 @@ export function getMobileProfileMenu(
       }
     ]
   }
-  
+
   // INDIVIDUAL USER MENU (11 items total)
   if (accountType === 'individual') {
     return [
@@ -85,7 +85,7 @@ export function getMobileProfileMenu(
       }
     ]
   }
-  
+
   // BUSINESS USER MENU (10-11 items based on verification)
   if (accountType === 'business') {
     if (!isVerified) {
@@ -159,7 +159,7 @@ export function getMobileProfileMenu(
       ]
     }
   }
-  
+
   // Fallback (should never reach here)
   return []
 }
@@ -174,19 +174,19 @@ export function getAccountCardCTA(accountType: AccountType, isVerified: boolean)
       secondary: { label: 'Create Account', href: '/sign-up' }
     }
   }
-  
+
   if (accountType === 'individual') {
     return {
       primary: { label: 'Upgrade to Business', href: '/business-signup' }
     }
   }
-  
+
   if (accountType === 'business' && !isVerified) {
     return {
       primary: { label: 'Complete Verification', href: '/profile/approvals' }
     }
   }
-  
+
   // Verified business - no CTA
   return null
 }

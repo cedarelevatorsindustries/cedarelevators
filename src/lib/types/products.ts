@@ -49,14 +49,10 @@ export interface Product {
     is_categorized: boolean
 
     // Cedar-specific technical fields (Phase 3)
-    voltage?: string // Operating voltage (e.g., 220V, 380V, 415V)
-    load_capacity_kg?: number // Maximum load capacity in kilograms
-    speed_ms?: number // Operating speed in meters per second
-    variant_group?: string // Group identifier for product variants
     technical_specs?: Record<string, any> // Additional technical specifications as JSON
 
     status: ProductStatus
-    thumbnail?: string
+    thumbnail_url?: string
     images: ProductImage[]
     price?: number
     compare_at_price?: number
@@ -70,14 +66,10 @@ export interface Product {
     taxable: boolean
     sku?: string
     barcode?: string
-    weight?: number
-    dimensions?: ProductDimensions
     specifications?: ProductSpecification[]
     meta_title?: string
     meta_description?: string
     tags?: string[]
-    is_featured: boolean
-    view_count: number
     created_at: string
     updated_at: string
 }
@@ -93,6 +85,7 @@ export interface ProductWithDetails extends Product {
     subcategory_name?: string
     elevator_types?: Array<{ id: string; name: string }>
     collections?: Array<{ id: string; title: string }>
+    product_variants?: ProductVariant[]
 }
 
 // Form Data for Create/Update
@@ -112,12 +105,12 @@ export interface ProductFormData {
     elevator_type_ids?: string[] // Multi-select
     collection_ids?: string[] // Multi-select (optional)
 
-    // Cedar-specific technical fields (Phase 3)
-    voltage?: string // Operating voltage
-    load_capacity_kg?: number // Load capacity in kg
-    speed_ms?: number // Speed in m/s
-    variant_group?: string // Variant grouping
-    technical_specs?: Record<string, any> // Additional tech specs (already exists in Product)
+    // New fields
+    technical_specs?: Record<string, any>
+    thumbnail_url?: string
+    tags?: string[]
+    images?: ProductImage[] // For simpler handling in frontend
+    variants?: any[] // For simpler handling in frontend
 
     status: ProductStatus
     price: number
@@ -132,13 +125,7 @@ export interface ProductFormData {
     taxable: boolean
     sku?: string
     barcode?: string
-    weight?: number
-    dimensions: ProductDimensions
     specifications: ProductSpecification[]
-    tags: string[]
-    is_featured: boolean
-    images: ProductImage[]
-    variants?: any[] // Product variants
     meta_title?: string
     meta_description?: string
 }
@@ -150,6 +137,28 @@ export interface ProductFilters {
     is_featured?: boolean
     min_price?: number
     max_price?: number
+}
+
+// Product Variant
+export interface ProductVariant {
+    id: string
+    product_id: string
+    name: string
+    sku: string
+    price: number
+    compare_at_price?: number
+    cost_per_item?: number
+    inventory_quantity: number
+    status: ProductStatus
+    barcode?: string
+    weight?: number
+    image_url?: string
+    option1_name?: string
+    option1_value?: string
+    option2_name?: string
+    option2_value?: string
+    option3_name?: string
+    option3_value?: string
 }
 
 export interface ProductStats {

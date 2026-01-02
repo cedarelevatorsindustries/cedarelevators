@@ -3,7 +3,7 @@
  * Tracks all admin actions for audit trail
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabase } from '@/lib/supabase/server'
 
 export interface ActivityLog {
   id?: string
@@ -38,7 +38,7 @@ export async function logActivity(
   activity: Omit<ActivityLog, 'id' | 'created_at'>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
 
     const { error } = await supabase
       .from('admin_activity_logs')
@@ -74,7 +74,7 @@ export async function getActivityLogs(filters: {
   error?: string
 }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const {
       adminId,
       resourceType,
@@ -143,7 +143,7 @@ export async function getActivityStats(days: number = 30): Promise<{
   error?: string
 }> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabase()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
@@ -159,19 +159,19 @@ export async function getActivityStats(days: number = 30): Promise<{
     const totalActions = logs?.length || 0
 
     // Actions by type
-    const actionsByType = logs?.reduce((acc: Record<string, number>, log) => {
+    const actionsByType = logs?.reduce((acc: Record<string, number>, log: any) => {
       acc[log.action] = (acc[log.action] || 0) + 1
       return acc
     }, {})
 
     // Actions by resource
-    const actionsByResource = logs?.reduce((acc: Record<string, number>, log) => {
+    const actionsByResource = logs?.reduce((acc: Record<string, number>, log: any) => {
       acc[log.resource_type] = (acc[log.resource_type] || 0) + 1
       return acc
     }, {})
 
     // Top admins
-    const adminCounts = logs?.reduce((acc: Record<string, number>, log) => {
+    const adminCounts = logs?.reduce((acc: Record<string, number>, log: any) => {
       acc[log.admin_email] = (acc[log.admin_email] || 0) + 1
       return acc
     }, {})

@@ -14,7 +14,7 @@ import type {
  */
 export async function linkCategoryToApplication(data: CreateApplicationCategoryData) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Check if link already exists
         const { data: existing } = await supabase
@@ -63,7 +63,7 @@ export async function linkCategoryToApplication(data: CreateApplicationCategoryD
  */
 export async function unlinkCategoryFromApplication(linkId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { error } = await supabase
             .from('application_categories')
@@ -87,7 +87,7 @@ export async function unlinkCategoryFromApplication(linkId: string) {
  */
 export async function getApplicationCategories(applicationId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('application_categories')
@@ -112,7 +112,7 @@ export async function getApplicationCategories(applicationId: string) {
 
         return {
             success: true,
-            links: data as ApplicationCategoryWithDetails[]
+            links: data as unknown as ApplicationCategoryWithDetails[]
         }
     } catch (error) {
         console.error('Error fetching application categories:', error)
@@ -130,7 +130,7 @@ export async function getApplicationCategories(applicationId: string) {
  */
 export async function getCategoryApplications(categoryId: string) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
             .from('application_categories')
@@ -171,7 +171,7 @@ export async function getCategoryApplications(categoryId: string) {
  */
 export async function updateApplicationCategoryOrder(linkId: string, data: UpdateApplicationCategoryData) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         const { error } = await supabase
             .from('application_categories')
@@ -201,7 +201,7 @@ export async function reorderApplicationCategories(
     categoryOrders: Array<{ category_id: string; sort_order: number }>
 ) {
     try {
-        const supabase = createServerSupabase()
+        const supabase = await createServerSupabase()
 
         // Update each link's sort order
         const updates = categoryOrders.map(({ category_id, sort_order }) =>

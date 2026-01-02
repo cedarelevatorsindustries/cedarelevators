@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { generateSalesReport, generateInventoryReport, generateCustomerReport } from '@/lib/reports/generator'
+import { generatePDFReport, generateExcelReport } from '@/lib/reports/generator'
+import { calculateSalesMetrics, calculateProductMetrics, calculateCustomerMetrics } from '@/lib/analytics/calculations'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,27 +19,59 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const config = {
-      type,
-      format,
-      dateRange: {
-        start: startDate ? new Date(startDate) : new Date(new Date().setDate(new Date().getDate() - 30)),
-        end: endDate ? new Date(endDate) : new Date(),
-      },
-    }
+    const start = startDate ? new Date(startDate) : new Date(new Date().setDate(new Date().getDate() - 30))
+    const end = endDate ? new Date(endDate) : new Date()
 
-    let result
+    let reportData: Record<string, any>
+    let reportTitle: string
 
+    // Generate report data based on type
     switch (type) {
-      case 'sales':
-        result = await generateSalesReport(config)
+      case 'sales': {
+        const metrics = await calculateSalesMetrics(start, end)
+        reportTitle = 'Sales Report'
+        reportData = {
+          'Report Type': 'Sales Summary',
+          'Date Range': `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+          'Total Revenue': `₹${metrics.totalRevenue.toLocaleString()}`,
+          'Total Orders': metrics.totalOrders,
+          'Average Order Value': `₹${metrics.averageOrderValue.toFixed(2)}`,
+          'Revenue Change': `${metrics.revenueChange.toFixed(2)}%`,
+          'Orders Change': `${metrics.ordersChange.toFixed(2)}%`,
+        }
         break
-      case 'inventory':
-        result = await generateInventoryReport(config)
+      }
+
+      case 'inventory': {
+        const metrics = await calculateProductMetrics()
+        reportTitle = 'Inventory Report'
+        reportData = {
+          'Report Type': 'Inventory Status',
+          'Generated On': new Date().toLocaleString(),
+          'Total Products': metrics.totalProducts,
+          'Active Products': metrics.activeProducts,
+          'Low Stock Products': metrics.lowStockProducts,
+          'Out of Stock Products': metrics.outOfStockProducts,
+        }
         break
-      case 'customer':
-        result = await generateCustomerReport(config)
+      }
+
+      case 'customer': {
+        const metrics = await calculateCustomerMetrics(start, end)
+        reportTitle = 'Customer Report'
+        reportData = {
+          'Report Type': 'Customer Analytics',
+          'Date Range': `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`,
+          'Total Customers': metrics.totalCustomers,
+          'New Customers': metrics.newCustomers,
+          'Repeat Customers': metrics.repeatCustomers,
+          'Retention Rate': `${metrics.customerRetentionRate.toFixed(2)}%`,
+          'Business Customers': metrics.businessVsIndividual.business,
+          'Individual Customers': metrics.businessVsIndividual.individual,
+        }
         break
+      }
+
       default:
         return NextResponse.json(
           { error: 'Invalid report type' },
@@ -46,9 +79,17 @@ export async function POST(request: NextRequest) {
         )
     }
 
+    // Generate the file
+    let result
+    if (format === 'pdf') {
+      result = generatePDFReport(reportTitle, reportData)
+    } else {
+      result = generateExcelReport(reportTitle, [reportData])
+    }
+
     if (!result.success || !result.data) {
       return NextResponse.json(
-        { error: result.error || 'Report generation failed' },
+        { error: 'Report generation failed' },
         { status: 500 }
       )
     }

@@ -148,7 +148,6 @@ export async function createCategory(formData: CategoryFormData) {
         sort_order: formData.sort_order || 0,
         is_active: formData.is_active !== false,
         status: formData.status || 'active',
-        application: formData.application,
         meta_title: formData.meta_title,
         meta_description: formData.meta_description
       })
@@ -195,7 +194,6 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
     if (formData.sort_order !== undefined) updateData.sort_order = formData.sort_order
     if (formData.is_active !== undefined) updateData.is_active = formData.is_active
     if (formData.status !== undefined) updateData.status = formData.status
-    if (formData.application !== undefined) updateData.application = formData.application
     if (formData.meta_title !== undefined) updateData.meta_title = formData.meta_title
     if (formData.meta_description !== undefined) updateData.meta_description = formData.meta_description
 
@@ -385,3 +383,11 @@ function buildCategoryTree(categories: Category[]): CategoryWithChildren[] {
 
   return rootCategories
 }
+
+// Backwards compatibility aliases
+export const fetchCategories = getCategories
+export const getCategoryTree = async () => {
+  const result = await getCategories()
+  return result.categories || []
+}
+

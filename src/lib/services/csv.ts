@@ -42,5 +42,80 @@ export const CSVService = {
         link.download = filename
         link.click()
         URL.revokeObjectURL(link.href)
+    },
+
+    generateInventoryTemplate(): string {
+        const headers = ['variant_id', 'sku', 'adjustment_type', 'quantity', 'reason', 'low_stock_threshold']
+        const sampleRow = ['variant-uuid-here', 'SAMPLE-SKU', 'add', '10', 'Initial stock', '5']
+        return `${headers.join(',')}\n${sampleRow.join(',')}`
+    },
+
+    parseInventoryCSV(csvText: string): {
+        success: boolean
+        data?: Array<{
+            variant_id: string
+            sku: string
+            adjustment_type: string
+            quantity: string
+            reason: string
+            low_stock_threshold?: string
+        }>
+        errors?: string[]
+    } {
+        const errors: string[] = []
+        const lines = csvText.trim().split('\n')
+
+        if (lines.length < 2) {
+            return { success: false, errors: ['CSV file is empty or has no data rows'] }
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim())
+        const requiredHeaders = ['variant_id', 'adjustment_type', 'quantity']
+        const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
+
+        if (missingHeaders.length > 0) {
+            return {
+                success: false,
+                errors: [`Missing required headers: ${missingHeaders.join(', ')}`]
+            }
+        }
+
+        const data: any[] = []
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim()
+            if (!line) continue
+
+            const values = line.split(',').map(v => v.trim())
+            const row: any = {}
+
+            headers.forEach((header, index) => {
+                row[header] = values[index] || ''
+            })
+
+            // Validate required fields
+            if (!row.variant_id) {
+                errors.push(`Row ${i}: Missing variant_id`)
+                continue
+            }
+
+            if (!row.quantity || isNaN(parseInt(row.quantity))) {
+                errors.push(`Row ${i}: Invalid or missing quantity`)
+                continue
+            }
+
+            if (!['add', 'subtract', 'set'].includes(row.adjustment_type)) {
+                errors.push(`Row ${i}: Invalid adjustment_type (must be add, subtract, or set)`)
+                continue
+            }
+
+            data.push(row)
+        }
+
+        if (data.length === 0) {
+            return { success: false, errors: errors.length > 0 ? errors : ['No valid data rows found'] }
+        }
+
+        return { success: true, data, errors: errors.length > 0 ? errors : undefined }
     }
 }

@@ -20,7 +20,7 @@ interface ProductImage {
 
 interface MediaTabProps {
   images: ProductImage[]
-  onImagesChange: (images: ProductImage[]) => void
+  onImagesChange: (images: ProductImage[], thumbnailUrl?: string) => void
 }
 
 export function MediaTab({ images, onImagesChange }: MediaTabProps) {
@@ -113,7 +113,9 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
     })
 
     const newImages = await Promise.all(newImagesPromises)
-    onImagesChange([...images, ...newImages])
+    const updatedImages = [...images, ...newImages]
+    const primaryImage = updatedImages.find(img => img.isPrimary)
+    onImagesChange(updatedImages, primaryImage?.url)
   }
 
   const removeImage = (imageId: string) => {
@@ -122,7 +124,8 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
     if (updatedImages.length > 0 && !updatedImages.some(img => img.isPrimary)) {
       updatedImages[0].isPrimary = true
     }
-    onImagesChange(updatedImages)
+    const primaryImage = updatedImages.find(img => img.isPrimary)
+    onImagesChange(updatedImages, primaryImage?.url)
   }
 
   const setPrimaryImage = (imageId: string) => {
@@ -130,14 +133,16 @@ export function MediaTab({ images, onImagesChange }: MediaTabProps) {
       ...img,
       isPrimary: img.id === imageId
     }))
-    onImagesChange(updatedImages)
+    const primaryImage = updatedImages.find(img => img.isPrimary)
+    onImagesChange(updatedImages, primaryImage?.url)
   }
 
   const updateAltText = (imageId: string, alt: string) => {
     const updatedImages = images.map(img =>
       img.id === imageId ? { ...img, alt } : img
     )
-    onImagesChange(updatedImages)
+    const primaryImage = updatedImages.find(img => img.isPrimary)
+    onImagesChange(updatedImages, primaryImage?.url)
   }
 
   return (

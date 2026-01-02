@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { CSVService } from '@/lib/services/csv'
-import { InventoryService } from '@/lib/services/inventory'
+import { bulkAdjustVariantStock } from '@/lib/actions/inventory-adjustments'
 import { toast } from 'sonner'
 import { Upload, Download, FileText, AlertCircle } from 'lucide-react'
 
@@ -71,14 +71,14 @@ export function BulkImportDialog({ onSuccess }: BulkImportDialogProps) {
       }
 
       // Process bulk adjustments
-      const adjustments = parseResult.data.map(row => ({
+      const adjustments = parseResult.data.map((row: { variant_id: string; quantity: string; reason: string; adjustment_type: string }) => ({
         variant_id: row.variant_id,
         quantity: parseInt(row.quantity),
         reason: row.reason,
         adjust_type: row.adjustment_type as 'add' | 'subtract' | 'set',
       }))
 
-      const result = await InventoryService.bulkAdjustStock({ adjustments })
+      const result = await bulkAdjustVariantStock({ adjustments })
 
       if (result.success && result.data) {
         toast.success(

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Quote, QuoteMessage } from '@/types/b2b/quote'
-import { 
-  ArrowLeft, Download, CircleCheck, X, RefreshCw, 
+import { Quote, QuoteMessage, QuoteStatus } from '@/types/b2b/quote'
+import {
+  ArrowLeft, Download, CircleCheck, X, RefreshCw,
   FileText, Calendar, Building2, User, Mail, Phone,
   MessageSquare, Send, Paperclip, Package, TrendingUp,
   Clock, AlertCircle
@@ -47,7 +47,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !quote) return
-    
+
     setIsSendingMessage(true)
     try {
       const { addQuoteMessage } = await import('@/lib/actions/quotes')
@@ -134,81 +134,96 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
   // Mock data for fallback - replace with actual API call
   const mockQuote: Quote = {
-  id: '1',
-  quote_number: 'Q10042',
-  company_name: 'CEDAR ELEVATORS INDUSTRIES',
-  customer_name: 'Rajesh Kumar',
-  customer_email: 'rajesh@cedar.com',
-  status: 'accepted',
-  requested_date: '2025-11-18T10:00:00Z',
-  valid_until: '2025-12-18T10:00:00Z',
-  subtotal: 1036400,
-  tax_total: 186552,
-  discount_total: 148800,
-  total: 1240000,
-  items: [
-    {
-      id: '1',
-      variant_id: 'var1',
-      product_id: 'prod1',
-      product_name: 'Elevator Controller',
-      quantity: 5,
-      unit_price: 85000,
-      total_price: 425000,
-      discount_percentage: 12,
-      total: 374000,
+    id: '1',
+    quote_number: 'Q10042',
+    user_type: 'business',
+    status: 'approved' as QuoteStatus,
+    priority: 'medium',
+    company_details: {
+      company_name: 'CEDAR ELEVATORS INDUSTRIES',
+      contact_name: 'Rajesh Kumar',
     },
-    {
-      id: '2',
-      variant_id: 'var2',
-      product_id: 'prod2',
-      product_name: 'Traction Machine',
-      quantity: 3,
-      unit_price: 240000,
-      total_price: 720000,
-      discount_percentage: 8,
-      total: 662400,
-    },
-  ],
-  attachments: [
-    {
-      id: '1',
-      name: 'Technical Drawing.pdf',
-      url: '/attachments/tech-drawing.pdf',
-      size: 1024000,
-      type: 'pdf',
-    },
-    {
-      id: '2',
-      name: 'Payment Terms.pdf',
-      url: '/attachments/payment-terms.pdf',
-      size: 512000,
-      type: 'pdf',
-    },
-  ],
-  messages: [
-    {
-      id: '1',
-      quote_id: '1',
-      user_id: 'user1',
-      user_name: 'Rajesh Kumar',
-      user_avatar: undefined,
-      message: 'Can you give 2% extra discount?',
-      created_at: '2025-11-18T11:00:00Z',
-      is_internal: false,
-    },
-    {
-      id: '2',
-      quote_id: '1',
-      user_id: 'sales1',
-      user_name: 'Sales Team',
-      user_avatar: undefined,
-      message: 'Done! Revised quote attached.',
-      created_at: '2025-11-18T12:00:00Z',
-      is_internal: false,
-    },
-  ],
-}
+    guest_email: 'rajesh@cedar.com',
+    clerk_user_id: 'user_123',
+    created_at: '2025-11-18T10:00:00Z',
+    updated_at: '2025-11-18T10:00:00Z',
+    valid_until: '2025-12-18T10:00:00Z',
+    subtotal: 1036400,
+    tax_total: 186552,
+    discount_total: 148800,
+    estimated_total: 1240000,
+    bulk_pricing_requested: false,
+    items: [
+      {
+        id: '1',
+        quote_id: '1',
+        variant_id: 'var1',
+        product_id: 'prod1',
+        product_name: 'Elevator Controller',
+        quantity: 5,
+        unit_price: 85000,
+        total_price: 374000,
+        discount_percentage: 12,
+        bulk_pricing_requested: false,
+        created_at: '2025-11-18T10:00:00Z',
+      },
+      {
+        id: '2',
+        quote_id: '1',
+        variant_id: 'var2',
+        product_id: 'prod2',
+        product_name: 'Traction Machine',
+        quantity: 3,
+        unit_price: 240000,
+        total_price: 662400,
+        discount_percentage: 8,
+        bulk_pricing_requested: false,
+        created_at: '2025-11-18T10:00:00Z',
+      },
+    ],
+    attachments: [
+      {
+        id: '1',
+        quote_id: '1',
+        file_name: 'Technical Drawing.pdf',
+        file_url: '/attachments/tech-drawing.pdf',
+        file_size: 1024000,
+        mime_type: 'application/pdf',
+        uploaded_at: '2025-11-18T10:00:00Z',
+      },
+      {
+        id: '2',
+        quote_id: '1',
+        file_name: 'Payment Terms.pdf',
+        file_url: '/attachments/payment-terms.pdf',
+        file_size: 512000,
+        mime_type: 'application/pdf',
+        uploaded_at: '2025-11-18T10:00:00Z',
+      },
+    ],
+    messages: [
+      {
+        id: '1',
+        quote_id: '1',
+        sender_type: 'user',
+        sender_id: 'user1',
+        sender_name: 'Rajesh Kumar',
+        message: 'Can you give 2% extra discount?',
+        created_at: '2025-11-18T11:00:00Z',
+        is_internal: false,
+      },
+      {
+        id: '2',
+        quote_id: '1',
+        sender_type: 'admin',
+        sender_id: 'sales1',
+        sender_name: 'Sales Team',
+        message: 'Done! Revised quote attached.',
+        created_at: '2025-11-18T12:00:00Z',
+        is_internal: false,
+      },
+    ],
+  }
 
   // Use actual quote data
 
@@ -239,13 +254,12 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
   }
 
   const getStatusBadge = () => {
-    const configs = {
+    const configs: Record<QuoteStatus, { label: string; color: string; icon: any }> = {
       pending: { label: 'Pending', color: 'bg-orange-100 text-orange-700', icon: Clock },
-      negotiation: { label: 'Negotiation', color: 'bg-blue-100 text-blue-700', icon: MessageSquare },
-      revised: { label: 'Revised', color: 'bg-blue-100 text-blue-700', icon: RefreshCw },
-      accepted: { label: 'Accepted', color: 'bg-green-100 text-green-700', icon: CircleCheck },
+      reviewing: { label: 'Under Review', color: 'bg-blue-100 text-blue-700', icon: MessageSquare },
+      approved: { label: 'Approved', color: 'bg-green-100 text-green-700', icon: CircleCheck },
       rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: X },
-      expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700', icon: AlertCircle },
+      converted: { label: 'Converted', color: 'bg-purple-100 text-purple-700', icon: TrendingUp },
     }
     return configs[quote.status]
   }
@@ -270,7 +284,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
             Quote #{quote.quote_number}
           </h1>
           <p className="text-gray-600 mt-1">
-            Requested: {formatDate(quote.requested_date)} • Valid until: {formatDate(quote.valid_until)}
+            Requested: {formatDate(quote.created_at)} • Valid until: {formatDate(quote.valid_until)}
           </p>
         </div>
         <span className={cn('inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold', statusConfig.color)}>
@@ -292,7 +306,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
               <div>
                 <p className="text-sm text-gray-600 mb-1">Company Name</p>
                 <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  {quote.company_name}
+                  {quote.company_details?.company_name || 'N/A'}
                   <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
                     Verified
                   </span>
@@ -300,11 +314,11 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Contact Person</p>
-                <p className="font-semibold text-gray-900">{quote.customer_name}</p>
+                <p className="font-semibold text-gray-900">{quote.company_details?.contact_name || quote.guest_name || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Email</p>
-                <p className="font-semibold text-gray-900">{quote.customer_email}</p>
+                <p className="font-semibold text-gray-900">{quote.guest_email || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -341,7 +355,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {quote.items.map((item) => (
+                  {quote.items?.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4">
                         <p className="font-semibold text-gray-900">{item.product_name}</p>
@@ -356,7 +370,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                         {item.discount_percentage}%
                       </td>
                       <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                        {formatCurrency(item.total)}
+                        {formatCurrency(item.total_price)}
                       </td>
                     </tr>
                   ))}
@@ -366,7 +380,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-gray-200">
-              {quote.items.map((item) => (
+              {quote.items?.map((item) => (
                 <div key={item.id} className="p-4">
                   <p className="font-semibold text-gray-900 mb-3">{item.product_name}</p>
                   <div className="space-y-2 text-sm">
@@ -384,7 +398,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                     </div>
                     <div className="flex justify-between pt-2 border-t border-gray-200">
                       <span className="font-semibold text-gray-900">Total:</span>
-                      <span className="font-semibold text-gray-900">{formatCurrency(item.total)}</span>
+                      <span className="font-semibold text-gray-900">{formatCurrency(item.total_price)}</span>
                     </div>
                   </div>
                 </div>
@@ -408,7 +422,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="text-lg font-bold text-gray-900">Total:</span>
-                  <span className="text-lg font-bold text-gray-900">{formatCurrency(quote.total)}</span>
+                  <span className="text-lg font-bold text-gray-900">{formatCurrency(quote.estimated_total)}</span>
                 </div>
               </div>
             </div>
@@ -425,13 +439,13 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                 {quote.attachments.map((attachment) => (
                   <a
                     key={attachment.id}
-                    href={attachment.url}
+                    href={attachment.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <FileText className="text-red-500" size={20} />
-                    <span className="flex-1 font-medium text-gray-900">{attachment.name}</span>
+                    <span className="flex-1 font-medium text-gray-900">{attachment.file_name}</span>
                     <Download className="text-gray-400" size={18} />
                   </a>
                 ))}
@@ -443,21 +457,21 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
           <div className="flex flex-wrap gap-3">
             {quote.status === 'pending' && (
               <>
-                <button 
+                <button
                   onClick={() => handleUpdateStatus('accepted')}
                   className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
                 >
                   <CircleCheck size={20} />
                   Accept Quote
                 </button>
-                <button 
+                <button
                   onClick={() => handleUpdateStatus('negotiation')}
                   className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
                 >
                   <MessageSquare size={20} />
                   Request Revision
                 </button>
-                <button 
+                <button
                   onClick={() => handleUpdateStatus('rejected')}
                   className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
                 >
@@ -466,7 +480,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                 </button>
               </>
             )}
-            {quote.status === 'accepted' && (
+            {quote.status === 'approved' && (
               <Link
                 href="/checkout"
                 className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
@@ -475,7 +489,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                 Convert to Order
               </Link>
             )}
-            <button 
+            <button
               onClick={handleDownloadPDF}
               className="px-6 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
             >
@@ -510,7 +524,7 @@ export default function QuoteDetailSection({ quoteNumber, onBack }: QuoteDetailS
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-semibold text-gray-900">
-                        {message.user_name}
+                        {message.sender_name}
                       </span>
                       <span className="text-xs text-gray-500">
                         {formatDateTime(message.created_at)}

@@ -28,8 +28,8 @@ export default function QuotesOrdersSnapshot() {
         })
 
         if (quotesResult.success) {
-          const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'in_review').length
-          const approved = quotesResult.quotes.filter(q => q.status === 'accepted').length
+          const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'reviewing').length
+          const approved = quotesResult.quotes.filter(q => q.status === 'approved').length
           setQuotesData({ pending, approved })
         }
 

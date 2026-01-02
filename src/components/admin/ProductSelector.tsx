@@ -188,9 +188,9 @@ export function ProductSelector({
                           </div>
 
                           {/* Product Thumbnail */}
-                          {product.thumbnail ? (
+                          {product.thumbnail_url ? (
                             <img
-                              src={product.thumbnail}
+                              src={product.thumbnail_url}
                               alt={product.name}
                               className="h-10 w-10 rounded object-cover flex-shrink-0"
                             />
@@ -218,8 +218,8 @@ export function ProductSelector({
                               product.status === "active"
                                 ? "bg-green-50 text-green-700 border-green-200"
                                 : product.status === "draft"
-                                ? "bg-gray-50 text-gray-600 border-gray-200"
-                                : "bg-red-50 text-red-600 border-red-200"
+                                  ? "bg-gray-50 text-gray-600 border-gray-200"
+                                  : "bg-red-50 text-red-600 border-red-200"
                             )}
                           >
                             {product.status}

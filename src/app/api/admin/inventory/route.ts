@@ -73,7 +73,7 @@ export async function PATCH(request: NextRequest) {
     if (variantId) {
       result = await updateVariantInventory(variantId, quantity, operation || 'set')
     } else {
-      result = await updateProductInventory(productId, quantity, operation || 'set')
+      result = await updateProductInventory(productId, quantity)
     }
 
     if (!result.success) {
@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      item: variantId ? result.variant : result.product,
+      item: variantId ? (result as any).variant : (result as any).product,
     })
   } catch (error: any) {
     console.error('Error updating inventory:', error)

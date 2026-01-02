@@ -53,7 +53,7 @@ export function generateWebSiteSchema(): WebSite {
         urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
-    },
+    } as any,
   }
 }
 
@@ -104,12 +104,12 @@ export function generateProductSchema(product: {
     },
     ...(rating && reviewCount
       ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: rating,
-            reviewCount,
-          },
-        }
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: rating,
+          reviewCount,
+        },
+      }
       : {}),
   }
 }

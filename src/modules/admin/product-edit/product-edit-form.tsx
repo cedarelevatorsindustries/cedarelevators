@@ -6,10 +6,13 @@ import { Save, ArrowLeft, Plus, Package } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { updateProduct } from "@/lib/actions/products"
+import { createVariant, updateVariant, deleteVariant } from "@/lib/actions/variants"
 import { toast } from "sonner"
 import { ProductTabs } from "@/modules/admin/product-creation/product-tabs"
 import { ProductPreview } from "@/modules/admin/product-creation/product-preview"
+import { VariantEditorDrawer } from "@/components/admin/variant-editor-drawer"
 import { useRouter } from "next/navigation"
+import { EditVariantsTab } from "@/modules/admin/product-edit/edit-variants-tab"
 
 // Import all tab components
 import { BasicInformationTab } from "@/modules/admin/product-creation/basic-information-tab"
@@ -62,7 +65,9 @@ interface ProductFormData {
   metaTitle: string
   metaDescription: string
   urlHandle: string
+  tags?: string[]
   technical_specs?: Record<string, any>
+  thumbnail_url?: string
 }
 
 interface ProductEditFormProps {
@@ -72,7 +77,6 @@ interface ProductEditFormProps {
   elevatorTypes: any[]
   variants: any[]
 }
-
 export function ProductEditForm({
   product,
   applications,
@@ -83,6 +87,8 @@ export function ProductEditForm({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("basic-information")
   const [isLoading, setIsLoading] = useState(false)
+
+  // Variant editor state logic moved to EditVariantsTab
 
   const [formData, setFormData] = useState<ProductFormData>({
     title: product.name || "",
@@ -117,9 +123,12 @@ export function ProductEditForm({
     metaTitle: product.meta_title || "",
     metaDescription: product.meta_description || "",
     urlHandle: product.slug || "",
-    technical_specs: product.technical_specs || {}
+    technical_specs: product.technical_specs || {},
+    tags: product.tags || [],
+    thumbnail_url: product.thumbnail_url || ""
   })
 
+  // ... (keep updateFormData and handleSubmit logic same)
   const updateFormData = (updates: Partial<ProductFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }))
   }
@@ -166,7 +175,9 @@ export function ProductEditForm({
         taxable: formData.taxable,
         bulk_pricing_available: formData.bulkPricingAvailable,
         bulk_pricing_note: formData.bulkPricingNote,
-        technical_specs: formData.technical_specs || {}
+        technical_specs: formData.technical_specs || {},
+        tags: formData.tags || [],
+        thumbnail_url: formData.thumbnail_url || formData.images.find(img => img.isPrimary)?.url || formData.images[0]?.url
       }
 
       const result = await updateProduct(product.id, productPayload)
@@ -264,7 +275,9 @@ export function ProductEditForm({
             {activeTab === "media" && (
               <MediaTab
                 images={formData.images}
-                onImagesChange={(images: ProductImage[]) => updateFormData({ images })}
+                onImagesChange={(images: ProductImage[], thumbnailUrl?: string) => {
+                  updateFormData({ images, thumbnail_url: thumbnailUrl })
+                }}
               />
             )}
 
@@ -272,7 +285,9 @@ export function ProductEditForm({
               <ProductDetailsTab
                 formData={{
                   description: formData.description,
-                  attributes: formData.attributes
+                  attributes: formData.attributes,
+                  tags: formData.tags,
+                  technical_specs: formData.technical_specs
                 }}
                 onFormDataChange={(updates) => updateFormData(updates)}
               />
@@ -324,63 +339,23 @@ export function ProductEditForm({
             )}
 
             {activeTab === "variants" && (
-              <Card className="border-0 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold">Product Variants</CardTitle>
-                  <CardDescription>
-                    Manage variants on individual variant detail pages
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {variants.length > 0 ? (
-                    <div className="space-y-3">
-                      {variants.map((variant: any) => (
-                        <Link
-                          key={variant.id}
-                          href={`/admin/products/${product.id}/variants/${variant.id}`}
-                          className="block p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-sm transition-all"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium text-gray-900">{variant.name}</h4>
-                              <p className="text-sm text-gray-500 mt-1">SKU: {variant.sku}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-gray-900">₹{variant.price}</p>
-                              <p className="text-sm text-gray-500">{variant.inventory_quantity} in stock</p>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                      <Button asChild className="w-full mt-4 bg-orange-600 hover:bg-orange-700">
-                        <Link href={`/admin/products/${product.id}/variants`}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add New Variant
-                        </Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Package className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-base font-medium text-gray-900 mb-2">No variants yet</h3>
-                      <p className="text-sm text-gray-500 mb-6">
-                        Create variants to offer different options of this product
-                      </p>
-                      <Button asChild className="bg-orange-600 hover:bg-orange-700">
-                        <Link href={`/admin/products/${product.id}/variants`}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create First Variant
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <EditVariantsTab
+                productId={product.id}
+                variants={variants}
+                productPrice={parseFloat(formData.price) || 0}
+              />
             )}
 
             {activeTab === "review" && (
               <ReviewPublishTab
-                formData={formData}
+                formData={{
+                  ...formData,
+                  variants: variants.map(v => ({
+                    ...v,
+                    stock: v.inventory_quantity,
+                    price: v.price
+                  }))
+                }}
                 onGoToStep={(step) => setActiveTab(step)}
                 validationErrors={[]}
               />

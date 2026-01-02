@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { InventoryItem } from '@/lib/types/inventory'
-import { InventoryService } from '@/lib/services/inventory'
+import { adjustVariantStock } from '@/lib/actions/inventory-adjustments'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,7 +58,7 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
 
     setIsAdjusting(true)
     try {
-      const result = await InventoryService.adjustStock(
+      const result = await adjustVariantStock(
         {
           variant_id: selectedItem.variant_id,
           quantity: parseInt(adjustQuantity),

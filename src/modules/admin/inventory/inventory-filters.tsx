@@ -59,7 +59,7 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
 
           <div className="space-y-2 min-w-0">
             <label className="text-sm font-medium text-gray-700">Stock Status</label>
-            <Select value={filters.stockStatus || 'all'} onValueChange={handleStockStatusChange}>
+            <Select value={filters.stockStatus || 'all'} onValueChange={(value) => handleStockStatusChange(value as 'all' | 'in_stock' | 'low_stock' | 'out_of_stock')}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -74,8 +74,8 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
 
           <div className="space-y-2 min-w-0 flex items-end">
             {hasActiveFilters && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={clearFilters}
                 className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
               >

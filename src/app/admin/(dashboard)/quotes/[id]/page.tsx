@@ -478,7 +478,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 )}
                                 Customer Information
                                 {quote.user_type === 'verified' && (
-                                    <BadgeCheck className="w-5 h-5 text-green-600" title="Verified Business" />
+                                    <BadgeCheck className="w-5 h-5 text-green-600" />
                                 )}
                             </CardTitle>
                         </CardHeader>
@@ -493,9 +493,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 <div>
                                     <p className="text-sm text-gray-500">Account Type</p>
                                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${quote.user_type === 'verified' ? 'bg-green-100 text-green-700' :
-                                            quote.user_type === 'business' ? 'bg-purple-100 text-purple-700' :
-                                                quote.user_type === 'individual' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-gray-100 text-gray-700'
+                                        quote.user_type === 'business' ? 'bg-purple-100 text-purple-700' :
+                                            quote.user_type === 'individual' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-gray-100 text-gray-700'
                                         }`}>
                                         {quote.user_type === 'verified' && <BadgeCheck className="w-3 h-3" />}
                                         {quote.user_type.charAt(0).toUpperCase() + quote.user_type.slice(1)}
@@ -725,10 +725,10 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                         >
                                             <div
                                                 className={`max-w-[75%] rounded-xl px-4 py-3 ${msg.is_internal
-                                                        ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                                                        : msg.sender_type === 'admin'
-                                                            ? 'bg-orange-600 text-white'
-                                                            : 'bg-gray-100 text-gray-800'
+                                                    ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                                                    : msg.sender_type === 'admin'
+                                                        ? 'bg-orange-600 text-white'
+                                                        : 'bg-gray-100 text-gray-800'
                                                     }`}
                                             >
                                                 {msg.is_internal && (
@@ -737,10 +737,10 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                                 <p className="text-sm">{msg.message}</p>
                                                 <p
                                                     className={`text-xs mt-1 ${msg.is_internal
-                                                            ? 'text-yellow-600'
-                                                            : msg.sender_type === 'admin'
-                                                                ? 'text-orange-200'
-                                                                : 'text-gray-500'
+                                                        ? 'text-yellow-600'
+                                                        : msg.sender_type === 'admin'
+                                                            ? 'text-orange-200'
+                                                            : 'text-gray-500'
                                                         }`}
                                                 >
                                                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}

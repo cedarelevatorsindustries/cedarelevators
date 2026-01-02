@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Calculator, Info, CircleCheck2 } from "lucide-react"
+import { Calculator, Info, CircleCheck } from "lucide-react"
 import { GST_RATES, type TaxSettings } from "../types"
 
 interface GlobalTaxSettingsProps {
@@ -64,20 +64,18 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    taxSettings.price_includes_tax
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${taxSettings.price_includes_tax
                       ? 'border-orange-500 bg-orange-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setTaxSettings({ ...taxSettings, price_includes_tax: true })}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
-                    }`}>
+                    <div className={`w-4 h-4 rounded-full border-2 ${taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
+                      }`}>
                       {taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">
-                          <CircleCheck2 className="w-3 h-3 text-white" />
+                          <CircleCheck className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>
@@ -88,20 +86,18 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
                   </div>
                 </div>
                 <div
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    !taxSettings.price_includes_tax
+                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${!taxSettings.price_includes_tax
                       ? 'border-orange-500 bg-orange-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setTaxSettings({ ...taxSettings, price_includes_tax: false })}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      !taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
-                    }`}>
+                    <div className={`w-4 h-4 rounded-full border-2 ${!taxSettings.price_includes_tax ? 'border-orange-500 bg-orange-500' : 'border-gray-400'
+                      }`}>
                       {!taxSettings.price_includes_tax && (
                         <div className="w-full h-full flex items-center justify-center">
-                          <CircleCheck2 className="w-3 h-3 text-white" />
+                          <CircleCheck className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>

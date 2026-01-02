@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, X } from "lucide-react"
-import { getCategories } from "@/lib/actions/products"
+import { getCategories } from "@/lib/actions/categories"
 
 interface ProductsFiltersProps {
   searchQuery: string
@@ -48,8 +48,8 @@ export function ProductsFilters({
   useEffect(() => {
     const fetchCategories = async () => {
       const result = await getCategories()
-      if (result.success && result.data) {
-        setCategories(result.data)
+      if (result.success && result.categories) {
+        setCategories(result.categories)
       }
     }
     fetchCategories()
@@ -91,7 +91,7 @@ export function ProductsFilters({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        
+
         <Select value={categoryFilter} onValueChange={onCategoryChange}>
           <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Category" />
@@ -105,7 +105,7 @@ export function ProductsFilters({
             ))}
           </SelectContent>
         </Select>
-        
+
         <Select value={statusFilter} onValueChange={onStatusChange}>
           <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Status" />
@@ -117,7 +117,7 @@ export function ProductsFilters({
             <SelectItem value="archived">Archived</SelectItem>
           </SelectContent>
         </Select>
-        
+
         <Select value={stockFilter} onValueChange={onStockChange}>
           <SelectTrigger className="w-[180px] border-gray-200 bg-white">
             <SelectValue placeholder="Stock Status" />
@@ -129,32 +129,32 @@ export function ProductsFilters({
             <SelectItem value="out-of-stock">Out of Stock</SelectItem>
           </SelectContent>
         </Select>
-        
+
         <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300">
           <Filter className="mr-2 h-4 w-4" />
           More Filters
         </Button>
       </div>
-      
+
       {/* Active Filters */}
       {activeFilters.length > 0 && (
         <div className="flex items-center space-x-2 flex-wrap">
           <span className="text-sm text-gray-600">Active filters:</span>
           {activeFilters.map((filter) => (
-            <Badge 
+            <Badge
               key={filter.key}
               className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200"
             >
               <span>{filter.label}</span>
-              <X 
-                className="h-3 w-3 cursor-pointer hover:text-orange-800" 
+              <X
+                className="h-3 w-3 cursor-pointer hover:text-orange-800"
                 onClick={() => removeFilter(filter.key)}
               />
             </Badge>
           ))}
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
             onClick={onClearFilters}
           >
