@@ -147,8 +147,17 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                     <div>
                         <p className="text-sm text-gray-500">Estimated Total</p>
                         <p className="text-lg font-semibold text-gray-900">
-                            {quote.estimated_total > 0 ? `₹${quote.estimated_total.toLocaleString()}` : 'Pending'}
+                            {userType === 'verified' && quote.estimated_total > 0
+                                ? `₹${quote.estimated_total.toLocaleString()}`
+                                : userType === 'verified'
+                                    ? 'Pending'
+                                    : '—'}
                         </p>
+                        {(userType === 'business' || userType === 'individual') && (
+                            <p className="text-xs text-orange-600 mt-1">
+                                {userType === 'business' ? 'Complete verification to view pricing' : 'Upgrade to business account for pricing'}
+                            </p>
+                        )}
                     </div>
                 </div>
 
