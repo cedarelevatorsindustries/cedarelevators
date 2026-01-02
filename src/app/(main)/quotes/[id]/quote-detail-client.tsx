@@ -256,9 +256,14 @@ export default function QuoteDetailClient({ quote, userType }: QuoteDetailClient
                                 {/* Quantity and Price */}
                                 <div className="text-right">
                                     <p className="font-medium text-gray-900">Qty: {item.quantity}</p>
-                                    {item.unit_price > 0 && (
+                                    {userType === 'verified' && item.unit_price > 0 && (
                                         <p className="text-sm text-gray-500">
                                             ₹{item.unit_price.toLocaleString()} each
+                                        </p>
+                                    )}
+                                    {userType !== 'verified' && (
+                                        <p className="text-sm text-gray-400">
+                                            Pricing not available
                                         </p>
                                     )}
                                 </div>
