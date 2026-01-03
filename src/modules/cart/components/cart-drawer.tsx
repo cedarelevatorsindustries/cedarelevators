@@ -109,7 +109,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => {
+              {derivedItems.map((item) => {
                 const isLoading = loadingItems.has(item.id)
                 
                 return (
@@ -141,15 +141,25 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <h3 className="font-medium text-gray-900 text-sm line-clamp-2 mb-1">
                         {item.title}
                       </h3>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {formatPrice(item.unit_price)}
-                      </p>
+                      {showPrice && item.is_available ? (
+                        <p className="text-sm font-semibold text-gray-900">
+                          ₹{item.unit_price.toLocaleString('en-IN')}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          {userType === 'guest' ? 'Sign in to view price' : 'Verify to view price'}
+                        </p>
+                      )}
+
+                      {!item.is_available && (
+                        <p className="text-xs text-red-600 mt-1">Unavailable</p>
+                      )}
 
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          disabled={isLoading || item.quantity <= 1}
+                          onClick={() => handleUpdateQuantity(item.id, item.product_id, item.quantity - 1, item.variant_id || undefined)}
+                          disabled={isLoading || item.quantity <= 1 || !item.is_available}
                           className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                         >
                           <Minus className="w-3 h-3" />
@@ -158,14 +168,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          disabled={isLoading}
+                          onClick={() => handleUpdateQuantity(item.id, item.product_id, item.quantity + 1, item.variant_id || undefined)}
+                          disabled={isLoading || !item.stock_available || !item.is_available}
                           className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => handleRemove(item.id)}
+                          onClick={() => handleRemove(item.id, item.product_id, item.variant_id || undefined)}
                           disabled={isLoading}
                           className="ml-auto p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
                         >
@@ -181,7 +191,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         {/* Footer */}
-        {items.length > 0 && (
+        {derivedItems.length > 0 && (
           <div className="border-t p-4 space-y-4">
             {/* Subtotal */}
             <div className="flex items-center justify-between text-lg font-semibold">
