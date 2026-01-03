@@ -33,35 +33,40 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const userType = getUserType()
   const showPrice = canSeePrice(userType)
 
-  const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (
+    itemId: string,
+    productId: string,
+    newQuantity: number,
+    variantId?: string
+  ) => {
     if (newQuantity < 1) return
-    setLoadingItems(prev => new Set(prev).add(lineId))
+    setLoadingItems(prev => new Set(prev).add(itemId))
     try {
-      await updateQuantity(lineId, newQuantity)
+      await updateQuantity(itemId, productId, newQuantity, variantId)
     } finally {
       setLoadingItems(prev => {
         const next = new Set(prev)
-        next.delete(lineId)
+        next.delete(itemId)
         return next
       })
     }
   }
 
-  const handleRemove = async (lineId: string) => {
-    setLoadingItems(prev => new Set(prev).add(lineId))
+  const handleRemove = async (
+    itemId: string,
+    productId: string,
+    variantId?: string
+  ) => {
+    setLoadingItems(prev => new Set(prev).add(itemId))
     try {
-      await removeItem(lineId)
+      await removeItem(itemId, productId, variantId)
     } finally {
       setLoadingItems(prev => {
         const next = new Set(prev)
-        next.delete(lineId)
+        next.delete(itemId)
         return next
       })
     }
-  }
-
-  const formatPrice = (amount: number) => {
-    return `₹${(amount / 100).toLocaleString("en-IN")}`
   }
 
   if (!isOpen) return null
