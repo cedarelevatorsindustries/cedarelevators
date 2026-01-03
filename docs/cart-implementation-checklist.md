@@ -447,11 +447,22 @@ This checklist tracks the implementation of a production-ready cart module for C
 - **2025-01-XX**: Decided to use profile_type + business_id instead of role-based cart
 - **2025-01-XX**: Chose localStorage for guest cart (not cookies, not server session)
 - **2025-01-XX**: Pricing always derived at render time (never cached in cart)
+- **2025-01-XX**: NO bulk discount calculation in cart - admin handles all pricing strategies
+- **2025-01-XX**: Cart abandonment period: 30 days
+- **2025-01-XX**: Guest cart limit: 50 items (localStorage optimization)
+- **2025-01-XX**: Profile switching requires confirmation dialog
+- **2025-01-XX**: Business UNVERIFIED users: pricing hidden (same as guest)
+- **2025-01-XX**: Implementation priority: Cart → Quote (all users) before Cart → Checkout (verified only)
+
+### Pricing Visibility Matrix
+- **Guest**: ❌ All prices hidden
+- **Individual**: ✅ MRP, sale price, discount % visible
+- **Business Unverified**: ❌ All prices hidden (NOT visible until verified)
+- **Business Verified**: ✅ MRP, sale price, discount % visible
 
 ### Open Questions
-- [ ] Should we send cart abandonment emails?
-- [ ] How long to keep abandoned carts before auto-delete?
-- [ ] Should cart survive account deletion (for compliance)?
+- [ ] Should we send cart abandonment emails? (Future enhancement)
+- [ ] Should cart survive account deletion (for compliance)? (Future consideration)
 
 ---
 
