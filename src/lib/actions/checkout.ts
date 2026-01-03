@@ -7,6 +7,13 @@
  * - Address management
  * - Order creation
  * - Payment processing
+ * 
+ * SECURITY FEATURES:
+ * - Input sanitization (XSS prevention)
+ * - Server-side validation
+ * - Cart ownership validation
+ * - Business verification checks
+ * - Price tampering prevention
  */
 
 'use server'
@@ -14,6 +21,29 @@
 import { createServerSupabase } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
+
+// =====================================================
+// Security Helpers
+// =====================================================
+
+/**
+ * Sanitize input to prevent XSS attacks
+ */
+function sanitizeInput(input: string): string {
+  if (!input) return ''
+  return input
+    .replace(/[<>]/g, '') // Remove < and >
+    .trim()
+    .slice(0, 500) // Limit length
+}
+
+/**
+ * Validate UUID format
+ */
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(uuid)
+}
 
 // =====================================================
 // Types
