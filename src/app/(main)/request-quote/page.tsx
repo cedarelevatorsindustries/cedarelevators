@@ -1,7 +1,8 @@
 import { Metadata } from "next"
 import { getUserType } from "@/lib/auth/server"
 import { listProducts } from "@/lib/data"
-import { getUserQuotes, formatQuotesForTemplate, formatCurrency } from "@/lib/actions/get-user-quotes"
+import { getUserQuotes } from "@/lib/actions/get-user-quotes"
+import { formatQuotesForTemplate, formatCurrency } from "@/lib/utils/quote-formatting"
 import { Wallet, TrendingUp } from "lucide-react"
 import {
   GuestQuoteTemplate,
