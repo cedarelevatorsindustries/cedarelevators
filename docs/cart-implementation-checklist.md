@@ -439,6 +439,12 @@ This checklist tracks the implementation of a production-ready cart module for C
 
 ## ✨ Recently Completed (February 2025)
 
+**🔧 Migration Fix (Latest):**
+- ✅ Fixed migration 017_performance_optimization.sql error
+- ✅ Added conditional check for `status` column existence before index creation
+- ✅ Prevents "column does not exist" error if migration 014 not applied yet
+- ✅ Migration now safe to run in any order
+
 **Major Implementations:**
 - ✅ Complete cart UI with pricing visibility
 - ✅ Checkout eligibility guards and blocked screens
