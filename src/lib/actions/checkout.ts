@@ -427,6 +427,85 @@ export async function createOrderFromCart(
 
     const supabase = await createServerSupabase()
 
+    // EDGE CASE 1: Verify business verification status before order creation
+    const { data: userProfile } = await supabase
+      .from('business_profiles')
+      .select('id, verification_status')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!userProfile || userProfile.verification_status !== 'verified') {
+      return {
+        success: false,
+        error: 'Business verification required. Your account verification status has changed.'
+      }
+    }
+
+    // EDGE CASE 2: Validate cart ownership
+    const { data: cart, error: cartError } = await supabase
+      .from('carts')
+      .select('id, clerk_user_id, status')
+      .eq('id', cartId)
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (cartError || !cart) {
+      return {
+        success: false,
+        error: 'Cart not found or access denied'
+      }
+    }
+
+    if (cart.status === 'converted') {
+      return {
+        success: false,
+        error: 'This cart has already been converted to an order'
+      }
+    }
+
+    // EDGE CASE 3: Re-validate prices and inventory before order creation
+    const { data: cartItems, error: itemsError } = await supabase
+      .from('cart_items')
+      .select(`
+        *,
+        products (
+          id,
+          price,
+          stock_quantity,
+          status
+        )
+      `)
+      .eq('cart_id', cartId)
+
+    if (itemsError || !cartItems || cartItems.length === 0) {
+      return {
+        success: false,
+        error: 'Cart is empty or items not found'
+      }
+    }
+
+    // Check for price changes or stock issues
+    const issues = []
+    for (const item of cartItems) {
+      const product = item.products
+
+      if (!product || product.status !== 'published') {
+        issues.push(`Product "${item.title}" is no longer available`)
+        continue
+      }
+
+      if (product.stock_quantity < item.quantity) {
+        issues.push(`Insufficient stock for "${item.title}". Available: ${product.stock_quantity}, Requested: ${item.quantity}`)
+      }
+    }
+
+    if (issues.length > 0) {
+      return {
+        success: false,
+        error: `Cannot create order: ${issues.join('; ')}`
+      }
+    }
+
     // Get business profile
     const { data: business, error: businessError } = await supabase
       .from('business_profiles')
@@ -441,17 +520,18 @@ export async function createOrderFromCart(
       }
     }
 
-    // Get shipping address
+    // SECURITY: Validate address ownership
     const { data: shippingAddress, error: shippingError } = await supabase
       .from('business_addresses')
       .select('*')
       .eq('id', shippingAddressId)
+      .eq('clerk_user_id', userId)
       .single()
 
     if (shippingError || !shippingAddress) {
       return {
         success: false,
-        error: 'Shipping address not found'
+        error: 'Shipping address not found or access denied'
       }
     }
 
@@ -462,6 +542,7 @@ export async function createOrderFromCart(
         .from('business_addresses')
         .select('*')
         .eq('id', billingAddressId)
+        .eq('clerk_user_id', userId)
         .single()
       
       if (billing) {
