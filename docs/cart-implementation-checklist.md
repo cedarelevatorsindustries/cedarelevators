@@ -94,30 +94,29 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 3: Pricing Derivation Engine
 
 ### 3.1 Pricing Rules Engine
-- [ ] Create `/app/src/lib/services/cart-pricing.ts`:
-  - [ ] `deriveItemPrice(productId, variantId?, userType, businessId?)` - Get current price
-  - [ ] `applyBulkDiscount(price, quantity, userType)` - Apply quantity-based discounts
-  - [ ] `calculateCartSubtotal(items, userType, businessId?)` - Calculate subtotal
-  - [ ] `calculateBulkDiscounts(items, userType)` - Calculate all bulk discounts
-  - [ ] `calculateTax(subtotal, shippingAddress?, userType)` - GST calculation
-  - [ ] `calculateShipping(items, address, deliveryOption)` - Shipping cost
-  - [ ] `calculateCartTotal(cart, userContext)` - Final total with all calculations
+- [x] Create `/app/src/lib/services/cart-pricing.ts`:
+  - [x] `deriveItemPrice(productId, variantId?, userType, businessId?)` - Get current price
+  - [x] `calculateCartSubtotal(items, userType, businessId?)` - Calculate subtotal
+  - [x] `calculateTax(subtotal, shippingAddress?, userType)` - GST calculation
+  - [x] `calculateShipping(items, address, deliveryOption)` - Shipping cost
+  - [x] `calculateCartTotal(cart, userContext)` - Final total with all calculations
+  - [x] `getCartWithPricing(cartId, pricingContext)` - Full cart with derived pricing
 
 ### 3.2 Pricing Visibility Rules
-- [ ] Implement pricing visibility by user type:
-  - [ ] Guest: Hide all prices
-  - [ ] Individual: Show MRP, sale price, discount %
-  - [ ] Business Unverified: Show MRP, sale price, discount % (same as individual)
-  - [ ] Business Verified: Show all + bulk pricing
+- [x] Implement pricing visibility by user type:
+  - [x] Guest: Hide all prices
+  - [x] Individual: Show MRP, sale price, discount %
+  - [x] Business Unverified: Hide all prices (same as guest)
+  - [x] Business Verified: Show all pricing
 
 ### 3.3 Price Derivation Tests
 - [ ] Unit tests for pricing:
   - [ ] Test guest price hiding
   - [ ] Test individual pricing
-  - [ ] Test business pricing with bulk discounts
+  - [ ] Test business pricing
   - [ ] Test edge cases (out of stock, deleted products)
 
-**Phase 3 Completion**: 0/11 tasks
+**Phase 3 Completion**: 9/11 tasks (82%)
 
 ---
 
