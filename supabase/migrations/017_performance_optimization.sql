@@ -37,14 +37,27 @@ CREATE INDEX IF NOT EXISTS idx_variants_status_inventory
   WHERE status = 'active';
 
 -- Composite index for user active carts (most common query)
-CREATE INDEX IF NOT EXISTS idx_carts_user_status_updated 
-  ON carts(clerk_user_id, status, updated_at DESC) 
-  WHERE status = 'active';
-
--- Index for business profile carts
-CREATE INDEX IF NOT EXISTS idx_carts_business_active 
-  ON carts(business_id, status) 
-  WHERE business_id IS NOT NULL AND status = 'active';
+-- Only create if status column exists (added in migration 014)
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT FROM information_schema.columns 
+    WHERE table_name = 'carts' AND column_name = 'status'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_carts_user_status_updated 
+      ON carts(clerk_user_id, status, updated_at DESC) 
+      WHERE status = 'active';
+    
+    -- Index for business profile carts
+    CREATE INDEX IF NOT EXISTS idx_carts_business_active 
+      ON carts(business_id, status) 
+      WHERE business_id IS NOT NULL AND status = 'active';
+    
+    RAISE NOTICE 'Cart status indexes created successfully';
+  ELSE
+    RAISE WARNING 'Skipped cart status indexes - status column does not exist. Please run migration 014 first.';
+  END IF;
+END $$;
 
 -- =====================================================
 -- Optimized View: Cart Items with Product Details
