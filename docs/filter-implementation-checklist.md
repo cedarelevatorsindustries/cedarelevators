@@ -21,11 +21,18 @@ Production-ready store filter module with:
 ## Phase 1: Database Schema & Indexes ⏳
 
 ### 1.1 Review Current Schema
-- [ ] Audit existing `products` table structure
-- [ ] Audit existing `product_variants` table
-- [ ] Audit existing `categories` table
-- [ ] Identify filterable fields (voltage, load_capacity, speed, etc.)
-- [ ] Document JSONB fields usage
+- [x] Audit existing `products` table structure
+- [x] Audit existing `product_variants` table
+- [x] Audit existing `categories` table
+- [x] Identify filterable fields (voltage, load_capacity, speed, etc.)
+- [x] Document JSONB fields usage
+
+**Findings:**
+- Existing filter UI exists but not connected to backend
+- Products table has: voltage, load_capacity_kg, speed_ms, technical_specs (JSONB)
+- Need to add: rating, review_count fields
+- Categories already hierarchical
+- Application field needs clarification (currently in metadata)
 
 ### 1.2 Create Filter Attributes Table
 - [ ] Create `product_attributes` table for master attributes
