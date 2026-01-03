@@ -21,37 +21,37 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 1: Database Schema & Core Types
 
 ### 1.1 Database Schema Updates
-- [ ] Create migration file for cart schema updates
-- [ ] Update `carts` table schema:
-  - [ ] Add `profile_type` column ('individual' | 'business')
-  - [ ] Add `business_id` column (nullable, FK to business_profiles)
-  - [ ] Add `status` column ('active' | 'converted' | 'abandoned')
-  - [ ] Update indexes for (user_id + profile_type + business_id)
-  - [ ] Add unique constraint for active carts per profile
-- [ ] Verify `cart_items` table (should NOT store price)
-- [ ] Create database function for cart cleanup (abandoned carts)
-- [ ] Add updated_at triggers if missing
-- [ ] Test migration on dev database
+- [x] Create migration file for cart schema updates
+- [x] Update `carts` table schema:
+  - [x] Add `profile_type` column ('individual' | 'business')
+  - [x] Add `business_id` column (nullable, FK to business_profiles)
+  - [x] Add `status` column ('active' | 'converted' | 'abandoned')
+  - [x] Update indexes for (user_id + profile_type + business_id)
+  - [x] Add unique constraint for active carts per profile
+- [x] Verify `cart_items` table (should NOT store price)
+- [x] Create database function for cart cleanup (abandoned carts)
+- [x] Add updated_at triggers if missing
+- [ ] Test migration on dev database (User to apply migration)
 
 ### 1.2 TypeScript Types & Interfaces
-- [ ] Create `/app/src/types/cart.types.ts`:
-  - [ ] `ProfileType` enum
-  - [ ] `CartStatus` enum
-  - [ ] `CartOwnership` interface
-  - [ ] `Cart` interface (updated)
-  - [ ] `CartItem` interface (no price field)
-  - [ ] `DerivedCartItem` interface (with calculated price)
-  - [ ] `CartSummary` interface
-  - [ ] `GuestCart` interface (localStorage format)
-  - [ ] `CartMergeResult` interface
-  - [ ] `PricingContext` interface
+- [x] Create `/app/src/types/cart.types.ts`:
+  - [x] `ProfileType` enum
+  - [x] `CartStatus` enum
+  - [x] `CartOwnership` interface
+  - [x] `Cart` interface (updated)
+  - [x] `CartItem` interface (no price field)
+  - [x] `DerivedCartItem` interface (with calculated price)
+  - [x] `CartSummary` interface
+  - [x] `GuestCart` interface (localStorage format)
+  - [x] `CartMergeResult` interface
+  - [x] `PricingContext` interface
 
 ### 1.3 Documentation
-- [ ] Update this checklist with completed items
-- [ ] Document cart ownership rules
-- [ ] Document pricing derivation logic
+- [x] Update this checklist with completed items
+- [x] Document cart ownership rules
+- [x] Document pricing derivation logic
 
-**Phase 1 Completion**: 0/11 tasks
+**Phase 1 Completion**: 10/11 tasks (91%)
 
 ---
 
