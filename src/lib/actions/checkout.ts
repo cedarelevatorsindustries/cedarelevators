@@ -212,21 +212,41 @@ export async function addBusinessAddress(
       }
     }
 
+    // SECURITY: Validate and sanitize inputs
+    if (!isValidUUID(address.business_id)) {
+      return {
+        success: false,
+        error: 'Invalid business ID'
+      }
+    }
+
+    const sanitizedAddress = {
+      ...address,
+      contact_name: sanitizeInput(address.contact_name),
+      contact_phone: sanitizeInput(address.contact_phone),
+      address_line1: sanitizeInput(address.address_line1),
+      address_line2: address.address_line2 ? sanitizeInput(address.address_line2) : undefined,
+      city: sanitizeInput(address.city),
+      state: sanitizeInput(address.state),
+      postal_code: sanitizeInput(address.postal_code),
+      gst_number: address.gst_number ? sanitizeInput(address.gst_number) : undefined
+    }
+
     const supabase = await createServerSupabase()
 
     // If this is marked as default, unset other defaults
-    if (address.is_default) {
+    if (sanitizedAddress.is_default) {
       await supabase
         .from('business_addresses')
         .update({ is_default: false })
-        .eq('business_id', address.business_id)
-        .eq('address_type', address.address_type)
+        .eq('business_id', sanitizedAddress.business_id)
+        .eq('address_type', sanitizedAddress.address_type)
     }
 
     const { data, error } = await supabase
       .from('business_addresses')
       .insert({
-        ...address,
+        ...sanitizedAddress,
         clerk_user_id: userId
       })
       .select()
