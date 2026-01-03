@@ -40,6 +40,11 @@ function OrderConfirmationContent() {
         return
       }
 
+      // EDGE CASE: Prevent duplicate fetches
+      if (order && order.id === orderId) {
+        return
+      }
+
       try {
         const result = await getOrderById(orderId)
         
