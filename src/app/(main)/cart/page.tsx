@@ -218,13 +218,32 @@ export default function CartPage() {
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             <CartSummary
               summary={summary}
               userType={userType}
               onCheckout={handleCheckout}
               onRequestQuote={handleRequestQuote}
             />
+            
+            {/* Alternative Quote Button for Authenticated Users */}
+            {isSignedIn && derivedItems.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                  Need a Custom Quote?
+                </h4>
+                <p className="text-xs text-blue-700 mb-3">
+                  Get personalized pricing and bulk discounts for your order
+                </p>
+                <QuoteFromCartButton
+                  cartItems={derivedItems}
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  className="border-blue-300 hover:bg-blue-100 hover:border-blue-400"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
