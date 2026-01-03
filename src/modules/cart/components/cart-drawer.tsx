@@ -194,10 +194,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {derivedItems.length > 0 && (
           <div className="border-t p-4 space-y-4">
             {/* Subtotal */}
-            <div className="flex items-center justify-between text-lg font-semibold">
-              <span>Subtotal:</span>
-              <span>{formatPrice(cart?.subtotal || 0)}</span>
-            </div>
+            {showPrice ? (
+              <div className="flex items-center justify-between text-lg font-semibold">
+                <span>Subtotal:</span>
+                <span>₹{summary.subtotal.toLocaleString('en-IN')}</span>
+              </div>
+            ) : (
+              <div className="text-center text-sm text-gray-600 py-2">
+                {userType === 'guest' ? 'Sign in to view pricing' : 'Verify your business to view pricing'}
+              </div>
+            )}
 
             {/* Buttons */}
             <div className="space-y-2">
@@ -209,11 +215,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 View Cart
               </Link>
               <Link
-                href="/checkout"
+                href={userType === 'business_verified' ? '/checkout' : '/request-quote'}
                 onClick={onClose}
-                className="block w-full py-3 bg-blue-600 text-white rounded-lg font-semibold text-center hover:bg-blue-700 transition-colors"
+                className="block w-full py-3 bg-orange-600 text-white rounded-lg font-semibold text-center hover:bg-orange-700 transition-colors"
               >
-                Proceed to Checkout
+                {userType === 'business_verified' ? 'Proceed to Checkout' : 'Request Quote'}
               </Link>
             </div>
           </div>
