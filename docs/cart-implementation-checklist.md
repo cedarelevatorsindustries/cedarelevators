@@ -146,25 +146,25 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 5: Guest → Login Cart Merge
 
 ### 5.1 Merge Logic
-- [ ] Create `/app/src/lib/services/cart-merge.ts`:
-  - [ ] `detectGuestCart()` - Check if guest cart exists
-  - [ ] `mergeGuestCartToUser(userId, profileType)` - Core merge function
-  - [ ] `handleDuplicateItems(guestItems, userItems)` - Sum quantities for same products
-  - [ ] `cleanupAfterMerge()` - Clear localStorage after successful merge
+- [x] Create `/app/src/lib/services/cart-merge.ts`:
+  - [x] `detectGuestCart()` - Check if guest cart exists
+  - [x] `mergeGuestCartToUser(userId, profileType)` - Core merge function
+  - [x] `handleDuplicateItems(guestItems, userItems)` - Sum quantities for same products
+  - [x] `cleanupAfterMerge()` - Clear localStorage after successful merge
 
 ### 5.2 Merge Trigger Points
-- [ ] Implement merge triggers:
-  - [ ] After Clerk sign-in callback
-  - [ ] After Clerk sign-up callback
-  - [ ] On first authenticated page load (fallback)
+- [x] Implement merge triggers:
+  - [x] After Clerk sign-in callback (via context useEffect)
+  - [x] After Clerk sign-up callback (via context useEffect)
+  - [x] On first authenticated page load (fallback)
 
 ### 5.3 Merge UI Feedback
-- [ ] Add merge notifications:
-  - [ ] Success toast: "X items added to your cart"
-  - [ ] Error handling for merge failures
-  - [ ] Loading state during merge
+- [x] Add merge notifications:
+  - [x] Success toast: "X items added to your cart"
+  - [x] Error handling for merge failures
+  - [x] Loading state during merge
 
-**Phase 5 Completion**: 0/9 tasks
+**Phase 5 Completion**: 9/9 tasks (100%)
 
 ---
 
