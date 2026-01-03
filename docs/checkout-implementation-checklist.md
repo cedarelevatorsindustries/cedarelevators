@@ -165,38 +165,38 @@ Cedar Elevator Industries - B2B E-commerce Platform
 ## 📋 PHASE 4: Payment Integration (Razorpay)
 
 ### 4.1 Razorpay Setup
-- [ ] Install razorpay npm package
-- [ ] Configure test mode keys (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
-- [ ] Create Razorpay server utility
-- [ ] Error handling setup
+- [x] Install razorpay npm package (already installed)
+- [x] Configure test mode keys (added to .env.local)
+- [x] Create Razorpay server utility (already exists)
+- [x] Error handling setup
 
 ### 4.2 Order Creation Flow
-- [ ] API: `POST /api/orders/create`
-- [ ] Create order in DB (status: pending_payment)
-- [ ] Create Razorpay order
-- [ ] Return: order_id, razorpay_order_id, amount, currency
+- [x] API: `POST /api/orders/create` (already exists)
+- [x] Create order in DB (status: pending_payment)
+- [x] Create Razorpay order
+- [x] Return: order_id, razorpay_order_id, amount, currency
 
 ### 4.3 Payment Initiation
-- [ ] Initialize Razorpay checkout modal
-- [ ] Pass order details
-- [ ] Handle payment success (client-side)
-- [ ] Handle payment failure (client-side)
+- [x] Initialize Razorpay checkout modal (PaymentSection component)
+- [x] Pass order details
+- [x] Handle payment success (client-side)
+- [x] Handle payment failure (client-side)
 
 ### 4.4 Webhook Handler
-- [ ] API: `POST /api/webhooks/razorpay`
-- [ ] Verify Razorpay signature (critical!)
-- [ ] Handle `payment.captured` event
-- [ ] Mark order as `paid`
-- [ ] Reduce inventory
-- [ ] Convert cart to `converted` status
-- [ ] Send confirmation email (optional)
+- [x] API: `POST /api/webhooks/razorpay` (already exists)
+- [x] Verify Razorpay signature (critical!)
+- [x] Handle `payment.captured` event
+- [x] Mark order as `paid`
+- [x] Reduce inventory (via mark_order_as_paid function)
+- [x] Convert cart to `converted` status
+- [x] Send confirmation email (optional - placeholder exists)
 
 ### 4.5 Idempotency & Retry
-- [ ] Prevent duplicate order creation
-- [ ] Handle webhook retries (same event)
-- [ ] Transaction rollback on failure
+- [x] Prevent duplicate order creation (via idempotency_key in payment_transactions)
+- [x] Handle webhook retries (same event)
+- [x] Transaction rollback on failure
 
-**Phase 4 Status:** ⏳ Not Started
+**Phase 4 Status:** ✅ COMPLETED
 
 ---
 
