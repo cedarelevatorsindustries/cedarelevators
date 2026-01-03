@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
-import { CheckoutTemplate } from '@/modules/checkout'
+import { CheckoutGuard } from '@/components/checkout/checkout-guard'
+import { CheckoutPageContent } from '@/modules/checkout/components/checkout-page-content'
 
 export const metadata: Metadata = {
   title: 'Checkout | Cedar Elevators',
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function CheckoutPage() {
-  return <CheckoutTemplate />
+  return (
+    <CheckoutGuard>
+      <CheckoutPageContent />
+    </CheckoutGuard>
+  )
 }
