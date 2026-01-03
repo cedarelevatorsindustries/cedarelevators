@@ -124,41 +124,41 @@ Cedar Elevator Industries - B2B E-commerce Platform
 ## 📋 PHASE 3: Checkout Page UI & Flow
 
 ### 3.1 Checkout Page Structure
-- [ ] Create `/checkout/page.tsx`
-- [ ] Layout with progress indicator
-- [ ] Responsive design (mobile + desktop)
-- [ ] Data-testid attributes for all interactive elements
+- [x] Create `/checkout/page.tsx`
+- [x] Layout with progress indicator (Address → Review → Payment)
+- [x] Responsive design (mobile + desktop)
+- [x] Data-testid attributes for all interactive elements
 
 ### 3.2 Address Section
-- [ ] Fetch saved business addresses
-- [ ] Address selection UI
-- [ ] "Add New Address" form
-- [ ] Mark "Billing same as Shipping" option
-- [ ] Form validation (required fields, pin code, state)
+- [x] Fetch saved business addresses
+- [x] Address selection UI (AddressSection component)
+- [x] "Add New Address" form (AddAddressDialog component)
+- [x] Mark "Billing same as Shipping" option
+- [x] Form validation (required fields, pin code, state)
 
 ### 3.3 Order Summary Section
-- [ ] Cart items display (read-only)
-- [ ] Pricing breakdown:
+- [x] Cart items display (read-only)
+- [x] Pricing breakdown:
   - Subtotal
   - GST (18%)
-  - Shipping (🟡 ON HOLD - will be ₹0 for now)
+  - Shipping (₹0 for now)
   - Total
-- [ ] Lock warning banner (if cart locked)
-- [ ] Item availability check
+- [x] Lock warning banner (if cart locked)
+- [x] Item availability check
 
 ### 3.4 Payment Method Section
-- [ ] Razorpay integration
-- [ ] Payment method display (Cards, UPI, Netbanking, Wallets)
-- [ ] Terms & conditions checkbox
-- [ ] "Place Order" button (guarded)
+- [x] Razorpay integration (PaymentSection component)
+- [x] Payment method display (Cards, UPI, Netbanking, Wallets)
+- [x] Terms & conditions checkbox
+- [x] "Place Order" button (guarded)
 
 ### 3.5 Server-Side Price Lock
-- [ ] Before payment: recalculate all prices
-- [ ] Validate stock availability
-- [ ] Generate checkout snapshot (frozen pricing)
-- [ ] Lock cart for 5 minutes
+- [x] Before payment: recalculate all prices (via getCheckoutSummary)
+- [x] Validate stock availability
+- [x] Generate checkout snapshot (frozen pricing via create_order_from_cart)
+- [x] Lock cart for 5 minutes
 
-**Phase 3 Status:** ⏳ Not Started
+**Phase 3 Status:** ✅ COMPLETED
 
 ---
 
