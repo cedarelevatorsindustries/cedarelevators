@@ -1,7 +1,9 @@
 "use client"
 
-import { useCart } from "@/lib/hooks"
+import { useCart } from "@/contexts/cart-context"
+import { useAuth, useUser } from "@clerk/nextjs"
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
+import { UserType, canSeePrice } from "@/types/cart.types"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
@@ -12,8 +14,24 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, itemCount, cart, updateQuantity, removeItem } = useCart()
+  const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const { derivedItems, summary, updateQuantity, removeItem } = useCart()
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set())
+
+  // Determine user type
+  const getUserType = (): UserType => {
+    if (!isSignedIn) return 'guest'
+    const accountType = user?.publicMetadata?.accountType as string || 'individual'
+    if (accountType === 'business') {
+      const verificationStatus = user?.publicMetadata?.verificationStatus as string
+      return verificationStatus === 'verified' ? 'business_verified' : 'business_unverified'
+    }
+    return 'individual'
+  }
+
+  const userType = getUserType()
+  const showPrice = canSeePrice(userType)
 
   const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
     if (newQuantity < 1) return
