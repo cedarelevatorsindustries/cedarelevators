@@ -272,14 +272,14 @@ Cedar Elevator Industries - B2B E-commerce Platform
 
 ## 🔒 Security Checklist
 
-- [ ] Server-side validation for ALL checkout operations
-- [ ] RLS policies for orders table
-- [ ] Razorpay signature verification (webhook)
-- [ ] Price tampering prevention (server-side recalculation)
-- [ ] Cart ownership validation
-- [ ] User verification status check (server-side)
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] XSS prevention (sanitize inputs)
+- [x] Server-side validation for ALL checkout operations
+- [x] RLS policies for orders table
+- [x] Razorpay signature verification (webhook)
+- [x] Price tampering prevention (server-side recalculation)
+- [x] Cart ownership validation
+- [x] User verification status check (server-side)
+- [x] SQL injection prevention (parameterized queries)
+- [x] XSS prevention (sanitize inputs)
 
 ---
 
