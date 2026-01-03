@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -82,5 +83,3 @@ export function CheckboxFilter({
     </div>
   )
 }
-
-import { useState } from "react"
