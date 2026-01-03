@@ -35,6 +35,7 @@ This checklist tracks the implementation of a production-ready cart module for C
 - [x] Verify `cart_items` table (should NOT store price)
 - [x] Create database function for cart cleanup (abandoned carts)
 - [x] Add updated_at triggers if missing
+- [x] **FIXED:** Migration 017 error - Added conditional check for status column before index creation
 - [ ] Test migration on dev database (User to apply migration)
 
 ### 1.2 TypeScript Types & Interfaces
@@ -55,7 +56,7 @@ This checklist tracks the implementation of a production-ready cart module for C
 - [x] Document cart ownership rules
 - [x] Document pricing derivation logic
 
-**Phase 1 Completion**: 10/11 tasks (91%)
+**Phase 1 Completion**: 11/12 tasks (92%) - Migration fix applied, pending user DB test
 
 ---
 
