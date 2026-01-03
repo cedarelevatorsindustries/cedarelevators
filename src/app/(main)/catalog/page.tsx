@@ -43,8 +43,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     if (category) {
       queryParams.category_id = [category.id]
 
-      // Fetch children for this category to show in banner
+      // Fetch subcategories (children) for this category to show in banner
+      // Note: Currently returns empty as categories have flat structure
       const children = await listCategories({ parent_id: category.id })
+
       activeCategory = {
         ...category,
         category_children: children

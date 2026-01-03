@@ -556,7 +556,16 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <QuoteStatusTimeline quote={quote} />
+                            <QuoteStatusTimeline
+                                status={quote.status as QuoteStatus}
+                                createdAt={quote.created_at}
+                                reviewingStartedAt={quote.reviewing_started_at}
+                                approvedAt={quote.approved_at}
+                                rejectedAt={quote.rejected_at}
+                                rejectedBy={quote.rejected_by}
+                                convertedAt={quote.converted_at}
+                                expiredAt={quote.valid_until} // Map valid_until to expiredAt
+                            />
 
                             {/* Allowed Next States */}
                             {allowedNextStates.length > 0 && (

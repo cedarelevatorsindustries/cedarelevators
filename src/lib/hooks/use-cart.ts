@@ -3,8 +3,15 @@
 import { useState, useEffect } from "react"
 import { useUser } from "@/lib/auth/client" // Assuming this exists or is Clerk wrapper
 import { Cart } from "@/lib/types/domain"
-import { getCart, addToCart, updateLineItem, removeLineItem } from "@/lib/actions/cart"
+import {
+  getCart,
+  addToCart,
+  updateLineItem,
+  removeLineItem,
+  clearCart as clearCartAction
+} from "@/lib/actions/cart"
 import { toast } from "sonner"
+import { logger } from "@/lib/services/logger"
 
 export function useCart() {
   const { user } = useUser()
@@ -16,7 +23,7 @@ export function useCart() {
       const data = await getCart()
       setCart(data)
     } catch (error) {
-      console.error("Error refreshing cart:", error)
+      logger.error("Error refreshing cart", error)
     } finally {
       setIsLoading(false)
     }
@@ -34,7 +41,7 @@ export function useCart() {
       toast.success("Item added to cart")
       return updatedCart
     } catch (error) {
-      console.error("Error adding item:", error)
+      logger.error("Error adding item", error)
       toast.error("Failed to add item")
       throw error
     } finally {
@@ -49,7 +56,7 @@ export function useCart() {
       setCart(updatedCart)
       return updatedCart
     } catch (error) {
-      console.error("Error updating quantity:", error)
+      logger.error("Error updating quantity", error)
       toast.error("Failed to update quantity")
       throw error
     } finally {
@@ -65,7 +72,7 @@ export function useCart() {
       toast.success("Item removed")
       return updatedCart
     } catch (error) {
-      console.error("Error removing item:", error)
+      logger.error("Error removing item", error)
       toast.error("Failed to remove item")
       throw error
     } finally {
@@ -73,9 +80,18 @@ export function useCart() {
     }
   }
 
-  const clearCart = () => {
-    // TODO: Implement clear cart action
-    setCart(null)
+  const clearCart = async () => {
+    try {
+      setIsLoading(true)
+      const updatedCart = await clearCartAction()
+      setCart(updatedCart)
+      toast.success("Cart cleared")
+    } catch (error) {
+      logger.error("Error clearing cart", error)
+      toast.error("Failed to clear cart")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0

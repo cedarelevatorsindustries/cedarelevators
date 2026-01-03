@@ -7,6 +7,7 @@ import {
   createProduct,
 } from '@/lib/actions/products'
 import { ProductStatus } from '@/lib/types/products'
+import { logger } from "@/lib/services/logger"
 
 /**
  * GET /api/admin/products - Fetch products with filters
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
       totalPages: data.totalPages,
     })
   } catch (error: any) {
-    console.error('Error fetching products:', error)
+    logger.error('Error fetching products', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch products' },
       { status: 500 }
@@ -63,14 +64,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const result = await createProduct(body)
 
-
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Failed to create product' },
+        { status: 400 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
-      product: result.product,
+      product: result.data,
     })
   } catch (error: any) {
-    console.error('Error creating product:', error)
+    logger.error('Error creating product', error)
     return NextResponse.json(
       { error: error.message || 'Failed to create product' },
       { status: 500 }
@@ -114,7 +120,7 @@ export async function PATCH(request: NextRequest) {
       message: `Updated ${productIds.length} products`,
     })
   } catch (error: any) {
-    console.error('Error bulk updating products:', error)
+    logger.error('Error bulk updating products', error)
     return NextResponse.json(
       { error: error.message || 'Failed to bulk update products' },
       { status: 500 }
@@ -154,7 +160,7 @@ export async function DELETE(request: NextRequest) {
       message: `Deleted ${productIds.length} products`,
     })
   } catch (error: any) {
-    console.error('Error bulk deleting products:', error)
+    logger.error('Error bulk deleting products', error)
     return NextResponse.json(
       { error: error.message || 'Failed to bulk delete products' },
       { status: 500 }

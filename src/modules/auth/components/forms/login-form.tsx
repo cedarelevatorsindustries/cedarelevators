@@ -5,6 +5,7 @@ import { useSignIn } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { logger } from "@/lib/services/logger"
 
 export default function LoginForm() {
   const { isLoaded, signIn, setActive } = useSignIn()
@@ -29,11 +30,11 @@ export default function LoginForm() {
         await setActive({ session: result.createdSessionId })
         router.push("/dashboard")
       } else {
-        console.log(result)
+        logger.error('Sign in failed', result)
       }
     } catch (err: any) {
-      console.error("error", err.errors[0].longMessage)
-      setError(err.errors[0].longMessage)
+      logger.error("Sign in error", { error: err.errors?.[0]?.longMessage, fullError: err })
+      setError(err.errors?.[0]?.longMessage || "An error occurred")
     }
   }
 
@@ -46,7 +47,7 @@ export default function LoginForm() {
         redirectUrlComplete: "/",
       })
     } catch (err: any) {
-      console.error("error", err)
+      logger.error("Google sign in error", err)
       setError(err.errors ? err.errors[0].longMessage : "An error occurred")
     }
   }

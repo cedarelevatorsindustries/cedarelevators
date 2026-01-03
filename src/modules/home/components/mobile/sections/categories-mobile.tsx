@@ -13,7 +13,7 @@ export default function CategoriesMobile({ categories = [] }: CategoriesMobilePr
     <section className="py-6 bg-white px-4">
       <div className="flex items-center justify-between pb-3">
         <h2 className="text-[#181411] text-lg font-bold leading-tight tracking-[-0.015em]">
-          Find the parts you need
+          Shop by Category
         </h2>
       </div>
 

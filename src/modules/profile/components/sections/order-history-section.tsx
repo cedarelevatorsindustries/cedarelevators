@@ -15,6 +15,7 @@ import {
   FileSpreadsheet
 } from 'lucide-react'
 import { convertToLocale } from "@/lib/utils/currency/money"
+import { logger } from "@/lib/services/logger"
 import {
   getOrderStatus,
   getPaymentStatus,
@@ -90,13 +91,13 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
 
   // Handle bulk reorder
   const handleBulkReorder = () => {
-    console.log('Bulk reorder:', Array.from(selectedOrders))
+    logger.info('Bulk reorder attempt', { orderIds: Array.from(selectedOrders) })
     // TODO: Implement bulk reorder logic
   }
 
   // Handle export
   const handleExport = () => {
-    console.log('Export orders')
+    logger.info('Export orders initiated')
     // TODO: Implement export logic
   }
 
@@ -146,8 +147,8 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'all'
-                ? 'bg-[#F97316] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-[#F97316] text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
             All Orders
@@ -155,8 +156,8 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
           <button
             onClick={() => setStatusFilter('delivered')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'delivered'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
             Delivered
@@ -164,8 +165,8 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
           <button
             onClick={() => setStatusFilter('shipped')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'shipped'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
             In Transit
@@ -173,8 +174,8 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
           <button
             onClick={() => setStatusFilter('cancelled')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'cancelled'
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-red-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
             Cancelled

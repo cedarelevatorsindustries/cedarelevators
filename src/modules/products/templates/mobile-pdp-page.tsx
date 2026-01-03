@@ -1,11 +1,13 @@
 
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useTransition } from "react"
 import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
 import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 // Sections
 import TitleBadgesSection from "../sections/02-title-badges-section"
@@ -15,6 +17,11 @@ import ProductTabsSection from "../sections/14-product-tabs-section"
 import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
+
+// Import actions
+import { addToCart } from "@/lib/actions/cart"
+import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
+import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 
 interface CatalogContext {
   from?: string
@@ -37,12 +44,15 @@ export default function MobileProductDetailPage({
   catalogContext
 }: MobileProductDetailPageProps) {
   const { user } = useUser()
+  const router = useRouter()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const imageScrollRef = useRef<HTMLDivElement>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const ctaSectionRef = useRef<HTMLDivElement>(null)
   const [showFloatingBar, setShowFloatingBar] = useState(false)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   // User type and pricing logic
   const isGuest = !user
@@ -52,7 +62,16 @@ export default function MobileProductDetailPage({
   const showPrice = isBusiness && isVerified
 
   const price = product.price?.amount || 0
-  const originalPrice = null
+  const originalPrice = (product.metadata?.compare_at_price as number) || null
+
+  // Check favorite status on mount
+  useEffect(() => {
+    if (user && product.id) {
+      checkIsFavorite(product.id).then(result => {
+        setIsFavorite(result.isFavorite)
+      })
+    }
+  }, [user, product.id])
 
   // Images
   const images = product.images || []
@@ -70,26 +89,68 @@ export default function MobileProductDetailPage({
 
   // Back URL
   const getBackUrl = () => {
-    if (catalogContext?.category) return `/ catalog ? category = ${catalogContext.category} `
-    if (catalogContext?.application) return `/ catalog ? application = ${catalogContext.application} `
-    if (catalogContext?.search) return `/ catalog ? search = ${catalogContext.search} `
+    if (catalogContext?.category) return `/catalog?category=${catalogContext.category}`
+    if (catalogContext?.application) return `/catalog?application=${catalogContext.application}`
+    if (catalogContext?.search) return `/catalog?search=${catalogContext.search}`
     return "/catalog"
   }
 
   // Handlers
   const handleAddToCart = (quantity: number) => {
-    console.log("Add to cart:", product.id, "Quantity:", quantity)
-    // TODO: Implement add to cart
+    startTransition(async () => {
+      try {
+        await addToCart(product.id, quantity)
+        toast.success(`${product.title} added to cart`)
+      } catch (error: any) {
+        toast.error(error.message || "Failed to add to cart")
+      }
+    })
   }
 
   const handleRequestQuote = () => {
-    console.log("Request quote:", product.id)
-    // TODO: Implement quote request
+    startTransition(async () => {
+      try {
+        const result = await addToQuoteBasket({
+          id: `${product.id}-${Date.now()}`,
+          product_id: product.id,
+          product_name: product.title || "",
+          product_sku: (product.metadata?.sku as string) || product.id,
+          product_thumbnail: product.thumbnail || "",
+          quantity: 1,
+          bulk_pricing_requested: false
+        })
+
+        if (result.success) {
+          toast.success("Added to quote basket")
+          router.push("/quote")
+        } else {
+          toast.error(result.error || "Failed to add to quote basket")
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to request quote")
+      }
+    })
   }
 
   const handleWishlist = () => {
-    console.log("Toggle wishlist:", product.id)
-    // TODO: Implement wishlist
+    if (isGuest) {
+      toast.error("Please sign in to save favorites")
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        const result = await toggleFavorite(product.id)
+        if (result.success) {
+          setIsFavorite(result.isFavorite || false)
+          toast.success(result.isFavorite ? "Added to favorites" : "Removed from favorites")
+        } else {
+          toast.error(result.error || "Failed to update favorites")
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to update favorites")
+      }
+    })
   }
 
   const handleShare = () => {
@@ -99,12 +160,24 @@ export default function MobileProductDetailPage({
         text: product.description || "",
         url: window.location.href
       })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      toast.success("Link copied to clipboard")
     }
   }
 
   const handleAddBundle = () => {
-    console.log("Add bundle to cart")
-    // TODO: Implement bundle add to cart
+    startTransition(async () => {
+      try {
+        await addToCart(product.id, 1)
+        for (const bundleProduct of bundleProducts) {
+          await addToCart(bundleProduct.id, 1)
+        }
+        toast.success("Bundle added to cart")
+      } catch (error: any) {
+        toast.error(error.message || "Failed to add bundle")
+      }
+    })
   }
 
   const scrollToReviews = () => {

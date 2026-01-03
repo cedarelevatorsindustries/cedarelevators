@@ -42,10 +42,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     notFound()
   }
 
-  // Fetch children for this category to show in banner
+  // Fetch subcategories (children) for this category to show in banner
+  // Note: Currently returns empty as categories have flat structure
+  // TODO: Create subcategories for each main category
   const children = await listCategories({ parent_id: category.id })
 
-  // Construct activeCategory with children
+  // Construct activeCategory with children for the banner
   const activeCategory = {
     ...category,
     category_children: children

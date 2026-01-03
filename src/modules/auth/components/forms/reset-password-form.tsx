@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useSignIn } from "@/lib/auth/client"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Check } from "lucide-react"
+import { logger } from "@/lib/services/logger"
 
 export default function ResetPasswordForm() {
   const { isLoaded, signIn, setActive } = useSignIn()
@@ -49,11 +50,11 @@ export default function ResetPasswordForm() {
         await setActive({ session: result.createdSessionId })
         router.push("/sign-in")
       } else {
-        console.log(result)
+        logger.error('Password reset prompt failed', result)
       }
     } catch (err: any) {
-      console.error(JSON.stringify(err, null, 2))
-      setError(err.errors[0].longMessage)
+      logger.error("Password reset error", err)
+      setError(err.errors?.[0]?.longMessage || "An error occurred")
     }
   }
 

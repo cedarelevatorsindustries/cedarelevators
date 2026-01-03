@@ -13,6 +13,7 @@ import {
     SystemSettings,
     UpdateSystemSettingsData
 } from '@/lib/types/settings'
+import { logger } from '@/lib/services/logger'
 
 /**
  * Settings Service - Server Actions
@@ -29,8 +30,8 @@ export async function getStoreSettings(): Promise<{
 }> {
     try {
         const supabase = await createServerSupabase()
-        
-        console.log('📥 Fetching store settings...')
+
+        logger.info('Fetch store settings attempt')
 
         const { data, error } = await supabase
             .from('store_settings')
@@ -38,8 +39,7 @@ export async function getStoreSettings(): Promise<{
             .single()
 
         if (error) {
-            console.error('❌ Error fetching store settings:', error)
-            console.error('Error details:', {
+            logger.error('Error fetching store settings', {
                 message: error.message,
                 code: error.code,
                 details: error.details,
@@ -48,10 +48,10 @@ export async function getStoreSettings(): Promise<{
             return { success: false, error: error.message }
         }
 
-        console.log('✅ Store settings fetched successfully')
+        logger.info('Store settings fetched successfully')
         return { success: true, data: data as StoreSettings }
     } catch (error: any) {
-        console.error('❌ Exception in getStoreSettings:', error)
+        logger.error('Exception in getStoreSettings', error)
         return { success: false, error: error.message || 'Failed to fetch settings' }
     }
 }
@@ -69,8 +69,8 @@ export async function updateStoreSettings(
 }> {
     try {
         const supabase = await createServerSupabase()
-        
-        console.log('📝 Updating store settings...', { id, updates })
+
+        logger.info('Updating store settings', { id, updates })
 
         const { data, error } = await supabase
             .from('store_settings')
@@ -83,8 +83,7 @@ export async function updateStoreSettings(
             .single()
 
         if (error) {
-            console.error('❌ Error updating store settings:', error)
-            console.error('Error details:', {
+            logger.error('Error updating store settings', {
                 message: error.message,
                 code: error.code,
                 details: error.details,
@@ -93,10 +92,10 @@ export async function updateStoreSettings(
             return { success: false, error: error.message }
         }
 
-        console.log('✅ Store settings updated successfully')
+        logger.info('Store settings updated successfully')
         return { success: true, data: data as StoreSettings }
     } catch (error: any) {
-        console.error('❌ Exception in updateStoreSettings:', error)
+        logger.error('Exception in updateStoreSettings', error)
         return { success: false, error: error.message || 'Failed to update settings' }
     }
 }

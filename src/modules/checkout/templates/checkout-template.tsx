@@ -6,6 +6,7 @@ import { useCart } from '@/lib/hooks'
 import { useAccountType } from '@/lib/hooks'
 import { ArrowLeft, Check, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
+import { logger } from "@/lib/services/logger"
 
 // Sections
 import ProgressBarSection from '../sections/01-progress-bar-section'
@@ -143,7 +144,7 @@ export default function CheckoutTemplate() {
       await new Promise(resolve => setTimeout(resolve, 1000))
       router.push('/order-confirmation/quote-123?type=quote')
     } catch (error) {
-      console.error('Quote request failed:', error)
+      logger.error('Quote request failed', error)
     } finally {
       setIsProcessing(false)
     }
@@ -158,7 +159,7 @@ export default function CheckoutTemplate() {
       await new Promise(resolve => setTimeout(resolve, 2000))
       router.push('/order-confirmation/order-123?type=order')
     } catch (error) {
-      console.error('Order placement failed:', error)
+      logger.error('Order placement failed', error)
     } finally {
       setIsProcessing(false)
     }
@@ -313,7 +314,7 @@ export default function CheckoutTemplate() {
       {showExitPopup && (
         <ExitIntentPopup
           onClose={() => setShowExitPopup(false)}
-          onApplyDiscount={(code) => console.log('Apply discount:', code)}
+          onApplyDiscount={(code) => logger.info('Apply discount attempt', { code })}
         />
       )}
     </div>

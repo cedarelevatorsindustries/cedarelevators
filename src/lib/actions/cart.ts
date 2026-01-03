@@ -4,6 +4,7 @@ import { createClerkSupabaseClient } from "@/lib/supabase/server"
 import { Cart, CartItem } from "@/lib/types/domain"
 import { randomUUID } from "crypto"
 import { cookies } from "next/headers"
+import { logger } from "@/lib/services/logger"
 
 // Helper to get or create cart ID
 async function getCartId(): Promise<string> {
@@ -32,7 +33,7 @@ export async function createCart(regionId?: string): Promise<Cart> {
     if (error.code === '23505') { // Unique violation
       return getCart() as Promise<Cart>
     }
-    console.error("Error creating cart:", error)
+    logger.error("Error creating cart", error)
     throw new Error("Failed to create cart")
   }
 

@@ -134,6 +134,8 @@ export default async function HomePage() {
         <MobileHomepageGuest
           products={serializedProducts}
           categories={serializedCategories}
+          applications={serializedApplications}
+          elevatorTypes={serializedElevatorTypes}
           testimonials={serializedTestimonials}
         />
       </div>

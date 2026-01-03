@@ -61,10 +61,11 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       query = query.in('category_id', queryParams.category_id)
     }
 
-    if (queryParams?.application) {
-      // Filter by application in metadata JSONB column
-      query = query.contains('metadata', { application: queryParams.application })
-    }
+    // TODO: Fix application filtering - products table has no metadata column
+    // if (queryParams?.application) {
+    //   // Filter by application in metadata JSONB column
+    //   query = query.contains('metadata', { application: queryParams.application })
+    // }
 
     const { data, error, count } = await query
 
@@ -126,8 +127,8 @@ export async function getProductByHandle(handle: string): Promise<Product | null
 
     const { data, error } = await supabase
       .from('products')
-      .select('*, variants(*)')
-      .eq('handle', handle)
+      .select('*, product_variants(*)')
+      .eq('slug', handle)  // Products table uses 'slug', not 'handle'
       .single()
 
     if (error || !data) {

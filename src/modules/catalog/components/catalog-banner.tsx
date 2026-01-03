@@ -15,40 +15,6 @@ interface CatalogBannerProps {
     variant?: "full" | "simple"
 }
 
-// Stock images for categories
-const getCategoryImage = (categoryName: string) => {
-    const images: Record<string, string> = {
-        "Commercial Elevators": "/images/image.png",
-        "House Lifts": "/images/image.png",
-        "Hospital Lifts": "/images/image.png",
-        "Goods Lifts": "/images/image.png",
-        "Hydraulic Lifts": "/images/image.png",
-        "Dumbwaiters": "/images/image.png",
-        "Parking Lifts": "/images/image.png",
-        "Escalators": "/images/image.png",
-        "Safety Elevators": "/images/image.png",
-        "Luxury Elevators": "/images/image.png",
-    }
-    return images[categoryName] || "/images/image.png"
-}
-
-// Stock banner images for different types
-const getBannerImage = (type: "application" | "category", name: string) => {
-    const bannerImages: Record<string, string> = {
-        // Application banners
-        "Commercial Elevators": "/images/image.png",
-        "House Lifts": "/images/image.png",
-        "Hospital Lifts": "/images/image.png",
-        "Goods Lifts": "/images/image.png",
-        "Hydraulic Lifts": "/images/image.png",
-        "Dumbwaiters": "/images/image.png",
-        "Parking Lifts": "/images/image.png",
-        "Escalators": "/images/image.png",
-        "Safety Elevators": "/images/image.png",
-        "Luxury Elevators": "/images/image.png",
-    }
-    return bannerImages[name] || "/images/image.png"
-}
 
 export function CatalogBanner({
     title,
@@ -78,7 +44,7 @@ export function CatalogBanner({
                 <div
                     className="relative h-[240px] rounded-2xl mx-8 overflow-hidden"
                     style={{
-                        backgroundImage: `url(${backgroundImage || getBannerImage(type, title)})`,
+                        backgroundImage: `url(${backgroundImage || "/images/image.png"})`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                     }}
@@ -110,7 +76,7 @@ export function CatalogBanner({
             <div
                 className="relative h-[320px] md:h-[360px] bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 overflow-visible"
                 style={{
-                    backgroundImage: `url(${backgroundImage || getBannerImage(type, title)})`,
+                    backgroundImage: `url(${backgroundImage || "/images/image.png"})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                 }}
@@ -138,7 +104,7 @@ export function CatalogBanner({
                         <div className="max-w-[1300px] mx-auto px-8">
                             <div className="bg-white rounded-lg shadow-xl p-6 relative">
                                 <h2 className="text-base font-semibold text-gray-900 mb-5">
-                                    Source by category
+                                    {type === "application" ? "Source by Categories" : "Source by Subcategory"}
                                 </h2>
 
                                 {/* Scroll Buttons */}
@@ -168,15 +134,15 @@ export function CatalogBanner({
                                                 key={category.id}
                                                 href={
                                                     type === "application"
-                                                        ? `/catalog?application=${slug}&category=${category.handle || category.id}`
-                                                        : `/catalog?category=${category.handle || category.id}`
+                                                        ? `/catalog?application=${slug}&category=${category.slug || category.handle || category.id}`
+                                                        : `/catalog?category=${category.slug || category.handle || category.id}`
                                                 }
                                                 className="flex flex-col items-center gap-2 group min-w-[100px]"
                                             >
                                                 {/* Image Container */}
                                                 <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
                                                     <img
-                                                        src={category.metadata?.icon as string || getCategoryImage(category.name || "")}
+                                                        src={category.metadata?.icon as string || "/images/image.png"}
                                                         alt={category.name || ""}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                                     />

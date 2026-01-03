@@ -1,4 +1,6 @@
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import type { Application } from "@/lib/data/applications"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import {
   HeroGuestMobile as HeroSection,
   CategoriesMobile
@@ -9,16 +11,21 @@ import {
   TestimonialsSection,
   FeaturedProductsSection
 } from "@/components/shared/sections"
+import { ApplicationsSection } from "@/components/store/applications-section"
 
 interface MobileHomepageGuestProps {
   products: Product[]
   categories: ProductCategory[]
+  applications: Application[]
+  elevatorTypes: ElevatorType[]
   testimonials: any[]
 }
 
 export default function MobileHomepageGuest({
   products,
   categories,
+  applications,
+  elevatorTypes,
   testimonials
 }: MobileHomepageGuestProps) {
   return (
@@ -34,8 +41,11 @@ export default function MobileHomepageGuest({
         <FeaturedProductsSection variant="mobile" />
       )}
 
+      {/* Shop by Application */}
+      <ApplicationsSection applications={applications} />
+
       {/* Shop by Elevator Type - 6 cards, 2 per row */}
-      <ElevatorTypesSection variant="mobile" />
+      <ElevatorTypesSection variant="mobile" elevatorTypes={elevatorTypes} />
 
       {/* Why Cedar */}
       <WhyCedarSection variant="mobile" />

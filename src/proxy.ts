@@ -16,9 +16,10 @@ export default clerkMiddleware(async (auth, request) => {
   const url = request.nextUrl
   const hostname = request.headers.get("host") || ""
 
-  // Define domains - fallback to localhost behaviors if env vars missing
-  const adminUrlStr = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://admin.localhost:3000'
-  const mainUrlStr = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  // Define domains
+  const isDev = process.env.NODE_ENV === 'development'
+  const adminUrlStr = process.env.NEXT_PUBLIC_ADMIN_URL || (isDev ? 'http://admin.localhost:3000' : 'https://admin.cedarelevators.com')
+  const mainUrlStr = process.env.NEXT_PUBLIC_BASE_URL || (isDev ? 'http://localhost:3000' : 'https://www.cedarelevators.com')
 
   // Extract clean hostnames
   let adminHost = adminUrlStr.replace(/^https?:\/\//, '')

@@ -98,6 +98,8 @@ export default function QuotesSection({ accountType, verificationStatus }: Quote
       approved: { label: 'Approved', color: 'bg-green-100 text-green-700', icon: CircleCheck },
       rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: XCircle },
       converted: { label: 'Converted', color: 'bg-purple-100 text-purple-700', icon: TrendingUp },
+      draft: { label: 'Draft', color: 'bg-gray-100 text-gray-700', icon: FileText },
+      expired: { label: 'Expired', color: 'bg-gray-100 text-gray-500', icon: AlertCircle },
     }
     return configs[status]
   }

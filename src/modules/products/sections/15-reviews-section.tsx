@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, forwardRef } from "react"
-import { Star, ThumbsUp, CircleCheck, ChevronDown, ChevronUp, Image as ImageIcon, Filter } from "lucide-react"
+import { useState, forwardRef, useTransition } from "react"
+import { Star, ThumbsUp, CircleCheck, ChevronDown, ChevronUp, Image as ImageIcon, Filter, Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import { submitReview, markReviewHelpful } from "@/lib/actions/reviews"
 
 interface Review {
   id: string
@@ -30,6 +32,7 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
       name: '',
       comment: ''
     })
+    const [isPending, startTransition] = useTransition()
 
     const INITIAL_DISPLAY_COUNT = 3
 
@@ -63,10 +66,38 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
 
     const handleSubmitReview = (e: React.FormEvent) => {
       e.preventDefault()
-      console.log('Submit review:', { ...newReview, productId })
-      // TODO: Implement review submission
-      setShowReviewForm(false)
-      setNewReview({ rating: 5, name: '', comment: '' })
+
+      if (!newReview.comment || newReview.comment.trim().length < 10) {
+        toast.error("Review must be at least 10 characters")
+        return
+      }
+
+      startTransition(async () => {
+        try {
+          const result = await submitReview(productId, {
+            rating: newReview.rating,
+            name: newReview.name,
+            comment: newReview.comment
+          })
+
+          if (result.success) {
+            toast.success("Review submitted! It will appear after moderation.")
+            setShowReviewForm(false)
+            setNewReview({ rating: 5, name: '', comment: '' })
+          } else {
+            toast.error(result.error || "Failed to submit review")
+          }
+        } catch (error) {
+          toast.error("Failed to submit review")
+        }
+      })
+    }
+
+    const handleHelpful = (reviewId: string) => {
+      startTransition(async () => {
+        await markReviewHelpful(reviewId)
+        toast.success("Thanks for your feedback!")
+      })
     }
 
     const reviewsWithImages = reviews.filter(r => r.images && r.images.length > 0).length
@@ -88,7 +119,7 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
         {showReviewForm && (
           <div className="bg-gray-50 rounded-lg p-6 space-y-4 border-2 border-blue-200 animate-slideDown">
             <h3 className="text-lg font-semibold text-gray-900">Share Your Experience</h3>
-            
+
             <form onSubmit={handleSubmitReview} className="space-y-4">
               {/* Rating */}
               <div>
@@ -104,11 +135,10 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                       className="transition-transform hover:scale-110"
                     >
                       <Star
-                        className={`w-8 h-8 ${
-                          star <= newReview.rating
+                        className={`w-8 h-8 ${star <= newReview.rating
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-gray-300"
-                        }`}
+                          }`}
                       />
                     </button>
                   ))}
@@ -179,11 +209,10 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`w-5 h-5 ${
-                          star <= Math.round(averageRating)
+                        className={`w-5 h-5 ${star <= Math.round(averageRating)
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-gray-300"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -219,22 +248,20 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
               {/* Filter Buttons */}
               <button
                 onClick={() => setFilterRating('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  filterRating === 'all'
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filterRating === 'all'
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 All
               </button>
-              
+
               <button
                 onClick={() => setFilterRating('images')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
-                  filterRating === 'images'
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${filterRating === 'images'
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 <ImageIcon className="w-4 h-4" />
                 With Images ({reviewsWithImages})
@@ -244,11 +271,10 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                 <button
                   key={rating}
                   onClick={() => setFilterRating(rating)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
-                    filterRating === rating
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${filterRating === rating
                       ? 'bg-gray-900 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {rating} <Star className="w-3 h-3 fill-current" />
                 </button>
@@ -279,7 +305,7 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
                       {review.name?.charAt(0) || "?"}
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-semibold text-gray-900">{review.name || "Anonymous"}</p>
@@ -295,11 +321,10 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={`w-4 h-4 ${
-                                star <= review.rating
+                              className={`w-4 h-4 ${star <= review.rating
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "text-gray-300"
-                              }`}
+                                }`}
                             />
                           ))}
                         </div>

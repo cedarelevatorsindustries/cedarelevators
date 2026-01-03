@@ -75,16 +75,15 @@ export default function PaymentMethodSection({
 
   const handlePaymentMethodSelect = async (methodId: string | null) => {
     if (!cart) return
-
     setSelectedSavedPaymentMethod(methodId)
-    // TODO: Handle saved payment method selection (e.g. store in local state or update cart in DB)
+    // Saved payment method selected - Razorpay component handles this internally
+    // The payment will be processed when user clicks "Place Order"
   }
 
   const handleNewCardSelect = async () => {
     if (!cart) return
-
     setSelectedSavedPaymentMethod(null)
-    // TODO: Handle new card selection
+    // New card flow - Razorpay will show card input when payment is initiated
   }
 
   const availableMethods = methods.filter(

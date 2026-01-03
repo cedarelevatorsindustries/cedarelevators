@@ -4,6 +4,8 @@ import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 // Import desktop sections
 import ProductHeroSection from "../sections/01-product-hero-section"
@@ -15,7 +17,12 @@ import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
 import VariantSelector from "../components/product/variant-selector"
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect, useTransition } from "react"
+
+// Import actions
+import { addToCart } from "@/lib/actions/cart"
+import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
+import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 
 interface CatalogContext {
   from?: string
@@ -38,8 +45,11 @@ export default function ProductDetailPage({
   catalogContext
 }: ProductDetailPageProps) {
   const { user } = useUser()
+  const router = useRouter()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   // User type and pricing logic
   const isGuest = !user
@@ -49,7 +59,16 @@ export default function ProductDetailPage({
   const showPrice = isBusiness && isVerified
 
   const price = product.price?.amount || 0
-  const originalPrice = null // TODO: Add original price to schema if needed
+  const originalPrice = (product.metadata?.compare_at_price as number) || null
+
+  // Check favorite status on mount
+  useEffect(() => {
+    if (user && product.id) {
+      checkIsFavorite(product.id).then(result => {
+        setIsFavorite(result.isFavorite)
+      })
+    }
+  }, [user, product.id])
 
   // Images
   const images = product.images || []
@@ -63,6 +82,7 @@ export default function ProductDetailPage({
   ]
   const reviews = product.metadata?.reviews as any[] || []
   const features = product.tags || []
+
   // Transform variants for selector
   const variants = product.variants ? (() => {
     const groups: Record<string, Set<string>> = {}
@@ -101,25 +121,88 @@ export default function ProductDetailPage({
   const allVariantsSelected = variants.length === 0 ||
     variants.every((variantGroup: any) => selectedVariants[variantGroup.type])
 
+  // Find selected variant
+  const getSelectedVariantId = () => {
+    if (!product.variants || product.variants.length === 0) return product.id
+
+    // Find variant matching selected options
+    const matchingVariant = product.variants.find(v => {
+      if (!v.options) return false
+      return Object.entries(selectedVariants).every(([key, value]) =>
+        v.options?.[key] === value
+      )
+    })
+    return matchingVariant?.id || product.variants[0]?.id || product.id
+  }
+
   // Handlers
   const handleVariantChange = (variantType: string, variantId: string) => {
     setSelectedVariants(prev => ({ ...prev, [variantType]: variantId }))
-    console.log("Variant changed:", variantType, variantId)
   }
 
   const handleAddToCart = (quantity: number) => {
-    console.log("Add to cart:", product.id, "Quantity:", quantity, "Variants:", selectedVariants)
-    // TODO: Implement add to cart with selected variants
+    if (!allVariantsSelected) {
+      toast.error("Please select all options")
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        const variantId = getSelectedVariantId()
+        await addToCart(variantId, quantity)
+        toast.success(`${product.title} added to cart`)
+      } catch (error: any) {
+        toast.error(error.message || "Failed to add to cart")
+      }
+    })
   }
 
   const handleRequestQuote = () => {
-    console.log("Request quote:", product.id)
-    // TODO: Implement quote request
+    startTransition(async () => {
+      try {
+        const variantId = getSelectedVariantId()
+        const result = await addToQuoteBasket({
+          id: `${product.id}-${Date.now()}`,
+          product_id: product.id,
+          variant_id: variantId !== product.id ? variantId : undefined,
+          product_name: product.title || "",
+          product_sku: (product.metadata?.sku as string) || product.id,
+          product_thumbnail: product.thumbnail || "",
+          quantity: 1,
+          bulk_pricing_requested: false
+        })
+
+        if (result.success) {
+          toast.success("Added to quote basket")
+          router.push("/quote")
+        } else {
+          toast.error(result.error || "Failed to add to quote basket")
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to request quote")
+      }
+    })
   }
 
   const handleWishlist = () => {
-    console.log("Toggle wishlist:", product.id)
-    // TODO: Implement wishlist
+    if (isGuest) {
+      toast.error("Please sign in to save favorites")
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        const result = await toggleFavorite(product.id)
+        if (result.success) {
+          setIsFavorite(result.isFavorite || false)
+          toast.success(result.isFavorite ? "Added to favorites" : "Removed from favorites")
+        } else {
+          toast.error(result.error || "Failed to update favorites")
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Failed to update favorites")
+      }
+    })
   }
 
   const handleShare = () => {
@@ -129,16 +212,31 @@ export default function ProductDetailPage({
         text: product.description || "",
         url: window.location.href
       })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      toast.success("Link copied to clipboard")
     }
   }
 
   const handleAddBundle = () => {
-    console.log("Add bundle to cart")
-    // TODO: Implement bundle add to cart
+    startTransition(async () => {
+      try {
+        // Add main product
+        await addToCart(product.id, 1)
+        // Add bundle products
+        for (const bundleProduct of bundleProducts) {
+          await addToCart(bundleProduct.id, 1)
+        }
+        toast.success("Bundle added to cart")
+      } catch (error: any) {
+        toast.error(error.message || "Failed to add bundle")
+      }
+    })
   }
 
   const scrollToReviews = () => {
-    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }
+    )
   }
 
   return (

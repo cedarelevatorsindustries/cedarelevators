@@ -5,6 +5,7 @@ import { Send, LoaderCircle, CircleCheck, Trash2, Upload, Minus, Plus, Building2
 import { toast } from "sonner"
 import { submitBusinessQuote } from "@/lib/actions/quotes"
 import { getBusinessProfile } from "@/lib/actions/business"
+import { uploadQuoteAttachments, fileToBase64 } from "@/lib/services/file-upload"
 import { useQuoteBasket } from "@/lib/hooks/use-quote-basket"
 import { useUser } from "@/lib/auth/client"
 import Link from "next/link"
@@ -109,13 +110,42 @@ export const BusinessQuoteForm = ({ products, prefilledProduct, onSuccess, isVer
         setIsSubmitting(true)
 
         try {
-            // TODO: Upload attachments to Supabase Storage
-            const uploadedAttachments = attachments.map(file => ({
-                file_name: file.name,
-                file_url: "", // Would be set after upload
-                file_size: file.size,
-                mime_type: file.type
-            }))
+            // Upload attachments to Supabase Storage
+            let uploadedAttachments: Array<{
+                file_name: string
+                file_url: string
+                file_size: number
+                mime_type: string
+            }> = []
+
+            if (attachments.length > 0) {
+                // Convert files to base64 for server upload
+                const fileDataArray = await Promise.all(
+                    attachments.map(async (file) => ({
+                        base64: await fileToBase64(file),
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size
+                    }))
+                )
+
+                const uploadResult = await uploadQuoteAttachments(fileDataArray)
+
+                if (!uploadResult.success) {
+                    toast.error(uploadResult.error || "Failed to upload attachments")
+                    setIsSubmitting(false)
+                    return
+                }
+
+                uploadedAttachments = (uploadResult.attachments || [])
+                    .filter(a => a.success)
+                    .map(a => ({
+                        file_name: a.file_name || '',
+                        file_url: a.file_url || '',
+                        file_size: a.file_size || 0,
+                        mime_type: a.mime_type || ''
+                    }))
+            }
 
             const result = await submitBusinessQuote({
                 notes,

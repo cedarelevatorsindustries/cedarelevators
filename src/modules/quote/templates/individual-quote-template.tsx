@@ -12,16 +12,42 @@ import {
   QuoteItem
 } from "../components"
 
-interface IndividualQuoteTemplateProps {
-  products: Product[]
+interface Stat {
+  label: string
+  value: string
+  subtext: string
+  icon: any
+  color: string
+  bg: string
+  border: string
 }
 
-export default function IndividualQuoteTemplate({ products }: IndividualQuoteTemplateProps) {
-  // Individual specific stats
-  const individualStats = [
+export interface QuoteItemData {
+  id: string
+  title: string
+  amount: string
+  status: 'pending' | 'accepted' | 'rejected' | 'completed'
+  expiry?: string
+}
+
+interface IndividualQuoteTemplateProps {
+  products: Product[]
+  stats?: Stat[]
+  quotes?: QuoteItemData[]
+  pendingCount?: number
+}
+
+export default function IndividualQuoteTemplate({
+  products,
+  stats,
+  quotes,
+  pendingCount = 0
+}: IndividualQuoteTemplateProps) {
+  // Individual specific stats - use props or fallback to defaults
+  const individualStats: Stat[] = stats || [
     {
       label: "Total Spent",
-      value: "₹45k",
+      value: "₹0",
       subtext: "Last 30 days",
       icon: Wallet,
       color: "text-blue-600",
@@ -30,7 +56,7 @@ export default function IndividualQuoteTemplate({ products }: IndividualQuoteTem
     },
     {
       label: "Total Saved",
-      value: "₹5.2k",
+      value: "₹0",
       subtext: "With quotes",
       icon: TrendingUp,
       color: "text-green-600",
@@ -46,33 +72,13 @@ export default function IndividualQuoteTemplate({ products }: IndividualQuoteTem
     { label: "Browse Catalog", icon: Grid, href: "/catalog", color: "bg-purple-600" }
   ]
 
-  // Individual specific quotes
-  const individualQuotes: QuoteItem[] = [
-    {
-      id: "Q-2024-001",
-      title: "House Lift Kit",
-      amount: "₹4.5 L",
-      status: "pending",
-      expiry: "Expires 24h"
-    },
-    {
-      id: "Q-2024-002",
-      title: "Spare Parts",
-      amount: "₹12,000",
-      status: "accepted"
-    },
-    {
-      id: "Q-2023-089",
-      title: "Maintenance Kit",
-      amount: "₹8,500",
-      status: "completed"
-    }
-  ]
+  // Individual specific quotes - use props or fallback to empty array
+  const individualQuotes: QuoteItem[] = quotes || []
 
   return (
     <div className="w-full min-h-screen bg-gray-50 pb-24">
       {/* 1. Sticky Top Bar */}
-      <StickyTopBar title="My Quotes" pendingCount={1} />
+      <StickyTopBar title="My Quotes" pendingCount={pendingCount} />
 
       {/* 2. Upgrade to Business Banner */}
       <div className="mx-4 mt-4 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 shadow-sm">

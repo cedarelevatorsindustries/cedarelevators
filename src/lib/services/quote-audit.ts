@@ -92,9 +92,12 @@ export async function getQuoteAuditLog(
             return { success: false, error: 'Quote not found' }
         }
 
-        // Check if user owns the quote
-        // TODO: Add admin check
-        if (quote.clerk_user_id !== userId) {
+        // Check if user owns the quote OR is an admin
+        const user = await currentUser()
+        const adminRole = user?.publicMetadata?.role as string | undefined
+        const isAdmin = ['super_admin', 'admin', 'manager'].includes(adminRole || '')
+
+        if (quote.clerk_user_id !== userId && !isAdmin) {
             return { success: false, error: 'Unauthorized' }
         }
 

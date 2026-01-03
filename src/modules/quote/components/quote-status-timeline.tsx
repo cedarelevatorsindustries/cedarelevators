@@ -1,18 +1,18 @@
 "use client"
 
-import { QuoteStatus } from "@/lib/quote-state-machine"
+import { Quote, QuoteStatus } from "@/types/b2b/quote" // Updated import
 import { Check, Clock, FileText, CheckCircle, XCircle, ShoppingCart, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 
 interface QuoteStatusTimelineProps {
     status: QuoteStatus
     createdAt: string
-    reviewingStartedAt?: string | null
-    approvedAt?: string | null
-    rejectedAt?: string | null
-    rejectedBy?: string | null
-    convertedAt?: string | null
-    expiredAt?: string | null
+    reviewingStartedAt?: string
+    approvedAt?: string
+    rejectedAt?: string
+    rejectedBy?: string
+    convertedAt?: string
+    expiredAt?: string
 }
 
 interface TimelineStep {
@@ -33,6 +33,7 @@ export default function QuoteStatusTimeline({
     convertedAt,
     expiredAt
 }: QuoteStatusTimelineProps) {
+
 
     const getTimelineSteps = (): TimelineStep[] => {
         const steps: TimelineStep[] = [

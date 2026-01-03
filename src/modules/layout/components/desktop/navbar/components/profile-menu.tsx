@@ -7,6 +7,7 @@ import { useUser } from "@/lib/auth/client"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
 import Image from "next/image"
 import { toast } from "sonner"
+import { logger } from "@/lib/services/logger"
 
 interface ProfileMenuProps {
   isTransparent: boolean
@@ -59,33 +60,33 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
     setIsSwitching(true)
     try {
       if (isBusiness) {
-        console.log('Switching from business to individual...')
+        logger.debug('Switching from business to individual...')
         // Switch to individual
         await switchProfile('individual')
         toast.success('Switched to Individual profile')
       } else {
-        console.log('Switching from individual to business...')
+        logger.debug('Switching from individual to business...')
         // Switch to business (create if doesn't exist)
         if (hasBusinessProfile) {
-          console.log('Business profile exists, switching...')
+          logger.debug('Business profile exists, switching...')
           await switchProfile('business')
           toast.success('Switched to Business profile')
         } else {
-          console.log('Creating new business profile...')
+          logger.debug('Creating new business profile...')
           // Create business profile with minimal data
           const result = await createBusinessProfile({
             name: `${userName}'s Business`,
             gst_number: '',
             pan_number: ''
           })
-          console.log('Create business profile result:', result)
+          logger.debug('Create business profile result:', result)
           toast.success('Business profile created! Complete your details in profile.')
         }
       }
-      console.log('Switch successful, reloading page...')
+      logger.debug('Switch successful, reloading page...')
       window.location.href = window.location.href
     } catch (error: any) {
-      console.error("Error switching profile:", error)
+      logger.error("Error switching profile", error)
       toast.error(error.message || "Failed to switch profile")
     } finally {
       setIsSwitching(false)

@@ -444,7 +444,8 @@ export async function createAdminInvite(
     }
 
     // 5. Send Email
-    const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || (process.env.NEXT_PUBLIC_BASE_URL + '/admin') || 'http://localhost:3000/admin'
+    const isDev = process.env.NODE_ENV === 'development'
+    const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || (process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/admin` : isDev ? 'http://localhost:3000/admin' : 'https://admin.cedarelevators.com')
 
     // If using admin subdomain, path is just /invite/token (middleware rewrites to /admin/invite/token)
     // If fallback to base url/admin, path is /invite/token appended to it? No.
@@ -527,7 +528,8 @@ export async function resendAdminInvite(inviteId: string): Promise<{ success: bo
     if (updateError) return { success: false, error: 'Failed to update invite' }
 
     // 4. Send Email
-    const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || (process.env.NEXT_PUBLIC_BASE_URL + '/admin') || 'http://localhost:3000/admin'
+    const isDev = process.env.NODE_ENV === 'development'
+    const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || (process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/admin` : isDev ? 'http://localhost:3000/admin' : 'https://admin.cedarelevators.com')
     const inviteLink = `${adminUrl}/invite/${token}`
 
     // Get inviter email (original inviter)

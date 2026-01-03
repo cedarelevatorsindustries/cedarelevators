@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Send, LoaderCircle, CircleCheck, Trash2, Upload, Minus, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { submitIndividualQuote } from "@/lib/actions/quotes"
+import { uploadQuoteAttachment, fileToBase64 } from "@/lib/services/file-upload"
 import { useQuoteBasket } from "@/lib/hooks/use-quote-basket"
 import { useUser } from "@/lib/auth/client"
 import Link from "next/link"
@@ -23,7 +24,7 @@ export const IndividualQuoteForm = ({ onSuccess }: IndividualQuoteFormProps) => 
     const [attachment, setAttachment] = useState<File | null>(null)
     const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
             // Validate file size (5MB max)
@@ -38,8 +39,29 @@ export const IndividualQuoteForm = ({ onSuccess }: IndividualQuoteFormProps) => 
                 return
             }
             setAttachment(file)
-            // TODO: Upload to Supabase Storage and get URL
-            // For now, we'll skip the actual upload
+
+            // Upload to Supabase Storage immediately
+            try {
+                const base64 = await fileToBase64(file)
+                const uploadResult = await uploadQuoteAttachment({
+                    base64,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size
+                })
+
+                if (uploadResult.success && uploadResult.file_url) {
+                    setUploadedUrl(uploadResult.file_url)
+                    toast.success("File uploaded successfully")
+                } else {
+                    toast.error(uploadResult.error || "Failed to upload file")
+                    setAttachment(null)
+                }
+            } catch (error) {
+                console.error("Upload error:", error)
+                toast.error("Failed to upload file")
+                setAttachment(null)
+            }
         }
     }
 
