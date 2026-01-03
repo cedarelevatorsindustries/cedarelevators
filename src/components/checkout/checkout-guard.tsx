@@ -16,6 +16,7 @@ import { checkCheckoutEligibility } from '@/lib/actions/checkout'
 import { GuestCheckoutBlocked } from './guest-checkout-blocked'
 import { IndividualCheckoutBlocked } from './individual-checkout-blocked'
 import { UnverifiedBusinessCheckoutBlocked } from './unverified-business-checkout-blocked'
+import { toast } from 'sonner'
 
 interface CheckoutGuardProps {
   children: React.ReactNode
