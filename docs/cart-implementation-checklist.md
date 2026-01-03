@@ -232,28 +232,29 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 8: Cart → Checkout Integration
 
 ### 8.1 Checkout Eligibility Check
-- [ ] Create checkout guard:
-  - [ ] Verify user type (only verified business)
-  - [ ] Check cart has items
-  - [ ] Validate stock availability
-  - [ ] Check cart ownership
+- [x] Create checkout guard:
+  - [x] Verify user type (only verified business)
+  - [x] Check cart has items
+  - [x] Validate stock availability
+  - [x] Check cart ownership
 
 ### 8.2 Checkout Flow Updates
-- [ ] Update checkout pages:
-  - [ ] Load cart data in checkout
-  - [ ] Display cart items in checkout
-  - [ ] Show pricing breakdown (with bulk discounts)
+- [x] Update checkout pages:
+  - [x] Load cart data in checkout (checkout-template-v2.tsx)
+  - [x] Display cart items in checkout
+  - [x] Show pricing breakdown (with calculations)
+  - [x] Convert cart to order on success (cart-conversion.ts)
   - [ ] Lock cart during checkout
-  - [ ] Convert cart to order on success
 
 ### 8.3 Blocked Checkout Screens
-- [ ] Create blocked checkout components:
-  - [ ] Individual user blocked screen
-  - [ ] Business unverified blocked screen
-  - [ ] Show "Request Quote" alternative
-  - [ ] Show upgrade/verification CTAs
+- [x] Create blocked checkout components:
+  - [x] Individual user blocked screen
+  - [x] Business unverified blocked screen
+  - [x] Guest user blocked screen
+  - [x] Show "Request Quote" alternative
+  - [x] Show upgrade/verification CTAs
 
-**Phase 8 Completion**: 0/11 tasks
+**Phase 8 Completion**: 10/11 tasks (91%)
 
 ---
 
