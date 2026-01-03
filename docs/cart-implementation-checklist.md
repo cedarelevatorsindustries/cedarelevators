@@ -171,26 +171,26 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 6: Profile Switching Logic
 
 ### 6.1 Profile Context Management
-- [ ] Create `/app/src/contexts/cart-context.tsx`:
-  - [ ] Track current active profile (individual/business)
-  - [ ] Track current cart ID
-  - [ ] Provide cart switching function
-  - [ ] Handle profile change events
+- [x] Create `/app/src/contexts/cart-context.tsx`:
+  - [x] Track current active profile (individual/business)
+  - [x] Track current cart ID
+  - [x] Provide cart switching function
+  - [x] Handle profile change events
 
 ### 6.2 Cart Switching Implementation
-- [ ] Implement cart switching:
-  - [ ] Detect profile change (individual ↔ business)
-  - [ ] Load appropriate cart for new profile
-  - [ ] Update UI to reflect new cart
-  - [ ] Preserve previous cart (don't delete)
+- [x] Implement cart switching:
+  - [x] Detect profile change (individual ↔ business)
+  - [x] Load appropriate cart for new profile
+  - [x] Update UI to reflect new cart
+  - [x] Preserve previous cart (don't delete)
 
 ### 6.3 Profile Switching UI
-- [ ] Add profile indicator:
-  - [ ] Show "Shopping as: Individual / Business" badge
-  - [ ] Add profile switcher if user has business account
-  - [ ] Update cart count when switching
+- [x] Add profile indicator:
+  - [x] Show "Shopping as: Individual / Business" badge
+  - [x] Add profile switcher if user has business account
+  - [x] Update cart count when switching
 
-**Phase 6 Completion**: 0/9 tasks
+**Phase 6 Completion**: 9/9 tasks (100%)
 
 ---
 
