@@ -50,31 +50,44 @@ Cedar Elevator Industries - B2B E-commerce Platform
 ## 📋 PHASE 1: Database Foundation
 
 ### 1.1 Business Addresses Table
-- [ ] Create `business_addresses` table migration
-- [ ] Fields: id, business_id, address_type (shipping/billing), address details, is_default
-- [ ] RLS policies for user access
-- [ ] Indexes for fast lookup
+- [x] Create `business_addresses` table migration
+- [x] Fields: id, business_id, address_type (shipping/billing), address details, is_default
+- [x] RLS policies for user access
+- [x] Indexes for fast lookup
 
 ### 1.2 Orders Schema Enhancement
-- [ ] Verify orders table has all required fields
-- [ ] Add `checkout_snapshot` JSONB field (price lock)
-- [ ] Add `payment_snapshot` JSONB field (payment details)
-- [ ] Add `gst_amount` and `gst_percentage` fields
-- [ ] Add `shipping_cost` field (🟡 ON HOLD - as per user)
+- [x] Verify orders table has all required fields
+- [x] Add `checkout_snapshot` JSONB field (price lock)
+- [x] Add `payment_snapshot` JSONB field (payment details)
+- [x] Add `gst_amount` and `gst_percentage` fields
+- [x] Add `shipping_cost` field (🟡 ON HOLD - as per user)
+- [x] Add `business_id` and `cart_id` references
 
 ### 1.3 Database Functions
-- [ ] Function: `create_order_from_cart(cart_id, business_id)`
-- [ ] Function: `validate_checkout_eligibility(cart_id, user_id)`
-- [ ] Function: `lock_prices_snapshot(cart_id)`
-- [ ] Function: `mark_order_as_paid(order_id, payment_details)`
+- [x] Function: `create_order_from_cart(cart_id, business_id)`
+- [x] Function: `validate_checkout_eligibility(cart_id, user_id)`
+- [x] Function: `create_checkout_snapshot(cart_id)` (price lock)
+- [x] Function: `mark_order_as_paid(order_id, payment_details)`
+- [x] Function: `generate_order_number()` (auto-generation)
 
 ### 1.4 Payment Integration Table
-- [ ] Create `payment_transactions` table
-- [ ] Fields: order_id, razorpay_order_id, razorpay_payment_id, razorpay_signature
-- [ ] Status tracking (initiated, success, failed)
-- [ ] Idempotency key support
+- [x] Create `payment_transactions` table
+- [x] Fields: order_id, razorpay_order_id, razorpay_payment_id, razorpay_signature
+- [x] Status tracking (initiated, authorized, captured, failed, refunded)
+- [x] Idempotency key support
+- [x] Error handling fields
 
-**Phase 1 Status:** ⏳ Not Started
+### 1.5 Server Actions
+- [x] `checkCheckoutEligibility()` - validates user and cart
+- [x] `getBusinessAddresses()` - fetch saved addresses
+- [x] `addBusinessAddress()` - add new address
+- [x] `updateBusinessAddress()` - update existing address
+- [x] `deleteBusinessAddress()` - soft delete address
+- [x] `getCheckoutSummary()` - calculate pricing with GST
+- [x] `createOrderFromCart()` - create order with snapshot
+- [x] `getOrderById()` - fetch order details
+
+**Phase 1 Status:** ✅ COMPLETED
 
 ---
 
