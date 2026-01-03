@@ -248,7 +248,7 @@ This checklist tracks the implementation of a production-ready cart module for C
   - [x] Display cart items in checkout
   - [x] Show pricing breakdown (with calculations)
   - [x] Convert cart to order on success (cart-conversion.ts)
-  - [ ] Lock cart during checkout
+  - [x] Lock cart during checkout (soft lock, 5 min timeout)
 
 ### 8.3 Blocked Checkout Screens
 - [x] Create blocked checkout components:
