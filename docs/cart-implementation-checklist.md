@@ -58,36 +58,36 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 2: Cart Server Actions (Database Layer)
 
 ### 2.1 Core Cart Operations
-- [ ] Create `/app/src/lib/actions/cart-v2.ts`:
-  - [ ] `getOrCreateCart(userId, profileType, businessId?)` - Get active cart or create new
-  - [ ] `getCart(cartId)` - Fetch cart with items
-  - [ ] `getUserActiveCart(userId, profileType, businessId?)` - Get user's active cart for context
-  - [ ] `switchCartContext(userId, newProfileType, newBusinessId?)` - Switch between individual/business
-  - [ ] `abandonCart(cartId)` - Mark cart as abandoned
-  - [ ] `convertCart(cartId, type)` - Mark as converted (to order/quote)
+- [x] Create `/app/src/lib/actions/cart-v2.ts`:
+  - [x] `getOrCreateCart(userId, profileType, businessId?)` - Get active cart or create new
+  - [x] `getCart(cartId)` - Fetch cart with items
+  - [x] `getUserActiveCart(userId, profileType, businessId?)` - Get user's active cart for context
+  - [x] `switchCartContext(userId, newProfileType, newBusinessId?)` - Switch between individual/business
+  - [x] `abandonCart(cartId)` - Mark cart as abandoned
+  - [x] `convertCart(cartId, type)` - Mark as converted (to order/quote)
 
 ### 2.2 Cart Item Operations
-- [ ] Add to cart item actions:
-  - [ ] `addItemToCart(cartId, productId, variantId?, quantity)` - Add or update item
-  - [ ] `updateCartItemQuantity(cartItemId, quantity)` - Update quantity
-  - [ ] `removeCartItem(cartItemId)` - Remove item
-  - [ ] `clearCart(cartId)` - Remove all items
-  - [ ] `mergeCartItems(sourceItems, targetCartId)` - Merge guest cart to user cart
+- [x] Add to cart item actions:
+  - [x] `addItemToCart(cartId, productId, variantId?, quantity)` - Add or update item
+  - [x] `updateCartItemQuantity(cartItemId, quantity)` - Update quantity
+  - [x] `removeCartItem(cartItemId)` - Remove item
+  - [x] `clearCart(cartId)` - Remove all items
+  - [x] `mergeCartItems(sourceItems, targetCartId)` - Merge guest cart to user cart
 
 ### 2.3 Validation & Business Logic
-- [ ] Implement validation functions:
-  - [ ] `validateCartOwnership(cartId, userId, profileType)` - Ensure user owns cart
-  - [ ] `validateStockAvailability(productId, quantity)` - Check stock
-  - [ ] `validateCartItem(productId, variantId?, quantity)` - Validate before adding
-  - [ ] `enforceActiveCartRule(userId, profileType, businessId?)` - One active cart per context
+- [x] Implement validation functions:
+  - [x] `validateCartOwnership(cartId, userId, profileType)` - Ensure user owns cart
+  - [x] `validateStockAvailability(productId, quantity)` - Check stock
+  - [x] `validateCartItem(productId, variantId?, quantity)` - Validate before adding
+  - [x] `enforceActiveCartRule(userId, profileType, businessId?)` - One active cart per context
 
 ### 2.4 Database Queries
-- [ ] Create optimized queries:
-  - [ ] Cart with items and product details (JOIN)
-  - [ ] Count cart items
-  - [ ] Get cart summary (item count, unique products)
+- [x] Create optimized queries:
+  - [x] Cart with items and product details (JOIN)
+  - [x] Count cart items
+  - [x] Get cart summary (item count, unique products)
 
-**Phase 2 Completion**: 0/18 tasks
+**Phase 2 Completion**: 18/18 tasks (100%)
 
 ---
 
