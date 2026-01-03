@@ -66,11 +66,16 @@ export function CheckoutGuard({ children }: CheckoutGuardProps) {
         return
       }
 
-      // Check 3: Business must be verified
+      // EDGE CASE: Check 3: Business verification status (real-time check)
       const verificationStatus = user.publicMetadata?.verificationStatus as string
       if (verificationStatus !== 'verified') {
         setBlockReason('not_verified')
         setIsChecking(false)
+        
+        // Show warning if verification was lost mid-checkout
+        if (pathname?.includes('/checkout') && verificationStatus === 'pending') {
+          toast.error('Your business verification status has changed. Please complete verification to proceed.')
+        }
         return
       }
 
@@ -89,6 +94,7 @@ export function CheckoutGuard({ children }: CheckoutGuardProps) {
         if (!result.success || !result.data?.eligible) {
           if (result.data?.reason === 'stock_issues') {
             setBlockReason('cart_issues')
+            toast.error('Some items in your cart are no longer available. Please review your cart.')
             // Redirect to cart to fix issues
             router.push('/cart')
             return
@@ -107,7 +113,16 @@ export function CheckoutGuard({ children }: CheckoutGuardProps) {
     }
 
     checkEligibility()
-  }, [isLoaded, isSignedIn, user, cart, summary, router])
+    
+    // EDGE CASE: Re-check eligibility every 30 seconds during checkout
+    const intervalId = setInterval(() => {
+      if (pathname?.includes('/checkout')) {
+        checkEligibility()
+      }
+    }, 30000)
+    
+    return () => clearInterval(intervalId)
+  }, [isLoaded, isSignedIn, user, cart, summary, router, pathname])
 
   // Show loading state
   if (isChecking || blockReason === 'loading') {
