@@ -77,6 +77,19 @@ export async function POST(request: NextRequest) {
         console.log('💰 [Razorpay Webhook] Order ID:', capturedOrderId)
         console.log('💰 [Razorpay Webhook] Payment ID:', capturedPaymentId)
         
+        // EDGE CASE: Idempotency check - prevent duplicate processing
+        const { data: existingTransaction } = await supabase
+          .from('payment_transactions')
+          .select('id, status')
+          .eq('razorpay_order_id', capturedOrderId)
+          .eq('razorpay_payment_id', capturedPaymentId)
+          .single()
+        
+        if (existingTransaction && existingTransaction.status === 'captured') {
+          console.log('⚠️ [Razorpay Webhook] Payment already processed, skipping (idempotency)')
+          break
+        }
+        
         // Update order
         const { error: captureError } = await supabase
           .from('orders')
@@ -93,6 +106,21 @@ export async function POST(request: NextRequest) {
           console.error('❌ [Razorpay Webhook] Failed to update order:', captureError)
         } else {
           console.log('✅ [Razorpay Webhook] Order updated successfully')
+          
+          // Update or create payment transaction record
+          await supabase
+            .from('payment_transactions')
+            .upsert({
+              razorpay_order_id: capturedOrderId,
+              razorpay_payment_id: capturedPaymentId,
+              status: 'captured',
+              captured_at: new Date().toISOString(),
+              amount: capturedPayment.amount / 100, // Convert from paise to rupees
+              currency: capturedPayment.currency,
+              method: capturedPayment.method,
+              webhook_data: event.payload,
+              updated_at: new Date().toISOString()
+            })
         }
         break
         
