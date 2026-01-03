@@ -63,6 +63,14 @@ export function PaymentSection({
 
     setIsProcessing(true)
 
+    // EDGE CASE: Payment timeout handler
+    const timeoutId = setTimeout(() => {
+      if (isProcessing) {
+        setIsProcessing(false)
+        toast.error('Payment gateway timeout. Please try again.')
+      }
+    }, 300000) // 5 minutes timeout
+
     try {
       // Step 1: Create Razorpay order via our API
       const createOrderResponse = await fetch('/api/payments/create-order', {
@@ -94,6 +102,9 @@ export function PaymentSection({
         description: 'Order Payment',
         order_id: orderData.razorpayOrderId,
         handler: async function (response: any) {
+          // Clear timeout on successful payment
+          clearTimeout(timeoutId)
+          
           // Step 3: Verify payment on our server
           try {
             const verifyResponse = await fetch('/api/payments/verify', {
@@ -128,6 +139,7 @@ export function PaymentSection({
         },
         modal: {
           ondismiss: function () {
+            clearTimeout(timeoutId)
             setIsProcessing(false)
             toast.info('Payment cancelled')
           },
@@ -140,11 +152,23 @@ export function PaymentSection({
         theme: {
           color: '#ea580c', // Orange color
         },
+        // EDGE CASE: Add timeout configuration
+        timeout: 300, // 5 minutes in seconds
       }
 
       const razorpay = new window.Razorpay(options)
+      
+      // Handle payment failures
+      razorpay.on('payment.failed', function (response: any) {
+        clearTimeout(timeoutId)
+        console.error('Payment failed:', response.error)
+        toast.error(response.error.description || 'Payment failed')
+        setIsProcessing(false)
+      })
+      
       razorpay.open()
     } catch (error: any) {
+      clearTimeout(timeoutId)
       console.error('Payment error:', error)
       toast.error(error.message || 'Failed to initiate payment')
       setIsProcessing(false)
