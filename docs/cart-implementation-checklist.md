@@ -261,19 +261,19 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 9: Cart → Quote Integration
 
 ### 9.1 Quote Request from Cart
-- [ ] Update quote flow:
-  - [ ] Add "Request Quote" button on cart page
-  - [ ] Pre-fill quote form with cart items
-  - [ ] Option to keep or clear cart after quote submission
-  - [ ] Link quote to cart ID (for reference)
+- [x] Update quote flow:
+  - [x] Add "Request Quote" button on cart page
+  - [x] Pre-fill quote form with cart items (cart-to-quote.ts utilities)
+  - [x] Option to keep or clear cart after quote submission
+  - [x] Link quote to cart ID (for reference)
 
 ### 9.2 Quote vs Cart Separation
-- [ ] Ensure clear separation:
-  - [ ] Quote basket ≠ Cart (different systems)
-  - [ ] Quote submission doesn't auto-clear cart
-  - [ ] Users can quote AND buy separately
+- [x] Ensure clear separation:
+  - [x] Quote basket ≠ Cart (different systems)
+  - [x] Quote submission doesn't auto-clear cart
+  - [x] Users can quote AND buy separately
 
-**Phase 9 Completion**: 0/6 tasks
+**Phase 9 Completion**: 6/6 tasks (100%)
 
 ---
 
