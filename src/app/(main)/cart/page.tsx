@@ -1,55 +1,99 @@
-"use client"
+/**
+ * Cart Page
+ * Cedar Elevator Industries
+ * 
+ * Main cart page with:
+ * - Profile-scoped cart display
+ * - Pricing visibility by user type
+ * - Checkout/Quote CTAs
+ * - Profile switcher
+ */
 
-import { useCart } from "@/lib/hooks"
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useState } from "react"
+'use client'
+
+import { useCart } from '@/contexts/cart-context'
+import { useAuth, useUser } from '@clerk/nextjs'
+import { CartItemCard } from '@/components/cart/cart-item-card'
+import { CartSummary } from '@/components/cart/cart-summary'
+import { ShoppingBag, ArrowLeft, User, Building2 } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { UserType, ProfileType } from '@/types/cart.types'
+import { useRouter } from 'next/navigation'
 
 export default function CartPage() {
-  const { items, itemCount, cart, updateQuantity, removeItem, isLoading } = useCart()
-  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set())
+  const router = useRouter()
+  const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const {
+    derivedItems,
+    summary,
+    isLoading,
+    error,
+    context,
+    clearCartItems,
+    switchProfile
+  } = useCart()
 
-  const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
-    if (newQuantity < 1) return
-    setLoadingItems(prev => new Set(prev).add(lineId))
-    try {
-      await updateQuantity(lineId, newQuantity)
-    } finally {
-      setLoadingItems(prev => {
-        const next = new Set(prev)
-        next.delete(lineId)
-        return next
-      })
+  // Determine user type for display
+  const getUserType = (): UserType => {
+    if (!isSignedIn) return 'guest'
+    const accountType = user?.publicMetadata?.accountType as string || 'individual'
+    if (accountType === 'business') {
+      const verificationStatus = user?.publicMetadata?.verificationStatus as string
+      return verificationStatus === 'verified' ? 'business_verified' : 'business_unverified'
     }
+    return 'individual'
   }
 
-  const handleRemove = async (lineId: string) => {
-    setLoadingItems(prev => new Set(prev).add(lineId))
-    try {
-      await removeItem(lineId)
-    } finally {
-      setLoadingItems(prev => {
-        const next = new Set(prev)
-        next.delete(lineId)
-        return next
-      })
-    }
+  const userType = getUserType()
+  const hasBusinessProfile = user?.publicMetadata?.accountType === 'business'
+  const currentProfileType = context?.profileType || 'individual'
+
+  const handleCheckout = () => {
+    router.push('/checkout')
   }
 
-  const formatPrice = (amount: number) => {
-    return `₹${(amount / 100).toLocaleString("en-IN")}`
+  const handleRequestQuote = () => {
+    router.push('/request-quote?source=cart')
   }
 
+  const handleProfileSwitch = async () => {
+    const newProfile: ProfileType = currentProfileType === 'individual' ? 'business' : 'individual'
+    const businessId = user?.publicMetadata?.businessId as string | undefined
+    await switchProfile(newProfile, businessId)
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading your cart...</p>
+        </div>
       </div>
     )
   }
 
-  if (items.length === 0) {
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Cart</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link href="/catalog">
+            <Button>Return to Catalog</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty cart state
+  if (summary.itemCount === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-[1400px] mx-auto px-4 py-16">
@@ -61,15 +105,25 @@ export default function CartPage() {
               Your Cart is Empty
             </h1>
             <p className="text-gray-600 mb-8">
-              Add products to your cart and they will appear here.
+              {isSignedIn 
+                ? 'Add products to your cart and they will appear here.'
+                : 'Sign in to sync your cart across devices or continue shopping as guest.'}
             </p>
-            <Link
-              href="/catalog"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Continue Shopping
-            </Link>
+            <div className="flex gap-3 justify-center">
+              <Link href="/catalog">
+                <Button size="lg">
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Browse Products
+                </Button>
+              </Link>
+              {!isSignedIn && (
+                <Link href="/sign-in">
+                  <Button size="lg" variant="outline">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -77,160 +131,99 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="cart-page">
       <div className="max-w-[1400px] mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/catalog"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 mb-4"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Continue Shopping
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Shopping Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
-          </h1>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="cart-title">
+                Shopping Cart
+              </h1>
+              <p className="text-gray-600">
+                {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'} 
+                {summary.uniqueProducts > 1 && ` • ${summary.uniqueProducts} products`}
+              </p>
+            </div>
+
+            {/* Profile Switcher (for business users with both profiles) */}
+            {isSignedIn && hasBusinessProfile && (
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-600">
+                  Shopping as:
+                </div>
+                <Button
+                  onClick={handleProfileSwitch}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  data-testid="profile-switcher-btn"
+                >
+                  {currentProfileType === 'individual' ? (
+                    <>
+                      <User className="w-4 h-4" />
+                      Individual
+                    </>
+                  ) : (
+                    <>
+                      <Building2 className="w-4 h-4" />
+                      Business
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => {
-              const isItemLoading = loadingItems.has(item.id)
-              
-              return (
-                <div
-                  key={item.id}
-                  className={`bg-white rounded-xl p-6 shadow-sm ${
-                    isItemLoading ? "opacity-50" : ""
-                  }`}
-                >
-                  <div className="flex gap-6">
-                    {/* Image */}
-                    <div className="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {item.thumbnail ? (
-                        <Image
-                          src={item.thumbnail}
-                          alt={item.title}
-                          width={128}
-                          height={128}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingBag className="w-12 h-12 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg mb-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-xl font-bold text-gray-900 mb-4">
-                        {formatPrice(item.unit_price)}
-                      </p>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                            disabled={isItemLoading || item.quantity <= 1}
-                            className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="w-12 text-center font-semibold text-lg">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                            disabled={isItemLoading}
-                            className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() => handleRemove(item.id)}
-                          disabled={isItemLoading}
-                          className="ml-auto flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              {/* Clear Cart Button */}
+              {summary.itemCount > 0 && (
+                <div className="flex justify-between items-center mb-4 pb-4 border-b">
+                  <h2 className="text-lg font-semibold text-gray-900">Items in Cart</h2>
+                  <Button
+                    onClick={clearCartItems}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    data-testid="clear-cart-btn"
+                  >
+                    Clear All
+                  </Button>
                 </div>
-              )
-            })}
-          </div>
+              )}
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl p-6 shadow-sm sticky top-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Order Summary
-              </h2>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">{formatPrice(cart?.subtotal || 0)}</span>
-                </div>
-                {(cart?.discount_total ?? 0) > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span className="font-semibold">-{formatPrice(cart?.discount_total ?? 0)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold">
-                    {(cart?.shipping_total ?? 0) > 0 ? formatPrice(cart?.shipping_total ?? 0) : "Calculated at checkout"}
-                  </span>
-                </div>
-                {(cart?.tax_total ?? 0) > 0 && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Tax</span>
-                    <span className="font-semibold">{formatPrice(cart?.tax_total ?? 0)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t pt-4 mb-6">
-                <div className="flex justify-between text-xl font-bold text-gray-900">
-                  <span>Total</span>
-                  <span>{formatPrice(cart?.total || 0)}</span>
-                </div>
-              </div>
-
-              <Link
-                href="/checkout"
-                className="block w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold text-center hover:bg-blue-700 transition-colors mb-3"
-              >
-                Proceed to Checkout
-              </Link>
-
-              <Link
-                href="/catalog"
-                className="block w-full py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-center hover:border-gray-400 hover:bg-gray-50 transition-colors"
-              >
-                Continue Shopping
-              </Link>
-
-              {/* Trust Signals */}
-              <div className="mt-6 pt-6 border-t space-y-3 text-sm text-gray-600">
-                <p>✓ Secure checkout</p>
-                <p>✓ Free shipping on orders above ₹50,000</p>
-                <p>✓ 2-year warranty included</p>
+              {/* Cart Items List */}
+              <div className="divide-y" data-testid="cart-items-list">
+                {derivedItems.map((item) => (
+                  <CartItemCard
+                    key={item.id}
+                    item={item}
+                    userType={userType}
+                  />
+                ))}
               </div>
             </div>
+          </div>
+
+          {/* Order Summary Sidebar */}
+          <div className="lg:col-span-1">
+            <CartSummary
+              summary={summary}
+              userType={userType}
+              onCheckout={handleCheckout}
+              onRequestQuote={handleRequestQuote}
+            />
           </div>
         </div>
       </div>
