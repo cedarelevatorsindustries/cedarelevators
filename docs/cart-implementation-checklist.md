@@ -123,23 +123,23 @@ This checklist tracks the implementation of a production-ready cart module for C
 ## ✅ Phase 4: Guest Cart Logic (Client-Side)
 
 ### 4.1 Guest Cart Storage
-- [ ] Create `/app/src/lib/services/guest-cart.ts`:
-  - [ ] `getGuestCart()` - Read from localStorage
-  - [ ] `saveGuestCart(cart)` - Write to localStorage
-  - [ ] `addToGuestCart(productId, variantId?, quantity)` - Add item
-  - [ ] `updateGuestCartItem(itemId, quantity)` - Update quantity
-  - [ ] `removeFromGuestCart(itemId)` - Remove item
-  - [ ] `clearGuestCart()` - Clear all items
-  - [ ] `getGuestCartCount()` - Get item count
+- [x] Create `/app/src/lib/services/guest-cart.ts`:
+  - [x] `getGuestCart()` - Read from localStorage
+  - [x] `saveGuestCart(cart)` - Write to localStorage
+  - [x] `addToGuestCart(productId, variantId?, quantity)` - Add item
+  - [x] `updateGuestCartItem(itemId, quantity)` - Update quantity
+  - [x] `removeFromGuestCart(itemId)` - Remove item
+  - [x] `clearGuestCart()` - Clear all items
+  - [x] `getGuestCartCount()` - Get item count
 
 ### 4.2 Guest Cart UI
-- [ ] Update cart components for guest users:
-  - [ ] Show "Sign in to view pricing" message
-  - [ ] Disable checkout button
-  - [ ] Show "Login to continue" CTA
-  - [ ] Display product images and names (no prices)
+- [x] Update cart components for guest users:
+  - [x] Show "Sign in to view pricing" message
+  - [x] Disable checkout button
+  - [x] Show "Login to continue" CTA
+  - [x] Display product images and names (no prices)
 
-**Phase 4 Completion**: 0/9 tasks
+**Phase 4 Completion**: 9/9 tasks (100%)
 
 ---
 
