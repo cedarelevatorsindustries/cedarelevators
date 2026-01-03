@@ -46,6 +46,17 @@ export function GuestCheckoutBlocked() {
           <li>✓ Access to business pricing (with verification)</li>
         </ul>
       </div>
+
+      <div className="mt-6 border-t pt-6">
+        <p className="text-sm text-gray-600 mb-4">
+          Or request a quote without signing in
+        </p>
+        <Link href="/request-quote?source=checkout">
+          <Button variant="outline" size="lg" className="w-full">
+            Request Quote Instead
+          </Button>
+        </Link>
+      </div>
     </div>
   )
 }
