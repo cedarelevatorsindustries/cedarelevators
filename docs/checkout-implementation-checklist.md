@@ -231,14 +231,14 @@ Cedar Elevator Industries - B2B E-commerce Platform
 
 ## 🎯 Edge Cases Handled
 
-- [ ] Business loses verification mid-checkout → Block payment
-- [ ] Price changes during checkout → Invalidate snapshot, reload
-- [ ] Inventory changes → Block payment, notify user
-- [ ] Webhook arrives twice → Idempotency key check
-- [ ] User refreshes success page → Don't create duplicate order
-- [ ] Profile switching attempted → Block and warn
-- [ ] Cart locked by another session → Show error
-- [ ] Payment gateway timeout → Graceful failure
+- [x] Business loses verification mid-checkout → Block payment
+- [x] Price changes during checkout → Invalidate snapshot, reload
+- [x] Inventory changes → Block payment, notify user
+- [x] Webhook arrives twice → Idempotency key check
+- [x] User refreshes success page → Don't create duplicate order
+- [x] Profile switching attempted → Block and warn
+- [x] Cart locked by another session → Show error
+- [x] Payment gateway timeout → Graceful failure
 
 ---
 
