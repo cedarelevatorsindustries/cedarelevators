@@ -58,8 +58,8 @@ export default function BusinessRegisterForm() {
       console.log("Initiating OAuth redirect...")
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/sso-callback",
+        redirectUrl: "/sso-callback?accountType=business",
+        redirectUrlComplete: "/sso-callback?accountType=business",
       })
     } catch (err: any) {
       console.error("Google OAuth error:", err)

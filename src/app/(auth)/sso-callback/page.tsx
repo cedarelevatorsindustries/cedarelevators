@@ -2,16 +2,34 @@
 
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 
 export default function SSOCallback() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isLoaded } = useUser()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [callbackComplete, setCallbackComplete] = useState(false)
+
+  // Handle the OAuth callback completion
+  useEffect(() => {
+    console.log("SSO Callback mounted")
+    // Give the AuthenticateWithRedirectCallback component time to process
+    const timer = setTimeout(() => {
+      console.log("Callback processing window complete")
+      setCallbackComplete(true)
+    }, 2000) // Wait 2 seconds for callback to process
+
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
-    if (!isLoaded || isProcessing) return
+    // Don't process until callback has had time to complete
+    if (!callbackComplete || !isLoaded || isProcessing) {
+      console.log("Waiting for callback:", { callbackComplete, isLoaded, isProcessing })
+      return
+    }
 
     // Wait for user to be loaded after OAuth completion
     if (user) {
@@ -31,8 +49,13 @@ export default function SSOCallback() {
         return
       }
 
-      // Check if there's a pending account type from social signup
-      const pendingAccountType = sessionStorage.getItem('pendingAccountType')
+      // Check for account type from URL params first (most reliable), then sessionStorage (fallback)
+      const accountTypeFromUrl = searchParams.get('accountType')
+      const pendingAccountType = accountTypeFromUrl || sessionStorage.getItem('pendingAccountType')
+
+      console.log("Account type from URL:", accountTypeFromUrl)
+      console.log("Account type from sessionStorage:", sessionStorage.getItem('pendingAccountType'))
+      console.log("Final pending account type:", pendingAccountType)
 
       if (pendingAccountType) {
         console.log("Pending account type found:", pendingAccountType)
@@ -82,25 +105,25 @@ export default function SSOCallback() {
         router.push("/choose-type")
       }
     }
-  }, [user, isLoaded, router, isProcessing])
+  }, [user, isLoaded, router, isProcessing, callbackComplete])
 
-  // Fallback timeout - if stuck loading for more than 30 seconds, redirect to choose-type
+  // Fallback timeout - if stuck loading for more than 60 seconds, redirect to choose-type
   useEffect(() => {
     const timeout = setTimeout(() => {
-      console.warn("SSO callback timeout - isLoaded:", isLoaded, "user:", user?.id)
-      if (!user && isLoaded) {
+      console.warn("SSO callback timeout - isLoaded:", isLoaded, "user:", user?.id, "callbackComplete:", callbackComplete)
+      if (!user && isLoaded && callbackComplete) {
         console.warn("SSO callback timeout - redirecting to choose-type")
         router.push("/choose-type")
       }
-    }, 30000) // 30 second timeout
+    }, 60000) // 60 second timeout (increased from 30)
 
     return () => clearTimeout(timeout)
-  }, [user, isLoaded, router])
+  }, [user, isLoaded, router, callbackComplete])
 
   // Log state changes for debugging
   useEffect(() => {
-    console.log("SSO Callback State:", { isLoaded, hasUser: !!user, userId: user?.id, isProcessing })
-  }, [isLoaded, user, isProcessing])
+    console.log("SSO Callback State:", { isLoaded, hasUser: !!user, userId: user?.id, isProcessing, callbackComplete })
+  }, [isLoaded, user, isProcessing, callbackComplete])
 
   return (
     <>

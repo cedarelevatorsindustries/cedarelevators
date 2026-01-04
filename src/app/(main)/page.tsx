@@ -109,6 +109,8 @@ export default async function HomePage() {
             products={serializedProducts}
             categories={serializedCategories}
             userType={userType}
+            collections={collections}
+            applications={serializedApplications}
           />
         </div>
       </>

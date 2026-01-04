@@ -57,8 +57,8 @@ export default function IndividualRegisterForm() {
       console.log("Initiating OAuth redirect...")
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/sso-callback",
+        redirectUrl: "/sso-callback?accountType=individual",
+        redirectUrlComplete: "/sso-callback?accountType=individual",
       })
     } catch (err: any) {
       console.error("Google OAuth error:", err)
