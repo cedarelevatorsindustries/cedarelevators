@@ -29,7 +29,7 @@ export function CheckoutPageContent() {
   const router = useRouter()
   const { user } = useUser()
   const { cart, summary: cartSummary } = useCart()
-  
+
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('address')
   const [addresses, setAddresses] = useState<BusinessAddress[]>([])
   const [selectedShippingAddress, setSelectedShippingAddress] = useState<string | null>(null)
@@ -52,7 +52,7 @@ export function CheckoutPageContent() {
         const addressResult = await getBusinessAddresses()
         if (addressResult.success && addressResult.data) {
           setAddresses(addressResult.data)
-          
+
           // Auto-select default addresses
           const defaultShipping = addressResult.data.find(
             addr => addr.is_default && (addr.address_type === 'shipping' || addr.address_type === 'both')
@@ -60,7 +60,7 @@ export function CheckoutPageContent() {
           const defaultBilling = addressResult.data.find(
             addr => addr.is_default && (addr.address_type === 'billing' || addr.address_type === 'both')
           )
-          
+
           if (defaultShipping) setSelectedShippingAddress(defaultShipping.id!)
           if (defaultBilling) setSelectedBillingAddress(defaultBilling.id!)
         }
@@ -88,7 +88,7 @@ export function CheckoutPageContent() {
     }
   }
 
-  const canProceedToReview = selectedShippingAddress && (billingSameAsShipping || selectedBillingAddress)
+  const canProceedToReview = !!(selectedShippingAddress && (billingSameAsShipping || selectedBillingAddress))
 
   if (isLoading) {
     return (

@@ -4,8 +4,9 @@ import { Check } from 'lucide-react'
 import type { CheckoutStep } from '../types'
 
 interface ProgressBarSectionProps {
-  currentStep: CheckoutStep
-  userType: 'guest' | 'individual' | 'business_unverified' | 'business_verified'
+  currentStep: number // Changed from CheckoutStep to number (1-based index)
+  totalSteps?: number
+  userType?: 'guest' | 'individual' | 'business_unverified' | 'business_verified'
 }
 
 const STEPS = [
@@ -15,17 +16,10 @@ const STEPS = [
   { id: 'confirmation', label: 'Confirm', number: 4 },
 ]
 
-export default function ProgressBarSection({ currentStep, userType }: ProgressBarSectionProps) {
-  // Don't show progress bar for blocked states
-  if (currentStep === 'email_capture' || currentStep === 'blocked') {
-    return null
-  }
+export default function ProgressBarSection({ currentStep, totalSteps = 4, userType }: ProgressBarSectionProps) {
+  // Don't show progress bar for blocked states (if we passed blocked state, which we don't seeming to do now)
 
-  const getCurrentStepIndex = () => {
-    return STEPS.findIndex(s => s.id === currentStep)
-  }
-
-  const currentIndex = getCurrentStepIndex()
+  const currentIndex = currentStep - 1
 
   return (
     <div className="w-full py-6 px-4 bg-white border-b">
@@ -44,10 +38,10 @@ export default function ProgressBarSection({ currentStep, userType }: ProgressBa
                     className={`
                       w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm
                       transition-all duration-300
-                      ${isCompleted 
-                        ? 'bg-green-500 text-white' 
-                        : isCurrent 
-                          ? 'bg-blue-600 text-white ring-4 ring-blue-100' 
+                      ${isCompleted
+                        ? 'bg-green-500 text-white'
+                        : isCurrent
+                          ? 'bg-blue-600 text-white ring-4 ring-blue-100'
                           : 'bg-gray-200 text-gray-500'
                       }
                     `}
@@ -58,7 +52,7 @@ export default function ProgressBarSection({ currentStep, userType }: ProgressBa
                       step.number
                     )}
                   </div>
-                  <span 
+                  <span
                     className={`
                       mt-2 text-xs font-medium
                       ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'}
@@ -70,7 +64,7 @@ export default function ProgressBarSection({ currentStep, userType }: ProgressBa
 
                 {/* Connector Line */}
                 {index < STEPS.length - 1 && (
-                  <div 
+                  <div
                     className={`
                       flex-1 h-1 mx-2 rounded-full transition-all duration-300
                       ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}

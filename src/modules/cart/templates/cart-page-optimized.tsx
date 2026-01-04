@@ -13,10 +13,10 @@
 
 import { Suspense, lazy, useMemo } from 'react'
 import { useAuth, useUser } from '@clerk/nextjs'
-import { 
-  useCartQuery, 
+import {
+  useCartQuery,
   useCartWithPricing,
-  useCartLockStatus 
+  useCartLockStatus
 } from '@/lib/hooks/use-cart-query'
 import { UserType, canSeePrice } from '@/types/cart.types'
 import { CartLockWarning } from '@/components/cart/cart-lock-warning'
@@ -78,8 +78,8 @@ export default function CartPageOptimized() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <Link 
-          href="/products" 
+        <Link
+          href="/products"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
@@ -108,7 +108,7 @@ export default function CartPageOptimized() {
         {/* Cart Items - 2/3 width on desktop */}
         <div className="lg:col-span-2">
           <Suspense fallback={<CartItemsSkeleton />}>
-            <CartItemsList 
+            <CartItemsList
               items={derivedItems}
               showPrices={showPrices}
               userType={userType}
@@ -119,12 +119,12 @@ export default function CartPageOptimized() {
         {/* Cart Summary - 1/3 width on desktop */}
         <div className="lg:col-span-1">
           <Suspense fallback={<CartSummarySkeleton />}>
-            <CartSummary 
-              summary={summary}
-              showPrices={showPrices}
-              userType={userType}
-              cartId={cart.id}
-            />
+            {summary && (
+              <CartSummary
+                summary={summary}
+                showPrices={showPrices}
+              />
+            )}
           </Suspense>
         </div>
       </div>

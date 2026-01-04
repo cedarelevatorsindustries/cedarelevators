@@ -249,7 +249,7 @@ export function CheckoutAddressSection({
       {/* Add Address Dialog */}
       <AddAddressDialog
         open={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
+        onOpenChange={setShowAddDialog}
         addressType={addressTypeToAdd}
         onSuccess={() => {
           setShowAddDialog(false)

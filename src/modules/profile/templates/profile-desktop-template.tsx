@@ -6,7 +6,7 @@ import ProfileTopbar from '../components/profile-topbar'
 import ProfileSidebar from '../components/profile-sidebar'
 import QuickActions from '../components/quick-actions'
 import RecentlyViewedList from '../components/recently-viewed-list'
-import { DashboardSection, PersonalInfoSection, AddressesSection, NotificationsSection, PasswordSection, CompanyInfoSection, BusinessVerificationSection } from '../components/sections'
+import { DashboardSection, PersonalInfoSection, AddressesSection, PasswordSection, CompanyInfoSection, BusinessVerificationSection } from '../components/sections'
 import QuotesSection from '../components/sections/quotes-section'
 import QuoteDetailSection from '../components/sections/quote-detail-section'
 import SecuritySection from '../components/sections/security-section'
@@ -92,13 +92,14 @@ export default function ProfileDesktopTemplate() {
           />
         )
 
+      /*
       case PROFILE_SECTIONS.NOTIFICATIONS:
         return (
-          <NotificationsSection
-            preferences={notificationPreferences}
-            onUpdate={updateNotificationPreferences}
-          />
+          <div className="p-6 text-center text-gray-500">
+            Notifications settings are coming soon.
+          </div>
         )
+      */
 
       case PROFILE_SECTIONS.CHANGE_PASSWORD:
         return (

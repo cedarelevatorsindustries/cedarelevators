@@ -26,7 +26,7 @@ import {
   unlockCart,
   checkCartLockStatus
 } from '@/lib/actions/cart-locking'
-import { getCartWithPricing } from '@/lib/services/cart-pricing'
+import { getCartWithPricing } from '@/lib/actions/pricing'
 import {
   Cart,
   DerivedCartItem,

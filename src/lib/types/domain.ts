@@ -37,6 +37,7 @@ export interface Product {
     tags?: string[]
     brand?: string
     model?: string
+    status?: string
     created_at?: string
 }
 

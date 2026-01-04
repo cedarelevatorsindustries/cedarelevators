@@ -150,46 +150,40 @@ export default function CheckoutTemplateV2() {
               {/* Shipping Address */}
               {step === 'shipping' && (
                 <ShippingAddressSection
-                  address={shippingAddress}
-                  onChange={setShippingAddress}
-                  onNext={() => setStep('billing')}
+                  selectedAddress={shippingAddress}
+                  onSelectAddress={setShippingAddress}
+                  onAddNewAddress={setShippingAddress}
                 />
               )}
 
               {/* Billing Address */}
               {step === 'billing' && (
                 <BillingAddressSection
-                  address={billingAddress}
-                  onChange={setBillingAddress}
+                  billingAddress={billingAddress}
+                  onBillingAddressChange={setBillingAddress}
                   sameAsShipping={sameAsShipping}
                   onSameAsShippingChange={setSameAsShipping}
                   shippingAddress={shippingAddress}
-                  onNext={() => setStep('delivery')}
-                  onBack={() => setStep('shipping')}
                 />
               )}
 
               {/* Delivery Options */}
               {step === 'delivery' && (
                 <DeliveryOptionsSection
-                  selected={deliveryOption}
-                  onChange={setDeliveryOption}
-                  onNext={() => setStep('payment')}
-                  onBack={() => setStep('billing')}
+                  selectedOption={deliveryOption}
+                  onSelectOption={setDeliveryOption}
+                  showPrices={showPrices}
+                  options={[]}
                 />
               )}
 
               {/* Payment Method */}
               {step === 'payment' && (
                 <PaymentMethodSection
-                  selected={paymentMethod}
-                  onChange={setPaymentMethod}
-                  termsAccepted={termsAccepted}
-                  onTermsChange={setTermsAccepted}
-                  onNext={handlePlaceOrder}
-                  onBack={() => setStep('delivery')}
-                  isProcessing={isProcessing}
-                  orderTotal={summary.total}
+                  selectedMethod={paymentMethod}
+                  onSelectMethod={setPaymentMethod}
+                  isVerifiedDealer={userType === 'business_verified'}
+                  methods={[]}
                 />
               )}
 
@@ -200,20 +194,22 @@ export default function CheckoutTemplateV2() {
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
               <CartSummarySticky
-                items={derivedItems.map(item => ({
-                  id: item.id,
-                  title: item.title,
-                  thumbnail: item.thumbnail,
-                  quantity: item.quantity,
-                  unitPrice: item.unit_price,
-                  subtotal: item.line_total
-                }))}
-                subtotal={summary.subtotal}
-                discount={summary.discount}
-                shipping={deliveryOption?.price || summary.shipping}
-                tax={summary.tax}
-                total={summary.total}
-                showPrices={showPrices}
+                summary={{
+                  items: derivedItems.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    thumbnail: item.thumbnail ?? null,
+                    quantity: item.quantity,
+                    unitPrice: item.unit_price,
+                    subtotal: item.line_total
+                  })),
+                  subtotal: summary.subtotal,
+                  discount: summary.discount,
+                  shipping: deliveryOption?.price || summary.shipping,
+                  tax: summary.tax,
+                  total: summary.total,
+                  showPrices
+                }}
               />
             </div>
           </div>

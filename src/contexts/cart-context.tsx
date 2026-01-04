@@ -29,7 +29,7 @@ import {
   checkCartLockStatus,
   CartLockStatus
 } from '@/lib/actions/cart-locking'
-import { getCartWithPricing } from '@/lib/services/cart-pricing'
+import { getCartWithPricing } from '@/lib/actions/pricing'
 import { logger } from '@/lib/services/logger'
 
 interface CartContextState {

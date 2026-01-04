@@ -13,11 +13,11 @@
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
-import { 
-  Cart, 
-  CartItem, 
-  CartOwnership, 
-  ProfileType, 
+import {
+  Cart,
+  CartItem,
+  CartOwnership,
+  ProfileType,
   CartActionResponse,
   AddToCartPayload,
   UpdateCartItemPayload,
@@ -35,7 +35,7 @@ async function getUserContext(): Promise<CartContext | null> {
   if (!userId) return null
 
   const supabase = await createClerkSupabaseClient()
-  
+
   // Get user type from customer_meta or business_profiles
   const { data: customerMeta } = await supabase
     .from('customer_meta')
@@ -50,7 +50,7 @@ async function getUserContext(): Promise<CartContext | null> {
     .single()
 
   const profileType: ProfileType = customerMeta?.user_type === 'business' ? 'business' : 'individual'
-  
+
   let userType: UserType
   if (!businessProfile) {
     userType = 'individual'
@@ -84,7 +84,7 @@ export async function getOrCreateCart(
     }
 
     const supabase = await createClerkSupabaseClient()
-    
+
     const profile = profileType || context.profileType
     const bizId = businessId || context.businessId
 
@@ -155,7 +155,7 @@ export async function getUserActiveCart(
     }
 
     const supabase = await createClerkSupabaseClient()
-    
+
     const profile = profileType || context.profileType
     const bizId = businessId || context.businessId
 
@@ -227,8 +227,8 @@ export async function switchCartContext(
 
     // Fetch the cart
     const cart = await getCart(data)
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: cart.data,
       message: `Switched to ${newProfileType} cart`
     }
@@ -342,8 +342,8 @@ export async function addItemToCart(
       .update({ updated_at: new Date().toISOString() })
       .eq('id', cartId)
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: cartItem,
       message: 'Item added to cart'
     }
@@ -384,11 +384,13 @@ export async function updateCartItemQuantity(
       return { success: false, error: 'Cart item not found' }
     }
 
-    if (cartItem.cart.clerk_user_id !== context.userId) {
+    const cart = Array.isArray(cartItem.cart) ? cartItem.cart[0] : cartItem.cart
+
+    if (cart.clerk_user_id !== context.userId) {
       return { success: false, error: 'Unauthorized' }
     }
 
-    if (cartItem.cart.status !== 'active') {
+    if (cart.status !== 'active') {
       return { success: false, error: 'Cart is not active' }
     }
 
@@ -406,7 +408,7 @@ export async function updateCartItemQuantity(
     // Update quantity
     const { data, error } = await supabase
       .from('cart_items')
-      .update({ 
+      .update({
         quantity: payload.quantity,
         updated_at: new Date().toISOString()
       })
@@ -419,8 +421,8 @@ export async function updateCartItemQuantity(
       return { success: false, error: 'Failed to update quantity' }
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: data as CartItem,
       message: 'Quantity updated'
     }
@@ -451,7 +453,13 @@ export async function removeCartItem(cartItemId: string): Promise<CartActionResp
       .eq('id', cartItemId)
       .single()
 
-    if (!cartItem || cartItem.cart.clerk_user_id !== context.userId) {
+    if (!cartItem) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    const cart = Array.isArray(cartItem.cart) ? cartItem.cart[0] : cartItem.cart
+
+    if (cart.clerk_user_id !== context.userId) {
       return { success: false, error: 'Unauthorized' }
     }
 
@@ -466,7 +474,7 @@ export async function removeCartItem(cartItemId: string): Promise<CartActionResp
       return { success: false, error: 'Failed to remove item' }
     }
 
-    return { 
+    return {
       success: true,
       message: 'Item removed from cart'
     }
@@ -522,7 +530,7 @@ export async function clearCart(cartId?: string): Promise<CartActionResponse<voi
       return { success: false, error: 'Failed to clear cart' }
     }
 
-    return { 
+    return {
       success: true,
       message: 'Cart cleared'
     }
@@ -543,7 +551,7 @@ export async function abandonCart(cartId: string): Promise<CartActionResponse<vo
 
     const { error } = await supabase
       .from('carts')
-      .update({ 
+      .update({
         status: 'abandoned',
         abandoned_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -593,7 +601,7 @@ export async function convertCart(
     // Mark as converted
     const { error } = await supabase
       .from('carts')
-      .update({ 
+      .update({
         status: 'converted',
         completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -605,7 +613,7 @@ export async function convertCart(
       return { success: false, error: 'Failed to convert cart' }
     }
 
-    return { 
+    return {
       success: true,
       message: `Cart converted to ${type}`
     }

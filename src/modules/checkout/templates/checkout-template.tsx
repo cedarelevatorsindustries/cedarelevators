@@ -73,6 +73,9 @@ export default function CheckoutTemplate() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [showExitPopup, setShowExitPopup] = useState(false)
 
+  // Steps for progress calculation
+  const steps: CheckoutStep[] = ['email_capture', 'blocked', 'shipping', 'payment', 'review']
+
   // Update step when user type changes
   useEffect(() => {
     if (isLoaded) {
@@ -198,7 +201,7 @@ export default function CheckoutTemplate() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Progress Bar */}
-      <ProgressBarSection currentStep={step} userType={userType} />
+      <ProgressBarSection currentStep={steps.indexOf(step) + 1} userType={userType} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Link */}

@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 interface QuoteFromCartButtonProps {
   cartItems: DerivedCartItem[]
   variant?: 'default' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'default' | 'sm' | 'lg'
   fullWidth?: boolean
   className?: string
   clearCartOnQuote?: boolean

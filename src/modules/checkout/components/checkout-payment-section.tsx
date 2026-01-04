@@ -6,7 +6,10 @@
 'use client'
 
 interface CheckoutPaymentSectionProps {
-    // Add props as needed
+    cartId?: string
+    shippingAddressId?: string
+    billingAddressId?: string
+    totalAmount?: number
 }
 
 export function CheckoutPaymentSection(props: CheckoutPaymentSectionProps) {

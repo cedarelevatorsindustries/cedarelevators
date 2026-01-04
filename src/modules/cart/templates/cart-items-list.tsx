@@ -11,6 +11,8 @@ import { CartItemCard } from '@/components/cart/cart-item-card'
 interface CartItemsListProps {
     items: DerivedCartItem[]
     userType: UserType
+    showPrices?: boolean
+    summary?: any // Using any for now to avoid circular deps or complex imports, or ideally import CartSummary type
 }
 
 export default function CartItemsList({ items, userType }: CartItemsListProps) {

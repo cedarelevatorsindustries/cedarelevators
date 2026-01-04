@@ -13,6 +13,9 @@ interface AddAddressDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onAddressAdded?: () => void
+    onClose?: () => void
+    onSuccess?: () => void
+    addressType?: 'billing' | 'shipping'
 }
 
 export function AddAddressDialog({ open, onOpenChange, onAddressAdded }: AddAddressDialogProps) {

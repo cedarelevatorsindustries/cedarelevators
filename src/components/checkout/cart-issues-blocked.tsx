@@ -45,7 +45,7 @@ export function CartIssuesBlocked({ issues }: CartIssuesBlockedProps) {
               The following items are currently out of stock:
             </p>
             <ul className="mt-2 space-y-1 text-sm text-red-700">
-              {issues.outOfStock.map((item, idx) => (
+              {issues?.outOfStock?.map((item, idx) => (
                 <li key={idx}>• {item}</li>
               ))}
             </ul>
@@ -62,7 +62,7 @@ export function CartIssuesBlocked({ issues }: CartIssuesBlockedProps) {
               The following items are no longer available:
             </p>
             <ul className="mt-2 space-y-1 text-sm text-amber-700">
-              {issues.unavailable.map((item, idx) => (
+              {issues?.unavailable?.map((item, idx) => (
                 <li key={idx}>• {item}</li>
               ))}
             </ul>
@@ -79,7 +79,7 @@ export function CartIssuesBlocked({ issues }: CartIssuesBlockedProps) {
               Prices have been updated for the following items:
             </p>
             <ul className="mt-2 space-y-1 text-sm text-blue-700">
-              {issues.priceChanged.map((item, idx) => (
+              {issues?.priceChanged?.map((item, idx) => (
                 <li key={idx}>• {item}</li>
               ))}
             </ul>

@@ -15,8 +15,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth, useUser } from '@clerk/nextjs'
 import { useCart } from '@/contexts/cart-context'
 import { CheckoutGuard } from '@/components/checkout/checkout-guard'
-import { 
-  getBusinessAddresses, 
+import {
+  getBusinessAddresses,
   getCheckoutSummary,
   createOrderFromCart,
   type BusinessAddress,
@@ -54,13 +54,13 @@ function CheckoutContent() {
       if (!cart?.id) return
 
       setIsLoading(true)
-      
+
       try {
         // Load addresses
         const addressResult = await getBusinessAddresses()
         if (addressResult.success && addressResult.data) {
           setAddresses(addressResult.data)
-          
+
           // Auto-select default addresses
           const defaultShipping = addressResult.data.find(
             addr => addr.is_default && (addr.address_type === 'shipping' || addr.address_type === 'both')
@@ -68,7 +68,7 @@ function CheckoutContent() {
           if (defaultShipping) {
             setSelectedShippingAddress(defaultShipping.id!)
           }
-          
+
           const defaultBilling = addressResult.data.find(
             addr => addr.is_default && (addr.address_type === 'billing' || addr.address_type === 'both')
           )
@@ -107,12 +107,12 @@ function CheckoutContent() {
       toast.error('Please select a shipping address')
       return
     }
-    
+
     if (!useSameAddress && !selectedBillingAddress) {
       toast.error('Please select a billing address')
       return
     }
-    
+
     setCurrentStep('review')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -195,18 +195,17 @@ function CheckoutContent() {
             const Icon = step.icon
             const isActive = index === currentStepIndex
             const isCompleted = index < currentStepIndex
-            
+
             return (
               <div key={step.id} className="flex-1 flex items-center">
                 <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                      isCompleted
+                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${isCompleted
                         ? 'bg-green-600 text-white'
                         : isActive
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-gray-200 text-gray-400'
-                    }`}
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-gray-200 text-gray-400'
+                      }`}
                     data-testid={`checkout-step-${step.id}`}
                   >
                     {isCompleted ? (
@@ -216,19 +215,17 @@ function CheckoutContent() {
                     )}
                   </div>
                   <span
-                    className={`text-sm font-medium ${
-                      isActive ? 'text-orange-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
-                    }`}
+                    className={`text-sm font-medium ${isActive ? 'text-orange-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                      }`}
                   >
                     {step.label}
                   </span>
                 </div>
-                
+
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-4 mb-8 ${
-                      isCompleted ? 'bg-green-600' : 'bg-gray-200'
-                    }`}
+                    className={`flex-1 h-1 mx-4 mb-8 ${isCompleted ? 'bg-green-600' : 'bg-gray-200'
+                      }`}
                   />
                 )}
               </div>
@@ -258,7 +255,7 @@ function CheckoutContent() {
           {currentStep === 'review' && (
             <Card className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Review Your Order</h2>
-              
+
               {/* Selected Addresses */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Delivery Address</h3>
@@ -291,9 +288,9 @@ function CheckoutContent() {
                         <p className="font-medium text-gray-900">{item.title}</p>
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                       </div>
-                      {item.displayPrice && (
+                      {item.unit_price > 0 && (
                         <div className="text-right">
-                          <p className="font-semibold text-gray-900">₹{(item.displayPrice * item.quantity).toLocaleString('en-IN')}</p>
+                          <p className="font-semibold text-gray-900">₹{(item.unit_price * item.quantity).toLocaleString('en-IN')}</p>
                         </div>
                       )}
                     </div>

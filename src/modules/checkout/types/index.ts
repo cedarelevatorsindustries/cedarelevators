@@ -1,15 +1,17 @@
 // Checkout Module Types
 
-export type UserCheckoutType = 
+export type UserCheckoutType =
   | 'guest'
   | 'individual'
   | 'business_unverified'
   | 'business_verified'
 
-export type CheckoutStep = 
+export type CheckoutStep =
   | 'email_capture'
   | 'blocked'
   | 'shipping'
+  | 'billing'
+  | 'delivery'
   | 'payment'
   | 'review'
   | 'confirmation'
