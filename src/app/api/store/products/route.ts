@@ -23,27 +23,30 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { FilterService, parseFilterParams } from '@/lib/services/filterService'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    
+
     // Parse filter parameters from URL
     const filters = parseFilterParams(searchParams)
-    
+
     // Check if facets should be included
     const includeFacets = searchParams.get('include_facets') === 'true'
-    
+
     // Create filter service
-    const supabase = createClient()
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
     const filterService = new FilterService(supabase)
-    
+
     // Get filtered products
     const result = await filterService.getFilteredProducts(filters, includeFacets)
-    
+
     return NextResponse.json({
       success: true,
       data: result,

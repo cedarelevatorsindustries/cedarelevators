@@ -5,19 +5,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
     const body = await request.json()
-    const { id } = params
-    
+    const { id } = await params
+
     // Build update object
     const updates: any = {}
     if (body.attribute_type !== undefined) updates.attribute_type = body.attribute_type
@@ -29,18 +32,18 @@ export async function PUT(
     if (body.min_value !== undefined) updates.min_value = body.min_value
     if (body.max_value !== undefined) updates.max_value = body.max_value
     updates.updated_at = new Date().toISOString()
-    
+
     const { data: attribute, error } = await supabase
       .from('product_attributes')
       .update(updates)
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) {
       throw new Error(`Failed to update attribute: ${error.message}`)
     }
-    
+
     return NextResponse.json({
       success: true,
       data: attribute,
@@ -61,21 +64,24 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
-    const { id } = params
-    
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
+    const { id } = await params
+
     const { error } = await supabase
       .from('product_attributes')
       .delete()
       .eq('id', id)
-    
+
     if (error) {
       throw new Error(`Failed to delete attribute: ${error.message}`)
     }
-    
+
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString()

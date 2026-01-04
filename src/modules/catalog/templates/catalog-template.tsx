@@ -17,6 +17,9 @@ interface CatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
   activeCategory?: ProductCategory
+  activeApplication?: any
+  activeType?: any
+  activeCollection?: any
   banners?: BannerWithSlides[]
   searchParams?: {
     type?: string

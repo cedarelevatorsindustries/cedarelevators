@@ -44,7 +44,7 @@ import { toast } from 'sonner'
 export const cartKeys = {
   all: ['cart'] as const,
   cart: (userId: string | null) => [...cartKeys.all, userId] as const,
-  cartWithPricing: (cartId: string, userType: UserType) => 
+  cartWithPricing: (cartId: string, userType: UserType) =>
     [...cartKeys.all, 'pricing', cartId, userType] as const,
   count: (userId: string | null) => [...cartKeys.all, 'count', userId] as const,
   lockStatus: (cartId: string) => [...cartKeys.all, 'lock', cartId] as const,
@@ -56,13 +56,14 @@ export const cartKeys = {
 // =====================================================
 
 export function useCartQuery() {
-  const { isSignedIn, userId } = useAuth()
+  const { isSignedIn, userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useQuery({
     queryKey: cartKeys.cart(userId),
     queryFn: async () => {
       if (!isSignedIn) return null
-      
+
       const result = await getUserActiveCart()
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch cart')
@@ -91,7 +92,7 @@ export function useCartWithPricing(userType: UserType) {
     queryKey: cartKeys.cartWithPricing(cart?.id || '', userType),
     queryFn: async () => {
       if (!cart?.id) return { items: [], summary: getEmptySummary() }
-      
+
       return await getCartWithPricing(cart.id, { userType })
     },
     enabled: !!cart?.id,
@@ -101,19 +102,20 @@ export function useCartWithPricing(userType: UserType) {
   })
 }
 
-// =====================================================
+// =================================0====================
 // Hook: useCartItemCount
 // Optimized count query (lighter than full cart)
 // =====================================================
 
 export function useCartItemCount() {
-  const { isSignedIn, userId } = useAuth()
+  const { isSignedIn, userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useQuery({
     queryKey: cartKeys.count(userId),
     queryFn: async () => {
       if (!isSignedIn) return 0
-      
+
       const result = await getCartItemCount()
       return result.data || 0
     },
@@ -134,7 +136,7 @@ export function useCartLockStatus(cartId?: string) {
     queryKey: cartKeys.lockStatus(cartId || ''),
     queryFn: async () => {
       if (!cartId) return null
-      
+
       const result = await checkCartLockStatus(cartId)
       return result.data || null
     },
@@ -152,7 +154,8 @@ export function useCartLockStatus(cartId?: string) {
 
 export function useAddToCart() {
   const queryClient = useQueryClient()
-  const { userId } = useAuth()
+  const { userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useMutation({
     mutationFn: async (payload: AddToCartPayload) => {
@@ -165,7 +168,7 @@ export function useAddToCart() {
     onMutate: async (payload) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: cartKeys.cart(userId) })
-      
+
       // Optimistically update count
       queryClient.setQueryData(cartKeys.count(userId), (old: number = 0) => old + payload.quantity)
     },
@@ -189,7 +192,8 @@ export function useAddToCart() {
 
 export function useUpdateCartItem() {
   const queryClient = useQueryClient()
-  const { userId } = useAuth()
+  const { userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useMutation({
     mutationFn: async (payload: UpdateCartItemPayload) => {
@@ -215,7 +219,8 @@ export function useUpdateCartItem() {
 
 export function useRemoveCartItem() {
   const queryClient = useQueryClient()
-  const { userId } = useAuth()
+  const { userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useMutation({
     mutationFn: async (cartItemId: string) => {
@@ -241,7 +246,8 @@ export function useRemoveCartItem() {
 
 export function useClearCart() {
   const queryClient = useQueryClient()
-  const { userId } = useAuth()
+  const { userId: clerkUserId } = useAuth()
+  const userId = clerkUserId || null
 
   return useMutation({
     mutationFn: async (cartId?: string) => {

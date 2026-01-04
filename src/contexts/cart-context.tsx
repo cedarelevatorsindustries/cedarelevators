@@ -12,22 +12,22 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
-import { 
-  Cart, 
+import {
+  Cart,
   CartContext as CartContextType,
   DerivedCartItem,
   CartSummary,
   UserType,
   ProfileType
 } from '@/types/cart.types'
-import { 
-  getUserActiveCart, 
+import {
+  getUserActiveCart,
   getCartItemCount,
   switchCartContext
 } from '@/lib/actions/cart-v2'
-import { 
+import {
   checkCartLockStatus,
-  CartLockStatus 
+  CartLockStatus
 } from '@/lib/actions/cart-locking'
 import { getCartWithPricing } from '@/lib/services/cart-pricing'
 import { logger } from '@/lib/services/logger'
@@ -43,13 +43,17 @@ interface CartContextState {
   refreshCart: () => Promise<void>
   switchProfile: (profileType: ProfileType, businessId?: string) => Promise<void>
   refreshLockStatus: () => Promise<void>
+  addItem: (productId: string, variantId: string | null, quantity: number) => Promise<void>
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>
+  removeItem: (itemId: string) => Promise<void>
+  clearCartItems: () => Promise<void>
 }
 
 const CartContext = createContext<CartContextState | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { isSignedIn, userId } = useAuth()
-  
+
   const [cart, setCart] = useState<Cart | null>(null)
   const [derivedItems, setDerivedItems] = useState<DerivedCartItem[]>([])
   const [summary, setSummary] = useState<CartSummary>({
@@ -149,6 +153,74 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [refreshCart])
 
+  // Add item to cart
+  const addItem = useCallback(async (productId: string, variantId: string | null, quantity: number) => {
+    try {
+      const result = await (await import('@/lib/actions/cart-v2')).addItemToCart({
+        productId,
+        variantId: variantId || undefined,
+        quantity
+      })
+      if (result.success) {
+        await refreshCart()
+      } else {
+        throw new Error(result.error || 'Failed to add item')
+      }
+    } catch (err) {
+      logger.error('Error adding item to cart', err)
+      throw err
+    }
+  }, [refreshCart])
+
+  // Update item quantity
+  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
+    try {
+      const result = await (await import('@/lib/actions/cart-v2')).updateCartItemQuantity({
+        cartItemId: itemId,
+        quantity
+      })
+      if (result.success) {
+        await refreshCart()
+      } else {
+        throw new Error(result.error || 'Failed to update quantity')
+      }
+    } catch (err) {
+      logger.error('Error updating quantity', err)
+      throw err
+    }
+  }, [refreshCart])
+
+  // Remove item from cart
+  const removeItem = useCallback(async (itemId: string) => {
+    try {
+      const result = await (await import('@/lib/actions/cart-v2')).removeCartItem(itemId)
+      if (result.success) {
+        await refreshCart()
+      } else {
+        throw new Error(result.error || 'Failed to remove item')
+      }
+    } catch (err) {
+      logger.error('Error removing item', err)
+      throw err
+    }
+  }, [refreshCart])
+
+  // Clear all cart items
+  const clearCartItems = useCallback(async () => {
+    try {
+      if (!cart?.id) return
+      const result = await (await import('@/lib/actions/cart-v2')).clearCart(cart.id)
+      if (result.success) {
+        await refreshCart()
+      } else {
+        throw new Error(result.error || 'Failed to clear cart')
+      }
+    } catch (err) {
+      logger.error('Error clearing cart', err)
+      throw err
+    }
+  }, [cart?.id, refreshCart])
+
   // Initial load
   useEffect(() => {
     refreshCart()
@@ -176,7 +248,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         lockStatus,
         refreshCart,
         switchProfile,
-        refreshLockStatus
+        refreshLockStatus,
+        addItem,
+        updateQuantity,
+        removeItem,
+        clearCartItems
       }}
     >
       {children}

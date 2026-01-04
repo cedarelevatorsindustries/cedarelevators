@@ -35,14 +35,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const handleUpdateQuantity = async (
     itemId: string,
-    productId: string,
-    newQuantity: number,
-    variantId?: string
+    newQuantity: number
   ) => {
     if (newQuantity < 1) return
     setLoadingItems(prev => new Set(prev).add(itemId))
     try {
-      await updateQuantity(itemId, productId, newQuantity, variantId)
+      await updateQuantity(itemId, newQuantity)
     } finally {
       setLoadingItems(prev => {
         const next = new Set(prev)
@@ -52,14 +50,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }
 
-  const handleRemove = async (
-    itemId: string,
-    productId: string,
-    variantId?: string
-  ) => {
+  const handleRemove = async (itemId: string) => {
     setLoadingItems(prev => new Set(prev).add(itemId))
     try {
-      await removeItem(itemId, productId, variantId)
+      await removeItem(itemId)
     } finally {
       setLoadingItems(prev => {
         const next = new Set(prev)
@@ -111,13 +105,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <div className="space-y-4">
               {derivedItems.map((item) => {
                 const isLoading = loadingItems.has(item.id)
-                
+
                 return (
                   <div
                     key={item.id}
-                    className={`flex gap-4 p-3 bg-gray-50 rounded-lg ${
-                      isLoading ? "opacity-50" : ""
-                    }`}
+                    className={`flex gap-4 p-3 bg-gray-50 rounded-lg ${isLoading ? "opacity-50" : ""
+                      }`}
                   >
                     {/* Image */}
                     <div className="w-20 h-20 bg-white rounded-lg overflow-hidden flex-shrink-0">
@@ -158,7 +151,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-2 mt-2">
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.product_id, item.quantity - 1, item.variant_id || undefined)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                           disabled={isLoading || item.quantity <= 1 || !item.is_available}
                           className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                         >
@@ -168,14 +161,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.product_id, item.quantity + 1, item.variant_id || undefined)}
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                           disabled={isLoading || !item.stock_available || !item.is_available}
                           className="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => handleRemove(item.id, item.product_id, item.variant_id || undefined)}
+                          onClick={() => handleRemove(item.id)}
                           disabled={isLoading}
                           className="ml-auto p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
                         >

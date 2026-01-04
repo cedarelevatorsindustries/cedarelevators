@@ -4,29 +4,32 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createClient()
-    
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
+
     // Check admin permission (implement your auth check here)
     // const user = await supabase.auth.getUser()
     // if (!user || !isAdmin(user)) {
     //   return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     // }
-    
+
     const { data: attributes, error } = await supabase
       .from('product_attributes')
       .select('*')
       .order('filter_priority', { ascending: true })
-    
+
     if (error) {
       throw new Error(`Failed to fetch attributes: ${error.message}`)
     }
-    
+
     return NextResponse.json({
       success: true,
       data: attributes || [],
@@ -47,9 +50,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient()
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
     const body = await request.json()
-    
+
     // Validate required fields
     if (!body.attribute_key || !body.display_name || !body.attribute_type) {
       return NextResponse.json(
@@ -57,7 +63,7 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
-    
+
     const { data: attribute, error } = await supabase
       .from('product_attributes')
       .insert([
@@ -75,11 +81,11 @@ export async function POST(request: Request) {
       ])
       .select()
       .single()
-    
+
     if (error) {
       throw new Error(`Failed to create attribute: ${error.message}`)
     }
-    
+
     return NextResponse.json({
       success: true,
       data: attribute,

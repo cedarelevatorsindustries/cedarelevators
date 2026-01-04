@@ -3,5 +3,4 @@
 // have been moved to @/components/shared/sections for consolidation
 export { default as HeroSection } from './HeroSection'
 export { default as QuickCategoriesSection } from './QuickCategoriesSection'
-export { default as BulkOrderSection } from './BulkOrderSection'
 export { default as ServiceHighlightsSection } from './ServiceHighlightsSection'

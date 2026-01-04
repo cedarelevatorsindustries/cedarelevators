@@ -1,17 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { ShoppingCart, Heart, Bell } from "lucide-react"
+import { ShoppingCart, Heart } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
-import { useNotifications } from "@/lib/hooks"
-import { useNotificationSidebar } from "@/lib/context/notification-sidebar-context"
 import { ProfileMenu } from "./profile-menu"
 import { MoreMenu } from "./more-menu"
 import { DeliverToMenu } from "./deliver-to-menu"
 import { LoginHoverCard } from "./login-hover-card"
 import { LinkHoverCard } from "./link-hover-card"
 import { CartHoverCardContent } from "./cart-hover-card"
-import { NotificationHoverCardContent } from "./notification-hover-card"
 import { WishlistHoverCardContent } from "./wishlist-hover-card"
 import type { NavbarConfig } from "../config"
 
@@ -27,23 +24,16 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
     const [cartItemCount] = useState(0) // TODO: Get from cart context
     const [wishlistCount] = useState(0) // TODO: Get from wishlist context
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
-    const { openSidebar } = useNotificationSidebar()
-
-    // Real-time notifications via Pusher
-    const { unreadCount: notificationCount } = useNotifications({ 
-        customerId: user?.id,
-        channel: user?.id ? `user-${user.id}` : 'my-channel'
-    })
 
     // Mock cart data - TODO: Get from cart context
     const cartItems: never[] = [] // Empty for now
     const cartTotal = "₹0.00"
-    
+
     // Mock wishlist - TODO: Get from wishlist context
     const wishlistItems: never[] = [] // Empty for now
 
     return (
-        <div 
+        <div
             className="flex items-center gap-4 mr-2"
             onMouseEnter={() => setIsMoreMenuOpen(false)}
         >
@@ -64,28 +54,6 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
             >
                 <WishlistHoverCardContent items={wishlistItems} />
             </LinkHoverCard>
-
-            {/* Notifications with Hover Card (only for logged in users) */}
-            {user && (
-                <LinkHoverCard
-                    href="/notifications"
-                    icon={<Bell size={20} />}
-                    label="Notifications"
-                    isTransparent={isTransparent}
-                    badge={notificationCount}
-                    badgeColor="bg-red-600"
-                    onHover={() => setIsMoreMenuOpen(false)}
-                >
-                    {(closeCard) => (
-                        <NotificationHoverCardContent 
-                            customerId={user.id} 
-                            channel={`user-${user.id}`}
-                            onOpenSidebar={openSidebar}
-                            onClose={closeCard}
-                        />
-                    )}
-                </LinkHoverCard>
-            )}
 
             {/* Shopping Cart with Hover Card */}
             <LinkHoverCard
@@ -111,9 +79,9 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
             )}
 
             {/* More Menu */}
-            <MoreMenu 
-                isTransparent={isTransparent} 
-                isLoggedIn={!!user} 
+            <MoreMenu
+                isTransparent={isTransparent}
+                isLoggedIn={!!user}
                 isScrolled={isScrolled}
                 isOpen={isMoreMenuOpen}
                 onOpenChange={setIsMoreMenuOpen}

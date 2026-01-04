@@ -3,8 +3,7 @@ import type { Application } from "@/lib/data/applications"
 import type { ElevatorType } from "@/lib/data/elevator-types"
 import {
   HeroSection,
-  QuickCategoriesSection,
-  BulkOrderSection
+  QuickCategoriesSection
 } from "../../components/desktop/sections"
 import {
   WhyCedarSection,
@@ -55,10 +54,7 @@ export default function DesktopHomepage({ products, categories, testimonials, ap
         <WhyCedarSection />
       </div>
 
-      {/* Bulk Order CTA / Quote Section */}
-      <div className="mt-12">
-        <BulkOrderSection />
-      </div>
+
 
       {/* Testimonials - Below quote form */}
       {testimonials.length > 0 && (

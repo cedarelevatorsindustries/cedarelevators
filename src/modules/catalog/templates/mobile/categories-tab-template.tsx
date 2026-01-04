@@ -179,7 +179,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       </div>
 
       {/* 3. Shop by Elevator Type - Reused Component */}
-      <ElevatorTypesMobile />
+      <ElevatorTypesMobile elevatorTypes={[]} />
 
       {/* 4. Top Applications - Horizontal Scroll Elevator Types */}
       <div className="bg-white py-6">

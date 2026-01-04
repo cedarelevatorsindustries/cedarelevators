@@ -12,6 +12,9 @@ interface MobileCatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
   activeCategory?: ProductCategory
+  activeApplication?: any
+  activeType?: any
+  activeCollection?: any
   banners?: BannerWithSlides[]
   tab?: string
   app?: string

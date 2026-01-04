@@ -55,11 +55,6 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
       icon: 'Settings',
       items: [
         {
-          section: PROFILE_SECTIONS.NOTIFICATIONS,
-          label: 'Notifications',
-          icon: 'Bell',
-        },
-        {
           section: PROFILE_SECTIONS.SECURITY,
           label: 'Security',
           icon: 'Shield',
@@ -124,11 +119,6 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
         icon: 'Settings',
         items: [
           {
-            section: PROFILE_SECTIONS.NOTIFICATIONS,
-            label: 'Notifications',
-            icon: 'Bell',
-          },
-          {
             section: PROFILE_SECTIONS.SECURITY,
             label: 'Security',
             icon: 'Shield',
@@ -144,12 +134,12 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
 export function formatPhoneNumber(phone: string): string {
   // Remove all non-numeric characters
   const cleaned = phone.replace(/\D/g, '')
-  
+
   // Format as (XXX) XXX-XXXX for 10-digit numbers
   if (cleaned.length === 10) {
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`
   }
-  
+
   // Format with country code for 11+ digit numbers
   if (cleaned.length > 10) {
     const countryCode = cleaned.slice(0, cleaned.length - 10)
@@ -158,7 +148,7 @@ export function formatPhoneNumber(phone: string): string {
     const lastPart = cleaned.slice(-4)
     return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`
   }
-  
+
   return phone
 }
 

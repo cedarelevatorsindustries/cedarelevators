@@ -26,21 +26,21 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
   const handleIncrement = async () => {
     if (isUpdating) return
     setIsUpdating(true)
-    await updateQuantity(item.id, item.product_id, item.quantity + 1, item.variant_id || undefined)
+    await updateQuantity(item.id, item.quantity + 1)
     setIsUpdating(false)
   }
 
   const handleDecrement = async () => {
     if (isUpdating || item.quantity <= 1) return
     setIsUpdating(true)
-    await updateQuantity(item.id, item.product_id, item.quantity - 1, item.variant_id || undefined)
+    await updateQuantity(item.id, item.quantity - 1)
     setIsUpdating(false)
   }
 
   const handleRemove = async () => {
     if (isUpdating) return
     setIsUpdating(true)
-    await removeItem(item.id, item.product_id, item.variant_id || undefined)
+    await removeItem(item.id)
     setIsUpdating(false)
   }
 
@@ -66,13 +66,13 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
-        <Link 
+        <Link
           href={`/products/${item.product?.slug || ''}`}
           className="font-medium text-gray-900 hover:text-orange-600 line-clamp-2"
         >
           {item.title}
         </Link>
-        
+
         {item.variant && (
           <p className="text-sm text-gray-500 mt-1">{item.variant.name}</p>
         )}

@@ -32,7 +32,7 @@ export default function ContactPage() {
                             <div className="grid gap-4">
                                 {/* WhatsApp */}
                                 <a
-                                    href="https://wa.me/917299012340"
+                                    href="https://wa.me/918220202757"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 p-5 rounded-xl border border-green-200 bg-green-50 hover:bg-green-100 transition-colors group"
@@ -64,7 +64,7 @@ export default function ContactPage() {
 
                                 {/* Phone */}
                                 <a
-                                    href="tel:+icon-917299012340"
+                                    href="tel:+918220202757"
                                     className="flex items-center gap-4 p-5 rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors group"
                                 >
                                     <div className="bg-gray-100 text-gray-600 p-3 rounded-full group-hover:bg-orange-100 group-hover:text-orange-600">
@@ -72,7 +72,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 group-hover:text-orange-700">Phone Support</h3>
-                                        <p className="text-sm text-gray-600">+91 72990 12340 (Mon-Sat)</p>
+                                        <p className="text-sm text-gray-600">+91 82202 02757 (Mon-Sat)</p>
                                     </div>
                                 </a>
                             </div>

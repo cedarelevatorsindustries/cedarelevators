@@ -1,1 +1,2 @@
-export { default as NotificationProvider } from "./notification-provider"
+// Notification provider removed
+

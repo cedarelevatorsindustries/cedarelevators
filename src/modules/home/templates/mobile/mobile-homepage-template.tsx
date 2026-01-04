@@ -1,4 +1,5 @@
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import {
   HeroGuestMobile as HeroSection,
   HeroButtonsMobile as HeroButtonsSection,
@@ -15,10 +16,12 @@ import {
 
 interface MobileHomepageProps {
   products: Product[]
+  categories: ProductCategory[]
   testimonials: any[]
+  elevatorTypes?: ElevatorType[]
 }
 
-export default function MobileHomepage({ products, testimonials }: MobileHomepageProps) {
+export default function MobileHomepage({ products, categories, testimonials, elevatorTypes = [] }: MobileHomepageProps) {
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -28,7 +31,7 @@ export default function MobileHomepage({ products, testimonials }: MobileHomepag
       <HeroButtonsSection />
 
       {/* Quick Access Categories */}
-      <QuickAccessCategoriesSection />
+      <QuickAccessCategoriesSection categories={categories} />
 
       {/* Featured Products */}
       {products.length > 0 && (
@@ -36,7 +39,7 @@ export default function MobileHomepage({ products, testimonials }: MobileHomepag
       )}
 
       {/* Category Blocks */}
-      <CategoryBlocksSection />
+      <CategoryBlocksSection categories={categories} />
 
       {/* Quick Quote Section */}
       <QuickQuoteSection />

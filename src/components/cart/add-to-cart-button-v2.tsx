@@ -54,7 +54,7 @@ export function AddToCartButtonV2({
 
     setIsLoading(true)
     try {
-      await addItem(productId, productTitle, productThumbnail, quantity, variantId)
+      await addItem(productId, variantId || null, quantity)
 
       if (showSuccessState) {
         setShowSuccess(true)

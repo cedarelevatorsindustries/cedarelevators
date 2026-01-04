@@ -5,7 +5,7 @@ import { auth } from '@clerk/nextjs/server'
 import { getCart, clearCart } from './cart'
 import { validateCartInventory, getCartSummary } from './cart-extended'
 import { sendOrderConfirmation } from '@/lib/services/email'
-import { sendOrderNotification } from './notifications'
+// Notifications removed
 import type { OrderWithDetails } from '@/lib/types/orders'
 
 interface ShippingAddress {
@@ -287,7 +287,9 @@ export async function createOrderFromCart(
       console.log('⚠️  [Order Creation] No email address provided, skipping email')
     }
 
-    // 12. Send notification to user (if logged in)
+    // 12. Send notification to user (if logged in) - DISABLED
+    // Notifications have been removed from the system
+    /*
     if (userId) {
       try {
         console.log('🔔 [Order Creation] Step 12: Sending order notification')
@@ -303,6 +305,7 @@ export async function createOrderFromCart(
         // Don't fail order creation if notification fails
       }
     }
+    */
 
     console.log('🎉 [Order Creation] Order creation completed successfully!')
     console.log('🎉 [Order Creation] Order number:', orderNumber)

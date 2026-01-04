@@ -9,8 +9,6 @@
  * - Tax and shipping calculations
  */
 
-'use server'
-
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
 import {
   CartItem,
@@ -157,7 +155,7 @@ export async function deriveCartItems(
       if (showPrices) {
         unit_price = priceSource.price || 0
         compare_at_price = priceSource.compare_at_price || undefined
-        
+
         if (compare_at_price && unit_price) {
           discount_percentage = Math.round(((compare_at_price - unit_price) / compare_at_price) * 100)
         }
@@ -256,15 +254,15 @@ export function calculateShipping(
 ): number {
   // Simple shipping calculation
   // In production, this would be more complex based on weight, location, etc.
-  
+
   if (!deliveryOption || deliveryOption === 'standard') {
     return 0 // Free standard shipping
   }
-  
+
   if (deliveryOption === 'express') {
     return 500 // ₹500 for express
   }
-  
+
   return 0 // Custom delivery - quote based
 }
 
@@ -281,29 +279,29 @@ export async function calculateCartSummary(
   try {
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
     const uniqueProducts = new Set(items.map(item => item.product_id)).size
-    
+
     // Calculate subtotal (only available items)
     const subtotal = calculateCartSubtotal(items)
-    
+
     // No discount for now (admin handles pricing)
     const discount = 0
-    
+
     // Calculate shipping
     const shipping = calculateShipping(itemCount, deliveryOption)
-    
+
     // Calculate tax (assuming same state for now)
     const isSameState = true // TODO: Implement state comparison with business address
     const tax = calculateTax(subtotal, shipping, isSameState).total
-    
+
     // Calculate total
     const total = subtotal - discount + shipping + tax
-    
+
     // Check cart state
     const hasUnavailableItems = items.some(item => !item.is_available)
     const hasOutOfStockItems = items.some(item => !item.stock_available)
-    
+
     // Can checkout only if verified business, no issues, and has items
-    const canCheckout = 
+    const canCheckout =
       pricingContext.userType === 'business_verified' &&
       itemCount > 0 &&
       !hasUnavailableItems &&

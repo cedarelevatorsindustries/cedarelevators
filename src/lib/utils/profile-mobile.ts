@@ -71,7 +71,6 @@ export function getMobileProfileMenu(
       {
         title: 'Settings',
         items: [
-          { label: 'Notifications', icon: 'Bell', href: '/profile/notifications' },
           { label: 'Security', icon: 'Shield', href: '/profile/security' },
         ]
       },
@@ -109,7 +108,6 @@ export function getMobileProfileMenu(
         {
           title: 'Settings',
           items: [
-            { label: 'Notifications', icon: 'Bell', href: '/profile/notifications' },
             { label: 'Security', icon: 'Shield', href: '/profile/security' },
           ]
         },
@@ -144,7 +142,6 @@ export function getMobileProfileMenu(
         {
           title: 'Settings',
           items: [
-            { label: 'Notifications', icon: 'Bell', href: '/profile/notifications' },
             { label: 'Security', icon: 'Shield', href: '/profile/security' },
           ]
         },

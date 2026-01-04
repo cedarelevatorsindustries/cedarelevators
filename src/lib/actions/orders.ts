@@ -1,7 +1,7 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
-import { sendOrderNotification } from './notifications'
+// Notifications removed
 import { sendOrderStatusUpdate } from '@/lib/services/email'
 import type { OrderWithDetails } from '@/lib/types/orders'
 
@@ -74,7 +74,9 @@ export async function updateOrderStatus(
             return { success: false, error: error.message }
         }
 
-        // Send notification if user is logged in
+        // Send notification if user is logged in - DISABLED
+        // Notifications have been removed from the system
+        /*
         if (order?.clerk_user_id) {
             try {
                 await sendOrderNotification(
@@ -88,6 +90,7 @@ export async function updateOrderStatus(
                 // Don't fail the status update if notification fails
             }
         }
+        */
 
         return { success: true }
     } catch (error: any) {

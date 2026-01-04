@@ -61,6 +61,16 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  // SEO-safe redirects for routing refactor
+  async redirects() {
+    return [
+      {
+        source: '/categories/:handle',
+        destination: '/catalog/categories/:handle',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

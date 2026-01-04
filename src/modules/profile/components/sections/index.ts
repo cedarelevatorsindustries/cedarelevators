@@ -1,7 +1,7 @@
 export { default as DashboardSection } from './dashboard-section'
 export { default as PersonalInfoSection } from './personal-info-section'
 export { default as AddressesSection } from './addresses-section'
-export { default as NotificationsSection } from './notifications-section'
+// NotificationsSection removed
 export { default as PasswordSection } from './password-section'
 export { default as CompanyInfoSection } from './company-info-section'
 export { default as BusinessVerificationSection } from './business-verification-section'

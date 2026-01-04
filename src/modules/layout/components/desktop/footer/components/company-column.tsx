@@ -16,11 +16,11 @@ export function CompanyColumn() {
           className="h-24 w-auto"
         />
       </LocalizedClientLink>
-      
+
       <p className="text-gray-600 text-base mb-6 leading-relaxed font-bold italic">
         Premium lift components for every project
       </p>
-      
+
       <div className="space-y-3 mb-6">
         <div className="flex items-start gap-3 text-sm text-gray-600">
           <MapPin size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
@@ -31,7 +31,7 @@ export function CompanyColumn() {
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-600">
           <Phone size={16} className="text-blue-600" />
-          <a href="tel:7299012340" className="hover:text-blue-600 transition-colors">7299012340</a>
+          <a href="tel:8220202757" className="hover:text-blue-600 transition-colors">8220202757</a>
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-600">
           <Mail size={16} className="text-blue-600" />

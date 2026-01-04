@@ -6,24 +6,27 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabase = createClient()
-    
+    const supabase = createServerSupabaseClient()
+    if (!supabase) {
+      throw new Error('Failed to initialize Supabase client')
+    }
+
     const { data: attributes, error } = await supabase
       .from('product_attributes')
       .select('*')
       .eq('is_filterable', true)
       .order('filter_priority', { ascending: true })
-    
+
     if (error) {
       throw new Error(`Failed to fetch attributes: ${error.message}`)
     }
-    
+
     return NextResponse.json({
       success: true,
       data: attributes || [],

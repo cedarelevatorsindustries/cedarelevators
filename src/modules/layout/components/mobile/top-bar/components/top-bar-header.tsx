@@ -1,26 +1,22 @@
 "use client"
 
-import { Menu, Bell, Heart, ChevronLeft } from "lucide-react"
+import { Menu, Heart, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 interface TopBarHeaderProps {
   pathname: string
   onMenuClick: () => void
-  notificationCount: number
   shouldShowHeader?: boolean
   shouldUseFixedLayout?: boolean
   config?: any
   isTransparent?: boolean
-  showNotifications?: boolean
 }
 
 export function TopBarHeader({
   pathname,
   onMenuClick,
-  notificationCount,
-  isTransparent = false,
-  showNotifications = false
+  isTransparent = false
 }: TopBarHeaderProps) {
   const router = useRouter()
 
@@ -105,9 +101,9 @@ export function TopBarHeader({
         )}
       </div>
 
-      {/* Right: Icons (Like + Notification) */}
+      {/* Right: Icons (Wishlist Only) */}
       <div className="flex items-center justify-end gap-1">
-        {/* Wishlist/Like Icon - Always Show */}
+        {/* Wishlist/Like Icon */}
         <Link
           href="/saved"
           className={`flex items-center justify-center h-10 w-10 transition-colors ${iconColorClass}`}
@@ -115,22 +111,6 @@ export function TopBarHeader({
         >
           <Heart size={24} />
         </Link>
-
-        {/* Notification Icon - Only if logged in */}
-        {showNotifications && (
-          <Link
-            href="/notifications"
-            className={`flex items-center justify-center h-10 w-10 relative transition-colors ${iconColorClass}`}
-            aria-label="View notifications"
-          >
-            <Bell size={24} />
-            {notificationCount > 0 && (
-              <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold">
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </span>
-            )}
-          </Link>
-        )}
       </div>
     </nav>
   )

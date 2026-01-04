@@ -5,24 +5,14 @@ import { usePathname } from "next/navigation"
 import { getNavbarVariant, mergeNavbarConfig, type NavbarConfig } from "../../desktop/navbar/config"
 import { TopBarHeader } from "./components/top-bar-header"
 import { TopBarSearch } from "./components/top-bar-search"
-import { useNotifications } from "@/lib/hooks"
 
 interface MobileTopBarProps {
   onMenuClick: () => void
-  notificationCount?: number
   customConfig?: Partial<NavbarConfig>
   customerId?: string | null
 }
 
-export default function MobileTopBar({ onMenuClick, notificationCount: propNotificationCount, customConfig, customerId }: MobileTopBarProps) {
-  // Real-time notifications via Pusher (only for logged-in users)
-  const { unreadCount } = useNotifications({
-    customerId,
-    channel: customerId ? `user-${customerId}` : undefined
-  })
-
-  // Use real-time count if available, otherwise fall back to prop
-  const notificationCount = customerId ? (unreadCount || propNotificationCount || 0) : 0
+export default function MobileTopBar({ onMenuClick, customConfig, customerId }: MobileTopBarProps) {
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -73,10 +63,8 @@ export default function MobileTopBar({ onMenuClick, notificationCount: propNotif
         <TopBarHeader
           pathname={pathname}
           onMenuClick={onMenuClick}
-          notificationCount={notificationCount}
           config={config}
           isTransparent={isTransparent}
-          showNotifications={!!customerId}
         />
 
         {(variant === 'homepage' || variant === 'category-hero' || variant === 'browse-products') && isScrolled && (
