@@ -43,6 +43,7 @@ export interface UserWithProfile {
     user: SupabaseUser
     activeProfile: UserProfile
     business?: Business
+    hasBusinessProfile: boolean  // New field to track if user has business profile
 }
 
 // Import User type
@@ -149,6 +150,7 @@ export async function getActiveProfile(userId: string): Promise<UserProfile | nu
 
 /**
  * Get user with their active profile and business (if applicable)
+ * IMPROVED: Now checks for business profile existence independently of business data loading
  * @param clerkUserId - The Clerk User ID
  * @param clerkUserObj - Optional Clerk User object (if already fetched)
  */
@@ -160,28 +162,49 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
         const activeProfile = await getActiveProfile(user.id)
         if (!activeProfile) return null
 
+        const supabase = createAdminClient()
         let business: Business | undefined
+        let hasBusinessProfile = false
 
-        // If business profile is active, get the business
-        if (activeProfile.profile_type === 'business') {
-            const supabase = createAdminClient()
+        // Check if user has a business profile in user_profiles table (independent check)
+        const { data: businessProfileCheck } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('profile_type', 'business')
+            .single()
 
-            const { data: businessMember } = await supabase
-                .from('business_members')
-                .select('business_id, businesses(*)')
-                .eq('user_id', user.id)
-                .single()
+        hasBusinessProfile = !!businessProfileCheck
 
-            if (businessMember?.businesses) {
-                // Supabase returns nested object, not array
-                business = businessMember.businesses as unknown as Business
+        // If user has a business profile, try to load business data
+        // This is separate from the hasBusinessProfile check, so even if business data fails,
+        // we still know they have a business profile
+        if (hasBusinessProfile) {
+            try {
+                const { data: businessMember, error: businessError } = await supabase
+                    .from('business_members')
+                    .select('business_id, businesses(*)')
+                    .eq('user_id', user.id)
+                    .single()
+
+                if (businessError) {
+                    console.error('Error loading business data:', businessError)
+                    // Don't throw - we still return hasBusinessProfile as true
+                } else if (businessMember?.businesses) {
+                    // Supabase returns nested object, not array
+                    business = businessMember.businesses as unknown as Business
+                }
+            } catch (businessLoadError) {
+                console.error('Exception loading business data:', businessLoadError)
+                // Continue - business will be undefined but hasBusinessProfile is true
             }
         }
 
         return {
             user,
             activeProfile,
-            business
+            business,
+            hasBusinessProfile
         }
     } catch (error) {
         console.error('Error in getUserWithProfile:', error)
@@ -356,4 +379,3 @@ export async function hasBusinessProfile(userId: string): Promise<boolean> {
         return false
     }
 }
-

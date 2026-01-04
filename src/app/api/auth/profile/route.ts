@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        const { user, activeProfile, business } = userWithProfile
+        const { user, activeProfile, business, hasBusinessProfile } = userWithProfile
 
         // Derive user type
         let userType: 'guest' | 'individual' | 'business' | 'verified' = 'individual'
@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Return enhanced user data with cache headers
+        // IMPORTANT: hasBusinessProfile now comes from the independent check in getUserWithProfile
+        // This ensures it's accurate even if business data fails to load
         return NextResponse.json({
             clerkId: clerkUser.id,
             userId: user.id,
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
             business: business || null,
             userType,
             isVerified,
-            hasBusinessProfile: !!business
+            hasBusinessProfile  // Now independent of business data loading success
         }, {
             headers: {
                 'Cache-Control': 'private, max-age=60', // Cache on client for 60 seconds
@@ -70,4 +72,3 @@ export async function GET(request: NextRequest) {
         )
     }
 }
-
