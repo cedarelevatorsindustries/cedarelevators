@@ -5,9 +5,10 @@ import { MapPin, Truck, Heart, Bell, Briefcase } from "lucide-react"
 
 type Props = {
   onSelectType: (type: "individual" | "business") => void
+  disabled?: boolean
 }
 
-export default function AccountTypeSelector({ onSelectType }: Props) {
+export default function AccountTypeSelector({ onSelectType, disabled = false }: Props) {
   const benefits = [
     { icon: MapPin, label: "Saved Addresses" },
     { icon: Truck, label: "Order Tracking" },
