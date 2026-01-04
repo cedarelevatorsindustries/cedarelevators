@@ -64,22 +64,23 @@ This document tracks the fixes for authentication flow issues in the Cedar Eleva
 
 ## Implementation Phases
 
-### Phase 1: Fix Sign-up Redirect ⏳
-**Status**: Not Started
+### Phase 1: Fix Sign-up Redirect ✅
+**Status**: COMPLETED
 
 **Changes**:
 1. Update `/app/src/app/(auth)/choose-type/page.tsx`
-   - Remove authentication redirect logic
-   - Keep only accountType validation
-   - Simplify server component logic
+   - ✅ Removed authentication redirect logic from server component
+   - ✅ Keep only accountType validation in server-side
+   - ✅ Simplified server component logic
 
 2. Update `/app/src/modules/auth/templates/choose-type.tsx`
-   - Keep authentication checks in client component
-   - Add proper loading states
-   - Handle edge cases
+   - ✅ Keep authentication checks in client component
+   - ✅ Added proper loading states (isCheckingAuth state)
+   - ✅ Added loading UI while authentication is being verified
+   - ✅ Added disabled prop to AccountTypeSelector
 
 **Completion Criteria**:
-- [ ] Code changes implemented
+- [x] Code changes implemented
 - [ ] Sign-up flow tested manually
 - [ ] No redirect loops observed
 - [ ] Account type selection works
