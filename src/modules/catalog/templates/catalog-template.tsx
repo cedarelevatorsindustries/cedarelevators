@@ -107,25 +107,25 @@ export default function CatalogTemplate({
     if (activeCategory) return activeCategory
 
     // Fallback: looked up from categories list (only works for top level)
-    if (catalogType === "category" && searchParams.category) {
+    if (catalogType === "category" && effectiveSearchParams.category) {
       return categories.find(
-        (cat) => cat.id === searchParams.category || cat.handle === searchParams.category
+        (cat) => cat.id === effectiveSearchParams.category || cat.handle === effectiveSearchParams.category
       )
     }
     return null
-  }, [catalogType, searchParams.category, categories, activeCategory])
+  }, [catalogType, effectiveSearchParams.category, categories, activeCategory])
 
   // Get application config and categories
   const applicationData = useMemo(() => {
-    if (searchParams.application) {
-      const appConfig = getApplicationConfig(searchParams.application)
+    if (effectiveSearchParams.application) {
+      const appConfig = getApplicationConfig(effectiveSearchParams.application)
       if (appConfig) {
-        const appCategories = getCategoriesForApplication(searchParams.application, categories)
+        const appCategories = getCategoriesForApplication(effectiveSearchParams.application, categories)
         return { config: appConfig, categories: appCategories }
       }
     }
     return null
-  }, [searchParams.application, categories])
+  }, [effectiveSearchParams.application, categories])
 
   // Categories for sidebar
   const sidebarCategories = useMemo(() => {
