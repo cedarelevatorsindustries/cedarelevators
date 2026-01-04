@@ -14,5 +14,5 @@ export { default as CategoryBlocksSection } from "./CategoryBlocksSection"
 export { default as ProductSectionMobile } from "./product-section-mobile"
 
 // Other sections
-export { default as QuickQuoteSection } from "./QuickQuoteSection"
+
 export { default as NeedHelpSection } from "./NeedHelpSection"

@@ -16,13 +16,9 @@ export default function QuoteStatusSummary() {
   useEffect(() => {
     async function loadStatusCounts() {
       try {
-        const result = await getQuotes({
-          status: 'all',
-          date_range: 'all',
-          search: ''
-        })
+        const result = await getQuotes({ status: 'all' })
 
-        if (result.success) {
+        if (result.success && result.quotes) {
           const counts = {
             pending: result.quotes.filter(q => q.status === 'pending').length,
             approved: result.quotes.filter(q => q.status === 'approved').length,

@@ -1,84 +1,54 @@
-import { Metadata } from "next"
-import { getAuthUser, getUserType, getBusinessVerificationStatus } from "@/lib/auth/server"
-import { getQuotes, getQuoteStats } from "@/lib/actions/quotes"
-import { listProducts } from "@/lib/data"
-import QuotesPageClient from "./quotes-page-client"
+import { Suspense } from 'react';
+import { getQuotes } from '@/lib/actions/quotes';
+import { QuoteList } from '@/modules/quote/components/quote-list';
+import { auth, currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
+
 
 export const metadata: Metadata = {
-    title: "Quotes - Cedar Elevators",
-    description: "Request quotes and manage your quote requests",
+    title: 'My Quotes | Cedar Elevators',
+    description: 'Manage your quote requests',
 }
 
 export default async function QuotesPage() {
-    const user = await getAuthUser()
-    const userType = await getUserType()
-    const verificationStatus = await getBusinessVerificationStatus()
-
-    // Guest users: Show lead capture form (no redirect)
-    if (userType === "guest" || !user) {
-        // Fetch products for recommendations
-        let products: any[] = []
-        try {
-            const { response } = await listProducts({
-                queryParams: { limit: 10 }
-            })
-            products = response.products
-        } catch (error) {
-            console.error("Error fetching products:", error)
-        }
-
-        return (
-            <QuotesPageClient
-                initialQuotes={[]}
-                initialStats={{
-                    total_quotes: 0,
-                    active_quotes: 0,
-                    total_value: 0,
-                    pending_count: 0,
-                    accepted_count: 0
-                }}
-                userType="guest"
-                isVerified={false}
-                verificationStatus={null}
-                products={products}
-            />
-        )
+    const { userId } = await auth();
+    if (!userId) {
+        redirect('/sign-in');
     }
 
-    // Logged-in users: Fetch quote data
-    const [quotesResult, statsResult] = await Promise.all([
-        getQuotes({ status: 'all', date_range: 'all', search: '' }),
-        getQuoteStats()
-    ])
+    // Fetch Quotes
+    const { success, quotes, error } = await getQuotes();
 
-    const quotes = quotesResult.success ? quotesResult.quotes : []
-    const stats = statsResult.success ? statsResult.stats : {
-        total_quotes: 0,
-        active_quotes: 0,
-        total_value: 0,
-        pending_count: 0,
-        accepted_count: 0
-    }
+    // Determine User Type (Basic logic for now)
+    // Ideally fetch profile to check if business/verified
+    const user = await currentUser();
+    const userType = user?.publicMetadata?.role === 'admin' ? 'verified' :
+        user?.publicMetadata?.account_type === 'business' ? 'business' : 'individual';
 
-    // Fetch products for recommendations
-    let products: any[] = []
-    try {
-        const { response } = await listProducts({
-            queryParams: { limit: 10 }
-        })
-        products = response.products
-    } catch (error) {
-        console.error("Error fetching products:", error)
+    // If fetching profile from DB is preferred:
+    // const profile = await getUserProfile(userId);
+    // const userType = profile?.is_verified ? 'verified' : profile?.account_type || 'individual';
+
+    if (!success) {
+        return <div className="p-8 text-red-500">Error loading quotes: {error}</div>;
     }
 
     return (
-        <QuotesPageClient
-            initialQuotes={quotes}
-            initialStats={stats}
-            userType={userType}
-            isVerified={verificationStatus.isVerified}
-            verificationStatus={verificationStatus.status}
-            products={products}
-        />
+        <div className="container py-8 max-w-5xl mx-auto px-4">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-industrial-blue">Quotations</h1>
+                <a href="/quotes/new" className="bg-cedar-orange text-white px-4 py-2 rounded font-medium hover:bg-orange-600">
+                    + New Quote
+                </a>
+            </div>
+
+            <Suspense fallback={<div>Loading...</div>}>
+                <QuoteList
+                    quotes={quotes || []}
+                    userType={userType as any}
+                />
+            </Suspense>
+        </div>
     )
 }

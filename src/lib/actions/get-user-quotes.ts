@@ -2,8 +2,6 @@
 
 import { getSupabaseClient } from "@/lib/supabase/client"
 import { auth } from "@clerk/nextjs/server"
-import type { QuoteItemData } from "@/modules/quote/templates/individual-quote-template"
-import { formatQuotesForTemplate, formatCurrency } from "@/lib/utils/quote-formatting"
 
 interface QuoteStats {
     totalSpent: number

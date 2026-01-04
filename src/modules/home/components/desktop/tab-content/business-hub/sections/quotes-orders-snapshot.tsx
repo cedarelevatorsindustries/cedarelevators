@@ -21,13 +21,9 @@ export default function QuotesOrdersSnapshot() {
     async function loadData() {
       try {
         // Fetch quotes data
-        const quotesResult = await getQuotes({
-          status: 'all',
-          date_range: 'all',
-          search: ''
-        })
+        const quotesResult = await getQuotes({ status: 'all' })
 
-        if (quotesResult.success) {
+        if (quotesResult.success && quotesResult.quotes) {
           const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'reviewing').length
           const approved = quotesResult.quotes.filter(q => q.status === 'approved').length
           setQuotesData({ pending, approved })

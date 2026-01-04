@@ -33,13 +33,9 @@ export default function RecentQuotes({ isVerified = false }: RecentQuotesProps) 
   useEffect(() => {
     async function loadQuotes() {
       try {
-        const result = await getQuotes({
-          status: 'all',
-          date_range: 'all',
-          search: ''
-        })
+        const result = await getQuotes({ status: 'all' })
 
-        if (result.success) {
+        if (result.success && result.quotes) {
           // Get only the 3 most recent quotes
           setQuotes(result.quotes.slice(0, 3))
         }
@@ -90,7 +86,7 @@ export default function RecentQuotes({ isVerified = false }: RecentQuotesProps) 
           {quotes.map((quote) => {
             const statusConfig = getStatusConfig(quote.status)
             const StatusIcon = statusConfig.icon
-            
+
             return (
               <Link
                 key={quote.id}

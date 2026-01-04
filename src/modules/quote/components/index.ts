@@ -1,25 +1,6 @@
-export * from "./sticky-top-bar"
-export * from "./verification-banner"
-export * from "./performance-snapshot"
-export * from "./quick-actions-bar"
-export * from "./smart-alerts"
-export * from "./quote-timeline"
-export * from "./quick-reorder"
-export * from "./exclusive-section"
-export * from "./mini-analytics"
-export * from "./guest-quote-form"
-export * from "./individual-quote-form"
-export * from "./business-quote-form"
-export * from "./bottom-cta"
-
-// New Quote Features
-export { default as QuoteTemplates } from "./quote-templates"
-export { default as QuoteToOrder } from "./quote-to-order"
-export { default as BulkQuoteHistory } from "./bulk-quote-history"
-
-// Business Hub Components (V2 - Desktop-First Design)
-export { BusinessHubHeaderV2 } from "./business-hub-header-v2"
-export { StatusStripV2 } from "./status-strip-v2"
-export { ActionCardsGrid } from "./action-cards-grid"
-export { ActionNeededV2 } from "./action-needed-v2"
-export { QuotesSidebar } from "./quotes-sidebar"
+// New refactored quote components
+export * from "./quote-form"
+export * from "./quote-list"
+export * from "./quote-detail"
+export * from "./quote-items-input"
+export * from "./quote-status-badge"

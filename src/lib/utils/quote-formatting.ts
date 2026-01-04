@@ -1,4 +1,10 @@
-import type { QuoteItemData } from "@/modules/quote/templates/individual-quote-template"
+interface QuoteItemData {
+    id: string;
+    title: string;
+    amount: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'completed';
+    expiry?: string;
+}
 
 /**
  * Format quotes data for the template

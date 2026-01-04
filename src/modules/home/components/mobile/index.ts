@@ -4,7 +4,7 @@
 
 export { default as QuickAccessCategoriesSection } from './sections/QuickAccessCategoriesSection'
 export { default as CategoryBlocksSection } from './sections/CategoryBlocksSection'
-export { default as QuickQuoteSection } from './sections/QuickQuoteSection'
+
 export { default as NeedHelpSection } from './sections/NeedHelpSection'
 
 // Re-export from sections index

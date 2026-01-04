@@ -1,6 +1,9 @@
 "use client"
 
-import { StatusStripV2, ActionNeededV2, ActionCardsGrid, QuotesSidebar } from "@/modules/quote/components"
+import { StatusStripV2 } from "@/modules/quote/components/status-strip-v2"
+import { ActionNeededV2 } from "@/modules/quote/components/action-needed-v2"
+import { ActionCardsGrid } from "@/modules/quote/components/action-cards-grid"
+import { QuotesSidebar } from "@/modules/quote/components/quotes-sidebar"
 import type { BusinessHubData } from "@/lib/actions/business-hub"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 

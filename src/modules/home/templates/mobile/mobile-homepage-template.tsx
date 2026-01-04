@@ -5,7 +5,6 @@ import {
   HeroButtonsMobile as HeroButtonsSection,
   QuickAccessCategoriesSection,
   CategoryBlocksSection,
-  QuickQuoteSection,
   NeedHelpSection
 } from "../../components/mobile"
 import {
@@ -40,9 +39,6 @@ export default function MobileHomepage({ products, categories, testimonials, ele
 
       {/* Category Blocks */}
       <CategoryBlocksSection categories={categories} />
-
-      {/* Quick Quote Section */}
-      <QuickQuoteSection />
 
       {/* Why Cedar */}
       <WhyCedarSection variant="mobile" />

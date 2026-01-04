@@ -7,8 +7,7 @@ import ProfileSidebar from '../components/profile-sidebar'
 import QuickActions from '../components/quick-actions'
 import RecentlyViewedList from '../components/recently-viewed-list'
 import { DashboardSection, PersonalInfoSection, AddressesSection, PasswordSection, CompanyInfoSection, BusinessVerificationSection } from '../components/sections'
-import QuotesSection from '../components/sections/quotes-section'
-import QuoteDetailSection from '../components/sections/quote-detail-section'
+
 import SecuritySection from '../components/sections/security-section'
 import BusinessDocumentsSection from '../components/sections/business-documents-section'
 import PaymentMethodsSection from '../components/sections/payment-methods-section'
@@ -120,20 +119,15 @@ export default function ProfileDesktopTemplate() {
         return <WishlistSection />
 
       case PROFILE_SECTIONS.QUOTES:
-        // Show quote detail if a quote is selected, otherwise show quotes list
-        if (selectedQuoteNumber) {
-          return (
-            <QuoteDetailSection
-              quoteNumber={selectedQuoteNumber}
-              onBack={() => setSelectedQuoteNumber(null)}
-            />
-          )
-        }
+        // Quotes have been moved to /quotes route
         return (
-          <QuotesSection
-            accountType={accountType}
-            verificationStatus={user.verification_status as any || 'incomplete'}
-          />
+          <div className="p-8 text-center">
+            <h3 className="text-lg font-semibold mb-2">Quotes Management</h3>
+            <p className="text-neutral-600 mb-4">Quote management has been moved to a dedicated page.</p>
+            <a href="/quotes" className="bg-cedar-orange text-white px-4 py-2 rounded font-medium hover:bg-orange-600">
+              Go to Quotes
+            </a>
+          </div>
         )
 
       case PROFILE_SECTIONS.SECURITY:
