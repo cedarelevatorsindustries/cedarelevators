@@ -40,14 +40,21 @@ export default function CatalogTemplate({
   categories,
   activeCategory,
   banners = [],
-  searchParams = {}
+  searchParams = {},
+  app
 }: CatalogTemplateProps) {
+  // Merge app prop into searchParams for consistent handling
+  const effectiveSearchParams = {
+    ...searchParams,
+    application: searchParams.application || app
+  }
+
   // Determine catalog type
-  let resolvedType = searchParams.type
+  let resolvedType = effectiveSearchParams.type
   if (!resolvedType) {
-    if (searchParams.category) resolvedType = "category"
-    else if (searchParams.application) resolvedType = "application"
-    else if (searchParams.search) resolvedType = "search"
+    if (effectiveSearchParams.category) resolvedType = "category"
+    else if (effectiveSearchParams.application) resolvedType = "application"
+    else if (effectiveSearchParams.search) resolvedType = "search"
     else resolvedType = "browse-all"
   }
   const catalogType = resolvedType as CatalogType
