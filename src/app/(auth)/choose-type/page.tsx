@@ -11,20 +11,15 @@ export const metadata: Metadata = {
 export default async function ChooseTypePage() {
   const user = await currentUser()
 
-  // If user is not authenticated, redirect to sign-in
-  if (!user) {
-    redirect("/sign-in")
+  // If user is already authenticated and has account type, redirect to homepage
+  if (user) {
+    const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
+    
+    if (accountType) {
+      redirect("/")
+    }
   }
 
-  // Check if user already has an account type
-  const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
-  
-  // If user already has account type, redirect to homepage (existing user)
-  if (accountType) {
-    redirect("/")
-  }
-
-  // New user without account type - show the choose-type page
+  // Render the choose type template (it will handle authentication checks)
   return <ChooseTypeTemplate />
 }
-

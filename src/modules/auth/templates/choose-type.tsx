@@ -10,6 +10,7 @@ export default function ChooseTypeTemplate() {
   const { user, isLoaded } = useUser()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
   useEffect(() => {
     if (isLoaded) {
@@ -23,7 +24,11 @@ export default function ChooseTypeTemplate() {
       const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
       if (accountType) {
         router.push("/")
+        return
       }
+
+      // User is authenticated but doesn't have account type - show selector
+      setIsCheckingAuth(false)
     }
   }, [isLoaded, user, router])
 
@@ -78,6 +83,26 @@ export default function ChooseTypeTemplate() {
     }
   }
 
+  // Show loading state while checking authentication
+  if (!isLoaded || isCheckingAuth) {
+    return (
+      <AuthSplitLayout
+        illustrationImage="/images/auth-pannels/account-type-selection.png"
+        illustrationAlt="Account type selection illustration"
+        overlayTitle="Join Cedar Elevators"
+        overlaySubtitle="Choose the account type that fits your needs"
+        mobileBackgroundColor="orange"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="inline-flex items-center gap-2 text-gray-600">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-[#F97316]"></div>
+            <span>Loading...</span>
+          </div>
+        </div>
+      </AuthSplitLayout>
+    )
+  }
+
   return (
     <AuthSplitLayout
       illustrationImage="/images/auth-pannels/account-type-selection.png"
@@ -91,7 +116,7 @@ export default function ChooseTypeTemplate() {
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
-      <AccountTypeSelector onSelectType={handleSelectType} />
+      <AccountTypeSelector onSelectType={handleSelectType} disabled={isSubmitting} />
       {isSubmitting && (
         <div className="mt-4 text-center">
           <div className="inline-flex items-center gap-2 text-gray-600">
@@ -103,4 +128,3 @@ export default function ChooseTypeTemplate() {
     </AuthSplitLayout>
   )
 }
-
