@@ -200,9 +200,27 @@ This document tracks the fixes for authentication flow issues in the Cedar Eleva
 
 ## Notes & Issues Encountered
 
-### Date: [Current Date]
-- Checklist created
-- Starting implementation
+### Phase 1 Completion (Sign-up Redirect Fix)
+**Date**: Current Implementation
+- Removed conflicting authentication checks between server and client components
+- Server component now only validates if user already has accountType
+- Client component handles all authentication state and redirects with proper loading states
+- Added `isCheckingAuth` state to prevent UI flashing during authentication verification
+
+### Phase 2 Completion (Business Account Display Fix)
+**Date**: Current Implementation  
+- Identified root cause: `hasBusinessProfile` was determined by whether business data loaded successfully
+- Solution: Added independent check in `user_profiles` table before attempting to load business data
+- Business profile existence is now tracked separately from business data loading
+- Even if business data fails to load (404), the system correctly identifies profile type
+- Added comprehensive error handling with try-catch for business data loading
+- This ensures UI displays correct account type even when business data endpoints have issues
+
+### Key Technical Insights:
+1. **Database Architecture**: The app uses a dual-profile system where users can have both individual and business profiles
+2. **Profile Switching**: Achieved by toggling `is_active` flag in `user_profiles` table
+3. **Business Data**: Stored in separate `businesses` table, linked via `business_members`
+4. **Critical Fix**: Decoupling profile type detection from business data loading prevents cascading failures
 
 ---
 
