@@ -55,8 +55,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   }
 
   // If application slug is provided, add to query params for server-side filtering
-  if (params.app) {
-    queryParams.application = params.app
+  // Support both 'application' and 'app' parameters for compatibility
+  const applicationSlug = params.application || params.app
+  if (applicationSlug) {
+    queryParams.application = applicationSlug
   }
 
   // Fetch from Medusa
