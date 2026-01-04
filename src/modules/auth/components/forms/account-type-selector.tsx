@@ -55,13 +55,15 @@ export default function AccountTypeSelector({ onSelectType, disabled = false }: 
       <div className="mt-12 flex flex-col items-center gap-4">
         <button
           onClick={() => onSelectType("business")}
-          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#F97316] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity"
+          disabled={disabled}
+          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#F97316] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="truncate">Register as Business</span>
         </button>
         <button
           onClick={() => onSelectType("individual")}
-          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#1E3A8A] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity"
+          disabled={disabled}
+          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#1E3A8A] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="truncate">Register as Individual</span>
         </button>
