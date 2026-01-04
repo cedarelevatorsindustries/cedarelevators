@@ -61,7 +61,7 @@ export default function CatalogTemplate({
   const config = CATALOG_CONFIGS[catalogType] || CATALOG_CONFIGS["browse-all"]
 
   // State
-  const [searchQuery, setSearchQuery] = useState(searchParams.search || "")
+  const [searchQuery, setSearchQuery] = useState(effectiveSearchParams.search || "")
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [sortBy, setSortBy] = useState<SortOption>("relevance")
   const [currentPage, setCurrentPage] = useState(1)
@@ -86,12 +86,12 @@ export default function CatalogTemplate({
   const { primary: primaryProducts, fallback: fallbackProducts } = useMemo(() => {
     return filterProductsByType(initialProducts, {
       type: catalogType,
-      category: searchParams.category,
-      application: searchParams.application,
-      search: searchQuery || searchParams.search,
+      category: effectiveSearchParams.category,
+      application: effectiveSearchParams.application,
+      search: searchQuery || effectiveSearchParams.search,
       recentlyViewedIds,
     })
-  }, [initialProducts, catalogType, searchParams, searchQuery, recentlyViewedIds])
+  }, [initialProducts, catalogType, effectiveSearchParams, searchQuery, recentlyViewedIds])
 
   // Get related keywords for search
   const relatedKeywords = useMemo(() => {
