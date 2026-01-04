@@ -400,3 +400,4 @@ export async function getBusinessProfileById(profileId: string) {
     return { success: false, error: error.message || 'Failed to fetch business profile' }
   }
 }
+

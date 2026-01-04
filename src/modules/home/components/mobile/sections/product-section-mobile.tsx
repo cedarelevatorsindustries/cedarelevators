@@ -41,3 +41,4 @@ export default function ProductSectionMobile({
 
   return <DynamicCollectionSection collection={collection} variant="mobile" />
 }
+

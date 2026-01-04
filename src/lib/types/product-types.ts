@@ -30,3 +30,4 @@ export interface ProductTypesUpdate {
     product_id: string
     type_ids: string[] // Array of type IDs to assign
 }
+

@@ -233,3 +233,4 @@ export function generateCategoryImportTemplate(): string {
 
   return Papa.unparse([...sampleData], { header: true })
 }
+

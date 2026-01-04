@@ -11,3 +11,4 @@ export function InventoryTable({ inventory, isLoading }: any) {
         </div>
     )
 }
+

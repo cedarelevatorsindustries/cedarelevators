@@ -69,3 +69,4 @@ export async function FeaturedProductsSection({
 }
 
 export default FeaturedProductsSection
+

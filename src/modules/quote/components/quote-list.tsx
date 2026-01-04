@@ -102,3 +102,4 @@ export function QuoteList({ userType, quotes, isLoading }: QuoteListProps) {
         </div>
     );
 }
+

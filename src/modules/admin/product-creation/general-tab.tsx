@@ -568,3 +568,4 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
     </div>
   )
 }
+

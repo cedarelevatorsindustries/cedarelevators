@@ -52,3 +52,4 @@ export default function MobileHomepage({ products, categories, testimonials, ele
     </div>
   )
 }
+

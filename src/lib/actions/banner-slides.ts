@@ -204,3 +204,4 @@ export async function uploadSlideImage(file: File): Promise<{
         return { success: false, error: error.message }
     }
 }
+

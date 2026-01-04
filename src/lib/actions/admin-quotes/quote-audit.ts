@@ -48,3 +48,4 @@ export async function logQuoteAction(
         // Don't throw - audit log failure shouldn't break the main action
     }
 }
+

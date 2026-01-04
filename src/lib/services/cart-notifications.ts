@@ -173,3 +173,4 @@ export function notifyCheckoutBlocked(reason: 'guest' | 'individual' | 'unverifi
     duration: 4000
   })
 }
+

@@ -28,7 +28,7 @@ export const ROUTES = {
     ORDER_CONFIRMATION: (id: string) => `/order-confirmation/${id}`,
 
     // Quotes
-    REQUEST_QUOTE: '/request-quote',
+    REQUEST_QUOTE: '/quotes/new',
     QUOTES: '/quotes',
     QUOTE_DETAIL: (id: string) => `/quotes/${id}`,
 
@@ -184,3 +184,4 @@ export const API_ROUTES = {
 export type Route = typeof ROUTES[keyof typeof ROUTES]
 export type AdminRoute = typeof ADMIN_ROUTES[keyof typeof ADMIN_ROUTES]
 export type ApiRoute = typeof API_ROUTES[keyof typeof API_ROUTES]
+

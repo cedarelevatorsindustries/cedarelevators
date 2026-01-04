@@ -237,3 +237,4 @@ export function getGuestCartItems(): GuestCartItem[] {
   const cart = getGuestCart()
   return cart?.items || []
 }
+

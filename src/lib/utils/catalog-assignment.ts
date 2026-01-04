@@ -178,3 +178,4 @@ export function shouldMarkAsDraft(lookupResult: CatalogLookupResult): boolean {
   // If application or category is missing, mark as draft
   return !lookupResult.application_id || !lookupResult.category_id
 }
+

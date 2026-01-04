@@ -24,3 +24,4 @@ export default async function DashboardPage() {
 
   return <IndividualDashboard user={user} />
 }
+

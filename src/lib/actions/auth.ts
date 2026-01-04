@@ -12,3 +12,4 @@ export async function signOut() {
     window.location.href = '/sign-out'
   }
 }
+

@@ -15,7 +15,7 @@ export default function Promotions() {
           </p>
         </div>
         <Link
-          href="/request-quote"
+          href="/quotes/new"
           className="bg-white text-orange-600 hover:bg-orange-50 px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap"
         >
           Get Quote
@@ -24,3 +24,4 @@ export default function Promotions() {
     </section>
   )
 }
+

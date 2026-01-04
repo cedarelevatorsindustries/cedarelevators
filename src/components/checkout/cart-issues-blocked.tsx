@@ -111,3 +111,4 @@ export function CartIssuesBlocked({ issues }: CartIssuesBlockedProps) {
     </div>
   )
 }
+

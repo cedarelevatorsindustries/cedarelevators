@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useTransition } from "react"
 import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
-import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare } from "lucide-react"
+import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare, Package } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation"
 // Sections
 import TitleBadgesSection from "../sections/02-title-badges-section"
 import PricingBlockSection from "../sections/04-pricing-block-section"
-import CTAButtonsSection from "../sections/06-cta-buttons-section"
 import ProductTabsSection from "../sections/14-product-tabs-section"
 import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
@@ -80,12 +79,15 @@ export default function MobileProductDetailPage({
   // Extract metadata
   const badges = product.metadata?.badges as any[] || []
   const specifications = product.metadata?.specifications as any[] || [
-    { label: "SKU", value: product.id },
-    { label: "Category", value: product.category_id || "N/A" }
+    { label: "How Numbers", value: product.category_id || "N/A" }
   ]
   const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
   const variants = product.metadata?.variants as any[] || []
+
+  // Check if all variants are selected
+  const allVariantsSelected = variants.length === 0 ||
+    variants.every((variantGroup: any) => selectedVariants[variantGroup.type])
 
   // Back URL
   const getBackUrl = () => {
@@ -268,17 +270,33 @@ export default function MobileProductDetailPage({
             ref={imageScrollRef}
             className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
           >
-            {allImages.map((image, i) => (
-              <div key={i} className="flex-shrink-0 w-full snap-center">
-                <div className="aspect-square bg-white relative">
-                  <img
-                    src={image}
-                    alt={`${product.title} - View ${i + 1} `}
-                    className="w-full h-full object-cover"
-                  />
+            {allImages.length > 0 ? (
+              allImages.map((image, i) => (
+                <div key={i} className="flex-shrink-0 w-full snap-center">
+                  <div className="aspect-square bg-white relative">
+                    <img
+                      src={image}
+                      alt={`${product.title} - View ${i + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (placeholder) placeholder.style.display = 'flex';
+                      }}
+                    />
+                    <div className="hidden w-full h-full absolute inset-0 items-center justify-center bg-gray-100">
+                      <Package className="w-24 h-24 text-gray-300" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex-shrink-0 w-full snap-center">
+                <div className="aspect-square bg-gray-100 relative flex items-center justify-center">
+                  <Package className="w-24 h-24 text-gray-300" />
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Indicators */}
@@ -352,32 +370,19 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
             <TitleBadgesSection
               title={product.title || ""}
               badges={badges}
-              sku={product.id}
               description={product.description || ""}
             />
 
             <PricingBlockSection
-              showPrice={showPrice}
               price={price}
               originalPrice={originalPrice}
-              isGuest={isGuest}
-              isBusiness={isBusiness}
-              isVerified={isVerified}
+              onAddToCart={handleAddToCart}
+              onRequestQuote={handleRequestQuote}
+              isMobile={true}
             />
-
-            <div ref={ctaSectionRef}>
-              <CTAButtonsSection
-                isGuest={isGuest}
-                isBusiness={isBusiness}
-                isVerified={isVerified}
-                accountType={accountType}
-                onAddToCart={handleAddToCart}
-                onRequestQuote={handleRequestQuote}
-                onWishlist={handleWishlist}
-                onShare={handleShare}
-              />
-            </div>
           </div>
+
+
 
           {/* Product Tabs: Description, Attributes */}
           <ProductTabsSection
@@ -488,3 +493,4 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
     </>
   )
 }
+

@@ -136,3 +136,4 @@ export function RecentActivities({ activities, isLoading = false }: RecentActivi
         </Card>
     )
 }
+

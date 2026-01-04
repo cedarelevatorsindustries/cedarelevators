@@ -645,3 +645,4 @@ export function EditVariantsTab({ productId, variants: initialVariants, productP
         </div>
     )
 }
+

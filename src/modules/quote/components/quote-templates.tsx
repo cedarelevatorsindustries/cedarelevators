@@ -252,3 +252,4 @@ export default function QuoteTemplates({ onLoadTemplate }: QuoteTemplatesProps) 
     </div>
   )
 }
+

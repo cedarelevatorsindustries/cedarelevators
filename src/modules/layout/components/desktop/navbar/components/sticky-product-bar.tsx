@@ -60,3 +60,4 @@ export function StickyProductBar({ isVisible, product, onAddToCart }: StickyProd
     </div>
   )
 }
+

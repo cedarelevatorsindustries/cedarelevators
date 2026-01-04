@@ -24,3 +24,4 @@ export default function CartItemsList({ items, userType }: CartItemsListProps) {
         </div>
     )
 }
+

@@ -88,3 +88,4 @@ export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevato
     </section>
   )
 }
+

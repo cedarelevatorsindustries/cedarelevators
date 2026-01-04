@@ -48,3 +48,4 @@ export interface QuoteAdminResponse {
     responded_by: string | null;
     responded_at: string;
 }
+

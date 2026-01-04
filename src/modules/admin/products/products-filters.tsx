@@ -165,3 +165,4 @@ export function ProductsFilters({
     </div>
   )
 }
+

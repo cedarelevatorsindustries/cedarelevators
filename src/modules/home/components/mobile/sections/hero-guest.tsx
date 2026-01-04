@@ -191,7 +191,7 @@ const HeroSection = () => {
 
         {/* Mobile CTA Buttons */}
         <div className={`flex flex-col gap-3 transition-all duration-800 delay-900 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <LocalizedClientLink href="/request-quote">
+          <LocalizedClientLink href="/quotes/new">
             <button
               className="w-full bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg font-space-grotesk"
               aria-label="Get a quote for premium lift components"
@@ -215,3 +215,4 @@ const HeroSection = () => {
 }
 
 export default HeroSection
+

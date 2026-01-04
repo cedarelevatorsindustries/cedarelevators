@@ -329,3 +329,4 @@ export function InventoryTable({ inventory, isLoading, onRefresh }: InventoryTab
     </Card>
   )
 }
+

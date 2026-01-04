@@ -199,3 +199,4 @@ export function withStatus(banners: Banner[]): BannerWithStatus[] {
         status: computeBannerStatus(banner)
     }))
 }
+

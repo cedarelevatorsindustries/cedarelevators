@@ -269,3 +269,4 @@ export async function getRevenueTrends(
 
   return Object.values(trends)
 }
+

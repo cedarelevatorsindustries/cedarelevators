@@ -11,3 +11,4 @@ export function ProductEditForm({ product, collections, tags }: any) {
         </div>
     )
 }
+

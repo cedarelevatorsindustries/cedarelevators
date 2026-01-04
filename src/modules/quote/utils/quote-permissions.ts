@@ -75,3 +75,4 @@ export function getQuotePermissions(userType: UserType | string | null, verifica
 
     return permissions;
 }
+

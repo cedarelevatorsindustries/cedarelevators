@@ -203,3 +203,4 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
     </div>
   )
 }
+

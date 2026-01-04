@@ -423,3 +423,4 @@ export async function sendAdminInviteEmail(to: string, role: string, inviteLink:
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }
+

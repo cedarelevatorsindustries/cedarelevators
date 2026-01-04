@@ -39,3 +39,4 @@ export { addAdminQuoteMessage } from './quote-messages'
 
 // Management operations
 export { deleteQuote } from './quote-management'
+

@@ -72,3 +72,4 @@ export function CopyButton({ text, label, variant = "icon", className = "" }: Co
     </button>
   )
 }
+

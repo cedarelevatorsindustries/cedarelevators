@@ -131,3 +131,4 @@ export interface CatalogLookupResult {
     collection_ids: string[]
     errors: ValidationError[]
 }
+

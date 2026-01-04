@@ -100,3 +100,4 @@ export function CustomersStats({ stats, isLoading }: CustomersStatsProps) {
     </div>
   )
 }
+

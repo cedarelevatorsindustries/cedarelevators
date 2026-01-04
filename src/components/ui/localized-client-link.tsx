@@ -5,3 +5,4 @@ import Link from "next/link"
 const LocalizedClientLink = Link
 
 export default LocalizedClientLink
+

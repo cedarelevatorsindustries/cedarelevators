@@ -224,3 +224,4 @@ export function UpgradeBusinessBanner({ variant = "mobile", className = "" }: Up
     </div>
   )
 }
+

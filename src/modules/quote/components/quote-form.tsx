@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { FileText, Upload, AlertCircle, Loader2, Info, TrendingUp, Shield, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 import {
     guestQuoteSchema,
     individualQuoteSchema,
@@ -20,19 +22,14 @@ interface QuoteFormProps {
 export function QuoteForm({ userType = 'guest', verificationStatus = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Select schema based on userType
     const getSchema = () => {
         switch (userType) {
             case 'individual': return individualQuoteSchema;
-            case 'business': return businessUnverifiedQuoteSchema; // unverified by default unless specified
+            case 'business': return businessUnverifiedQuoteSchema;
             case 'verified': return businessVerifiedQuoteSchema;
             default: return guestQuoteSchema;
         }
     };
-
-    // If 'business' but valid, maybe we should check status? 
-    // The prop userType should already be resolved or we use verificationStatus.
-    // For simplicity, assuming userType prop is accurate to the Role Variant we want.
 
     const schema = getSchema();
     const permissions = getQuotePermissions(userType, verificationStatus);
@@ -52,116 +49,248 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-white p-6 md:p-8 rounded-lg shadow-sm border border-neutral-200">
-            {/* Header */}
-            <div>
-                <h2 className="text-xl font-bold text-industrial-blue mb-2">
-                    {userType === 'guest' ? 'Get a Custom Quote' :
-                        userType === 'verified' ? 'Create Bulk Quote' : 'Request New Quote'}
-                </h2>
-                <p className="text-neutral-500 text-sm">
-                    {userType === 'guest' ? 'Tell us what you need and we will get back to you.' :
-                        'Fill out the details below to receive a formal quotation.'}
-                </p>
-            </div>
-
-            {/* Verification Banner */}
-            {userType === 'business' && verificationStatus !== 'verified' && (
-                <div className="bg-orange-50 border-l-4 border-cedar-orange p-4">
-                    <p className="text-sm text-orange-800">
-                        <strong>Note:</strong> Your business verification is pending. You can request quotes, but checkout will be disabled until verified.
-                    </p>
-                </div>
-            )}
-
-            {/* Items Input */}
-            <QuoteItemsInput
-                control={control}
-                register={register}
-                errors={errors}
-                userType={userType}
-            />
-
-            {/* Additional Options (Business) */}
-            {permissions.hasBulkPricing && (
-                <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="bulk_pricing_requested"
-                        {...register("bulk_pricing_requested")}
-                        className="rounded border-neutral-300 text-cedar-orange focus:ring-cedar-orange"
-                    />
-                    <label htmlFor="bulk_pricing_requested" className="text-sm font-medium text-neutral-700">Request Bulk Pricing</label>
-                </div>
-            )}
-
-            {/* Contact Info (Guest Only) */}
-            {userType === 'guest' && (
-                <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700">Name</label>
-                        <input
-                            type="text"
-                            {...register("name")}
-                            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-cedar-orange focus:ring-cedar-orange"
-                        />
-                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message as string}</p>}
+        <div className="max-w-4xl mx-auto">
+            {/* Header Section */}
+            <div className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FileText className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700">Email</label>
-                        <input
-                            type="email"
-                            {...register("email")}
-                            className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-cedar-orange focus:ring-cedar-orange"
-                        />
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            {userType === 'guest' ? 'Get a Custom Quote' :
+                                userType === 'verified' ? 'Create Bulk Quote' : 'Request New Quote'}
+                        </h1>
+                        <p className="text-gray-600 mt-1">
+                            {userType === 'guest' ? 'Tell us what you need and we\'ll get back to you within 24 hours.' :
+                                'Fill out the details below to receive a formal quotation.'}
+                        </p>
                     </div>
                 </div>
-            )}
-
-            {/* Notes */}
-            <div>
-                <label className="block text-sm font-medium text-neutral-700">Additional Notes</label>
-                <textarea
-                    {...register("notes")}
-                    rows={4}
-                    className="mt-1 block w-full rounded-md border-neutral-300 shadow-sm focus:border-cedar-orange focus:ring-cedar-orange"
-                    placeholder="Tell us more about your requirements..."
-                />
-                {errors.notes && <p className="text-red-500 text-sm mt-1">{errors.notes.message as string}</p>}
-                <p className="text-xs text-neutral-400 mt-1 text-right">Max {permissions.notesMaxLength} characters</p>
             </div>
 
-            {/* Attachments (Placeholder) */}
-            {permissions.maxAttachments > 0 && (
-                <div>
-                    <label className="block text-sm font-medium text-neutral-700">Attachments</label>
-                    <div className="mt-1 border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-cedar-orange transition-colors">
-                        <p className="text-sm text-neutral-500">Click to upload or drag and drop</p>
-                        <p className="text-xs text-neutral-400 mt-1">Max {permissions.maxAttachments} files (PDF, JPG, PNG)</p>
-                        <input type="file" multiple className="hidden" />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* User Type Specific Prompts */}
+                {userType === 'guest' && (
+                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-blue-900">Want to track your quotes?</p>
+                            <p className="text-sm text-blue-700 mt-1">
+                                Create an account to view quote history, save drafts, and get faster responses.
+                            </p>
+                            <Link
+                                href="/sign-up"
+                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                Create Free Account
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            )}
-
-            {/* Submit Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-                {permissions.canSaveDraft && (
-                    <button
-                        type="button"
-                        className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
-                    >
-                        Save Draft
-                    </button>
                 )}
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-6 py-2 bg-cedar-orange text-white rounded-md font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting ? 'Submitting...' : 'Submit Request'}
-                </button>
-            </div>
-        </form>
+
+                {userType === 'individual' && (
+                    <div className="bg-purple-50 border-l-4 border-purple-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <TrendingUp className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-purple-900">Upgrade to Business Account</p>
+                            <p className="text-sm text-purple-700 mt-1">
+                                Get access to bulk pricing, priority support, credit terms, and exclusive business features.
+                            </p>
+                            <Link
+                                href="/profile?tab=business"
+                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                            >
+                                Upgrade to Business
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {userType === 'business' && verificationStatus !== 'verified' && (
+                    <div className="bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <Shield className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-orange-900">Complete Business Verification</p>
+                            <p className="text-sm text-orange-700 mt-1">
+                                Verify your business to unlock checkout, view pricing, convert quotes to orders, and access credit terms.
+                            </p>
+                            <Link
+                                href="/profile?tab=business"
+                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+                            >
+                                Complete Verification
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {userType === 'verified' && (
+                    <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-green-900">Verified Business Account</p>
+                            <p className="text-sm text-green-700 mt-1">
+                                You have access to all premium features including bulk pricing, instant checkout, and credit terms.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Items Section */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-lg font-semibold text-gray-900">Product Details</h2>
+                        <p className="text-sm text-gray-600 mt-1">Select the products you need</p>
+                    </div>
+                    <div className="p-6">
+                        <QuoteItemsInput
+                            control={control}
+                            register={register}
+                            errors={errors}
+                            userType={userType}
+                        />
+                    </div>
+                </div>
+
+                {/* Contact Information (Guest Only) */}
+                {userType === 'guest' && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                            <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
+                            <p className="text-sm text-gray-600 mt-1">How can we reach you?</p>
+                        </div>
+                        <div className="p-6 grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    {...register("name")}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="John Doe"
+                                />
+                                {errors.name && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.name.message as string}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    {...register("email")}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="john@example.com"
+                                />
+                                {errors.email && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.email.message as string}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Additional Options */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-lg font-semibold text-gray-900">Additional Details</h2>
+                        <p className="text-sm text-gray-600 mt-1">Tell us more about your requirements</p>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        {/* Bulk Pricing Toggle */}
+                        {permissions.hasBulkPricing && (
+                            <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <input
+                                    type="checkbox"
+                                    id="bulk_pricing_requested"
+                                    {...register("bulk_pricing_requested")}
+                                    className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                                />
+                                <label htmlFor="bulk_pricing_requested" className="flex-1 cursor-pointer">
+                                    <span className="text-sm font-medium text-gray-900">Request Bulk Pricing</span>
+                                    <p className="text-xs text-gray-600 mt-0.5">Get special rates for large orders</p>
+                                </label>
+                            </div>
+                        )}
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Additional Notes
+                            </label>
+                            <textarea
+                                {...register("notes")}
+                                rows={5}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none resize-none"
+                                placeholder="Tell us more about your requirements, specifications, or any special requests..."
+                            />
+                            <div className="flex justify-between items-center mt-2">
+                                {errors.notes && (
+                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.notes.message as string}
+                                    </p>
+                                )}
+                                <p className="text-xs text-gray-500 ml-auto">
+                                    Max {permissions.notesMaxLength} characters
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Attachments */}
+                        {permissions.maxAttachments > 0 && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Attachments (Optional)
+                                </label>
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-500 transition-colors cursor-pointer bg-gray-50">
+                                    <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                                    <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        PDF, JPG, PNG up to 10MB • Max {permissions.maxAttachments} files
+                                    </p>
+                                    <input type="file" multiple className="hidden" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Submit Actions */}
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
+                    {permissions.canSaveDraft && (
+                        <button
+                            type="button"
+                            className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-all"
+                        >
+                            Save Draft
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit Quote Request'
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 }

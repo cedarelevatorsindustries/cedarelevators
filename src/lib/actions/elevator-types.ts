@@ -296,3 +296,4 @@ export async function uploadElevatorTypeImage(
     return { success: false, error: error.message }
   }
 }
+

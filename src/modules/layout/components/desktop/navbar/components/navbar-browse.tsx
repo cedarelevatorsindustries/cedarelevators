@@ -69,3 +69,4 @@ export function NavbarBrowse({ categories, config, isTransparent, isScrolled, on
   // Show nothing
   return null
 }
+

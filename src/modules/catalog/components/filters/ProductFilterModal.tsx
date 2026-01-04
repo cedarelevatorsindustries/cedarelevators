@@ -291,3 +291,4 @@ export function ProductFilterModal({ className, onFilterChange }: ProductFilterM
     </Dialog>
   )
 }
+

@@ -47,3 +47,4 @@ export function StockFilter({ selectedValue = 'all', onChange, counts }: StockFi
     </div>
   )
 }
+

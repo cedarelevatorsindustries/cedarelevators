@@ -97,3 +97,4 @@ export const REPORT_TEMPLATES = {
     description: 'Order processing and delivery metrics',
   },
 }
+

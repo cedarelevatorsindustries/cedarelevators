@@ -30,3 +30,4 @@ export default function MobileDetector({ mobileComponent, desktopComponent }: Mo
 
   return <>{isMobile ? mobileComponent() : desktopComponent()}</>
 }
+

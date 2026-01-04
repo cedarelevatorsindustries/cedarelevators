@@ -55,3 +55,4 @@ export interface ProfileNavigationGroup {
   icon: string
   items: ProfileNavigationItem[]
 }
+

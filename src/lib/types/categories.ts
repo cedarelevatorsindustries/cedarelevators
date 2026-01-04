@@ -113,3 +113,4 @@ export function buildCategoryBreadcrumb(hierarchy: CategoryHierarchy): string[] 
     if (hierarchy.subcategory) breadcrumb.push(hierarchy.subcategory.name)
     return breadcrumb
 }
+

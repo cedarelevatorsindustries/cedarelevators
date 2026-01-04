@@ -397,3 +397,4 @@ function InlineEdit({ value, onSave, type, disabled }: InlineEditProps) {
     </button>
   )
 }
+

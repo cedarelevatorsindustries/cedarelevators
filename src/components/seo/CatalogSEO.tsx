@@ -94,3 +94,4 @@ export function generateCatalogMetadata(config: CatalogSEOConfig) {
     },
   }
 }
+

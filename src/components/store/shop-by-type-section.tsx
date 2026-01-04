@@ -75,3 +75,4 @@ export default function ShopByTypeSection({ hasProducts = false, elevatorTypes =
         </section>
     )
 }
+

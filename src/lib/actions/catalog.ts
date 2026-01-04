@@ -101,3 +101,4 @@ export async function getCollections() {
     return { success: false, error: error.message }
   }
 }
+

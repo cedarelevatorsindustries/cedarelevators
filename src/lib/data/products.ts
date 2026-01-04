@@ -145,3 +145,4 @@ export async function getProductByHandle(handle: string): Promise<Product | null
     return null
   }
 }
+

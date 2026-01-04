@@ -195,3 +195,4 @@ export async function getActivityStats(days: number = 30): Promise<{
     return { success: false, error: error.message }
   }
 }
+

@@ -231,3 +231,4 @@ function QuoteIcon({ className }: { className?: string }) {
 }
 
 export default TestimonialsSection
+

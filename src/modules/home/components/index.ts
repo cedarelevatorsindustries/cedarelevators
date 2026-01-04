@@ -6,3 +6,4 @@ export { WelcomeSection } from "./common/welcome-section"
 export { default as ProductsTab } from "./desktop/tab-content/product"
 export { default as CategoriesTab } from "./desktop/tab-content/categories"
 export { default as BusinessHubTab } from "./desktop/tab-content/business-hub"
+

@@ -169,3 +169,4 @@ export interface ProductStats {
     out_of_stock: number
     low_stock: number
 }
+

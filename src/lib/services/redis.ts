@@ -174,3 +174,4 @@ export { redis }
 
 // Helper to check if Redis is available
 export const isRedisAvailable = () => redis !== null
+

@@ -92,3 +92,4 @@ export interface Cart {
     total: number
     currency_code: string
 }
+

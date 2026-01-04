@@ -89,3 +89,4 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
         </div>
     )
 }
+

@@ -66,3 +66,4 @@ export function TabPanel({ id, activeTab, children, className }: TabPanelProps) 
         </div>
     )
 }
+

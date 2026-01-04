@@ -37,3 +37,4 @@ export function VerificationStatusWatcher() {
 
   return null // This is a logic-only component
 }
+

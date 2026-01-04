@@ -190,3 +190,4 @@ export function PricingTab({ pricingData, onPricingDataChange, hasVariants }: Pr
     </div>
   )
 }
+

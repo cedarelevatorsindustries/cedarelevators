@@ -99,3 +99,4 @@ export function StoreLocationSettings({ taxSettings, setTaxSettings }: StoreLoca
     </Card>
   )
 }
+

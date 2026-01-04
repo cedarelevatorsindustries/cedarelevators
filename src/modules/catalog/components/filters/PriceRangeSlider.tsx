@@ -131,3 +131,4 @@ export function PriceRangeSlider({
     </div>
   )
 }
+

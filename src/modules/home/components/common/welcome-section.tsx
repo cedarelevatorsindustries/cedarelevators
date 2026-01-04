@@ -34,7 +34,7 @@ export function WelcomeSection({ userType }: WelcomeSectionProps) {
 
                     {/* Right: Request Quote Button */}
                     <Link
-                        href="/request-quote"
+                        href="/quotes/new"
                         className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
                     >
                         <MessageSquare className="w-4 h-4" />
@@ -45,3 +45,4 @@ export function WelcomeSection({ userType }: WelcomeSectionProps) {
         </div>
     )
 }
+

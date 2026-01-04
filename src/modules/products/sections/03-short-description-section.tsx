@@ -9,3 +9,4 @@ interface ShortDescriptionSectionProps {
 export default function ShortDescriptionSection({ description }: ShortDescriptionSectionProps) {
   return null
 }
+

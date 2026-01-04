@@ -78,3 +78,4 @@ export default function IndividualDashboard({ user }: IndividualDashboardProps) 
     </div>
   )
 }
+

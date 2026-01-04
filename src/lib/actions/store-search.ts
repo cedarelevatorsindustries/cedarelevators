@@ -203,3 +203,4 @@ export async function getSearchFilters() {
         return { success: false, error: error.message }
     }
 }
+

@@ -27,3 +27,4 @@ export function NavbarLogo({ isTransparent }: NavbarLogoProps) {
     </LocalizedClientLink>
   )
 }
+

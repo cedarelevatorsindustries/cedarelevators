@@ -356,3 +356,4 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
     </aside>
   )
 }
+

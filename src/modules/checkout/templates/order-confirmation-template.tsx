@@ -57,3 +57,4 @@ export default function OrderConfirmationTemplate({ orderId }: OrderConfirmation
     </div>
   )
 }
+

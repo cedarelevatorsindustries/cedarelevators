@@ -158,3 +158,4 @@ export function BusinessVerificationCard({ business }: BusinessVerificationCardP
         </Card>
     )
 }
+

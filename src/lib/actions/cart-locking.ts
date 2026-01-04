@@ -209,3 +209,4 @@ export async function extendCartLock(
     return { success: false, error: 'Failed to extend lock' }
   }
 }
+

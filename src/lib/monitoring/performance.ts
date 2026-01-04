@@ -121,3 +121,4 @@ export function measurePerformance(name: string, startMark: string, endMark: str
   }
   return 0
 }
+

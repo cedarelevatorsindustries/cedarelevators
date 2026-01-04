@@ -147,3 +147,4 @@ export default function EmailOTPForm({ email }: Props) {
     </div>
   )
 }
+

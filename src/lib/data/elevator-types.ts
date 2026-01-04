@@ -64,3 +64,4 @@ export async function getElevatorTypeBySlug(slug: string): Promise<ElevatorType 
     return null
   }
 }
+

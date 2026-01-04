@@ -75,3 +75,4 @@ export function CheckoutProgress({ currentStep }: CheckoutProgressProps) {
     </div>
   )
 }
+

@@ -165,3 +165,4 @@ export function VerificationTable({ profiles, isLoading }: VerificationTableProp
     </div>
   )
 }
+

@@ -150,3 +150,4 @@ export function GlobalTaxSettings({ taxSettings, setTaxSettings }: GlobalTaxSett
     </Card>
   )
 }
+

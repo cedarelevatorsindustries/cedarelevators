@@ -55,3 +55,4 @@ export function HeroLite({ type, title, description, subcategories, metadata }: 
     </div>
   )
 }
+

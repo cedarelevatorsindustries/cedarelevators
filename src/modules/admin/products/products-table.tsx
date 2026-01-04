@@ -431,3 +431,4 @@ export function ProductsTable({ products, onRefresh }: ProductsTableProps) {
     </div>
   )
 }
+

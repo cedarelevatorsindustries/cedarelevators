@@ -114,3 +114,4 @@ export function AccessibleModal({
 
   return createPortal(modalContent, document.body)
 }
+

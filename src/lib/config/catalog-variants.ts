@@ -419,3 +419,4 @@ function generateRelatedSearches(query: string): string[] {
     `${query} near me`,
   ].slice(0, 5)
 }
+

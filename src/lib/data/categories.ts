@@ -82,3 +82,4 @@ export async function getCategory(idOrHandle: string): Promise<ProductCategory |
     return null
   }
 }
+

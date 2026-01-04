@@ -87,3 +87,4 @@ export function getCategoryIcon(category: { name?: string; handle?: string }): L
   // Default icon
   return Package
 }
+

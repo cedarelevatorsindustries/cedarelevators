@@ -8,3 +8,4 @@ export { CompanyResourcesColumn } from "./company-resources-column"
 export { QuickLinksColumn } from "./quick-links-column"
 export { PoliciesSocialColumn } from "./policies-social-column"
 export { SocialIcons } from "./social-icons"
+

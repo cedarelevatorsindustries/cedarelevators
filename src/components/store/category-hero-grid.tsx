@@ -46,3 +46,4 @@ export function CategoryHeroGrid({ applicationSlug, categories = [] }: CategoryH
         </div>
     )
 }
+

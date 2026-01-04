@@ -177,3 +177,4 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
     </div>
   )
 }
+

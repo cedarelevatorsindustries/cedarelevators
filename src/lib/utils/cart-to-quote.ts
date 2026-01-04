@@ -117,3 +117,4 @@ export function shouldPrefillFromCart(): boolean {
   const params = new URLSearchParams(window.location.search)
   return params.get('fromCart') === 'true' || params.get('source') === 'cart'
 }
+

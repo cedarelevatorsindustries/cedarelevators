@@ -29,3 +29,4 @@ export default function FilterBar({ onFilterClick, onSortClick }: FilterBarProps
     </div>
   )
 }
+

@@ -23,3 +23,4 @@ export function getQuoteTabLabel(userType: "guest" | "individual" | "business" |
   // All logged-in users: "Quotes" - simple and consistent
   return userType === "guest" ? "Get Quote" : "Quotes"
 }
+

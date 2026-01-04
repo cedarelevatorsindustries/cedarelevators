@@ -388,3 +388,4 @@ export default function CreateApplicationPage() {
     </div>
   )
 }
+

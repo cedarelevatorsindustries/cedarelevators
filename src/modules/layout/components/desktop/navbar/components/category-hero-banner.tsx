@@ -48,3 +48,4 @@ export function CategoryHeroBanner({ isVisible, category }: CategoryHeroBannerPr
     </div>
   )
 }
+

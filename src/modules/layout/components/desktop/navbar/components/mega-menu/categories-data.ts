@@ -74,3 +74,4 @@ export function getCategoryIcon(categorySlug: string): React.ComponentType<{ siz
 export function getCategoryColors(categorySlug: string): { color: string; bgColor: string } {
   return categoryColorMap[categorySlug] || { color: 'text-gray-600', bgColor: 'bg-gray-50' }
 }
+

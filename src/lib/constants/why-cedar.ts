@@ -59,3 +59,4 @@ export const WHY_CEDAR_FEATURES_MOBILE: WhyCedarFeature[] = [
 export function getWhyCedarFeatures(variant: 'desktop' | 'mobile' = 'desktop'): WhyCedarFeature[] {
     return variant === 'mobile' ? WHY_CEDAR_FEATURES_MOBILE : WHY_CEDAR_FEATURES_DESKTOP
 }
+

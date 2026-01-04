@@ -17,3 +17,4 @@ export interface SearchDocumentsParams {
     category?: string
     productId?: string
 }
+

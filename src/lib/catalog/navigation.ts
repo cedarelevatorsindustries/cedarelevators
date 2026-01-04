@@ -24,3 +24,4 @@ export const CATALOG_NAVIGATION = {
   topApplications: getCatalogUrl("top-applications"),
   exclusiveBusiness: getCatalogUrl("exclusive-business"),
 }
+

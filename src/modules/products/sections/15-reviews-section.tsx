@@ -419,3 +419,4 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
 ReviewsSection.displayName = 'ReviewsSection'
 
 export default ReviewsSection
+

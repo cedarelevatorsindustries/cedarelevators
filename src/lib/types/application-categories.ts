@@ -30,3 +30,4 @@ export interface CreateApplicationCategoryData {
 export interface UpdateApplicationCategoryData {
     sort_order?: number
 }
+

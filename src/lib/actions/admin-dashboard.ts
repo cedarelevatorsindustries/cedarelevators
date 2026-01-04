@@ -219,3 +219,4 @@ function getEmptyChartData(view: 'daily' | 'weekly' | 'monthly'): QuoteChartData
         ]
     }
 }
+

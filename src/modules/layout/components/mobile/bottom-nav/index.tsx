@@ -67,3 +67,4 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
     </div>
   )
 }
+

@@ -50,3 +50,4 @@ export default function CategoriesMobile({ categories = [] }: CategoriesMobilePr
     </section>
   )
 }
+

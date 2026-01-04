@@ -27,7 +27,7 @@ export function TopBarHeader({
     '/cart',
     '/profile',
     '/account',
-    '/request-quote'
+    '/quotes/new'
   ].includes(pathname)
 
   const getPageTitle = () => {
@@ -37,7 +37,7 @@ export function TopBarHeader({
     // Explicit mapping for known root pages
     if (pathname === '/catalog') return 'Catalog'
     if (pathname === '/cart') return 'Cart'
-    if (pathname === '/request-quote') return 'Quote'
+    if (pathname === '/quotes/new') return 'Quote'
     if (pathname === '/profile' || pathname === '/account') return 'My Cedar'
 
     // For other pages, format the pathname
@@ -115,3 +115,4 @@ export function TopBarHeader({
     </nav>
   )
 }
+

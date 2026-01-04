@@ -118,7 +118,7 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
             Get special pricing for large orders. Our team will respond within 24 hours.
           </p>
           <Link
-            href="/request-quote"
+            href="/quotes/new"
             className="inline-block px-6 py-2 bg-white text-[#1E3A8A] font-bold rounded-lg hover:bg-gray-100 transition-colors"
           >
             Request Quote
@@ -144,3 +144,4 @@ export default function BusinessDashboard({ user, companyName }: BusinessDashboa
     </div>
   )
 }
+

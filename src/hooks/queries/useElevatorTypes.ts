@@ -100,3 +100,4 @@ export function useProductsByElevatorType(elevatorTypeId: string) {
     enabled: !!elevatorTypeId,
   })
 }
+

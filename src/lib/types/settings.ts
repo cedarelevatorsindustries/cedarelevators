@@ -153,3 +153,4 @@ export interface UpdateSystemSettingsData {
     debug_logging_enabled?: boolean
     show_detailed_errors?: boolean
 }
+

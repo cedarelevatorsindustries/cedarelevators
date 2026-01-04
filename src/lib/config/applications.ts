@@ -87,3 +87,4 @@ export function getCategoriesForApplication(
 export function getApplicationConfig(slug: string): ApplicationConfig | null {
     return APPLICATION_CONFIGS[slug] || null
 }
+

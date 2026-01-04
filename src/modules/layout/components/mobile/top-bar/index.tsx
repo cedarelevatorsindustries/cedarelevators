@@ -74,3 +74,4 @@ export default function MobileTopBar({ onMenuClick, customConfig, customerId }: 
     </div>
   )
 }
+

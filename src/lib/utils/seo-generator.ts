@@ -71,3 +71,4 @@ export function generateMetaDescription(
 export function generateOGImage(primaryImageUrl?: string): string {
   return primaryImageUrl || '/images/product-placeholder.png'
 }
+

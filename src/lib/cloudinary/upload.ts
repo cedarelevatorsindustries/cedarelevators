@@ -78,3 +78,4 @@ export async function getPublicIdFromUrl(url: string): Promise<string> {
     const filename = parts[parts.length - 1]
     return filename.split('.')[0]
 }
+

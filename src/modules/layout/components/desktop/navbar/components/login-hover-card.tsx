@@ -146,3 +146,4 @@ export function LoginHoverCard({ isTransparent, onHover }: LoginHoverCardProps) 
     </div>
   )
 }
+

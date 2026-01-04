@@ -54,3 +54,4 @@ export default function ElevatorTypesMobile({ elevatorTypes }: ElevatorTypesMobi
         </div>
     )
 }
+

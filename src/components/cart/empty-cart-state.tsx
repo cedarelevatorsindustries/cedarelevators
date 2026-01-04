@@ -48,3 +48,4 @@ export function EmptyCartState({ userType }: EmptyCartStateProps) {
     </div>
   )
 }
+

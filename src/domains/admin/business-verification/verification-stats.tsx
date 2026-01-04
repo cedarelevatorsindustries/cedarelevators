@@ -62,3 +62,4 @@ export function VerificationStats({ profiles }: VerificationStatsProps) {
     </div>
   )
 }
+

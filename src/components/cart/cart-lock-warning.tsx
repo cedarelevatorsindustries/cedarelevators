@@ -110,3 +110,4 @@ export function CartLockWarningCompact({ lockStatus }: { lockStatus: CartLockSta
     </div>
   )
 }
+

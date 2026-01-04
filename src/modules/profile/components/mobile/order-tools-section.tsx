@@ -42,3 +42,4 @@ export default function OrderToolsSection({ accountType }: OrderToolsSectionProp
     </MenuSection>
   )
 }
+

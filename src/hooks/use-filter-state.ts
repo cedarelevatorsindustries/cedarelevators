@@ -222,3 +222,4 @@ function parseFiltersFromURL(searchParams: URLSearchParams): FilterParams {
   
   return filters
 }
+

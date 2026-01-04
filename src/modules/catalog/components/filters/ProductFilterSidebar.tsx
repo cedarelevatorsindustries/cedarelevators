@@ -324,3 +324,4 @@ export function ProductFilterSidebar({ className, onFilterChange }: ProductFilte
     </aside>
   )
 }
+

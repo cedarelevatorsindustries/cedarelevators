@@ -58,3 +58,4 @@ export default function GeneralSettingsPage() {
         </Tier2Guard>
     )
 }
+

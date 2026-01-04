@@ -140,3 +140,4 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
     </div>
   )
 }
+

@@ -55,3 +55,4 @@ export const ELEVATOR_TYPES: ElevatorType[] = [
         href: "/catalog?application=luxury"
     }
 ]
+

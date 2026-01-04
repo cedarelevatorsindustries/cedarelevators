@@ -160,3 +160,4 @@ export function getCanonicalUrl(url: string, preserveFilters: string[] = []): st
   const queryString = params.toString()
   return `${urlObj.origin}${urlObj.pathname}${queryString ? `?${queryString}` : ''}`
 }
+

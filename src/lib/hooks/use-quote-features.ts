@@ -45,3 +45,4 @@ export function useQuoteFeatures() {
 export function checkQuoteFeature(feature: keyof QuoteFeatureFlags): boolean {
     return QUOTE_FEATURES[feature] === true
 }
+

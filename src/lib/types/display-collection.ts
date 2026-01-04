@@ -16,3 +16,4 @@ export interface DisplayCollection {
     emptyStateMessage?: string | null
     metadata?: Record<string, any>
 }
+

@@ -72,3 +72,4 @@ export function IconHoverCard({ icon, label, isTransparent, children, badge }: I
     </div>
   )
 }
+

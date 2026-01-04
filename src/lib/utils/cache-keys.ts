@@ -142,3 +142,4 @@ export const INVALIDATION_PATTERNS = {
   ALL_ADMIN: 'admin:*',
   USER_DATA: (userId: string) => `*:user:${userId}*`,
 }
+

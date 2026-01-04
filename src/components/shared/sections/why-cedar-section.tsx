@@ -122,3 +122,4 @@ export function WhyCedarSection({ variant = 'desktop' }: WhyCedarSectionProps) {
 }
 
 export default WhyCedarSection
+

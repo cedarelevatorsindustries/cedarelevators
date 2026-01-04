@@ -8,3 +8,4 @@ export { default as MobileHomepageLoggedIn } from "./mobile/mobile-homepage-logg
 
 // Legacy export (can be removed later)
 export { default as MobileHomepage } from "./mobile/mobile-homepage-template"
+

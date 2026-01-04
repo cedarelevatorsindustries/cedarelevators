@@ -17,3 +17,4 @@ export { RatingFilter } from './RatingFilter'
 export { StockFilter } from './StockFilter'
 export { FilterGroup } from './FilterGroup'
 export { ActiveFilterChips } from './ActiveFilterChips'
+

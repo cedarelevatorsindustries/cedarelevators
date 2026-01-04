@@ -63,3 +63,4 @@ export default function DesktopHomepage({ products, categories, testimonials, ap
     </div>
   )
 }
+

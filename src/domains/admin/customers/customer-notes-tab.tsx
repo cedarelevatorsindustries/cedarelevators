@@ -195,3 +195,4 @@ export function CustomerNotesTab({ customerClerkId }: CustomerNotesTabProps) {
     </div>
   )
 }
+

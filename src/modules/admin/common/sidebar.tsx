@@ -224,3 +224,4 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     </div>
   )
 }
+

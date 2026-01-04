@@ -34,8 +34,9 @@ export default async function NewQuotePage() {
     }
 
     return (
-        <div className="container py-8 max-w-3xl mx-auto px-4">
+        <div className="container py-8 pt-24 max-w-7xl mx-auto px-4">
             <QuoteForm userType={userType} verificationStatus={verificationStatus} />
         </div>
     )
 }
+

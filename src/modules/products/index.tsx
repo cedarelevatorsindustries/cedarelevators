@@ -24,3 +24,4 @@ export { default as BulkPricingTable } from './components/product/bulk-pricing-t
 
 // Layout Components
 export { default as SectionWrapper } from './components/layout/section-wrapper'
+

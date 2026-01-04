@@ -208,3 +208,4 @@ export async function hasBusinessProfile(): Promise<boolean> {
   // Check if user has a business in their context
   return !!authUser.business
 }
+

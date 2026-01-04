@@ -155,3 +155,4 @@ function MobileGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
 }
 
 export default ElevatorTypesSection
+

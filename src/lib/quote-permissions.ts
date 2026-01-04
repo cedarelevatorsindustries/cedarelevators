@@ -112,3 +112,4 @@ export function getUserTypeLabel(userType: UserType): string {
     }
     return labels[userType]
 }
+

@@ -40,3 +40,4 @@ export async function addAdminQuoteMessage(
         return { success: false, error: error.message || 'Failed to send message' }
     }
 }
+

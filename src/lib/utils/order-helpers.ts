@@ -60,3 +60,4 @@ export function getPaymentStatusColor(status: string): string {
 export function getItemsCount(order: { order_items?: any[] }): number {
     return order.order_items?.length || 0
 }
+

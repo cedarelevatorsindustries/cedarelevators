@@ -77,3 +77,4 @@ export function MoreMenu({ isLoggedIn, isTransparent, isScrolled = false, isOpen
     </div>
   )
 }
+

@@ -703,3 +703,4 @@ export async function getCollectionsForDisplay(location: string) {
         return { collections: [], error: 'Failed to fetch collections', success: false }
     }
 }
+

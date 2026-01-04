@@ -58,3 +58,4 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
     </div>
   )
 }
+

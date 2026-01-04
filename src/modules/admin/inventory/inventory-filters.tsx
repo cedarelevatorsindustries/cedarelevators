@@ -89,3 +89,4 @@ export function InventoryFilters({ filters, onFiltersChange }: InventoryFiltersP
     </Card>
   )
 }
+

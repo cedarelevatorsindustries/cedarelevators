@@ -24,3 +24,4 @@ export function useAccountType() {
     user,
   }
 }
+

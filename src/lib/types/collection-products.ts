@@ -40,3 +40,4 @@ export interface ReorderCollectionProductsData {
         position: number
     }>
 }
+

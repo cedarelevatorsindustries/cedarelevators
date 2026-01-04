@@ -341,3 +341,4 @@ export async function updateVariantInventory(id: string, quantity: number, opera
     return { success: false, error: error.message || 'Failed to update inventory' }
   }
 }
+

@@ -388,3 +388,4 @@ export async function getCollectionProducts(collectionSlug: string, limit?: numb
         return { collection: null, error: 'Failed to fetch products', success: false }
     }
 }
+

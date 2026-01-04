@@ -44,7 +44,7 @@ export default function EmptyCartState() {
             </p>
           </div>
         </Link>
-        <Link href="/request-quote">
+        <Link href="/quotes/new">
           <div className="border rounded-lg p-6 hover:border-orange-300 transition-colors cursor-pointer">
             <Package className="h-8 w-8 text-orange-600 mx-auto mb-3" />
             <h3 className="font-semibold text-gray-900 mb-1">Request Quote</h3>
@@ -57,3 +57,4 @@ export default function EmptyCartState() {
     </div>
   )
 }
+

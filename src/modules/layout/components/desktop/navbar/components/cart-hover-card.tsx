@@ -70,3 +70,4 @@ export function CartHoverCardContent({ items, total }: CartHoverCardContentProps
     </div>
   )
 }
+

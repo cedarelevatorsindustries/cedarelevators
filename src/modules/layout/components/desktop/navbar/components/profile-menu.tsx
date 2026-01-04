@@ -196,3 +196,4 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
     </div>
   )
 }
+

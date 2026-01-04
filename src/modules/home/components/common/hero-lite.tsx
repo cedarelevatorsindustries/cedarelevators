@@ -190,3 +190,4 @@ export default function HeroLite({ userType, categories = [], popularSearchTerms
     </div>
   )
 }
+

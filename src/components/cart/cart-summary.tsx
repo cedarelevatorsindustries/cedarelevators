@@ -32,7 +32,7 @@ export function CartSummary({ summary, userType, onCheckout, onRequestQuote }: C
 
   const handleRequestQuote = () => {
     if (canQuote) {
-      onRequestQuote?.() || router.push('/request-quote')
+      onRequestQuote?.() || router.push('/quotes/new')
     } else {
       router.push('/sign-in')
     }
@@ -169,3 +169,4 @@ export function CartSummary({ summary, userType, onCheckout, onRequestQuote }: C
     </div>
   )
 }
+

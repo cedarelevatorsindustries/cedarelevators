@@ -58,3 +58,4 @@ export function BusinessHubHeaderV2({ companyName }: BusinessHubHeaderV2Props) {
         </header>
     )
 }
+

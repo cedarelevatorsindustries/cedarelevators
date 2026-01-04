@@ -54,3 +54,4 @@ export default function TrustBadges({ compact = false }: TrustBadgesProps) {
     </div>
   )
 }
+

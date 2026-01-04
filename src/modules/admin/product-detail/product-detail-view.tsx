@@ -587,3 +587,4 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
     </div>
   )
 }
+

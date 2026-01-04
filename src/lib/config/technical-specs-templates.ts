@@ -231,3 +231,4 @@ export function formatTechSpecValue(field: TechnicalSpecField, value: any): stri
 
   return String(value)
 }
+

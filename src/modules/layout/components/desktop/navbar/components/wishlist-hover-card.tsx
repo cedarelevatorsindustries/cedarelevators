@@ -66,3 +66,4 @@ export function WishlistHoverCardContent({ items }: WishlistHoverCardContentProp
     </div>
   )
 }
+

@@ -75,7 +75,7 @@ export default function RecentQuotes({ isVerified = false }: RecentQuotesProps) 
           <h3 className="font-medium text-gray-900 mb-1">No quotes yet</h3>
           <p className="text-sm text-gray-600 mb-4">Start by requesting a quote for products you need</p>
           <Link
-            href="/request-quote"
+            href="/quotes/new"
             className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             Request Quote
@@ -126,3 +126,4 @@ export default function RecentQuotes({ isVerified = false }: RecentQuotesProps) 
     </section>
   )
 }
+

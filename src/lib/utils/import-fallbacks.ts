@@ -70,3 +70,4 @@ export function resolveImageUrl(
   }
   return '/images/product-placeholder.png'
 }
+

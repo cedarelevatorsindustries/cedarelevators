@@ -27,3 +27,4 @@ export default async function ChooseTypePage() {
   // New user without account type - show the choose-type page
   return <ChooseTypeTemplate />
 }
+

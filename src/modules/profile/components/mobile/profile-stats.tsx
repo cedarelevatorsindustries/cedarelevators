@@ -37,3 +37,4 @@ export default function ProfileStats({ stats }: ProfileStatsProps) {
     </div>
   )
 }
+

@@ -61,3 +61,4 @@ export interface NotificationPreferences {
   account_security_email: boolean
   team_activity_email: boolean
 }
+

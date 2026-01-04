@@ -80,3 +80,4 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
     </div>
   )
 }
+

@@ -75,3 +75,4 @@ export default function ProfileTopbar({ user, accountType, className }: ProfileT
     </header>
   )
 }
+

@@ -73,3 +73,4 @@ export function SidebarHeader({ isLoggedIn, userName, onClose }: SidebarHeaderPr
     </div>
   )
 }
+

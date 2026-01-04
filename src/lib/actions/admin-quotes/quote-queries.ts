@@ -198,3 +198,4 @@ export async function getQuoteAuditLog(quoteId: string): Promise<
         return { success: false, error: error.message || 'Failed to fetch audit log' }
     }
 }
+

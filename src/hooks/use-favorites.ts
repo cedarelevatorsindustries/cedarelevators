@@ -64,3 +64,4 @@ export function useFavorites(productId: string) {
 
     return { isFavorite, toggle, loading }
 }
+

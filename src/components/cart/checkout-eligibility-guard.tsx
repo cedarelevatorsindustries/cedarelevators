@@ -203,3 +203,4 @@ export function CheckoutEligibilityGuard({
   // All checks passed - render checkout
   return <>{children}</>
 }
+

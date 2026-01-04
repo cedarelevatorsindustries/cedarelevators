@@ -208,3 +208,4 @@ export function getTierBadgeText(tier: SettingsTier): string {
   }
   return ''
 }
+

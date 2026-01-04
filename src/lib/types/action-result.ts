@@ -9,3 +9,4 @@ export interface ActionResult<T = void> {
     code?: string // Optional error code for client-side translation or distinct handling
     validationErrors?: Record<string, string[]> // Field-level validation errors
 }
+

@@ -28,7 +28,7 @@ export default function StartQuotePanel() {
           </ul>
         </div>
         <Link
-          href="/request-quote"
+          href="/quotes/new"
           className="flex items-center gap-2 bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
@@ -38,3 +38,4 @@ export default function StartQuotePanel() {
     </section>
   )
 }
+

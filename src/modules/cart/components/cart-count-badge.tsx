@@ -50,3 +50,4 @@ export default function CartCountBadge({ onClick, className = "" }: CartCountBad
     </Link>
   )
 }
+

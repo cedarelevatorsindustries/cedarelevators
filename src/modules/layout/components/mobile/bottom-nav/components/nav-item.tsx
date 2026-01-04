@@ -28,3 +28,4 @@ export function NavItem({ href, icon: Icon, label, isActive, showBadge = false }
     </Link>
   )
 }
+

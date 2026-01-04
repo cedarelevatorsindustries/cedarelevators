@@ -187,3 +187,4 @@ export function getAccountCardCTA(accountType: AccountType, isVerified: boolean)
   // Verified business - no CTA
   return null
 }
+

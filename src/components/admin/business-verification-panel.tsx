@@ -352,3 +352,4 @@ export function BusinessVerificationPanel({ business, onUpdate }: BusinessVerifi
         </div>
     )
 }
+

@@ -11,3 +11,4 @@ export function InventoryFilters({ filters, onFiltersChange }: any) {
         </div>
     )
 }
+

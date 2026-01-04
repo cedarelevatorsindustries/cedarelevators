@@ -25,3 +25,4 @@ export default function WishlistCountBadge({ className = "" }: WishlistCountBadg
     </Link>
   )
 }
+

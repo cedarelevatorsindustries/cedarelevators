@@ -86,3 +86,4 @@ export function getApplicationTypeIcon(slug: string): string | undefined {
 export function getActiveApplicationTypes(): Omit<ApplicationType, 'id'>[] {
   return APPLICATION_TYPES.filter((type) => type.isActive)
 }
+

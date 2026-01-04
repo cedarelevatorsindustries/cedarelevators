@@ -348,7 +348,7 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   if (pathname === '/catalog' || pathname.startsWith('/catalog/')) return 'browse-products'
 
   // Quote - Show page title
-  if (pathname === '/request-quote' || pathname.startsWith('/request-quote')) return 'account'
+  if (pathname === '/quotes/new' || pathname.startsWith('/quotes/new')) return 'account'
 
   // Cart - Show page title
   if (pathname === '/cart') return 'account'
@@ -407,3 +407,4 @@ export function mergeNavbarConfig(
     ...customConfig,
   }
 }
+

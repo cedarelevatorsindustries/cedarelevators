@@ -106,3 +106,4 @@ export default function QuickActions({ accountType, isVerified = false, onAction
     </div>
   )
 }
+

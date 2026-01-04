@@ -173,3 +173,4 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
     </div>
   )
 }
+

@@ -94,3 +94,4 @@ export function MegaMenu({ categories: initialCategories, isScrolled = false, on
     </div>
   )
 }
+

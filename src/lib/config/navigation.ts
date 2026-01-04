@@ -78,7 +78,7 @@ export const DESKTOP_MEGA_MENU = {
         ]
     },
     quickLinks: [
-        { title: "Request Quote", href: "/request-quote" },
+        { title: "Request Quote", href: "/quotes/new" },
         { title: "Track Order", href: "/profile/orders" },
     ],
     moreMenu: [
@@ -108,7 +108,7 @@ export const MOBILE_BOTTOM_NAV = [
     {
         id: "quote",
         label: "Quote",
-        href: "/request-quote",
+        href: "/quotes/new",
         icon: FileText,
     },
     {
@@ -209,7 +209,7 @@ export const FOOTER_CONFIG = {
         {
             title: "Quick Links",
             links: [
-                { title: "Request Quote", href: "/request-quote" },
+                { title: "Request Quote", href: "/quotes/new" },
                 { title: "All Products", href: "/catalog" },
                 { title: "Saved Items", href: "/wishlist" },
             ]
@@ -238,3 +238,4 @@ export const FOOTER_CONFIG = {
 
 export type BottomNavItem = typeof MOBILE_BOTTOM_NAV[number]
 export type SidebarSection = typeof MOBILE_SIDEBAR_MENU[number]
+

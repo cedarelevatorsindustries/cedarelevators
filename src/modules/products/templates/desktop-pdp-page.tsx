@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation"
 import ProductHeroSection from "../sections/01-product-hero-section"
 import TitleBadgesSection from "../sections/02-title-badges-section"
 import PricingBlockSection from "../sections/04-pricing-block-section"
-import CTAButtonsSection from "../sections/06-cta-buttons-section"
 import ProductTabsSection from "../sections/14-product-tabs-section"
 import ReviewsSection from "../sections/15-reviews-section"
 import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-together-section"
@@ -289,27 +288,13 @@ export default function ProductDetailPage({
 
                 {/* Pricing Block */}
                 <PricingBlockSection
-                  showPrice={showPrice}
                   price={price}
                   originalPrice={originalPrice}
-                  isGuest={isGuest}
-                  isBusiness={isBusiness}
-                  isVerified={isVerified}
-                />
-
-                {/* CTA Buttons */}
-                <CTAButtonsSection
-                  isGuest={isGuest}
-                  isBusiness={isBusiness}
-                  isVerified={isVerified}
-                  accountType={accountType}
-                  allVariantsSelected={allVariantsSelected}
-                  hasVariants={variants.length > 0}
                   onAddToCart={handleAddToCart}
                   onRequestQuote={handleRequestQuote}
-                  onWishlist={handleWishlist}
-                  onShare={handleShare}
+                  actionDisabled={!allVariantsSelected}
                 />
+
               </div>
 
               {/* Product Tabs: Description, Tech Specs, Reviews */}
@@ -348,7 +333,8 @@ export default function ProductDetailPage({
             />
           </div>
         </div>
-      </div>
+      </div >
     </>
   )
 }
+

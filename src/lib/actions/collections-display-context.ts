@@ -129,3 +129,4 @@ export async function getCollectionsWithProductsByDisplayContext(
         return { success: false, collections: [], error: error.message || 'Unknown error' }
     }
 }
+

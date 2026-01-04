@@ -31,3 +31,4 @@ export function QuoteStatusBadge({ status, className = '' }: QuoteStatusBadgePro
         </span>
     );
 }
+

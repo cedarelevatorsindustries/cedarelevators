@@ -176,3 +176,4 @@ export default function MobileSidebar({ isOpen, isLoggedIn, userName, onClose }:
     </div>
   )
 }
+

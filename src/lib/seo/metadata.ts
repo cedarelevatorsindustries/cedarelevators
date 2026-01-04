@@ -112,3 +112,4 @@ export function generateCategoryMetadata(category: {
     keywords: [category.name, 'elevator parts', 'lift components'],
   })
 }
+

@@ -28,3 +28,4 @@ export function MegaMenuTrigger({ isScrolled, onMouseEnter }: MegaMenuTriggerPro
     </button>
   )
 }
+

@@ -218,3 +218,4 @@ export async function getCategoryProductCounts() {
 
     return counts
 }
+

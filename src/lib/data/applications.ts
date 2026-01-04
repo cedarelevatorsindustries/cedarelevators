@@ -100,3 +100,4 @@ export async function getApplicationBySlug(slug: string): Promise<Application | 
     return null
   }
 }
+

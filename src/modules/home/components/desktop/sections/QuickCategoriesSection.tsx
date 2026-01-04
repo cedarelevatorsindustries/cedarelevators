@@ -84,3 +84,4 @@ const QuickCategoriesSection = ({ categories = [] }: QuickCategoriesSectionProps
 }
 
 export default QuickCategoriesSection
+

@@ -107,3 +107,4 @@ export default function PaymentMethodsB2B({
     </div>
   )
 }
+

@@ -139,3 +139,4 @@ export async function initializePricingSettings(): Promise<{
     return { success: false, error: error.message || 'Failed to initialize pricing settings' }
   }
 }
+

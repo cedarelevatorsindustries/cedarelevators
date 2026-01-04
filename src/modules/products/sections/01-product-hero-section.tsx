@@ -88,3 +88,4 @@ export default function ProductHeroSection({ images, productTitle }: ProductHero
     </div>
   )
 }
+

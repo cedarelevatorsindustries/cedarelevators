@@ -57,3 +57,4 @@ export async function searchDocuments({
         return { success: false, error: 'Failed to search documents' }
     }
 }
+

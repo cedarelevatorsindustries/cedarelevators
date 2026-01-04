@@ -208,7 +208,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 View Cart
               </Link>
               <Link
-                href={userType === 'business_verified' ? '/checkout' : '/request-quote'}
+                href={userType === 'business_verified' ? '/checkout' : '/quotes/new'}
                 onClick={onClose}
                 className="block w-full py-3 bg-orange-600 text-white rounded-lg font-semibold text-center hover:bg-orange-700 transition-colors"
               >
@@ -221,3 +221,4 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     </>
   )
 }
+

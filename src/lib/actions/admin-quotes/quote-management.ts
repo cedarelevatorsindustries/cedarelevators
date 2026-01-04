@@ -422,3 +422,4 @@ export async function deleteQuote(quoteId: string): Promise<{ success: boolean; 
         return { success: false, error: error.message || 'Failed to delete quote' }
     }
 }
+

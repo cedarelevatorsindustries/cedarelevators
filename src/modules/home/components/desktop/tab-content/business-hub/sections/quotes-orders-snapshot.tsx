@@ -113,7 +113,7 @@ export default function QuotesOrdersSnapshot() {
         <div className="text-center py-4 mt-4 border-t border-gray-200">
           <p className="text-sm text-gray-500">No quotes or orders yet</p>
           <LocalizedClientLink
-            href="/request-quote"
+            href="/quotes/new"
             className="inline-block mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
           >
             Request your first quote →
@@ -123,3 +123,4 @@ export default function QuotesOrdersSnapshot() {
     </section>
   )
 }
+

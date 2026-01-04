@@ -75,3 +75,4 @@ export type GuestQuoteValues = z.infer<typeof guestQuoteSchema>;
 export type IndividualQuoteValues = z.infer<typeof individualQuoteSchema>;
 export type BusinessUnverifiedQuoteValues = z.infer<typeof businessUnverifiedQuoteSchema>;
 export type BusinessVerifiedQuoteValues = z.infer<typeof businessVerifiedQuoteSchema>;
+

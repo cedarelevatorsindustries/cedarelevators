@@ -506,3 +506,4 @@ function EmptyState({ searchQuery, statusFilter }: { searchQuery: string; status
     </div>
   )
 }
+

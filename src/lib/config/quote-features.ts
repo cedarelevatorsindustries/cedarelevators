@@ -78,3 +78,4 @@ export function getMVPLimits() {
 export function getStatusLabel(status: string): string {
     return QUOTE_FEATURES.MVP_STATUS_LABELS[status as keyof typeof QUOTE_FEATURES.MVP_STATUS_LABELS] || status
 }
+

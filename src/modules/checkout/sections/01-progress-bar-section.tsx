@@ -79,3 +79,4 @@ export default function ProgressBarSection({ currentStep, totalSteps = 4, userTy
     </div>
   )
 }
+

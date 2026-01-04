@@ -30,3 +30,4 @@ export function PasswordStrengthIndicator({ password }: Props) {
     </>
   )
 }
+

@@ -369,3 +369,4 @@ export async function uploadApplicationImage(file: File) {
     return { url: null, error: 'Failed to upload image', success: false }
   }
 }
+

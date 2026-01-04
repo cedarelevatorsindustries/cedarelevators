@@ -48,3 +48,4 @@ export function FilterGroup({ title, children, defaultExpanded = true, count }: 
     </div>
   )
 }
+

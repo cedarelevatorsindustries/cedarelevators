@@ -55,3 +55,4 @@ export function clearRecentlyViewed(): void {
     console.error("Failed to clear recently viewed:", error)
   }
 }
+

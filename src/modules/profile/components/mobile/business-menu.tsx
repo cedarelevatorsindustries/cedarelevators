@@ -46,3 +46,4 @@ export default function BusinessMenu({ user, isVerified }: BusinessMenuProps) {
     </div>
   )
 }
+

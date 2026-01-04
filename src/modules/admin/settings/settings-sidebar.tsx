@@ -288,3 +288,4 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
     </div>
   )
 }
+

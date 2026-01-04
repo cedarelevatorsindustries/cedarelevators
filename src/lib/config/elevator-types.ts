@@ -86,3 +86,4 @@ export function getElevatorTypeIcon(slug: string): string | undefined {
   const type = getElevatorTypeBySlug(slug)
   return type?.icon
 }
+

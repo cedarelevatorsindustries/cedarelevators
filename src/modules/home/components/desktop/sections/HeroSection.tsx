@@ -180,7 +180,7 @@ const HeroSection = () => {
               <div className={`flex flex-col sm:flex-row gap-5 transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}>
                 {/* Primary CTA */}
-                <LocalizedClientLink href="/request-quote">
+                <LocalizedClientLink href="/quotes/new">
                   <button
                     className="group relative overflow-hidden bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-8 py-3 rounded-lg text-base font-semibold transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-lg hover:shadow-2xl focus:shadow-2xl font-space-grotesk"
                     style={{
@@ -219,3 +219,4 @@ const HeroSection = () => {
 }
 
 export default HeroSection
+

@@ -75,3 +75,4 @@ export function AboutSection() {
     </div>
   )
 }
+

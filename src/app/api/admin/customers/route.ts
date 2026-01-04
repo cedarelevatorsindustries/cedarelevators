@@ -151,3 +151,4 @@ export async function getCustomerDetails(clerkUserId: string) {
     return { success: false, error: error.message || 'Failed to fetch customer details' }
   }
 }
+

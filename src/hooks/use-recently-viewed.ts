@@ -69,3 +69,4 @@ export function useRecentlyViewed() {
 
     return { products, loading, trackView }
 }
+

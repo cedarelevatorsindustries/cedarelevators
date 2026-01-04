@@ -169,3 +169,4 @@ export default function GuestEmailCaptureSection({ onSubmit, isLoading }: GuestE
     </div>
   )
 }
+

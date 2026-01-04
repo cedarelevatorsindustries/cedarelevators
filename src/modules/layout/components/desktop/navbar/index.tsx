@@ -139,3 +139,4 @@ export default function DesktopNavbar({ categories, customConfig, isLoggedIn = f
     </>
   )
 }
+

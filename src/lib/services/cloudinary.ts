@@ -265,3 +265,4 @@ export { cloudinary }
 
 // Helper to check if Cloudinary is available
 export const isCloudinaryAvailable = () => isCloudinaryConfigured
+

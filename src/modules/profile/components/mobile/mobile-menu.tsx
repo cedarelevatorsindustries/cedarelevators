@@ -67,3 +67,4 @@ export default function MobileMenu({ accountType, isVerified = false }: MobileMe
     </div>
   )
 }
+

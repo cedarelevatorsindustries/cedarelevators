@@ -336,3 +336,4 @@ export function getCompanyTypeLabel(type: CompanyType): string {
   }
   return labels[type]
 }
+

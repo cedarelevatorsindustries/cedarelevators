@@ -8,3 +8,4 @@ export function convertToLocale(amount: number, currencyCode: string = 'USD', lo
 export function formatPrice(amount: number, currencyCode: string = 'USD'): string {
   return convertToLocale(amount, currencyCode)
 }
+

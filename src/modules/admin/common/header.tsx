@@ -85,3 +85,4 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
     </header>
   )
 }
+

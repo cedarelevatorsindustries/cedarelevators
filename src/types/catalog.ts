@@ -168,3 +168,4 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     fallbackToAll: true,
   },
 }
+

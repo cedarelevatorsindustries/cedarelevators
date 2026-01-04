@@ -70,3 +70,4 @@ export interface ApplicationStats {
   total_subcategories: number
   total_products: number
 }
+

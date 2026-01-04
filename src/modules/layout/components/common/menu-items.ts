@@ -72,7 +72,7 @@ export const guestShoppingItems: MenuItem[] = [
 ]
 
 export const guestGetStartedItems: MenuItem[] = [
-  { icon: ClipboardList, label: "Quick Quote Request", href: "/request-quote" },
+  { icon: ClipboardList, label: "Quick Quote Request", href: "/quotes/new" },
 
 
 ]
@@ -88,3 +88,4 @@ export const guestLegalItems: MenuItem[] = [
   { icon: Truck, label: "Shipping Info", href: "/shipping" },
   { icon: Package, label: "Return Policy", href: "/returns" }
 ]
+

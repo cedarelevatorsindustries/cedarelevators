@@ -202,3 +202,4 @@ export function CatalogCollections() {
         </div>
     )
 }
+

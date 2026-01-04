@@ -139,3 +139,4 @@ export function CategoryCollections({ categoryId }: CategoryCollectionsProps) {
         </div>
     )
 }
+

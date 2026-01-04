@@ -19,3 +19,4 @@ export default function MenuSection({ title, children }: MenuSectionProps) {
     </div>
   )
 }
+

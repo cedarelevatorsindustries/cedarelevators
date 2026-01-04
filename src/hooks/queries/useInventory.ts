@@ -37,3 +37,4 @@ export const useLowStockAlerts = () => {
         refetch: async () => { },
     }
 }
+

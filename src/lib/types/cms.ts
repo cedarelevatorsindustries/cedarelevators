@@ -34,3 +34,4 @@ export interface UpdatePolicyData {
     meta_description?: string
     status?: PolicyStatus
 }
+

@@ -118,7 +118,7 @@ export function PricingDisplay({
                 Chat Now
               </LocalizedClientLink>
               <LocalizedClientLink
-                href="/request-quote"
+                href="/quotes/new"
                 className="flex items-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 <FileText className="w-4 h-4" />
@@ -215,3 +215,4 @@ export function PricingDisplay({
 
   return null
 }
+

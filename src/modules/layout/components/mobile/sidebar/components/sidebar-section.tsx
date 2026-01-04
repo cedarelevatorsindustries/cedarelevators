@@ -38,3 +38,4 @@ export function SidebarSection({ title, icon, items, onItemClick }: SidebarSecti
     </div>
   )
 }
+

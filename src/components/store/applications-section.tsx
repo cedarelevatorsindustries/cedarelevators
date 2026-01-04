@@ -174,3 +174,4 @@ export function ApplicationsSection({ applications }: ApplicationsSectionProps) 
         </section>
     )
 }
+

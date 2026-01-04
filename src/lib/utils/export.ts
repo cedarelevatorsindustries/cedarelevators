@@ -124,3 +124,4 @@ export async function downloadInvoicesAsZip(invoiceIds: string[]) {
 
   await downloadFilesAsZip(files, `invoices-${Date.now()}`)
 }
+

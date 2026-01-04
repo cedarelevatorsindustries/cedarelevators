@@ -209,3 +209,4 @@ export default function AccountCard({ user, accountType, isVerified = false }: A
     </div>
   )
 }
+

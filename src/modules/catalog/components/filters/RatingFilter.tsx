@@ -71,3 +71,4 @@ export function RatingFilter({ selectedRating, onChange, counts }: RatingFilterP
     </div>
   )
 }
+

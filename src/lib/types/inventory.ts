@@ -26,3 +26,4 @@ export interface InventoryFilters {
     stockStatus?: 'all' | 'low_stock' | 'out_of_stock' | 'in_stock'
     search?: string
 }
+

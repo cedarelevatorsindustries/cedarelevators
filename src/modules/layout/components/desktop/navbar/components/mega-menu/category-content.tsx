@@ -87,3 +87,4 @@ export function CategoryContent({
     </div>
   )
 }
+

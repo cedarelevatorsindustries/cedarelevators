@@ -198,3 +198,4 @@ export async function getRecentlyViewed() {
         return { success: false, error: error.message }
     }
 }
+

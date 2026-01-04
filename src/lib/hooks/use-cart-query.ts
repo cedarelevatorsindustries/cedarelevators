@@ -334,3 +334,4 @@ function getEmptySummary(): CartSummary {
     canCheckout: false
   }
 }
+

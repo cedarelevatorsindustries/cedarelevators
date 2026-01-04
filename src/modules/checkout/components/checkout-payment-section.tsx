@@ -20,3 +20,4 @@ export function CheckoutPaymentSection(props: CheckoutPaymentSectionProps) {
         </div>
     )
 }
+

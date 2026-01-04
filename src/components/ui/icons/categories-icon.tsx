@@ -21,3 +21,4 @@ export default function CategoriesIcon(props: LucideProps) {
     </svg>
   )
 }
+

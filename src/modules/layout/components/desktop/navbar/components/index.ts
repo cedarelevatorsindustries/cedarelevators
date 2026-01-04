@@ -15,3 +15,4 @@ export { WishlistHoverCardContent } from "./wishlist-hover-card"
 export { StickyProductBar } from "./sticky-product-bar"
 export { SecondaryFilterBar } from "./secondary-filter-bar"
 export { CategoryHeroBanner } from "./category-hero-banner"
+

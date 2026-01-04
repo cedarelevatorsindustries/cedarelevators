@@ -94,3 +94,4 @@ export function formatQuantityChange(change: number): string {
   }
   return change.toString()
 }
+

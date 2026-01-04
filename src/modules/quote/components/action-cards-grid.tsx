@@ -9,7 +9,7 @@ export function ActionCardsGrid() {
             icon: MessageSquare,
             title: "Request Quote",
             description: "Get custom pricing for bulk orders or special parts.",
-            href: "/request-quote",
+            href: "/quotes/new",
             bgColor: "bg-blue-50",
             iconColor: "text-blue-600",
             hoverColor: "hover:border-blue-300"
@@ -57,3 +57,4 @@ export function ActionCardsGrid() {
         </div>
     )
 }
+

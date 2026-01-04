@@ -66,3 +66,4 @@ export async function getMegaMenuData() {
         return { success: false, categories: [], error }
     }
 }
+

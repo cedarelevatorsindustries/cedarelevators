@@ -15,3 +15,4 @@ export default function ViewAllButton({ onClick, productCount = 200 }: ViewAllBu
     </div>
   )
 }
+

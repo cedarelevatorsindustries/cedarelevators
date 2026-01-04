@@ -130,3 +130,4 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
         </div>
     );
 }
+

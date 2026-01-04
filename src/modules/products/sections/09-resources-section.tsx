@@ -82,3 +82,4 @@ export default function ResourcesSection({ resources }: ResourcesSectionProps) {
     </div>
   )
 }
+
