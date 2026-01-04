@@ -84,7 +84,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           searchParams={params}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
-          app={params.app}
+          app={applicationSlug}
         />
       </div>
 
@@ -96,7 +96,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           activeCategory={activeCategory || undefined}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
-          app={params.app}
+          app={applicationSlug}
         />
       </div>
     </>
