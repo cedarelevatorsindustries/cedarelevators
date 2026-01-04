@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { MapPin, Truck, Heart, Bell, Briefcase } from "lucide-react"
+import { User, Building2, Check, ArrowRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type Props = {
   onSelectType: (type: "individual" | "business") => void
@@ -9,65 +10,141 @@ type Props = {
 }
 
 export default function AccountTypeSelector({ onSelectType, disabled = false }: Props) {
-  const benefits = [
-    { icon: MapPin, label: "Saved Addresses" },
-    { icon: Truck, label: "Order Tracking" },
-    { icon: Heart, label: "Wishlist & Favorites" },
-    { icon: Bell, label: "Notification Preferences" },
-    { icon: Briefcase, label: "Exclusive Business Tools" },
-  ]
-
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto px-4">
       {/* Page Heading */}
-      <div className="text-center mb-8">
-        <h1 className="text-[#1E3A8A] font-serif text-3xl sm:text-4xl font-bold leading-tight tracking-tight">
-          Create Your Cedar Elevators Account
+      <div className="text-center mb-10">
+        <h1 className="text-gray-900 font-serif text-3xl sm:text-4xl font-bold leading-tight tracking-tight">
+          Choose how you want to use Cedar
         </h1>
-        <p className="mt-3 text-gray-600 text-base font-normal leading-normal">
-          Unlock your profile, track orders, and access exclusive tools by creating a free account.
+        <p className="mt-3 text-gray-500 text-base font-normal leading-normal max-w-lg mx-auto">
+          You can switch later — this helps us personalise your experience.
         </p>
       </div>
 
-      {/* Benefits Section */}
-      <div className="mt-10">
-        <h3 className="text-[#1E3A8A] text-lg font-bold font-serif leading-tight tracking-tight text-center mb-6">
-          Your Account Benefits
-        </h3>
-        <div className="space-y-4">
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-4 rounded-lg bg-gray-50 p-4"
-            >
-              <div className="text-[#1E3A8A] flex items-center justify-center rounded-lg bg-[#1E3A8A]/10 shrink-0 size-10">
-                <benefit.icon size={24} />
-              </div>
-              <p className="text-gray-900 text-base font-medium leading-normal flex-1">
-                {benefit.label}
-              </p>
+      {/* Cards Container */}
+      {/* Mobile: Stacked (Business first via col-reverse). Desktop: Side-by-side (Individual Left) */}
+      <div className="flex flex-col-reverse md:flex-row gap-4 md:gap-6 items-stretch justify-center max-w-3xl mx-auto">
+
+        {/* Individual Card */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log("Individual button clicked")
+            onSelectType("individual")
+          }}
+          disabled={disabled}
+          className={cn(
+            "group flex-1 flex flex-col items-start text-left p-5 rounded-xl border-2 transition-all duration-200 relative bg-white",
+            "border-gray-200 hover:border-blue-200 hover:shadow-lg",
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
+        >
+          {/* Icon */}
+          <div className="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <User size={20} strokeWidth={2} />
+          </div>
+
+          <h3 className="text-lg font-bold text-gray-900 mb-1">
+            Individual Account
+          </h3>
+          <p className="text-gray-500 text-sm mb-4 min-h-[40px]">
+            For personal use & browsing products
+          </p>
+
+          {/* Points */}
+          <ul className="space-y-2 mb-6 flex-1">
+            {[
+              "Track orders & deliveries",
+              "Save wishlist & favourites",
+              "Request quotes when needed"
+            ].map((point, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                <Check size={16} className="text-blue-500 mt-0.5 shrink-0" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA */}
+          <div className="w-full mt-auto">
+            <div className="w-full h-10 rounded-md border-2 border-[#1E3A8A] text-[#1E3A8A] font-bold text-sm flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+              Continue as Individual
             </div>
-          ))}
-        </div>
+            <p className="text-[11px] text-center text-gray-400 mt-2">
+              You can upgrade to Business later
+            </p>
+          </div>
+        </button>
+
+        {/* Business Card */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log("Business button clicked")
+            onSelectType("business")
+          }}
+          disabled={disabled}
+          className={cn(
+            "group flex-1 flex flex-col items-start text-left p-5 rounded-xl border-2 transition-all duration-200 relative bg-white",
+            "border-[#F97316] hover:shadow-lg", // Removed extra shadow/scale effects for equality
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
+        >
+          {/* Recommended Badge */}
+          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide shadow-sm whitespace-nowrap">
+            Recommended for B2B
+          </div>
+
+          {/* Icon */}
+          <div className="h-10 w-10 rounded-lg bg-orange-50 text-[#F97316] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <Building2 size={20} strokeWidth={2} />
+          </div>
+
+          <h3 className="text-lg font-bold text-gray-900 mb-1">
+            Business Account
+          </h3>
+          <p className="text-gray-500 text-sm mb-4 min-h-[40px]">
+            For companies, resellers & projects
+          </p>
+
+          {/* Points */}
+          <ul className="space-y-2 mb-6 flex-1">
+            {[
+              "Request & manage quotes",
+              "Business-only pricing (after verification)",
+              "Bulk orders & reordering",
+              "GST invoices"
+            ].map((point, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                <Check size={16} className="text-[#F97316] mt-0.5 shrink-0" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA */}
+          <div className="w-full mt-auto">
+            <div className="w-full h-10 rounded-md bg-[#F97316] text-white font-bold text-sm flex items-center justify-center group-hover:bg-[#ea6406] transition-colors shadow-sm">
+              <span className="flex items-center gap-2">
+                Continue as Business <ArrowRight size={16} />
+              </span>
+            </div>
+            <p className="text-[11px] text-center text-gray-400 mt-2">
+              Verification required to place orders
+            </p>
+          </div>
+        </button>
+
       </div>
 
-      {/* CTA Section */}
-      <div className="mt-12 flex flex-col items-center gap-4">
-        <button
-          onClick={() => onSelectType("business")}
-          disabled={disabled}
-          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#F97316] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="truncate">Register as Business</span>
-        </button>
-        <button
-          onClick={() => onSelectType("individual")}
-          disabled={disabled}
-          className="w-full max-w-sm flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#1E3A8A] text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="truncate">Register as Individual</span>
-        </button>
-        <p className="text-sm text-gray-600 mt-4">
+      {/* Footer */}
+      <div className="text-center mt-12">
+        <p className="text-sm text-gray-500">
           Already have an account?{" "}
           <Link href="/sign-in" className="font-bold text-[#F97316] hover:underline">
             Login

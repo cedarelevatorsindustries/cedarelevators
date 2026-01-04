@@ -57,31 +57,30 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
     console.log('hasBusinessProfile:', hasBusinessProfile)
     console.log('userName:', userName)
 
+    // ONE-WAY RESTRICTION: Cannot switch from business to individual
+    if (isBusiness) {
+      toast.error('Cannot switch back to individual account once you have switched to business.')
+      return
+    }
+
     setIsSwitching(true)
     try {
-      if (isBusiness) {
-        logger.debug('Switching from business to individual...')
-        // Switch to individual
-        await switchProfile('individual')
-        toast.success('Switched to Individual profile')
+      logger.debug('Switching from individual to business...')
+      // Switch to business (create if doesn't exist)
+      if (hasBusinessProfile) {
+        logger.debug('Business profile exists, switching...')
+        await switchProfile('business')
+        toast.success('Switched to Business profile')
       } else {
-        logger.debug('Switching from individual to business...')
-        // Switch to business (create if doesn't exist)
-        if (hasBusinessProfile) {
-          logger.debug('Business profile exists, switching...')
-          await switchProfile('business')
-          toast.success('Switched to Business profile')
-        } else {
-          logger.debug('Creating new business profile...')
-          // Create business profile with minimal data
-          const result = await createBusinessProfile({
-            name: `${userName}'s Business`,
-            gst_number: '',
-            pan_number: ''
-          })
-          logger.debug('Create business profile result:', result)
-          toast.success('Business profile created! Complete your details in profile.')
-        }
+        logger.debug('Creating new business profile...')
+        // Create business profile with minimal data
+        const result = await createBusinessProfile({
+          name: `${userName}'s Business`,
+          gst_number: '',
+          pan_number: ''
+        })
+        logger.debug('Create business profile result:', result)
+        toast.success('Business profile created! Complete your details in profile.')
       }
       logger.debug('Switch successful, reloading page...')
       window.location.href = window.location.href
@@ -151,24 +150,17 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
 
             <div className="border-t border-gray-200 my-1"></div>
 
-            {/* Simple Switch Button */}
-            <button
-              className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors w-full text-left disabled:opacity-50"
-              onClick={handleSwitch}
-              disabled={isSwitching}
-            >
-              {isBusiness ? (
-                <>
-                  <UserCircle size={16} />
-                  {isSwitching ? "Switching..." : "Switch to Individual"}
-                </>
-              ) : (
-                <>
-                  <Building2 size={16} />
-                  {isSwitching ? "Switching..." : "Switch to Business"}
-                </>
-              )}
-            </button>
+            {/* Simple Switch Button - Only show for individual users */}
+            {isIndividual && (
+              <button
+                className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors w-full text-left disabled:opacity-50"
+                onClick={handleSwitch}
+                disabled={isSwitching}
+              >
+                <Building2 size={16} />
+                {isSwitching ? "Switching..." : "Switch to Business"}
+              </button>
+            )}
 
             <div className="border-t border-gray-200 my-1"></div>
             <LocalizedClientLink

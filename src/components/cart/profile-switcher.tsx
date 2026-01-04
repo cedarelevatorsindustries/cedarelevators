@@ -25,10 +25,10 @@ interface ProfileSwitcherProps {
   businessId?: string
 }
 
-export function ProfileSwitcher({ 
-  currentProfile, 
-  hasBusinessProfile, 
-  businessId 
+export function ProfileSwitcher({
+  currentProfile,
+  hasBusinessProfile,
+  businessId
 }: ProfileSwitcherProps) {
   const { switchProfile, summary } = useCart()
   const [showConfirmation, setShowConfirmation] = useState(false)
@@ -41,7 +41,7 @@ export function ProfileSwitcher({
     if (newProfile === currentProfile) return
 
     setTargetProfile(newProfile)
-    
+
     // Show confirmation if cart has items
     if (summary.itemCount > 0) {
       setShowConfirmation(true)
@@ -76,15 +76,17 @@ export function ProfileSwitcher({
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSwitchRequest(currentProfile === 'individual' ? 'business' : 'individual')}
-            disabled={isSwitching}
-            data-testid="switch-profile-btn"
-          >
-            Switch to {currentProfile === 'individual' ? 'Business' : 'Individual'}
-          </Button>
+          {currentProfile === 'individual' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSwitchRequest('business')}
+              disabled={isSwitching}
+              data-testid="switch-profile-btn"
+            >
+              Switch to Business
+            </Button>
+          )}
         </div>
       </div>
 

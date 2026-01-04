@@ -14,7 +14,15 @@ export function ProfileSwitcher() {
     return null
   }
 
+  const currentProfile = user.activeProfile?.profile_type || 'individual'
+
   const handleSwitch = async (profileType: 'individual' | 'business') => {
+    // ONE-WAY RESTRICTION: Cannot switch from business to individual
+    if (currentProfile === 'business' && profileType === 'individual') {
+      toast.error('Cannot switch back to individual account once you have switched to business.')
+      return
+    }
+
     if (user.activeProfile?.profile_type === profileType) {
       setIsOpen(false)
       return
@@ -55,14 +63,15 @@ export function ProfileSwitcher() {
     }
   }
 
-  const currentProfile = user.activeProfile?.profile_type || 'individual'
-
   return (
     <div className="relative">
       {/* Trigger Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+        onClick={() => currentProfile !== 'business' && setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 transition-colors ${currentProfile === 'business'
+            ? 'bg-gray-50 cursor-default'
+            : 'bg-white hover:bg-gray-50 cursor-pointer'
+          }`}
         disabled={isSwitching}
       >
         {currentProfile === 'business' ? (
@@ -80,9 +89,9 @@ export function ProfileSwitcher() {
         )}
         {isSwitching ? (
           <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-        ) : (
+        ) : currentProfile !== 'business' ? (
           <ChevronDown className="w-4 h-4 text-gray-400" />
-        )}
+        ) : null}
       </button>
 
       {/* Dropdown Menu */}
@@ -106,8 +115,8 @@ export function ProfileSwitcher() {
                 onClick={() => handleSwitch('individual')}
                 disabled={isSwitching}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${currentProfile === 'individual'
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'hover:bg-gray-50 text-gray-700'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'hover:bg-gray-50 text-gray-700'
                   }`}
               >
                 <User className="w-4 h-4" />
@@ -125,8 +134,8 @@ export function ProfileSwitcher() {
                 onClick={() => handleSwitch('business')}
                 disabled={isSwitching}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${currentProfile === 'business'
-                    ? 'bg-purple-50 text-purple-700'
-                    : 'hover:bg-gray-50 text-gray-700'
+                  ? 'bg-purple-50 text-purple-700'
+                  : 'hover:bg-gray-50 text-gray-700'
                   }`}
               >
                 <Building2 className="w-4 h-4" />

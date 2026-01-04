@@ -212,9 +212,6 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
     }
 }
 
-/**
- * Switch user's active profile
- */
 export async function switchProfile(
     userId: string,
     profileType: 'individual' | 'business'
@@ -222,7 +219,23 @@ export async function switchProfile(
     try {
         const supabase = createAdminClient()
 
-        // Check if profile exists
+        // Get current active profile
+        const { data: currentProfile } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .single()
+
+        // ONE-WAY RESTRICTION: Cannot switch from business to individual
+        if (currentProfile?.profile_type === 'business' && profileType === 'individual') {
+            return {
+                success: false,
+                error: 'Cannot switch back to individual account once you have switched to business. This is a one-way transition.'
+            }
+        }
+
+        // Check if target profile exists
         const { data: targetProfile } = await supabase
             .from('user_profiles')
             .select('*')

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   AuthSplitLayout,
   AccountTypeSelector,
@@ -13,8 +13,18 @@ type RegisterView = "account-type" | "individual" | "business"
 export default function RegisterTemplate() {
   const [currentView, setCurrentView] = useState<RegisterView>("account-type")
 
+  useEffect(() => {
+    console.log("RegisterTemplate mounted, initial view:", currentView)
+  }, [])
+
+  useEffect(() => {
+    console.log("Current view changed to:", currentView)
+  }, [currentView])
+
   const handleSelectType = (type: "individual" | "business") => {
+    console.log("Account type selected:", type)
     setCurrentView(type)
+    console.log("Current view updated to:", type)
   }
 
   const getIllustrationImage = () => {
@@ -61,6 +71,7 @@ export default function RegisterTemplate() {
       overlayTitle={overlayText.title}
       overlaySubtitle={overlayText.subtitle}
       mobileBackgroundColor="orange"
+      contentClassName={currentView === "account-type" ? "max-w-4xl" : "max-w-2xl"}
     >
       {currentView === "account-type" && <AccountTypeSelector onSelectType={handleSelectType} />}
       {currentView === "individual" && <IndividualRegisterForm />}

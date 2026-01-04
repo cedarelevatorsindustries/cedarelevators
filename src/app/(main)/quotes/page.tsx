@@ -41,7 +41,6 @@ export default async function QuotesPage() {
             <QuoteList
                 quotes={quotes}
                 userType={userType}
-                isVerified={isVerified}
             />
         </div>
     );

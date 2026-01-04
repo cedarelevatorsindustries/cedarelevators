@@ -14,28 +14,25 @@ export default function ChooseTypeTemplate() {
 
   useEffect(() => {
     if (isLoaded) {
-      // If user is not authenticated, redirect to sign-in
-      if (!user) {
-        router.push("/sign-in")
-        return
-      }
-
       // If user is authenticated and has account type, redirect to homepage
-      const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
-      if (accountType) {
-        router.push("/")
-        return
+      if (user) {
+        const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
+        if (accountType) {
+          router.push("/")
+          return
+        }
       }
 
       // User is authenticated but doesn't have account type - show selector
+      // This happens after OTP verification or social login
       setIsCheckingAuth(false)
     }
   }, [isLoaded, user, router])
 
   const handleSelectType = async (type: "individual" | "business") => {
-    // User must be authenticated to select account type
+    // If user is not authenticated, redirect to appropriate signup page for manual signup
     if (!user) {
-      router.push("/sign-in")
+      router.push(type === "business" ? "/business-signup" : "/individual-signup")
       return
     }
 
@@ -43,8 +40,8 @@ export default function ChooseTypeTemplate() {
     setError(null)
 
     try {
-      // Update role in Clerk
-      const updateRoleResponse = await fetch("/api/auth/update-role", {
+      // Set account type in Clerk and sync to Supabase
+      const response = await fetch("/api/auth/set-account-type", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,32 +49,18 @@ export default function ChooseTypeTemplate() {
         body: JSON.stringify({ accountType: type }),
       })
 
-      if (!updateRoleResponse.ok) {
-        const data = await updateRoleResponse.json()
-        throw new Error(data.error || "Failed to update account type")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to set account type")
       }
 
       // Reload user to get updated metadata
       await user.reload()
 
-      // Sync role to Supabase
-      const syncResponse = await fetch("/api/sync-role", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!syncResponse.ok) {
-        const syncData = await syncResponse.json()
-        console.error("Failed to sync role to backend:", syncData.error)
-        // Don't throw error here - user can still proceed
-      }
-
       // Redirect to homepage
       router.push("/")
     } catch (err) {
-      console.error("Error updating account type:", err)
+      console.error("Error setting account type:", err)
       setError(err instanceof Error ? err.message : "An error occurred")
       setIsSubmitting(false)
     }
@@ -110,6 +93,7 @@ export default function ChooseTypeTemplate() {
       overlayTitle="Join Cedar Elevators"
       overlaySubtitle="Choose the account type that fits your needs"
       mobileBackgroundColor="orange"
+      contentClassName="max-w-4xl"
     >
       {error && (
         <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">

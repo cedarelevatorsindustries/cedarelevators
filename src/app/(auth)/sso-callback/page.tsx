@@ -1,19 +1,21 @@
 "use client"
 
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 
 export default function SSOCallback() {
   const router = useRouter()
   const { user, isLoaded } = useUser()
+  const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
-    if (!isLoaded) return
+    if (!isLoaded || isProcessing) return
 
     // Wait for user to be loaded after OAuth completion
     if (user) {
+      setIsProcessing(true)
       console.log("User loaded in SSO callback:", user.id)
       console.log("Created at:", user.createdAt)
       console.log("Last sign in at:", user.lastSignInAt)
@@ -29,9 +31,47 @@ export default function SSOCallback() {
         return
       }
 
+      // Check if there's a pending account type from social signup
+      const pendingAccountType = sessionStorage.getItem('pendingAccountType')
+
+      if (pendingAccountType) {
+        console.log("Pending account type found:", pendingAccountType)
+        // Clear the pending account type immediately
+        sessionStorage.removeItem('pendingAccountType')
+
+        // Set the account type via API
+        const setAccountType = async () => {
+          try {
+            const response = await fetch("/api/auth/set-account-type", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ accountType: pendingAccountType }),
+            })
+
+            if (!response.ok) {
+              const data = await response.json()
+              throw new Error(data.error || "Failed to set account type")
+            }
+
+            console.log("Account type set successfully, redirecting to homepage")
+            // Redirect immediately without waiting for user reload
+            router.push("/")
+          } catch (error) {
+            console.error("Error setting account type:", error)
+            // Even on error, redirect to choose-type instead of staying stuck
+            router.push("/choose-type")
+          }
+        }
+
+        setAccountType()
+        return
+      }
+
       // Check if this is a brand new user (first time signing up)
       const isNewUser = user.createdAt?.getTime() === user.lastSignInAt?.getTime()
-      
+
       if (isNewUser) {
         // New user: First sign-up, redirect to choose-type page
         console.log("New user detected - redirecting to choose-type")
@@ -42,11 +82,32 @@ export default function SSOCallback() {
         router.push("/choose-type")
       }
     }
+  }, [user, isLoaded, router, isProcessing])
+
+  // Fallback timeout - if stuck loading for more than 30 seconds, redirect to choose-type
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.warn("SSO callback timeout - isLoaded:", isLoaded, "user:", user?.id)
+      if (!user && isLoaded) {
+        console.warn("SSO callback timeout - redirecting to choose-type")
+        router.push("/choose-type")
+      }
+    }, 30000) // 30 second timeout
+
+    return () => clearTimeout(timeout)
   }, [user, isLoaded, router])
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log("SSO Callback State:", { isLoaded, hasUser: !!user, userId: user?.id, isProcessing })
+  }, [isLoaded, user, isProcessing])
 
   return (
     <>
-      <AuthenticateWithRedirectCallback />
+      <AuthenticateWithRedirectCallback
+        continueSignUpUrl="/sso-callback"
+        signUpFallbackRedirectUrl="/sso-callback"
+      />
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="inline-flex items-center gap-3">

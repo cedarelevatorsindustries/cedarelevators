@@ -48,14 +48,21 @@ export default function BusinessRegisterForm() {
 
   const handleGoogleSignUp = async () => {
     if (!isLoaded) return
+
+    console.log("Starting Google OAuth flow...")
+
     try {
+      // Store intended account type in session storage for SSO callback
+      sessionStorage.setItem('pendingAccountType', 'business')
+
+      console.log("Initiating OAuth redirect...")
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: "/sso-callback",
       })
     } catch (err: any) {
-      console.error("error", err)
+      console.error("Google OAuth error:", err)
       setError(err.errors ? err.errors[0].longMessage : "An error occurred")
     }
   }

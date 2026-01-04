@@ -18,7 +18,8 @@ export default function AuthSplitLayout({
   overlayTitle,
   overlaySubtitle,
   mobileBackgroundColor = "blue",
-}: AuthSplitLayoutProps) {
+  contentClassName,
+}: AuthSplitLayoutProps & { contentClassName?: string }) {
   const mobileBgClass = mobileBackgroundColor === "orange"
     ? "bg-gradient-to-br from-orange-50/50 to-orange-50 lg:bg-white"
     : "bg-gradient-to-br from-blue-50 to-blue-100 lg:bg-white"
@@ -54,7 +55,7 @@ export default function AuthSplitLayout({
 
       {/* Right Panel - Full width on mobile with gradient, 50% width on desktop */}
       <div className={`flex w-full lg:w-1/2 flex-col items-center justify-center py-12 px-6 lg:px-16 ${mobileBgClass}`}>
-        <div className="w-full max-w-2xl">{children}</div>
+        <div className={`w-full ${contentClassName || 'max-w-2xl'}`}>{children}</div>
       </div>
     </div>
   )
