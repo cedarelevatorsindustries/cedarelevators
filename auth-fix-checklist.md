@@ -189,10 +189,10 @@ This document tracks the fixes for authentication flow issues in the Cedar Eleva
 
 ## Completion Status
 
-### Overall Progress: 0/4 Phases Complete
+### Overall Progress: 2/4 Phases Complete
 
-- [ ] Phase 1: Fix Sign-up Redirect
-- [ ] Phase 2: Fix Business Account Display
+- [x] Phase 1: Fix Sign-up Redirect
+- [x] Phase 2: Fix Business Account Display
 - [ ] Phase 3: Verify Switch to Business
 - [ ] Phase 4: All Issues Resolved
 
