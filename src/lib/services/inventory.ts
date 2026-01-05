@@ -145,14 +145,12 @@ export async function reserveInventory(variantId: string, quantity: number): Pro
         }
     }
 
-    // Increment reserved quantity
-    const { error } = await supabase
-        .from('inventory_items')
-        .update({
-            reserved: supabase.raw(`reserved + ${quantity}`),
-            updated_at: new Date().toISOString()
-        })
-        .eq('variant_id', variantId)
+    // Increment reserved quantity using atomic RPC
+    const { error } = await supabase.rpc('inventory_adjust', {
+        p_variant_id: variantId,
+        p_quantity_delta: 0,
+        p_reserved_delta: quantity
+    })
 
     if (error) {
         logger.error('Error reserving inventory', error)
@@ -174,13 +172,11 @@ export async function releaseInventory(variantId: string, quantity: number): Pro
 }> {
     const supabase = await createServerSupabase()
 
-    const { error } = await supabase
-        .from('inventory_items')
-        .update({
-            reserved: supabase.raw(`GREATEST(0, reserved - ${quantity})`),
-            updated_at: new Date().toISOString()
-        })
-        .eq('variant_id', variantId)
+    const { error } = await supabase.rpc('inventory_adjust', {
+        p_variant_id: variantId,
+        p_quantity_delta: 0,
+        p_reserved_delta: -quantity
+    })
 
     if (error) {
         logger.error('Error releasing inventory', error)
@@ -202,14 +198,11 @@ export async function fulfillInventory(variantId: string, quantity: number): Pro
 }> {
     const supabase = await createServerSupabase()
 
-    const { error } = await supabase
-        .from('inventory_items')
-        .update({
-            quantity: supabase.raw(`GREATEST(0, quantity - ${quantity})`),
-            reserved: supabase.raw(`GREATEST(0, reserved - ${quantity})`),
-            updated_at: new Date().toISOString()
-        })
-        .eq('variant_id', variantId)
+    const { error } = await supabase.rpc('inventory_adjust', {
+        p_variant_id: variantId,
+        p_quantity_delta: -quantity,
+        p_reserved_delta: -quantity
+    })
 
     if (error) {
         logger.error('Error fulfilling inventory', error)
