@@ -256,7 +256,7 @@ export default function CatalogTemplate({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-[80px]">
 
       {/* Application Banner - Full Width */}
       {config.showBanner && applicationData && (

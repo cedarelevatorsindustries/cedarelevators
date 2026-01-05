@@ -52,6 +52,29 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
     })
   }
 
+  const addTag = (tag: string) => {
+    if (tag.trim() && !(formData.tags || []).includes(tag.trim())) {
+      onFormDataChange({
+        tags: [...(formData.tags || []), tag.trim()]
+      })
+    }
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    onFormDataChange({
+      tags: formData.tags?.filter(tag => tag !== tagToRemove)
+    })
+  }
+
+  const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      const input = e.target as HTMLInputElement
+      addTag(input.value)
+      input.value = ''
+    }
+  }
+
   const filledAttributes = formData.attributes.filter(attr => attr.key && attr.value).length
   const hasDescription = formData.description.length >= 50
 
@@ -115,14 +138,13 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
             <Label htmlFor="tags">Product Tags</Label>
             <Input
               id="tags"
-              placeholder="Enter tags separated by commas (e.g., hydraulic, commercial, energy-efficient)"
-              value={(formData.tags || []).join(', ')}
-              onChange={(e) => {
-                const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-                onFormDataChange({ tags: tagsArray })
-              }}
+              placeholder="Type a tag and press Enter or comma (e.g., hydraulic, commercial, energy-efficient)"
+              onKeyDown={handleTagInput}
               className="w-full"
             />
+            <p className="text-xs text-gray-500">
+              Press Enter or comma to add tags
+            </p>
             {formData.tags && formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {formData.tags.map((tag, index) => (
@@ -130,10 +152,7 @@ export function ProductDetailsTab({ formData, onFormDataChange }: ProductDetails
                     {tag}
                     <button
                       type="button"
-                      onClick={() => {
-                        const newTags = formData.tags?.filter((_, i) => i !== index)
-                        onFormDataChange({ tags: newTags })
-                      }}
+                      onClick={() => removeTag(tag)}
                       className="ml-1 hover:text-red-600"
                     >
                       <X className="h-3 w-3" />

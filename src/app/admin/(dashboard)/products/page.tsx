@@ -260,8 +260,21 @@ export default function ProductsPage() {
                             {product.stock_quantity} in stock
                           </span>
                         </div>
-                        <div className="text-sm font-semibold text-gray-900">
-                          {product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'Price not set'}
+                        <div className="flex items-center gap-2">
+                          {product.compare_at_price && product.compare_at_price > (product.price || 0) ? (
+                            <>
+                              <span className="text-xs text-gray-500 line-through">
+                                ₹{product.compare_at_price.toLocaleString('en-IN')}
+                              </span>
+                              <span className="text-sm font-semibold text-gray-900">
+                                ₹{product.price?.toLocaleString('en-IN') || '0'}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-semibold text-gray-900">
+                              {product.price ? `₹${product.price.toLocaleString('en-IN')}` : 'Price not set'}
+                            </span>
+                          )}
                         </div>
                       </div>
 

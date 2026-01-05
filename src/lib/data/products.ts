@@ -50,7 +50,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       // Fetch categories via product_categories junction table
       .select(`
         *,
-        product_categories!inner(
+        product_categories(
           category:categories(*)
         )
       `, { count: 'exact' })
@@ -86,18 +86,23 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       }
     }
 
-    const products: Product[] = (data || []).map((p: any) => ({
-      ...p,
-      title: p.name, // Map name to title for compatibility
-      handle: p.slug, // Map slug to handle for compatibility
-      images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
-      // Extract categories from junction table
-      categories: p.product_categories?.map((pc: any) => ({
-        ...pc.category,
-        name: pc.category?.title,
-        handle: pc.category?.handle || pc.category?.slug
-      })).filter(Boolean) || []
-    }))
+    const products: Product[] = (data || []).map((p: any) => {
+      const parsedImages = typeof p.images === 'string' ? JSON.parse(p.images) : p.images
+
+      return {
+        ...p,
+        title: p.name, // Map name to title for compatibility
+        handle: p.slug, // Map slug to handle for compatibility
+        images: parsedImages,
+        thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        // Extract categories from junction table
+        categories: p.product_categories?.map((pc: any) => ({
+          ...pc.category,
+          name: pc.category?.title,
+          handle: pc.category?.handle || pc.category?.slug
+        })).filter(Boolean) || []
+      }
+    })
 
     return {
       response: {
@@ -145,9 +150,14 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       return null
     }
 
+    const parsedImages = typeof data.images === 'string' ? JSON.parse(data.images) : data.images
+
     return {
       ...data,
-      images: typeof data.images === 'string' ? JSON.parse(data.images) : data.images
+      title: data.name, // Map name to title
+      handle: data.slug, // Map slug to handle
+      images: parsedImages,
+      thumbnail: data.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
     } as Product
   } catch (error) {
     console.error("Error in getProductByHandle:", error)

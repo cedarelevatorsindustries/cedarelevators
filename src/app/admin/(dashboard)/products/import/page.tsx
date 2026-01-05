@@ -48,12 +48,38 @@ export default function ProductImportPage() {
       const formData = new FormData()
       formData.append('file', file)
 
+      console.log('[Client] Sending preview request...')
       const response = await fetch('/api/admin/products/import/preview', {
         method: 'POST',
         body: formData,
       })
 
+      console.log('[Client] Response status:', response.status)
+      console.log('[Client] Response headers:', Object.fromEntries(response.headers.entries()))
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await response.text()
+        console.error('[Client] Non-JSON response received:', textResponse.substring(0, 500))
+        console.error('[Client] Full response length:', textResponse.length)
+
+          // Save full response to window for inspection
+          ; (window as any).lastErrorResponse = textResponse
+        console.log('[Client] Full error saved to window.lastErrorResponse - inspect it in console!')
+
+        // Try to extract error message from HTML
+        const errorMatch = textResponse.match(/<pre[^>]*>([\s\S]*?)<\/pre>/)
+        if (errorMatch) {
+          console.error('[Client] Extracted error:', errorMatch[1].substring(0, 1000))
+        }
+
+        toast.error('Server error - check console for details')
+        return
+      }
+
       const data: PreviewResult = await response.json()
+      console.log('[Client] JSON data received:', data)
 
       if (data.success) {
         setPreviewData(data)
@@ -63,8 +89,9 @@ export default function ProductImportPage() {
         toast.error(data.blockingErrors?.[0]?.message || 'Failed to preview import')
       }
     } catch (error) {
-      console.error('Error previewing import:', error)
-      toast.error('Failed to preview import')
+      console.error('[Client] Error previewing import:', error)
+      console.error('[Client] Error stack:', error instanceof Error ? error.stack : 'No stack')
+      toast.error('Failed to preview import. Check console for details.')
     } finally {
       setLoading(false)
     }

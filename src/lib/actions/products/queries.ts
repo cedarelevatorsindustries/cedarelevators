@@ -103,7 +103,13 @@ export async function getProductWithVariants(id: string) {
                 weight,
                 image_url,
                 created_at,
-                updated_at
+                updated_at,
+                inventory_items (
+                    id,
+                    quantity,
+                    reserved,
+                    available_quantity
+                )
             )
         `)
         .eq('id', id)

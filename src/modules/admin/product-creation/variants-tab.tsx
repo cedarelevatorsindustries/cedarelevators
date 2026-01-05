@@ -53,12 +53,14 @@ interface VariantsTabProps {
 export function VariantsTab({ options, variants, onOptionsChange, onVariantsChange }: VariantsTabProps) {
   const [activeTab, setActiveTab] = useState("configure")
   const [bulkPrice, setBulkPrice] = useState("")
+  const [bulkMrp, setBulkMrp] = useState("")
   const [bulkStock, setBulkStock] = useState("")
   const [isBulkEditOpen, setIsBulkEditOpen] = useState(false)
 
   const applyBulkEdit = () => {
     const updates: Partial<ProductVariant> = {}
     if (bulkPrice) updates.price = bulkPrice
+    if (bulkMrp) updates.mrp = bulkMrp
     if (bulkStock) updates.stock = bulkStock
 
     if (Object.keys(updates).length > 0) {
@@ -68,6 +70,7 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
     }
     setIsBulkEditOpen(false)
     setBulkPrice("")
+    setBulkMrp("")
     setBulkStock("")
   }
 
@@ -345,6 +348,15 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                       />
                     </div>
                     <div className="space-y-2 flex-1">
+                      <Label htmlFor="bulk-mrp" className="text-xs">Compare Price (MRP)</Label>
+                      <Input
+                        id="bulk-mrp"
+                        placeholder="0.00"
+                        value={bulkMrp}
+                        onChange={(e) => setBulkMrp(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2 flex-1">
                       <Label htmlFor="bulk-stock" className="text-xs">Stock for All</Label>
                       <Input
                         id="bulk-stock"
@@ -364,8 +376,9 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
-                      <TableHead className="w-[40%]">Variant</TableHead>
+                      <TableHead className="w-[30%]">Variant</TableHead>
                       <TableHead>Price (₹)</TableHead>
+                      <TableHead>Compare Price (₹)</TableHead>
                       <TableHead>Stock</TableHead>
                       <TableHead className="w-[100px]">Status</TableHead>
                     </TableRow>
@@ -390,6 +403,15 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
                             type="number"
                             value={variant.price}
                             onChange={(e) => updateVariant(variant.id, { price: e.target.value })}
+                            className="h-8"
+                            placeholder="0.00"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={variant.mrp}
+                            onChange={(e) => updateVariant(variant.id, { mrp: e.target.value })}
                             className="h-8"
                             placeholder="0.00"
                           />

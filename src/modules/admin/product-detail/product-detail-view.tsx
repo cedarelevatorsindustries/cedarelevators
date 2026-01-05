@@ -66,7 +66,13 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
 
   // Calculate display values (read-only, no business logic)
   const images = Array.isArray(product.images) ? product.images : []
-  const primaryImage = images[0] || null
+  const imageUrls = images.map((img: any) => {
+    if (typeof img === 'string') return img
+    if (img && typeof img === 'object' && img.url) return img.url
+    return null
+  }).filter(Boolean) as string[]
+
+  const primaryImage = images[0]?.url || images[0] || null
   const totalStock = product.stock_quantity || 0
   const specifications = Array.isArray(product.specifications) ? product.specifications : []
   const tags = Array.isArray(product.tags) ? product.tags : []
@@ -354,7 +360,7 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
                     </CardTitle>
                   </div>
                   <Button size="sm" className="bg-[#ff3705] hover:bg-[#e63305] text-white" asChild>
-                    <Link href={`/admin/products/${product.id}/variants/create`}>
+                    <Link href={`/admin/products/${product.id}/edit`}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add Variant
                     </Link>
@@ -393,14 +399,32 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Warehouse className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">{variant.inventory_quantity || 0}</span>
-                            {variant.inventory_quantity === 0 && (
-                              <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <Warehouse className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">
+                                {variant.inventory_items && variant.inventory_items[0]
+                                  ? variant.inventory_items[0].quantity
+                                  : (variant.inventory_quantity || 0)} Total
+                              </span>
+                            </div>
+                            {variant.inventory_items && variant.inventory_items[0] && (
+                              <div className="flex text-xs space-x-2 text-gray-500 pl-6">
+                                <span className="text-green-600 font-medium">
+                                  {variant.inventory_items[0].available_quantity ?? variant.inventory_items[0].quantity} Avail
+                                </span>
+                                {variant.inventory_items[0].reserved > 0 && (
+                                  <span className="text-amber-600 font-medium">
+                                    {variant.inventory_items[0].reserved} Rsrvd
+                                  </span>
+                                )}
+                              </div>
                             )}
-                            {variant.inventory_quantity > 0 && variant.inventory_quantity < 10 && (
-                              <Badge variant="secondary" className="text-xs">Low Stock</Badge>
+                            {(variant.inventory_quantity === 0 || (variant.inventory_items && variant.inventory_items[0]?.quantity === 0)) && (
+                              <Badge variant="destructive" className="text-xs w-fit">Out of Stock</Badge>
+                            )}
+                            {(variant.inventory_quantity > 0 && variant.inventory_quantity < 10) && (
+                              <Badge variant="secondary" className="text-xs w-fit">Low Stock</Badge>
                             )}
                           </div>
                         </TableCell>
@@ -418,7 +442,7 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
                         </TableCell>
                         <TableCell>
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/admin/products/${product.id}/variants/${variant.id}`}>
+                            <Link href={`/admin/products/${product.id}/edit`}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </Link>
@@ -488,7 +512,7 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ProductImageCarousel images={images} productName={product.name} />
+              <ProductImageCarousel images={imageUrls} productName={product.name} />
             </CardContent>
           </Card>
 

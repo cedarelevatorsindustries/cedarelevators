@@ -343,9 +343,8 @@ export default function CreateProductPage() {
         bulk_pricing_available: formData.bulkPricingAvailable,
         bulk_pricing_note: formData.bulkPricingNote,
 
-        is_featured: false,
-        view_count: 0,
-        dimensions: { unit: 'cm' },
+        // Tags
+        tags: formData.tags || [],
 
         // Technical Specs and Extras
         technical_specs: formData.technical_specs || {},

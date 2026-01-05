@@ -150,8 +150,10 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
         }
 
         // Insert product variants
+        let variantsToInsert = [];
+
         if (productData.variants && Array.isArray(productData.variants) && productData.variants.length > 0) {
-            const variantRecords = productData.variants.map((variant: any) => ({
+            variantsToInsert = productData.variants.map((variant: any) => ({
                 product_id: product.id,
                 name: variant.name || 'Default',
                 sku: variant.sku || `${product.sku || 'SKU'}-${Math.random().toString(36).substr(2, 9)}`,
@@ -169,14 +171,48 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
                 option2_value: variant.option2?.value || null,
                 option3_name: variant.option3?.name || null,
                 option3_value: variant.option3?.value || null,
-            }))
+            }));
+        } else {
+            // Create a default variant for simple products so inventory is tracked
+            logger.info('No variants provided, creating default variant for simple product');
+            variantsToInsert = [{
+                product_id: product.id,
+                name: 'Default',
+                sku: product.sku || `SKU-${Math.random().toString(36).substr(2, 9)}`,
+                price: product.price || 0,
+                compare_at_price: product.compare_at_price || null,
+                cost_per_item: product.cost_per_item || null,
+                inventory_quantity: product.stock_quantity || 0,
+                status: 'active',
+                barcode: null,
+                weight: null,
+                image_url: product.thumbnail_url || null,
+            }];
+        }
 
-            const { error: variantsError } = await supabase
+        if (variantsToInsert.length > 0) {
+            const { data: createdVariants, error: variantsError } = await supabase
                 .from('product_variants')
-                .insert(variantRecords)
+                .insert(variantsToInsert)
+                .select()
 
             if (variantsError) {
                 logger.error('Error creating product variants', variantsError)
+            } else if (createdVariants && createdVariants.length > 0) {
+                // Verify inventory was created by triggers
+                logger.info(`Created ${createdVariants.length} variants for product ${product.id}`)
+
+                // Check if inventory records were created (they should be created automatically by triggers)
+                const { data: inventoryCheck } = await supabase
+                    .from('inventory_items')
+                    .select('id, variant_id, quantity, reserved, available_quantity')
+                    .in('variant_id', createdVariants.map(v => v.id))
+
+                if (inventoryCheck && inventoryCheck.length > 0) {
+                    logger.info(`Inventory initialized for ${inventoryCheck.length} variants`, inventoryCheck)
+                } else {
+                    logger.warn(`No inventory records found for variants - triggers may not have fired`)
+                }
             }
         }
 

@@ -89,86 +89,111 @@ export function normalizeCSVRow(row: CSVRow): NormalizedCSVRow {
  * This is done ONCE per import to ensure O(1) lookups
  */
 export async function buildCatalogLookupMaps(): Promise<CatalogLookupMaps> {
-    const supabase = createAdminClient()
+    console.log('[buildCatalogLookupMaps] Starting...')
 
-    // Fetch all catalog entities in parallel
-    const [applicationsData, categoriesData, subcategoriesData, typesData, collectionsData] = await Promise.all([
-        // Applications table
-        supabase
-            .from('applications')
-            .select('id, title'),
+    try {
+        const supabase = createAdminClient()
+        console.log('[buildCatalogLookupMaps] Supabase client created')
 
-        // Categories table
-        supabase
-            .from('categories')
-            .select('id, title'),
+        // Fetch all catalog entities in parallel
+        console.log('[buildCatalogLookupMaps] Fetching catalog data...')
+        const [applicationsData, categoriesData, subcategoriesData, typesData, collectionsData] = await Promise.all([
+            // Applications table
+            supabase
+                .from('applications')
+                .select('id, title'),
 
-        // Subcategories table
-        supabase
-            .from('subcategories')
-            .select('id, title'),
+            // Categories table
+            supabase
+                .from('categories')
+                .select('id, title'),
 
-        // Elevator Types table (uses 'name' not 'title')
-        supabase
-            .from('elevator_types')
-            .select('id, name'),
+            // Subcategories table
+            supabase
+                .from('subcategories')
+                .select('id, title'),
 
-        // Collections table
-        supabase
-            .from('collections')
-            .select('id, title')
-    ])
+            // Elevator Types table (uses 'name' not 'title')
+            supabase
+                .from('elevator_types')
+                .select('id, name'),
 
-    // Build maps with normalized names as keys
-    const maps: CatalogLookupMaps = {
-        applications: new Map(),
-        categories: new Map(),
-        subcategories: new Map(),
-        types: new Map(),
-        collections: new Map()
-    }
+            // Collections table
+            supabase
+                .from('collections')
+                .select('id, title')
+        ])
 
-    // Populate applications map
-    if (applicationsData.data) {
-        for (const app of applicationsData.data) {
-            const normalized = normalizeName(app.title)
-            maps.applications.set(normalized, app.id)
+        console.log('[buildCatalogLookupMaps] Data fetched successfully')
+        console.log('[buildCatalogLookupMaps] Applications:', applicationsData.data?.length || 0)
+        console.log('[buildCatalogLookupMaps] Categories:', categoriesData.data?.length || 0)
+        console.log('[buildCatalogLookupMaps] Subcategories:', subcategoriesData.data?.length || 0)
+        console.log('[buildCatalogLookupMaps] Types:', typesData.data?.length || 0)
+        console.log('[buildCatalogLookupMaps] Collections:', collectionsData.data?.length || 0)
+
+        // Check for errors
+        if (applicationsData.error) throw new Error(`Applications fetch error: ${applicationsData.error.message}`)
+        if (categoriesData.error) throw new Error(`Categories fetch error: ${categoriesData.error.message}`)
+        if (subcategoriesData.error) throw new Error(`Subcategories fetch error: ${subcategoriesData.error.message}`)
+        if (typesData.error) throw new Error(`Types fetch error: ${typesData.error.message}`)
+        if (collectionsData.error) throw new Error(`Collections fetch error: ${collectionsData.error.message}`)
+
+        // Build maps with normalized names as keys
+        const maps: CatalogLookupMaps = {
+            applications: new Map(),
+            categories: new Map(),
+            subcategories: new Map(),
+            types: new Map(),
+            collections: new Map()
         }
-    }
 
-    // Populate categories map
-    if (categoriesData.data) {
-        for (const cat of categoriesData.data) {
-            const normalized = normalizeName(cat.title)
-            maps.categories.set(normalized, cat.id)
+        // Populate applications map
+        if (applicationsData.data) {
+            for (const app of applicationsData.data) {
+                const normalized = normalizeName(app.title)
+                maps.applications.set(normalized, app.id)
+            }
         }
-    }
 
-    // Populate subcategories map
-    if (subcategoriesData.data) {
-        for (const subcat of subcategoriesData.data) {
-            const normalized = normalizeName(subcat.title)
-            maps.subcategories.set(normalized, subcat.id)
+        // Populate categories map
+        if (categoriesData.data) {
+            for (const cat of categoriesData.data) {
+                const normalized = normalizeName(cat.title)
+                maps.categories.set(normalized, cat.id)
+            }
         }
-    }
 
-    // Populate types map (uses 'name' field)
-    if (typesData.data) {
-        for (const type of typesData.data) {
-            const normalized = normalizeName(type.name)
-            maps.types.set(normalized, type.id)
+        // Populate subcategories map
+        if (subcategoriesData.data) {
+            for (const subcat of subcategoriesData.data) {
+                const normalized = normalizeName(subcat.title)
+                maps.subcategories.set(normalized, subcat.id)
+            }
         }
-    }
 
-    // Populate collections map
-    if (collectionsData.data) {
-        for (const collection of collectionsData.data) {
-            const normalized = normalizeName(collection.title)
-            maps.collections.set(normalized, collection.id)
+        // Populate types map (uses 'name' field)
+        if (typesData.data) {
+            for (const type of typesData.data) {
+                const normalized = normalizeName(type.name)
+                maps.types.set(normalized, type.id)
+            }
         }
-    }
 
-    return maps
+        // Populate collections map
+        if (collectionsData.data) {
+            for (const collection of collectionsData.data) {
+                const normalized = normalizeName(collection.title)
+                maps.collections.set(normalized, collection.id)
+            }
+        }
+
+        console.log('[buildCatalogLookupMaps] Maps built successfully')
+        return maps
+
+    } catch (error) {
+        console.error('[buildCatalogLookupMaps] Error:', error)
+        throw error
+    }
 }
 
 /**

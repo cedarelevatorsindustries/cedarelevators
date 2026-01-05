@@ -39,11 +39,10 @@ export default function ProductHeroSection({ images, productTitle }: ProductHero
               key={index}
               onClick={() => setSelectedImage(index)}
               onMouseEnter={() => setSelectedImage(index)}
-              className={`rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImage === index
+              className={`rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                   ? "border-blue-600 ring-2 ring-blue-200"
                   : "border-gray-200 hover:border-gray-300"
-              }`}
+                }`}
               style={{ width: '100px', height: '100px' }}
             >
               <Image
@@ -59,8 +58,8 @@ export default function ProductHeroSection({ images, productTitle }: ProductHero
       )}
 
       {/* Main Image */}
-      <div 
-        className="flex-1 aspect-[1/1] bg-white rounded-xl overflow-hidden relative border group max-w-lg"
+      <div
+        className={`flex-1 aspect-[1/1] bg-white rounded-xl overflow-hidden relative border group ${images.length > 1 ? 'max-w-lg' : 'max-w-2xl'}`}
         onMouseEnter={() => setShowZoom(true)}
         onMouseLeave={() => setShowZoom(false)}
         onMouseMove={handleMouseMove}
