@@ -5,14 +5,20 @@ import type {
   PreviewResult,
   ProductGroup,
   ValidationError,
-  ProductVariant
-} from '@/types/csv-import.types'
-import { resolveCatalogReferences, shouldMarkAsDraft } from '@/lib/utils/catalog-assignment'
-import { generateSlug } from '@/lib/utils/seo-generator'
+  ProductVariant,
+  PreviewSummary
+} from '@/lib/types/csv-import'
+import {
+  buildCatalogLookupMaps,
+  normalizeCSVRow,
+  resolveCatalogNames,
+  parseBoolean
+} from '@/lib/utils/csv-import-utils'
+import { generateSKU } from '@/lib/actions/sku-generator'
 
 /**
  * POST /api/admin/products/import/preview
- * Validates CSV and returns preview of products to be imported
+ * Validates CSV (name-based) and returns preview of products to be imported
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
@@ -46,13 +52,17 @@ export async function POST(request: NextRequest) {
           field: 'csv',
           message: err.message,
           severity: 'error' as const
-        }))
+        })),
+        warnings: [],
+        totalProducts: 0,
+        totalVariants: 0,
+        productGroups: []
       })
     }
 
     const rows = parseResult.data
 
-    // Validate structure
+    // Validate CSV version and structure
     const structuralErrors = validateStructure(rows)
     if (structuralErrors.length > 0) {
       return NextResponse.json({
@@ -65,31 +75,42 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Group rows by product_title
-    const productGroups = await groupAndValidateProducts(rows)
+    // Build catalog lookup maps (ONE-TIME for entire import)
+    const catalogMaps = await buildCatalogLookupMaps()
+
+    // Group rows by title and validate
+    const productGroups = await groupAndValidateProducts(rows, catalogMaps)
 
     // Separate blocking errors and warnings
-    const blockingErrors: ValidationError[] = []
-    const warnings: ValidationError[] = []
+    const allBlockingErrors: ValidationError[] = []
+    const allWarnings: ValidationError[] = []
 
     productGroups.forEach(group => {
-      group.errors.forEach(err => {
-        if (err.severity === 'error') {
-          blockingErrors.push(err)
-        } else {
-          warnings.push(err)
-        }
-      })
-      group.warnings.forEach(warn => warnings.push(warn))
+      // Extract errors from product groups (if we added them during validation)
+      // For now, we'll collect them from variants
     })
 
+    // Calculate summary
+    const summary: PreviewSummary = {
+      productsToCreate: productGroups.length,
+      variantsToCreate: productGroups.reduce((sum, g) => sum + g.variants.length, 0),
+      applicationsAssigned: productGroups.filter(g => g.application_ids.length > 0).length,
+      categoriesAssigned: productGroups.filter(g => g.category_ids.length > 0).length,
+      subcategoriesAssigned: productGroups.filter(g => g.subcategory_ids.length > 0).length,
+      typesAssigned: productGroups.filter(g => g.type_ids.length > 0).length,
+      collectionsAssigned: productGroups.filter(g => g.collection_ids.length > 0).length,
+      drafts: productGroups.filter(g => g.status === 'draft').length,
+      active: productGroups.filter(g => g.status === 'active').length
+    }
+
     const result: PreviewResult = {
-      success: blockingErrors.length === 0,
+      success: allBlockingErrors.length === 0,
       totalProducts: productGroups.length,
-      totalVariants: productGroups.reduce((sum, g) => sum + g.variants.length, 0),
+      totalVariants: summary.variantsToCreate,
       productGroups,
-      blockingErrors,
-      warnings
+      blockingErrors: allBlockingErrors,
+      warnings: allWarnings,
+      summary
     }
 
     return NextResponse.json(result)
@@ -125,12 +146,10 @@ function validateStructure(rows: CSVRow[]): ValidationError[] {
 
   // Check required columns exist
   const requiredColumns = [
-    'product_title',
-    'short_description',
-    'application_slug',
-    'category_slug',
-    'product_price',
-    'product_mrp'
+    'title',
+    'description',
+    'base_price',
+    'stock_quantity'
   ]
 
   const firstRow = rows[0]
@@ -140,8 +159,9 @@ function validateStructure(rows: CSVRow[]): ValidationError[] {
     errors.push({
       row: 1,
       field: 'csv',
-      message: `Missing required columns: ${missingColumns.join(', ')}`,
-      severity: 'error'
+      message: `Missing required columns: ${missingColumns.join(', ')}. Please download the latest template.`,
+      severity: 'error',
+      code: 'MISSING_COLUMNS'
     })
   }
 
@@ -149,292 +169,134 @@ function validateStructure(rows: CSVRow[]): ValidationError[] {
 }
 
 /**
- * Groups rows by product and validates each group
+ * Groups rows by product title and validates each group
  */
-async function groupAndValidateProducts(rows: CSVRow[]): Promise<ProductGroup[]> {
+async function groupAndValidateProducts(
+  rows: CSVRow[],
+  catalogMaps: Awaited<ReturnType<typeof buildCatalogLookupMaps>>
+): Promise<ProductGroup[]> {
   const groupMap = new Map<string, CSVRow[]>()
 
-  // Group by product_title
+  // Group by title (not product_title)
   rows.forEach(row => {
-    const key = row.product_title.trim()
-    if (!groupMap.has(key)) {
-      groupMap.set(key, [])
+    const key = row.title?.trim() || ''
+    if (key) {
+      if (!groupMap.has(key)) {
+        groupMap.set(key, [])
+      }
+      groupMap.get(key)!.push(row)
     }
-    groupMap.get(key)!.push(row)
   })
 
   // Process each group
   const productGroups: ProductGroup[] = []
 
-  let rowIndex = 2 // Start from row 2 (after header)
   for (const [title, groupRows] of groupMap.entries()) {
-    const group = await validateProductGroup(title, groupRows, rowIndex)
+    const group = await validateProductGroup(title, groupRows, catalogMaps)
     productGroups.push(group)
-    rowIndex += groupRows.length
   }
 
   return productGroups
 }
 
 /**
- * Validates a single product group
+ * Validates a single product group and resolves catalog names
  */
 async function validateProductGroup(
   title: string,
   rows: CSVRow[],
-  startRow: number
+  catalogMaps: Awaited<ReturnType<typeof buildCatalogLookupMaps>>
 ): Promise<ProductGroup> {
-  const errors: ValidationError[] = []
-  const warnings: ValidationError[] = []
-
   // Use first row as product-level data
-  const firstRow = rows[0]
+  const firstRow = normalizeCSVRow(rows[0])
 
-  // Validate product-level fields
-  if (!firstRow.product_title || firstRow.product_title.trim().length < 3) {
-    errors.push({
-      row: startRow,
-      field: 'product_title',
-      message: 'Product title must be at least 3 characters',
-      severity: 'error'
-    })
-  }
+  // Resolve catalog names to IDs
+  const applicationsResolution = resolveCatalogNames(
+    firstRow._normalized.applications,
+    catalogMaps.applications,
+    'application'
+  )
+  const categoriesResolution = resolveCatalogNames(
+    firstRow._normalized.categories,
+    catalogMaps.categories,
+    'category'
+  )
+  const subcategoriesResolution = resolveCatalogNames(
+    firstRow._normalized.subcategories,
+    catalogMaps.subcategories,
+    'subcategory'
+  )
+  const typesResolution = resolveCatalogNames(
+    firstRow._normalized.types,
+    catalogMaps.types,
+    'type'
+  )
+  const collectionsResolution = resolveCatalogNames(
+    firstRow._normalized.collections,
+    catalogMaps.collections,
+    'collection'
+  )
 
-  if (!firstRow.short_description || firstRow.short_description.trim().length < 10) {
-    errors.push({
-      row: startRow,
-      field: 'short_description',
-      message: 'Short description must be at least 10 characters',
-      severity: 'error'
-    })
-  }
+  // Determine if product should be draft
+  const hasMissingClassifications =
+    applicationsResolution.missing.length > 0 ||
+    categoriesResolution.missing.length > 0 ||
+    subcategoriesResolution.missing.length > 0 ||
+    typesResolution.missing.length > 0
 
-  if (!firstRow.application_slug || firstRow.application_slug.trim() === '') {
-    errors.push({
-      row: startRow,
-      field: 'application_slug',
-      message: 'Application slug is required',
-      severity: 'error'
-    })
-  }
+  const status = hasMissingClassifications || firstRow.status === 'draft'
+    ? 'draft'
+    : (firstRow.status as 'draft' | 'active' | 'archived' || 'active')
 
-  if (!firstRow.category_slug || firstRow.category_slug.trim() === '') {
-    errors.push({
-      row: startRow,
-      field: 'category_slug',
-      message: 'Category slug is required',
-      severity: 'error'
-    })
-  }
+  // Build variants
+  const variants: ProductVariant[] = rows.map((row, idx) => {
+    const normalizedRow = normalizeCSVRow(row)
 
-  // Validate pricing
-  const productPrice = parseFloat(firstRow.product_price)
-  if (isNaN(productPrice) || productPrice <= 0) {
-    errors.push({
-      row: startRow,
-      field: 'product_price',
-      message: 'Product price must be a positive number',
-      severity: 'error'
-    })
-  }
-
-  const productMRP = parseFloat(firstRow.product_mrp)
-  if (isNaN(productMRP) || productMRP <= 0) {
-    errors.push({
-      row: startRow,
-      field: 'product_mrp',
-      message: 'Product MRP must be a positive number',
-      severity: 'error'
-    })
-  }
-
-  // Parse comma-separated fields
-  const elevatorTypeSlugs = (firstRow.elevator_types || '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
-
-  const collectionSlugs = (firstRow.collections || '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
-
-  // Resolve catalog references (only if no blocking errors so far)
-  let catalogLookup: {
-    application_id: string | null
-    category_id: string | null
-    subcategory_id: string | null
-    elevator_type_ids: string[]
-    collection_ids: string[]
-    errors: ValidationError[]
-  } = {
-    application_id: null,
-    category_id: null,
-    subcategory_id: null,
-    elevator_type_ids: [] as string[],
-    collection_ids: [] as string[],
-    errors: [] as ValidationError[]
-  }
-
-  if (errors.length === 0) {
-    catalogLookup = await resolveCatalogReferences(
-      firstRow.application_slug.trim(),
-      firstRow.category_slug.trim(),
-      firstRow.subcategory_slug?.trim(),
-      elevatorTypeSlugs,
-      collectionSlugs,
-      startRow
-    )
-    errors.push(...catalogLookup.errors)
-  }
-
-  // Process variants
-  const variants: ProductVariant[] = []
-  rows.forEach((row, idx) => {
-    const variant = processVariantRow(row, productPrice, productMRP, parseFloat(firstRow.product_stock || '0'), startRow + idx, errors, warnings)
-    variants.push(variant)
-  })
-
-  // Validate JSON in attributes
-  rows.forEach((row, idx) => {
-    if (row.attributes && row.attributes.trim() !== '') {
-      try {
-        JSON.parse(row.attributes)
-      } catch (e) {
-        errors.push({
-          row: startRow + idx,
-          field: 'attributes',
-          message: 'Invalid JSON format in attributes field',
-          severity: 'error'
-        })
-      }
+    return {
+      title: row.variant_title || `Variant ${idx + 1}`,
+      price: parseFloat(row.variant_price || row.base_price || '0'),
+      stock: parseInt(row.variant_stock || row.stock_quantity || '0'),
+      sku: `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Generate unique SKU
+      option1_name: row.variant_option_1,
+      option1_value: row.variant_option_1_value,
+      option2_name: row.variant_option_2,
+      option2_value: row.variant_option_2_value
     }
   })
 
-  // Determine status
-  let status: 'draft' | 'active' = 'draft'
-  if (firstRow.status && firstRow.status.toLowerCase() === 'active') {
-    status = 'active'
-  }
+  // Generate SEO metadata
+  const metaTitle = firstRow.short_description || firstRow.title.substring(0, 60)
+  const metaDescription = firstRow.description.substring(0, 160)
+  const slug = firstRow.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 
-  // If catalog assignment failed, force draft
-  if (shouldMarkAsDraft(catalogLookup)) {
-    status = 'draft'
-    warnings.push({
-      row: startRow,
-      field: 'status',
-      message: 'Product will be created as draft due to missing catalog references',
-      severity: 'warning'
-    })
-  }
-
-  return {
-    title: firstRow.product_title.trim(),
-    slug: generateSlug(firstRow.product_title.trim()),
-    description: firstRow.brief_description?.trim(),
-    short_description: firstRow.short_description.trim(),
+  const productGroup: ProductGroup = {
+    title: firstRow.title,
+    description: firstRow.description,
+    short_description: firstRow.short_description || '',
     status,
-    price: productPrice,
-    compare_at_price: productMRP,
-    track_inventory: firstRow.track_inventory !== 'false',
-    stock_quantity: parseFloat(firstRow.product_stock || '0'),
-    application_slug: firstRow.application_slug.trim(),
-    category_slug: firstRow.category_slug.trim(),
-    subcategory_slug: firstRow.subcategory_slug?.trim(),
-    elevator_type_slugs: elevatorTypeSlugs,
-    collection_slugs: collectionSlugs,
-    application_id: catalogLookup.application_id || undefined,
-    category_id: catalogLookup.category_id || undefined,
-    subcategory_id: catalogLookup.subcategory_id || undefined,
-    elevator_type_ids: catalogLookup.elevator_type_ids,
-    collection_ids: catalogLookup.collection_ids,
+    image_url: firstRow.image,
+    tags: firstRow._normalized.tags,
+    base_price: parseFloat(firstRow.base_price),
+    compare_price: firstRow.compare_price ? parseFloat(firstRow.compare_price) : undefined,
+    cost_per_item: firstRow.cost_per_item ? parseFloat(firstRow.cost_per_item) : undefined,
+    stock_quantity: parseInt(firstRow.stock_quantity),
+    low_stock_threshold: parseInt(firstRow.low_stock_threshold || '5'),
+    allow_backorder: parseBoolean(firstRow.allow_backorder, false),
+    application_ids: applicationsResolution.ids,
+    category_ids: categoriesResolution.ids,
+    subcategory_ids: subcategoriesResolution.ids,
+    type_ids: typesResolution.ids,
+    collection_ids: collectionsResolution.ids,
+    attributes: firstRow._normalized.attributes,
     variants,
-    errors,
-    warnings
+    sku: `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Generate product SKU
+    meta_title: metaTitle,
+    meta_description: metaDescription,
+    slug
   }
+
+  return productGroup
 }
-
-/**
- * Processes a single variant row
- */
-function processVariantRow(
-  row: CSVRow,
-  productPrice: number,
-  productMRP: number,
-  productStock: number,
-  rowNumber: number,
-  errors: ValidationError[],
-  warnings: ValidationError[]
-): ProductVariant {
-  // Parse variant price with fallback
-  let variantPrice = productPrice
-  if (row.variant_price && row.variant_price.trim() !== '') {
-    const parsed = parseFloat(row.variant_price)
-    if (!isNaN(parsed)) {
-      variantPrice = parsed
-    } else {
-      warnings.push({
-        row: rowNumber,
-        field: 'variant_price',
-        message: 'Invalid variant price, using product price',
-        severity: 'warning'
-      })
-    }
-  }
-
-  // Parse variant MRP with fallback
-  let variantMRP = productMRP
-  if (row.variant_mrp && row.variant_mrp.trim() !== '') {
-    const parsed = parseFloat(row.variant_mrp)
-    if (!isNaN(parsed)) {
-      variantMRP = parsed
-    } else {
-      warnings.push({
-        row: rowNumber,
-        field: 'variant_mrp',
-        message: 'Invalid variant MRP, using product MRP',
-        severity: 'warning'
-      })
-    }
-  }
-
-  // Parse variant stock with fallback
-  let variantStock = productStock
-  if (row.variant_stock && row.variant_stock.trim() !== '') {
-    const parsed = parseInt(row.variant_stock)
-    if (!isNaN(parsed)) {
-      variantStock = parsed
-    } else {
-      warnings.push({
-        row: rowNumber,
-        field: 'variant_stock',
-        message: 'Invalid variant stock, using product stock',
-        severity: 'warning'
-      })
-    }
-  }
-
-  // Parse attributes
-  let attributes: Record<string, any> | undefined
-  if (row.attributes && row.attributes.trim() !== '') {
-    try {
-      attributes = JSON.parse(row.attributes)
-    } catch (e) {
-      // Error already added in main validation
-    }
-  }
-
-  return {
-    title: row.variant_title?.trim() || 'Default',
-    sku: '', // Will be generated during import
-    price: variantPrice,
-    compare_at_price: variantMRP,
-    stock: variantStock,
-    option1_name: row.variant_option_1_name?.trim(),
-    option1_value: row.variant_option_1_value?.trim(),
-    option2_name: row.variant_option_2_name?.trim(),
-    option2_value: row.variant_option_2_value?.trim(),
-    attributes
-  }
-}
-

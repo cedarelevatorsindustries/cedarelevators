@@ -27,6 +27,7 @@ export interface Product {
     variants?: ProductVariant[]
     collection_id?: string
     category_id?: string
+    application_id?: string
     categories?: ProductCategory[]
     metadata?: Record<string, any>
     price?: {

@@ -92,6 +92,7 @@ export interface CollectionFormData {
     product_ids?: string[]
 }
 
+
 export interface CollectionFilters {
     type?: CollectionType
     is_active?: boolean
@@ -101,6 +102,8 @@ export interface CollectionFilters {
     collection_type?: CollectionContextType
     category_id?: string
     is_business_only?: boolean
+    // Pagination
+    page?: number
     limit?: number
 }
 

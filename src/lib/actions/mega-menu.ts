@@ -12,11 +12,12 @@ export async function getMegaMenuData() {
         }
 
         // 1. Fetch active categories from the categories table
+        // Note: categories table doesn't have sort_order column
         const { data: categories, error: catError } = await supabase
             .from('categories')
             .select('*')
             .eq('is_active', true)
-            .order('sort_order', { ascending: true })
+            .order('title', { ascending: true }) // Order by title instead
 
         if (catError) throw catError
 

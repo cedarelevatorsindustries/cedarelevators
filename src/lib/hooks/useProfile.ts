@@ -52,18 +52,43 @@ export function useProfile() {
     }
 
     // Determine account type from Clerk metadata
-    const userType = clerkUser.publicMetadata?.accountType as string || 
-                     clerkUser.unsafeMetadata?.accountType as string || 
-                     'individual'
-    
+    const userType = clerkUser.publicMetadata?.accountType as string ||
+      clerkUser.unsafeMetadata?.accountType as string ||
+      'individual'
+
     setUser(profileUser)
     setAccountType(userType as AccountType)
     setIsLoading(false)
   }, [clerkUser, isLoaded])
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    // TODO: Implement profile update
-    console.log('Updating profile:', updates)
+    if (!clerkUser) {
+      throw new Error('User not authenticated')
+    }
+
+    try {
+      // Prepare updates for Clerk
+      const clerkUpdates: any = {}
+
+      if (updates.first_name !== undefined) {
+        clerkUpdates.firstName = updates.first_name
+      }
+
+      if (updates.last_name !== undefined) {
+        clerkUpdates.lastName = updates.last_name
+      }
+
+      // Update Clerk user
+      await clerkUser.update(clerkUpdates)
+
+      // Update local state
+      setUser(prev => prev ? { ...prev, ...updates } : null)
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      throw error
+    }
   }
 
   const uploadAvatar = async (file: File): Promise<string> => {

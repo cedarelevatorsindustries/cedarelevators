@@ -4,9 +4,10 @@ import { ProductCategory } from "@/lib/types/domain"
 
 /**
  * List categories from Supabase
+ * Note: Categories table doesn't have parent_id - use junction tables for relationships
  */
 export async function listCategories(params?: {
-  parent_id?: string | null
+  parent_id?: string | null  // Kept for compatibility but not used
   include_descendants_tree?: boolean
 }): Promise<ProductCategory[]> {
 
@@ -17,13 +18,9 @@ export async function listCategories(params?: {
       .from('categories')
       .select('*')
 
-    if (params?.parent_id !== undefined) {
-      if (params.parent_id === null) {
-        query = query.is('parent_id', null)
-      } else {
-        query = query.eq('parent_id', params.parent_id)
-      }
-    }
+    // Note: parent_id doesn't exist in categories table
+    // Applications, categories, and subcategories are all in categories table
+    // Relationships are managed via junction tables (application_categories, category_subcategories)
 
     const { data, error } = await query
 
@@ -32,10 +29,15 @@ export async function listCategories(params?: {
       return []
     }
 
-    let categories = data as ProductCategory[]
+    let categories = data.map((cat: any) => ({
+      ...cat,
+      handle: cat.handle || cat.slug,  // Ensure handle exists
+      name: cat.title  // Map title to name for compatibility
+    })) as ProductCategory[]
 
     if (params?.include_descendants_tree) {
-      // Basic tree building - fetch all and build structure
+      // Basic tree building would require junction table queries
+      // For now, return flat list
     }
 
     return categories
@@ -45,9 +47,6 @@ export async function listCategories(params?: {
   }
 }
 
-/**
- * Get a single category
- */
 export async function getCategory(idOrHandle: string): Promise<ProductCategory | null> {
 
   // Fetch from Supabase
@@ -63,19 +62,19 @@ export async function getCategory(idOrHandle: string): Promise<ProductCategory |
     if (isId) {
       query = query.eq('id', idOrHandle)
     } else {
-      // Use slug field (categories table doesn't have handle field)
-      query = query.eq('slug', idOrHandle)
+      // Try handle first, then slug
+      query = query.or(`handle.eq.${idOrHandle},slug.eq.${idOrHandle}`)
     }
 
-    const { data, error } = await query.single()
+    const { data, error } = await query.maybeSingle()
 
     if (error || !data) return null
 
-    // Map slug to handle for compatibility with ProductCategory interface
+    // Map fields for compatibility with ProductCategory interface
     return {
       ...data,
-      handle: data.slug, // Map slug to handle
-      slug: data.slug
+      handle: data.handle || data.slug,
+      name: data.title  // Map title to name
     } as ProductCategory
   } catch (error) {
     console.error("Error fetching category from Supabase:", error)

@@ -14,11 +14,18 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isLoaded) return
+    if (!isLoaded || !signIn) {
+      setError("Authentication not ready. Please refresh the page.")
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
 
     try {
       const result = await signIn.create({
@@ -28,13 +35,17 @@ export default function LoginForm() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId })
-        router.push("/dashboard")
+        router.push("/")
       } else {
         logger.error('Sign in failed', result)
+        setError("Sign in failed. Please try again.")
       }
     } catch (err: any) {
-      logger.error("Sign in error", { error: err.errors?.[0]?.longMessage, fullError: err })
-      setError(err.errors?.[0]?.longMessage || "An error occurred")
+      logger.error("Sign in error", err)
+      const errorMessage = err.errors?.[0]?.longMessage || err.message || "An error occurred during sign in"
+      setError(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -76,6 +87,12 @@ export default function LoginForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
         {/* Email Field */}
         <div className="flex flex-col w-full">
           <label className="text-gray-900 text-sm font-medium leading-normal mb-2">
@@ -145,6 +162,15 @@ export default function LoginForm() {
             Forgot Password?
           </Link>
         </div>
+
+        {/* Sign In Button */}
+        <button
+          type="submit"
+          disabled={isSubmitting || !isLoaded}
+          className="w-full rounded-lg bg-[#2D5BFF] h-12 text-white text-base font-medium leading-normal hover:bg-[#1a4bd6] focus:outline-none focus:ring-2 focus:ring-[#2D5BFF]/50 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? "Signing in..." : "Sign in"}
+        </button>
 
         {/* Divider */}
         <div className="flex items-center gap-4">

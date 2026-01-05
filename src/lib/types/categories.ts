@@ -73,10 +73,12 @@ export interface CategoryFormData {
 export interface CategoryFilters {
     parent_id?: string | null
     application?: string
-    status?: CategoryStatus
+    status?: 'active' | 'inactive' | 'draft' | 'archived'
     is_active?: boolean
     search?: string
     level?: CategoryLevel
+    // Pagination
+    page?: number
     limit?: number
 }
 

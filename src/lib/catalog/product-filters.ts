@@ -45,7 +45,12 @@ export function filterProductsByType(
 
     case "application":
       if (application) {
-        primary = products.filter((p) => p.metadata?.application === application)
+        // Note: Server-side filtering by application_id is preferred
+        // This client-side filter is a fallback for any missed products
+        primary = products.filter((p) =>
+          p.application_id === application ||
+          p.metadata?.application === application
+        )
       }
       break
 

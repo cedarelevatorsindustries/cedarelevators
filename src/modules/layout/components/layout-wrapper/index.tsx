@@ -5,6 +5,7 @@ import AboutSectionMobile from "@/modules/layout/components/mobile/about-section
 import { FloatingActionCard } from "@/components/ui/floating-actions"
 import { listCategories } from "@/lib/data"
 import { isAuthenticated, getUserType, getCompanyName } from "@/lib/auth/server"
+import { CartProvider } from "@/contexts/cart-context"
 import type { NavbarConfig } from "@/modules/layout/components/desktop/navbar/config"
 import type { UserType } from "@/lib/auth/server"
 
@@ -27,35 +28,37 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
   const companyName = await getCompanyName()
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Layout
-        categories={categories}
-        customConfig={customConfig}
-        isLoggedIn={isLoggedIn}
-        userType={userType}
-        companyName={companyName}
-      />
-      <main className="flex-1 profile-page-main">
-        {children}
-      </main>
+    <CartProvider>
+      <div className="min-h-screen flex flex-col">
+        <Layout
+          categories={categories}
+          customConfig={customConfig}
+          isLoggedIn={isLoggedIn}
+          userType={userType}
+          companyName={companyName}
+        />
+        <main className="flex-1 profile-page-main">
+          {children}
+        </main>
 
-      {/* Desktop Footer - Hidden on mobile */}
-      <div className="hidden md:block">
-        <Footer />
+        {/* Desktop Footer - Hidden on mobile */}
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+
+        {/* Mobile Footer - Hidden on desktop */}
+        <div className="md:hidden">
+          <AboutSectionMobile />
+          <FooterLite />
+        </div>
+
+        {/* Floating Action Buttons */}
+        <FloatingActionCard
+          whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}
+          showSurvey={false}
+        />
       </div>
-
-      {/* Mobile Footer - Hidden on desktop */}
-      <div className="md:hidden">
-        <AboutSectionMobile />
-        <FooterLite />
-      </div>
-
-      {/* Floating Action Buttons */}
-      <FloatingActionCard
-        whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}
-        showSurvey={false}
-      />
-    </div>
+    </CartProvider>
   )
 }
 

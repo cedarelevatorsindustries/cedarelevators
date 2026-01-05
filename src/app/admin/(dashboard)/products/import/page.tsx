@@ -2,20 +2,19 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { toast } from 'sonner'
-import { ArrowLeft, Upload, Download, LoaderCircle, CircleCheck, XCircle, AlertTriangle, FileWarning } from 'lucide-react'
+import {
+  ArrowLeft, Upload, Download, LoaderCircle, CircleCheck, XCircle,
+  AlertTriangle, FileWarning, FileText, CheckCircle2, Info
+} from 'lucide-react'
 import Link from 'next/link'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import type { PreviewResult, ProductGroup, ImportResult, ValidationError, ProductVariant, ImportError } from '@/types/csv-import.types'
 
-type Step = 'upload' | 'preview' | 'confirm' | 'results'
+type Step = 'upload' | 'review' | 'importing' | 'results'
 
 export default function ProductImportPage() {
   const router = useRouter()
@@ -24,6 +23,7 @@ export default function ProductImportPage() {
   const [loading, setLoading] = useState(false)
   const [previewData, setPreviewData] = useState<PreviewResult | null>(null)
   const [importResults, setImportResults] = useState<ImportResult | null>(null)
+  const [importProgress, setImportProgress] = useState(0)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -57,8 +57,8 @@ export default function ProductImportPage() {
 
       if (data.success) {
         setPreviewData(data)
-        setCurrentStep('preview')
-        toast.success(`Preview loaded: ${data.totalProducts} products, ${data.totalVariants} variants`)
+        setCurrentStep('review')
+        toast.success(`Validation complete: ${data.totalProducts} products, ${data.totalVariants} variants`)
       } else {
         toast.error(data.blockingErrors?.[0]?.message || 'Failed to preview import')
       }
@@ -77,7 +77,16 @@ export default function ProductImportPage() {
     }
 
     setLoading(true)
-    setCurrentStep('results')
+    setCurrentStep('importing')
+    setImportProgress(0)
+
+    // Simulate progress updates
+    const progressInterval = setInterval(() => {
+      setImportProgress(prev => {
+        if (prev >= 90) return prev
+        return prev + Math.random() * 15
+      })
+    }, 500)
 
     try {
       const response = await fetch('/api/admin/products/import/execute', {
@@ -87,38 +96,175 @@ export default function ProductImportPage() {
       })
 
       const data: ImportResult = await response.json()
-      setImportResults(data)
 
-      if (data.success) {
-        toast.success(`Import completed successfully!`)
-      } else {
-        toast.error(`Import completed with errors`)
-      }
+      clearInterval(progressInterval)
+      setImportProgress(100)
+
+      setTimeout(() => {
+        setImportResults(data)
+        setCurrentStep('results')
+
+        if (data.success) {
+          toast.success(`Import completed successfully!`)
+        } else {
+          toast.error(`Import completed with ${data.errors?.length || 0} errors`)
+        }
+      }, 500)
+
     } catch (error) {
+      clearInterval(progressInterval)
       console.error('Error importing products:', error)
       toast.error('Failed to import products')
+      setCurrentStep('review')
     } finally {
       setLoading(false)
     }
   }
 
-  const downloadTemplate = async () => {
-    try {
-      const response = await fetch('/api/admin/products/import/template')
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'product-import-template.csv'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      toast.success('Template downloaded')
-    } catch (error) {
-      toast.error('Failed to download template')
-    }
+
+  const downloadTemplate = () => {
+    const headers = [
+      'title',
+      'description',
+      'short_description',
+      'image',
+      'base_price',
+      'compare_price',
+      'cost_per_item',
+      'stock_quantity',
+      'low_stock_threshold',
+      'allow_backorder',
+      'applications',
+      'categories',
+      'subcategories',
+      'types',
+      'collections',
+      'attributes',
+      'tags',
+      'variant_title',
+      'variant_option_1',
+      'variant_option_1_value',
+      'variant_option_2',
+      'variant_option_2_value',
+      'variant_price',
+      'variant_stock',
+      'status'
+    ].join(',')
+
+    const sampleData = [
+      // Product 1: Simple product (no variants)
+      [
+        'Gearless Traction Motor',
+        'High-efficiency permanent magnet synchronous motor for modern elevator systems. Features whisper-quiet operation and energy savings up to 40%.',
+        'PMSM motor with energy savings',
+        '', // image
+        '45000',
+        '55000',
+        '32000',
+        '25',
+        '5',
+        'FALSE',
+        '"traction, service"',
+        'motors',
+        'traction motors',
+        'industrial elevators',
+        '"trending this months, new drops"',
+        `"${JSON.stringify({
+          rated_load_capacity: "1000 kg",
+          rated_speed: "1.75 m/s",
+          motor_power_rating: "11 kW",
+          traction_sheave_diameter: "400 mm"
+        }).replace(/"/g, '""')}"`, // Escape quotes for CSV
+        '"PMSM, Gearless, High Efficiency, Traction Machine, Lift Motor"',
+        'Gearless Motor 1.0 m/s / 320 mm',
+        'Rated Speed',
+        '1.0 m/s',
+        'Sheave Diameter',
+        '320 mm',
+        '45000',
+        '20',
+        'active'
+      ].join(','),
+
+      // Product 2: Variable product (Row 1 - Hairline SS Blue LED)
+      [
+        'Designer COP Panel',
+        'Premium stainless steel car operating panel with tactile buttons and LED indicators. Modern design complements any elevator interior.',
+        'Premium COP with LED display',
+        '',
+        '15000',
+        '18000',
+        '10000',
+        '50',
+        '10',
+        'FALSE',
+        '"modernization, testing"',
+        'pannels',
+        'Accessories',
+        'hospital lifts',
+        'best sellers',
+        `"${JSON.stringify({
+          faceplate_finish: "Mirror Etched Stainless Steel",
+          display_interface: "7-inch TFT Color LCD"
+        }).replace(/"/g, '""')}"`,
+        '"LCD Display, Stainless Steel, Elevator Fixture"',
+        'COP Hairline SS - Blue LED',
+        'Faceplate Finish',
+        'Hairline Stainless Steel',
+        'Button LED Color',
+        'Blue',
+        '15000',
+        '20',
+        'active'
+      ].join(','),
+
+      // Product 2: Variable product (Row 2 - Green LED, same product)
+      [
+        'Designer COP Panel',
+        'Premium stainless steel car operating panel with tactile buttons and LED indicators. Modern design complements any elevator interior.',
+        'Premium COP with LED display',
+        '',
+        '15000',
+        '18000',
+        '10000',
+        '50',
+        '10',
+        'FALSE',
+        '"modernization, testing"',
+        'pannels',
+        'Accessories',
+        'hospital lifts',
+        'best sellers',
+        `"${JSON.stringify({
+          faceplate_finish: "Mirror Etched Stainless Steel",
+          display_interface: "7-inch TFT Color LCD"
+        }).replace(/"/g, '""')}"`,
+        '"LCD Display, Stainless Steel, Elevator Fixture"',
+        'COP Hairline SS - Green LED',
+        'Faceplate Finish',
+        'Hairline Stainless Steel',
+        'Button LED Color',
+        'green',
+        '15000',
+        '20',
+        'active'
+      ].join(',')
+    ].join('\n')
+
+    const csvContent = `${headers}\n${sampleData}`
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'product-import-template.csv'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+    toast.success('Template downloaded')
   }
+
+
 
   const downloadErrorReport = () => {
     if (!importResults?.errors) return
@@ -146,527 +292,535 @@ export default function ProductImportPage() {
   }
 
   return (
-    <div className="space-y-8" data-testid="product-import-page">
-      {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Link href="/admin/products">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">Bulk Import Products</h1>
-          <p className="text-lg text-gray-600 mt-2">Import products and variants from CSV file</p>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Link href="/admin/products">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Bulk Import Products</h1>
+            <p className="text-gray-600 mt-1">Import products and variants from CSV file</p>
+          </div>
         </div>
-      </div>
 
-      {/* Progress Indicator */}
-      <div className="flex items-center justify-center space-x-4">
-        <div className={`flex items-center space-x-2 ${currentStep === 'upload' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'upload' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>1</div>
-          <span>Upload</span>
-        </div>
-        <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'preview' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'preview' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>2</div>
-          <span>Preview</span>
-        </div>
-        <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'confirm' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'confirm' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>3</div>
-          <span>Confirm</span>
-        </div>
-        <div className="h-0.5 w-12 bg-gray-300" />
-        <div className={`flex items-center space-x-2 ${currentStep === 'results' ? 'text-orange-600 font-semibold' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'results' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}>4</div>
-          <span>Results</span>
-        </div>
-      </div>
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center gap-4 py-6">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep === 'upload' ? 'bg-orange-600 text-white' : 'bg-green-500 text-white'
+              }`}>
+              {currentStep === 'upload' ? '1' : <CheckCircle2 className="w-5 h-5" />}
+            </div>
+            <span className={`font-medium ${currentStep === 'upload' ? 'text-orange-600' : 'text-gray-600'}`}>
+              Upload
+            </span>
+          </div>
 
-      {/* Step 1: Upload */}
-      {currentStep === 'upload' && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card data-testid="upload-card">
-            <CardHeader>
-              <CardTitle>Upload CSV File</CardTitle>
-              <CardDescription>Select a CSV file to import products and variants</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-400 transition-colors">
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <label htmlFor="csv-upload" className="cursor-pointer">
-                  <span className="text-orange-600 hover:text-orange-700 font-medium">
-                    Choose a CSV file
-                  </span>
+          <div className="w-24 h-0.5 bg-gray-300"></div>
+
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep === 'review' || currentStep === 'importing' ? 'bg-orange-600 text-white' :
+              currentStep === 'results' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+              {currentStep === 'results' ? <CheckCircle2 className="w-5 h-5" /> : '2'}
+            </div>
+            <span className={`font-medium ${currentStep === 'review' || currentStep === 'importing' ? 'text-orange-600' : 'text-gray-600'}`}>
+              Review
+            </span>
+          </div>
+
+          <div className="w-24 h-0.5 bg-gray-300"></div>
+
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep === 'results' ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+              3
+            </div>
+            <span className={`font-medium ${currentStep === 'results' ? 'text-orange-600' : 'text-gray-600'}`}>
+              Results
+            </span>
+          </div>
+        </div>
+
+        {/* Step 1: Upload */}
+        {currentStep === 'upload' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload CSV File</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Drag & Drop Area */}
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-orange-400 transition-colors bg-gray-50">
                   <input
-                    id="csv-upload"
                     type="file"
                     accept=".csv"
-                    className="hidden"
                     onChange={handleFileChange}
-                    disabled={loading}
-                    data-testid="csv-file-input"
+                    className="hidden"
+                    id="csv-upload"
                   />
-                </label>
+                  <label htmlFor="csv-upload" className="cursor-pointer">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900">
+                          Drag & drop your CSV file here
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          or <span className="text-orange-600 font-medium">choose file</span> to upload
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* File Info */}
                 {file && (
-                  <p className="mt-2 text-sm text-gray-600" data-testid="selected-file-name">{file.name}</p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                    <div className="flex-1">
+                      <p className="font-medium text-blue-900">{file.name}</p>
+                      <p className="text-sm text-blue-700">{(file.size / 1024).toFixed(2)} KB</p>
+                    </div>
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  </div>
                 )}
-              </div>
 
-              <div className="space-y-3">
-                <Button
-                  onClick={handlePreview}
-                  disabled={!file || loading}
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  data-testid="preview-button"
-                >
-                  {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  {loading ? 'Loading Preview...' : 'Preview Import'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Accordion type="single" collapsible defaultValue="template">
-            <AccordionItem value="template" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-0">
-                <CardHeader className="p-0 w-full text-left">
-                  <CardTitle>CSV Template & Guidelines</CardTitle>
-                  <CardDescription>Download the template to see the required format</CardDescription>
-                </CardHeader>
-              </AccordionTrigger>
-              <AccordionContent className="pt-6">
-                <Card className="border-none shadow-none p-0">
-                  <CardContent className="space-y-6 p-0">
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-sm text-orange-900 mb-2">⚠️ IMPORTANT: Pre-Import Checklist</h4>
-                      <p className="text-xs text-orange-700 mb-3">CSV will NOT create catalog structure. Ensure these exist first:</p>
-                      <ul className="text-sm text-orange-800 space-y-2">
-                        <li className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                          Applications created
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                          Categories & Subcategories created
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                          Elevator Types created
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                          Collections created (optional)
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-orange-600 rounded"></span>
-                          CSV follows template format
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-sm text-blue-900 mb-2">✅ Key Rules:</h4>
-                      <ul className="text-sm text-blue-800 space-y-1">
-                        <li>• <strong>One row = one variant</strong></li>
-                        <li>• Group variants by same <code className="bg-blue-100 px-1 rounded">product_title</code></li>
-                        <li>• SKUs auto-generated if not provided</li>
-                        <li>• Variant data falls back to product data</li>
-                        <li>• Invalid references → saved as Draft</li>
-                        <li>• Prices in Indian Rupees (₹)</li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-semibold text-sm text-gray-900 mb-2">Required Columns:</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li>• <strong>product_title</strong> - Product name (3+ chars)</li>
-                        <li>• <strong>short_description</strong> - Brief description</li>
-                        <li>• <strong>application_slug</strong> - Must exist in DB</li>
-                        <li>• <strong>category_slug</strong> - Must exist in DB</li>
-                        <li>• <strong>product_price</strong> - Selling price (₹)</li>
-                        <li>• <strong>product_mrp</strong> - Maximum retail price (₹)</li>
-                      </ul>
-                    </div>
-
-                    <Button
-                      onClick={downloadTemplate}
-                      variant="outline"
-                      className="w-full"
-                      data-testid="download-template-button"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download CSV Template
-                    </Button>
-                  </CardContent>
-                </Card>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      )}
-
-      {/* Step 2 & 3: Preview & Confirm */}
-      {(currentStep === 'preview' || currentStep === 'confirm') && previewData && (
-        <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-gray-900">{previewData.totalProducts}</div>
-                <div className="text-sm text-gray-600">Products</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-gray-900">{previewData.totalVariants}</div>
-                <div className="text-sm text-gray-600">Variants</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-orange-600">{previewData.blockingErrors.length}</div>
-                <div className="text-sm text-gray-600">Errors</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold text-yellow-600">{previewData.warnings.length}</div>
-                <div className="text-sm text-gray-600">Warnings</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Errors */}
-          {previewData.blockingErrors.length > 0 && (
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader>
-                <CardTitle className="flex items-center text-orange-900">
-                  <XCircle className="mr-2 h-5 w-5" />
-                  Blocking Errors ({previewData.blockingErrors.length})
-                </CardTitle>
-                <CardDescription className="text-orange-700">
-                  These errors must be fixed before importing
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-60 overflow-y-auto space-y-2">
-                  {previewData.blockingErrors.slice(0, 10).map((error: ValidationError, index: number) => (
-                    <div key={index} className="text-sm text-orange-800 bg-white p-2 rounded">
-                      <strong>Row {error.row}</strong> - {error.field}: {error.message}
-                    </div>
-                  ))}
-                  {previewData.blockingErrors.length > 10 && (
-                    <div className="text-sm text-orange-700 italic">
-                      ... and {previewData.blockingErrors.length - 10} more errors
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Warnings */}
-          {previewData.warnings.length > 0 && (
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardHeader>
-                <CardTitle className="flex items-center text-yellow-900">
-                  <AlertTriangle className="mr-2 h-5 w-5" />
-                  Warnings ({previewData.warnings.length})
-                </CardTitle>
-                <CardDescription className="text-yellow-700">
-                  These warnings won't block import but should be reviewed
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-60 overflow-y-auto space-y-2">
-                  {previewData.warnings.slice(0, 10).map((warning: ValidationError, index: number) => (
-                    <div key={index} className="text-sm text-yellow-800 bg-white p-2 rounded">
-                      <strong>Row {warning.row}</strong> - {warning.field}: {warning.message}
-                    </div>
-                  ))}
-                  {previewData.warnings.length > 10 && (
-                    <div className="text-sm text-yellow-700 italic">
-                      ... and {previewData.warnings.length - 10} more warnings
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Product Groups Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Products to Import</CardTitle>
-              <CardDescription>
-                Grouped by product_title - each product with its variants and catalog assignment
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {previewData.productGroups.slice(0, 20).map((group: ProductGroup, index: number) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{group.title}</h4>
-                        <p className="text-sm text-gray-600">Slug: {group.slug}</p>
-
-                        {/* Catalog Assignment Info */}
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          {group.application_id ? (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                              ✓ {group.application_slug}
-                            </span>
-                          ) : (
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
-                              ✗ {group.application_slug}
-                            </span>
-                          )}
-
-                          {group.category_id ? (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-                              ✓ {group.category_slug}
-                            </span>
-                          ) : (
-                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded">
-                              ✗ {group.category_slug}
-                            </span>
-                          )}
-
-                          {group.elevator_type_ids && group.elevator_type_ids.length > 0 && (
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {group.elevator_type_ids.length} elevator types
-                            </span>
-                          )}
-
-                          {group.status === 'draft' && !group.application_id && (
-                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded font-medium">
-                              Will import as DRAFT
-                            </span>
-                          )}
+                <Accordion type="single" collapsible className="w-full space-y-4">
+                  {/* Important Info */}
+                  <AccordionItem value="important" className="border-none">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg overflow-hidden">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-orange-100/50">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="w-5 h-5 text-orange-600" />
+                          <span className="font-semibold text-orange-900">IMPORTANT - BEFORE YOU IMPORT</span>
                         </div>
-                      </div>
-                      <div className="text-sm text-gray-500 ml-4">
-                        {group.variants.length} variant{group.variants.length !== 1 ? 's' : ''}
-                      </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4 pt-1">
+                        <p className="text-sm text-orange-800 mb-3 ml-8">CSV will NOT create catalog entities. Create these in admin first:</p>
+                        <ul className="text-sm text-orange-800 space-y-1.5 ml-8">
+                          <li>✓ All applications (using exact names)</li>
+                          <li>✓ All categories (using exact names)</li>
+                          <li>✓ All subcategories (using exact names)</li>
+                          <li>✓ All elevator types (using exact names)</li>
+                          <li>✓ Collections (optional)</li>
+                          <li className="text-orange-900 font-semibold mt-2">⚠️ Names must match EXACTLY (case-insensitive)</li>
+                        </ul>
+                      </AccordionContent>
                     </div>
-                    {group.errors.length > 0 && (
-                      <div className="text-xs text-red-600 mb-2 bg-red-50 p-2 rounded">
-                        ⚠️ {group.errors.length} error(s) - Review before importing
-                      </div>
-                    )}
-                    <div className="space-y-1">
-                      {group.variants.map((variant: ProductVariant, vIdx: number) => (
-                        <div key={vIdx} className="text-sm text-gray-700 flex justify-between bg-gray-50 p-2 rounded">
-                          <span>
-                            {variant.title}
-                            {variant.option1_value && ` - ${variant.option1_value}`}
-                            {variant.option2_value && ` / ${variant.option2_value}`}
-                          </span>
-                          <div className="flex gap-3">
-                            <span className="font-medium">₹{variant.price.toLocaleString('en-IN')}</span>
-                            {variant.compare_at_price && (
-                              <span className="text-gray-500 line-through text-xs">
-                                ₹{variant.compare_at_price.toLocaleString('en-IN')}
-                              </span>
-                            )}
+                  </AccordionItem>
+
+                  {/* How It Works */}
+                  <AccordionItem value="how-it-works" className="border-none">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-blue-100/50">
+                        <div className="flex items-center gap-3">
+                          <Info className="w-5 h-5 text-blue-600" />
+                          <span className="font-semibold text-blue-900">HOW THIS IMPORT WORKS</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4 pt-1">
+                        <ul className="text-sm text-blue-800 space-y-1.5 ml-8">
+                          <li><strong>✓ Use NAMES, not slugs</strong></li>
+                          <li>• One row = one variant (same title = same product)</li>
+                          <li>• <strong>Auto-generated</strong>: SKUs, Slugs, SEO metadata</li>
+                          <li>• <strong>Name resolution</strong>: Comma-separated ("Motors, Controllers")</li>
+                          <li>• <strong>Attributes</strong>: key=value;key=value format</li>
+                          <li>• Variant data inherits from product if empty</li>
+                          <li>• Missing classifications → saved as Draft with warning</li>
+                        </ul>
+                      </AccordionContent>
+                    </div>
+                  </AccordionItem>
+
+                  {/* Required Columns */}
+                  <AccordionItem value="required-columns" className="border-none">
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-100/50">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-gray-600" />
+                          <span className="font-semibold text-gray-900">Required Columns</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4 pt-1">
+                        <div className="grid grid-cols-2 gap-3 text-sm ml-1">
+                          <div>
+                            <span className="font-medium text-gray-900">title</span>
+                            <p className="text-gray-600">Product name</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">description</span>
+                            <p className="text-gray-600">Full description</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">base_price</span>
+                            <p className="text-gray-600">Selling price (₹)</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">stock_quantity</span>
+                            <p className="text-gray-600">Available stock</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">applications</span>
+                            <p className="text-gray-600">Comma-separated names</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">categories</span>
+                            <p className="text-gray-600">Comma-separated names</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">attributes</span>
+                            <p className="text-gray-600">key=value;key=value</p>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">variant_option_1</span>
+                            <p className="text-gray-600">Option name (optional)</p>
                           </div>
                         </div>
-                      ))}
+                      </AccordionContent>
+                    </div>
+                  </AccordionItem>
+                </Accordion>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-4">
+                  <Button variant="outline" onClick={downloadTemplate}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download CSV Template
+                  </Button>
+                  <Button
+                    onClick={handlePreview}
+                    disabled={!file || loading}
+                    className="bg-orange-600 hover:bg-orange-700 px-8"
+                  >
+                    {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                    Validate & Review
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Step 2: Review & Validate */}
+        {currentStep === 'review' && previewData && (
+          <div className="space-y-6">
+            {/* Validation Report Header */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Validation Report</CardTitle>
+                <CardDescription>
+                  File: {file?.name} • {previewData.totalProducts} products • {previewData.totalVariants} variants
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Data Detected</p>
+                      <p className="text-2xl font-bold text-gray-900">{previewData.totalProducts}</p>
+                      <p className="text-xs text-gray-500">{previewData.totalVariants} variants</p>
                     </div>
                   </div>
-                ))}
-                {previewData.productGroups.length > 20 && (
-                  <div className="text-sm text-gray-500 text-center italic">
-                    ... and {previewData.productGroups.length - 20} more products
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Action Buttons */}
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentStep('upload')
-                setPreviewData(null)
-              }}
-            >
-              Back to Upload
-            </Button>
-
-            {currentStep === 'preview' && (
-              <Button
-                onClick={() => setCurrentStep('confirm')}
-                disabled={previewData.blockingErrors.length > 0}
-                className="bg-orange-600 hover:bg-orange-700"
-              >
-                Continue to Confirm
-              </Button>
-            )}
-
-            {currentStep === 'confirm' && (
-              <Button
-                onClick={handleImport}
-                disabled={loading || previewData.blockingErrors.length > 0}
-                className="bg-orange-600 hover:bg-orange-700"
-                data-testid="confirm-import-button"
-              >
-                {loading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                {loading ? 'Importing...' : 'Confirm & Import'}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: Results */}
-      {currentStep === 'results' && importResults && (
-        <div className="space-y-6">
-          {/* Success/Failure Banner */}
-          <Card className={importResults.success ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'}>
-            <CardHeader>
-              <CardTitle className={`flex items-center ${importResults.success ? 'text-green-900' : 'text-yellow-900'}`}>
-                {importResults.success ? (
-                  <>
-                    <CircleCheck className="mr-2 h-6 w-6" />
-                    Import Completed Successfully!
-                  </>
-                ) : (
-                  <>
-                    <FileWarning className="mr-2 h-6 w-6" />
-                    Import Completed with Errors
-                  </>
-                )}
-              </CardTitle>
-              <CardDescription className={importResults.success ? 'text-green-700' : 'text-yellow-700'}>
-                Duration: {(importResults.duration / 1000).toFixed(2)}s
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          {/* Results Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">{importResults.productsCreated}</div>
-                    <div className="text-sm text-gray-600">Products Created</div>
-                  </div>
-                  <CircleCheck className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">{importResults.productsUpdated}</div>
-                    <div className="text-sm text-gray-600">Products Updated</div>
-                  </div>
-                  <CircleCheck className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">{importResults.variantsCreated}</div>
-                    <div className="text-sm text-gray-600">Variants Created</div>
-                  </div>
-                  <CircleCheck className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">{importResults.variantsUpdated}</div>
-                    <div className="text-sm text-gray-600">Variants Updated</div>
-                  </div>
-                  <CircleCheck className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">{importResults.failed}</div>
-                    <div className="text-sm text-gray-600">Failed</div>
-                  </div>
-                  <XCircle className="h-8 w-8 text-orange-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Error Details */}
-          {importResults.errors && importResults.errors.length > 0 && (
-            <Card className="border-orange-200">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-orange-900">
-                  <span className="flex items-center">
-                    <XCircle className="mr-2 h-5 w-5" />
-                    Import Errors ({importResults.errors.length})
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={downloadErrorReport}
-                    className="text-orange-700 border-orange-300"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Error Report
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-96 overflow-y-auto space-y-2">
-                  {importResults.errors.map((error: ImportError, index: number) => (
-                    <div key={index} className="text-sm bg-red-50 p-3 rounded border border-red-200">
-                      <div className="font-medium text-red-900">
-                        {error.productTitle} {error.variantSku && `(${error.variantSku})`}
-                      </div>
-                      <div className="text-red-700">{error.message}</div>
-                      {error.details && (
-                        <div className="text-red-600 text-xs mt-1 font-mono">{error.details.substring(0, 200)}</div>
+              <Card className={previewData.blockingErrors.length > 0 ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${previewData.blockingErrors.length > 0 ? 'bg-red-100' : 'bg-green-100'
+                      }`}>
+                      {previewData.blockingErrors.length > 0 ? (
+                        <XCircle className="w-6 h-6 text-red-600" />
+                      ) : (
+                        <CheckCircle2 className="w-6 h-6 text-green-600" />
                       )}
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-sm text-gray-600">Blocking Errors</p>
+                      <p className={`text-2xl font-bold ${previewData.blockingErrors.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {previewData.blockingErrors.length}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Warnings (Non-fatal)</p>
+                      <p className="text-2xl font-bold text-yellow-600">{previewData.warnings.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Blocking Errors */}
+            {previewData.blockingErrors.length > 0 && (
+              <Card className="border-red-200">
+                <CardHeader className="bg-red-50">
+                  <CardTitle className="text-red-900 flex items-center gap-2">
+                    <XCircle className="w-5 h-5" />
+                    ❌ Errors (Blocking) - {previewData.blockingErrors.length}
+                  </CardTitle>
+                  <CardDescription className="text-red-700">
+                    Fix these errors in your CSV and re-upload to proceed
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {previewData.blockingErrors.map((error: ValidationError, index: number) => (
+                      <div key={index} className="bg-white border border-red-200 rounded-lg p-3">
+                        <div className="flex items-start gap-3">
+                          <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-medium">
+                            Row {error.row}
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{error.field}</p>
+                            <p className="text-sm text-red-700">{error.message}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Warnings */}
+            {previewData.warnings.length > 0 && (
+              <Card className="border-yellow-200">
+                <CardHeader className="bg-yellow-50">
+                  <CardTitle className="text-yellow-900 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    ⚠️ Warnings (Will Not Block) - {previewData.warnings.length}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {previewData.warnings.slice(0, 5).map((warning: ValidationError, index: number) => (
+                      <div key={index} className="bg-white border border-yellow-200 rounded-lg p-3">
+                        <div className="flex items-start gap-3">
+                          <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-medium">
+                            Row {warning.row}
+                          </span>
+                          <p className="text-sm text-yellow-800">{warning.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Preview Table */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Preview (First 10 Rows)</CardTitle>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Warning
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-medium text-gray-600">SKU</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-600">PRODUCT TITLE</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-600">CATEGORY</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-600">PRICE (₹)</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-600">STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {previewData.productGroups.slice(0, 10).map((group: ProductGroup, index: number) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-600">Auto-generated</td>
+                          <td className="px-4 py-3 font-medium text-gray-900">{group.title}</td>
+                          <td className="px-4 py-3 text-gray-600">{group.category_slug}</td>
+                          <td className="px-4 py-3 text-gray-900">₹{group.price.toLocaleString('en-IN')}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${group.status === 'active' ? 'bg-green-100 text-green-800' :
+                              group.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                              {group.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {previewData.productGroups.length > 10 && (
+                  <div className="text-center py-4 text-sm text-gray-500">
+                    ... and {previewData.productGroups.length - 10} more rows
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCurrentStep('upload')
+                  setPreviewData(null)
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Fix CSV & Re-upload
+              </Button>
+              <Button
+                onClick={handleImport}
+                disabled={previewData.blockingErrors.length > 0}
+                className="bg-orange-600 hover:bg-orange-700 px-8"
+              >
+                Import Products
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Importing (Progress) */}
+        {currentStep === 'importing' && (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Card className="w-full max-w-md">
+              <CardContent className="p-8">
+                <div className="text-center space-y-6">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                    <LoaderCircle className="w-8 h-8 text-orange-600 animate-spin" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Importing Products...</h3>
+                    <p className="text-gray-600">Please wait while we process your CSV file</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Progress value={importProgress} className="h-2" />
+                    <p className="text-sm font-medium text-orange-600">{Math.round(importProgress)}%</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setFile(null)
-                setPreviewData(null)
-                setImportResults(null)
-                setCurrentStep('upload')
-              }}
-            >
-              Import Another File
-            </Button>
-            <Link href="/admin/products">
-              <Button className="bg-orange-600 hover:bg-orange-700" data-testid="view-products-button">
-                View Products
-              </Button>
-            </Link>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Step 4: Results */}
+        {currentStep === 'results' && importResults && (
+          <div className="space-y-6">
+            {/* Success Banner */}
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="p-8">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-green-900">Import Completed</h2>
+                    <p className="text-green-700 mt-1">Your CSV file has been processed successfully</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle2 className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-green-700">All Products Created</p>
+                      <p className="text-2xl font-bold text-green-900">{importResults.productsCreated}</p>
+                      <p className="text-xs text-green-600">These items are now live in your catalog</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {importResults.failed > 0 && (
+                <Card className="border-yellow-200 bg-yellow-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-yellow-700">Saved as Draft</p>
+                        <p className="text-2xl font-bold text-yellow-900">{importResults.failed}</p>
+                        <p className="text-xs text-yellow-600">Due to missing catalog references or invalid data</p>
+                        <Button variant="link" className="text-yellow-700 p-0 h-auto text-xs mt-1">
+                          Review Drafts →
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* What You Can Do Next */}
+            <Card>
+              <CardHeader>
+                <CardTitle>WHAT YOU CAN DO NEXT</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4">
+                  <Link href="/admin/products">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                      <FileText className="mr-2 h-4 w-4" />
+                      View All Products
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="w-full">
+                    <Download className="mr-2 h-4 w-4" />
+                    Import Another CSV
+                  </Button>
+                  <Button variant="outline" className="w-full" onClick={downloadErrorReport}>
+                    <FileWarning className="mr-2 h-4 w-4" />
+                    View Import Log
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Help Text */}
+            <p className="text-center text-sm text-gray-500">
+              ℹ️ Need support? You can edit the import from the <Link href="/admin/products" className="text-orange-600 hover:underline">product table</Link> page.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
-

@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { ProductGroup, ImportResult, ImportError } from '@/types/csv-import.types'
-import { generateProductSKU, generateVariantSKU } from '@/lib/utils/sku-generator'
-import { generateSlug, generateMetaTitle, generateMetaDescription } from '@/lib/utils/seo-generator'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { ProductGroup, ImportResult, ImportError } from '@/lib/types/csv-import'
 
 /**
  * POST /api/admin/products/import/execute
- * Executes bulk import of products and variants
+ * Executes bulk import of products and variants using junction table architecture
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
-  const supabase = createServerSupabaseClient()
-
-  if (!supabase) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create Supabase client' },
-      { status: 500 }
-    )
-  }
+  const supabase = createAdminClient() // Use admin client for service-role access
 
   try {
     const { productGroups } = await request.json()
@@ -35,8 +26,6 @@ export async function POST(request: NextRequest) {
       productsCreated: 0,
       productsUpdated: 0,
       variantsCreated: 0,
-      variantsUpdated: 0,
-      failed: 0,
       errors: []
     }
 
@@ -46,7 +35,6 @@ export async function POST(request: NextRequest) {
         await importProductGroup(supabase, group, result)
       } catch (error) {
         console.error(`Error importing product ${group.title}:`, error)
-        result.failed++
         result.errors!.push({
           productTitle: group.title,
           message: error instanceof Error ? error.message : 'Unknown error',
@@ -74,70 +62,48 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Imports a single product group with its variants
+ * Imports a single product group with its variants using junction tables
  */
 async function importProductGroup(
   supabase: any,
   group: ProductGroup,
   result: ImportResult
 ): Promise<void> {
-  // Generate product SKU
-  const categoryName = group.category_slug || 'GENERAL'
-  const productSKU = await generateProductSKU(categoryName)
-
-  // Generate SEO metadata
-  const slug = generateSlug(group.title)
-  const metaTitle = generateMetaTitle(group.title)
-  const metaDescription = generateMetaDescription(
-    group.title,
-    group.application_id ? 'elevator' : undefined,
-    group.elevator_type_slugs
-  )
-
-  // Prepare product data
+  // Prepare product data (NO direct foreign keys for applications/categories)
   const productData = {
     name: group.title,
-    slug,
-    sku: productSKU,
-    description: group.description || group.short_description,
+    slug: group.slug,
+    sku: group.sku,
+    description: group.description,
     short_description: group.short_description,
     status: group.status,
-    price: group.price,
-    compare_at_price: group.compare_at_price,
-    stock_quantity: group.stock_quantity,
-    track_inventory: group.track_inventory,
+    thumbnail_url: group.image_url || null,
 
-    // Catalog relationships (can be null if not found)
-    application_id: group.application_id || null,
-    category_id: group.category_id || null,
-    subcategory_id: group.subcategory_id || null,
-    is_categorized: !!(group.application_id && group.category_id),
+    // Pricing
+    price: group.base_price,
+    compare_at_price: group.compare_price || null,
+    cost_per_item: group.cost_per_item || null,
+
+    // Inventory (product-level defaults)
+    stock_quantity: group.stock_quantity,
+    track_inventory: true,
+    allow_backorders: group.allow_backorder,
+    low_stock_threshold: group.low_stock_threshold,
 
     // SEO
-    meta_title: metaTitle,
-    meta_description: metaDescription,
+    meta_title: group.meta_title,
+    meta_description: group.meta_description,
 
-    // Images (placeholder)
-    thumbnail: '/images/product-placeholder.png',
-    images: [
-      {
-        id: '1',
-        url: '/images/product-placeholder.png',
-        alt: group.title,
-        is_primary: true,
-        sort_order: 0
-      }
-    ],
-
-    // Defaults
+    // Other
     is_featured: false,
     view_count: 0,
-    dimensions: { unit: 'cm' },
-    specifications: group.variants[0]?.attributes ?
-      Object.entries(group.variants[0].attributes).map(([key, value]) => ({
-        key,
-        value: String(value)
-      })) : []
+    tags: group.tags,
+
+    // Specifications (attributes)
+    specifications: Object.entries(group.attributes).map(([key, value]) => ({
+      key,
+      value
+    }))
   }
 
   // Insert product
@@ -152,73 +118,160 @@ async function importProductGroup(
   }
 
   result.productsCreated++
+  const productId = product.id
 
-  // Insert variants
+  // Create junction table entries for classifications
+  await createJunctionTableEntries(supabase, productId, group)
+
+  // Create variants
   for (const variant of group.variants) {
     try {
-      const variantSKU = generateVariantSKU(
-        productSKU,
-        variant.option1_value,
-        variant.option2_value
-      )
-
-      const variantData = {
-        product_id: product.id,
-        name: variant.title,
-        sku: variantSKU,
-        price: variant.price,
-        compare_at_price: variant.compare_at_price,
-        inventory_quantity: variant.stock,
-        status: 'active',
-        option1_name: variant.option1_name || null,
-        option1_value: variant.option1_value || null,
-        option2_name: variant.option2_name || null,
-        option2_value: variant.option2_value || null,
-        image_url: '/images/product-placeholder.png'
-      }
-
-      const { error: variantError } = await supabase
-        .from('product_variants')
-        .insert(variantData)
-
-      if (variantError) {
-        throw new Error(`Failed to create variant ${variantSKU}: ${variantError.message}`)
-      }
-
+      await createVariant(supabase, productId, variant, group)
       result.variantsCreated++
-
     } catch (error) {
-      result.errors!.push({
-        productTitle: group.title,
-        variantSku: variant.sku,
-        message: error instanceof Error ? error.message : 'Failed to create variant'
-      })
+      console.error(`Error creating variant for ${group.title}:`, error)
+      // Continue with other variants
     }
-  }
-
-  // Create elevator types relationships
-  if (group.elevator_type_ids && group.elevator_type_ids.length > 0) {
-    const elevatorTypeRelations = group.elevator_type_ids.map(typeId => ({
-      product_id: product.id,
-      elevator_type_id: typeId
-    }))
-
-    await supabase
-      .from('product_elevator_types')
-      .insert(elevatorTypeRelations)
-  }
-
-  // Create collections relationships
-  if (group.collection_ids && group.collection_ids.length > 0) {
-    const collectionRelations = group.collection_ids.map((collectionId, idx) => ({
-      product_id: product.id,
-      collection_id: collectionId,
-      position: idx
-    }))
-
-    await supabase
-      .from('collection_products')
-      .insert(collectionRelations)
   }
 }
 
+/**
+ * Creates junction table entries for product classifications
+ */
+async function createJunctionTableEntries(
+  supabase: any,
+  productId: string,
+  group: ProductGroup
+): Promise<void> {
+  // Applications (stored in product_categories with type='application')
+  if (group.application_ids.length > 0) {
+    const applicationEntries = group.application_ids.map((categoryId, index) => ({
+      product_id: productId,
+      category_id: categoryId,
+      is_primary: index === 0, // First one is primary
+      position: index
+    }))
+
+    const { error } = await supabase
+      .from('product_categories')
+      .insert(applicationEntries)
+
+    if (error) {
+      console.error('Error creating application assignments:', error)
+    }
+  }
+
+  // Categories
+  if (group.category_ids.length > 0) {
+    const categoryEntries = group.category_ids.map((categoryId, index) => ({
+      product_id: productId,
+      category_id: categoryId,
+      is_primary: index === 0,
+      position: index
+    }))
+
+    const { error } = await supabase
+      .from('product_categories')
+      .insert(categoryEntries)
+
+    if (error) {
+      console.error('Error creating category assignments:', error)
+    }
+  }
+
+  // Subcategories
+  if (group.subcategory_ids.length > 0) {
+    const subcategoryEntries = group.subcategory_ids.map((categoryId, index) => ({
+      product_id: productId,
+      category_id: categoryId,
+      is_primary: index === 0,
+      position: index
+    }))
+
+    const { error } = await supabase
+      .from('product_categories')
+      .insert(subcategoryEntries)
+
+    if (error) {
+      console.error('Error creating subcategory assignments:', error)
+    }
+  }
+
+  // Elevator Types
+  if (group.type_ids.length > 0) {
+    const typeEntries = group.type_ids.map(typeId => ({
+      product_id: productId,
+      elevator_type_id: typeId
+    }))
+
+    const { error } = await supabase
+      .from('product_types')
+      .insert(typeEntries)
+
+    if (error) {
+      console.error('Error creating type assignments:', error)
+    }
+  }
+
+  // Collections
+  if (group.collection_ids.length > 0) {
+    const collectionEntries = group.collection_ids.map(collectionId => ({
+      product_id: productId,
+      collection_id: collectionId
+    }))
+
+    const { error } = await supabase
+      .from('product_collections')
+      .insert(collectionEntries)
+
+    if (error) {
+      console.error('Error creating collection assignments:', error)
+    }
+  }
+}
+
+/**
+ * Creates a variant for a product
+ */
+async function createVariant(
+  supabase: any,
+  productId: string,
+  variant: ProductGroup['variants'][0],
+  group: ProductGroup
+): Promise<void> {
+  const variantData = {
+    product_id: productId,
+    title: variant.title,
+    sku: variant.sku,
+    price: variant.price,
+    compare_at_price: group.compare_price || null,
+    cost_per_item: group.cost_per_item || null,
+
+    // Inventory
+    stock_quantity: variant.stock,
+    track_inventory: true,
+    allow_backorders: group.allow_backorder,
+    low_stock_threshold: group.low_stock_threshold,
+
+    // Options
+    option1_name: variant.option1_name || null,
+    option1_value: variant.option1_value || null,
+    option2_name: variant.option2_name || null,
+    option2_value: variant.option2_value || null,
+
+    // Image (inherit from product if not specified)
+    image_url: group.image_url || null,
+
+    // Status
+    is_active: group.status === 'active',
+    position: 0
+  }
+
+  const { error } = await supabase
+    .from('product_variants')
+    .insert(variantData)
+
+  if (error) {
+    throw new Error(`Failed to create variant: ${error.message}`)
+  }
+}

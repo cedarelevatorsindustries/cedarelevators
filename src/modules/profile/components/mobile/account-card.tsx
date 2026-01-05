@@ -177,6 +177,15 @@ export default function AccountCard({ user, accountType, isVerified = false }: A
         )}
       </div>
 
+      {/* Edit Profile Button - Always shown for logged-in users */}
+      <Link
+        href="/profile/account"
+        className="w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium h-11 rounded-lg transition-colors mb-3"
+      >
+        <User size={16} />
+        Edit Profile
+      </Link>
+
       {/* CTA Button (if applicable) */}
       {cta?.primary && (
         <>

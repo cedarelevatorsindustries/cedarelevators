@@ -83,10 +83,18 @@ export default function ResetPasswordForm() {
           <input
             type="text"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value
+              if (value === "" || (/^\d+$/.test(value) && value.length <= 6)) {
+                setCode(value)
+              }
+            }}
             placeholder="Enter 6-digit code"
             required
-            className="w-full rounded-lg text-gray-900 focus:outline-0 focus:ring-2 focus:ring-[#2D5BFF]/50 border border-gray-300 bg-white focus:border-[#2D5BFF] h-12 placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
+            maxLength={6}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            className="w-full rounded-lg text-gray-900 focus:outline-0 focus:ring-2 focus:ring-[#2D5BFF]/50 border border-gray-300 bg-white focus:border-[#2D5BFF] h-12 placeholder:text-gray-500 px-4 text-base font-normal leading-normal tracking-widest text-center font-semibold"
           />
         </div>
 

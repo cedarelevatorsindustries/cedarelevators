@@ -44,73 +44,7 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
       />
     )
   }
-  // Mock data for Top Applications converted to Product structure
-  const elevatorTypes: Product[] = [
-    {
-      id: "House-lift",
-      title: "House Elevator Kit",
-      handle: "House-elevator-kit",
-      thumbnail: "/images/image.png",
-      description: "Complete residential elevator system",
-      metadata: { category: "Residential" },
-      variants: [{
-        id: "v1",
-        title: "Default",
-        calculated_price: {
-          calculated_amount: 45000000,
-          currency_code: "inr"
-        }
-      }]
-    } as unknown as Product,
-    {
-      id: "passenger-lift",
-      title: "Commercial Passenger Lift",
-      handle: "commercial-passenger-lift",
-      thumbnail: "/images/image.png",
-      description: "High-capacity office building elevator",
-      metadata: { category: "Commercial" },
-      variants: [{
-        id: "v2",
-        title: "Default",
-        calculated_price: {
-          calculated_amount: 82000000,
-          currency_code: "inr"
-        }
-      }]
-    } as unknown as Product,
-    {
-      id: "hospital-lift",
-      title: "Stretcher Lift System",
-      handle: "stretcher-lift-system",
-      thumbnail: "/images/image.png",
-      description: "Medical grade reliable transport",
-      metadata: { category: "Healthcare" },
-      variants: [{
-        id: "v3",
-        title: "Default",
-        calculated_price: {
-          calculated_amount: 125000000,
-          currency_code: "inr"
-        }
-      }]
-    } as unknown as Product,
-    {
-      id: "goods-lift",
-      title: "Heavy Duty Goods Lift",
-      handle: "heavy-duty-goods-lift",
-      thumbnail: "/images/image.png",
-      description: "Industrial cargo solution",
-      metadata: { category: "Industrial" },
-      variants: [{
-        id: "v4",
-        title: "Default",
-        calculated_price: {
-          calculated_amount: 65000000,
-          currency_code: "inr"
-        }
-      }]
-    } as unknown as Product
-  ]
+
 
   return (
     <div className="pb-24 bg-gray-50 space-y-6">
@@ -148,58 +82,9 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
         </div>
       </div>
 
-      {/* 2. Trending Collections - Horizontal Scroll with Product Cards */}
-      <div className="bg-white py-6">
-        <div className="px-4 mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Trending Collections</h2>
-          <p className="text-xs text-gray-500">Most popular items across categories</p>
-        </div>
-
-        <div className="flex gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide">
-          {products.slice(0, 6).map((product) => {
-            // Inject category into metadata for the badge
-            const productWithCategory = {
-              ...product,
-              metadata: {
-                ...product.metadata,
-                category: product.categories?.[0]?.name || "Component"
-              }
-            }
-
-            return (
-              <div key={product.id} className="min-w-[200px] w-[200px] flex-shrink-0">
-                <ProductCard
-                  product={productWithCategory}
-                  variant="special"
-                />
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* 3. Shop by Elevator Type - Reused Component */}
+      {/* 2. Shop by Elevator Type - Reused Component */}
       <ElevatorTypesMobile elevatorTypes={[]} />
 
-      {/* 4. Top Applications - Horizontal Scroll Elevator Types */}
-      <div className="bg-white py-6">
-        <div className="px-4 mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Top Applications</h2>
-          <p className="text-xs text-gray-500">Complete elevator systems by type</p>
-        </div>
-
-        <div className="flex gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide">
-          {elevatorTypes.map((item) => (
-            <div key={item.id} className="min-w-[200px] w-[200px] flex-shrink-0">
-              <ProductCard
-                product={item}
-                variant="special"
-                badge="top-application"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

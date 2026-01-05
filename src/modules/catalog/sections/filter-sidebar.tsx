@@ -344,7 +344,7 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
 
         {/* Promotional Banner */}
         <div className="mt-6 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg p-6 border border-orange-200">
-          <h4 className="font-bold text-gray-900 mb-2">Get 15% Off</h4>
+          <h4 className="font-bold text-gray-900 mb-2">Get Exclusive Offers</h4>
           <p className="text-sm text-gray-700 mb-4">
             Sign up for your first order discount
           </p>

@@ -18,9 +18,14 @@ export async function getCollections(filters?: CollectionFilters) {
     try {
         const supabase = await createClerkSupabaseClient()
 
+        // Calculate pagination
+        const page = filters?.page || 1
+        const limit = filters?.limit || 20
+        const offset = (page - 1) * limit
+
         let query = supabase
             .from('collections')
-            .select('*')
+            .select('*', { count: 'exact' })
             .order('sort_order', { ascending: true })
             .order('title', { ascending: true })
 
@@ -54,12 +59,10 @@ export async function getCollections(filters?: CollectionFilters) {
             query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
         }
 
-        // Apply limit if provided
-        if (filters?.limit) {
-            query = query.limit(filters.limit)
-        }
+        // Apply pagination
+        query = query.range(offset, offset + limit - 1)
 
-        const { data, error } = await query
+        const { data, error, count } = await query
 
         if (error) throw error
 
@@ -80,7 +83,17 @@ export async function getCollections(filters?: CollectionFilters) {
 
         const stats = await getCollectionStats()
 
-        return { collections: collectionsWithCounts, stats, success: true }
+        return {
+            collections: collectionsWithCounts,
+            stats,
+            success: true,
+            pagination: {
+                page,
+                limit,
+                total: count || 0,
+                totalPages: Math.ceil((count || 0) / limit)
+            }
+        }
     } catch (error) {
         console.error('Error fetching collections:', error)
         return { collections: [], error: 'Failed to fetch collections', success: false }

@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@/lib/data/products"
 import { listCategories } from "@/lib/data/categories"
+import { getApplicationCategories } from "@/lib/actions/application-categories"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
 
@@ -33,15 +34,13 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
     const { handle } = await params
     const searchParamsResolved = await searchParams
 
-    // TODO: Fetch application details from database
-    // For now, create a mock application object
-    const application = {
-        id: handle,
-        name: handle.split('-').map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' '),
-        handle: handle,
-        description: `Elevator components for ${handle} applications`,
+    // Fetch application details from database
+    // Applications are categories with parent_id = NULL
+    const applicationsList = await listCategories({ parent_id: null })
+    const application = applicationsList.find((app: any) => app.handle === handle)
+
+    if (!application) {
+        notFound()
     }
 
     // Build query params - filter by application
@@ -64,9 +63,15 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
         include_descendants_tree: true
     })
 
-    // TODO: Fetch curated categories for this application from application_categories mapping
-    // For now, display all categories
-    const curatedCategories = categories
+    // Fetch curated categories for this application from application_categories junction table
+    const { success, links } = await getApplicationCategories(application.id)
+    const curatedCategories = success
+        ? links.map(link => ({
+            ...link.category,
+            sort_order: link.sort_order  // From junction table
+        })).sort((a, b) => a.sort_order - b.sort_order)
+        : []
+
 
     // Construct activeApplication object for banner
     const activeApplication = {

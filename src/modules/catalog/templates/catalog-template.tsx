@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Product, ProductCategory } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
 import { Pagination, ResultsHeader, FilterSidebar } from "@/modules/catalog/sections"
 import { BannerCarousel } from "@/modules/catalog/components/banner-carousel"
 import { HeroLite } from "@/modules/catalog/components/hero-lite"
 import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
+import { HorizontalFilterBar } from "@/modules/catalog/components/desktop/horizontal-filter-bar"
 import type { ViewMode } from "@/modules/catalog/sections"
 import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
@@ -16,8 +18,12 @@ import { BannerWithSlides } from "@/lib/types/banners"
 interface CatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
-  activeCategory?: ProductCategory
-  activeApplication?: any
+  activeCategory?: ProductCategory & {
+    category_children?: any[]
+  }
+  activeApplication?: any & {
+    categories?: any[]
+  }
   activeType?: any
   activeCollection?: any
   banners?: BannerWithSlides[]
@@ -39,10 +45,14 @@ export default function CatalogTemplate({
   products: initialProducts,
   categories,
   activeCategory,
+  activeApplication,
   banners = [],
   searchParams = {},
   app
 }: CatalogTemplateProps) {
+  const router = useRouter()
+  const urlSearchParams = useSearchParams()
+
   // Merge app prop into searchParams for consistent handling
   const effectiveSearchParams = {
     ...searchParams,
@@ -67,6 +77,14 @@ export default function CatalogTemplate({
   const [currentPage, setCurrentPage] = useState(1)
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([])
+
+  // Horizontal filter state
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    urlSearchParams?.get('category') || effectiveSearchParams.category || null
+  )
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    urlSearchParams?.get('subcategory') || null
+  )
 
   // Load recently viewed from localStorage
   useEffect(() => {
@@ -146,6 +164,17 @@ export default function CatalogTemplate({
 
     let filtered = [...combined]
 
+    // Apply horizontal filter bar filters
+    if (selectedCategory) {
+      filtered = filtered.filter(product =>
+        product.categories?.some((cat: any) => cat.id === selectedCategory)
+      )
+    } else if (selectedSubcategory) {
+      filtered = filtered.filter(product =>
+        product.categories?.some((cat: any) => cat.id === selectedSubcategory)
+      )
+    }
+
     // Apply sidebar filters
     if (activeFilters.category && activeFilters.category.length > 0) {
       filtered = filtered.filter(product =>
@@ -186,7 +215,7 @@ export default function CatalogTemplate({
     }
 
     return sorted
-  }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, sortBy])
+  }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, sortBy, selectedCategory, selectedSubcategory])
 
   // Pagination
   const totalPages = Math.ceil(allDisplayProducts.length / ITEMS_PER_PAGE)
@@ -255,24 +284,42 @@ export default function CatalogTemplate({
         />
       )}
 
-      {/* Browse All Banner - Full Width (Only for browse-all type) */}
-      {config.showBanner && !applicationData && !currentCategory && catalogType === "browse-all" && (
-        banners.length > 0 ? (
-          <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
-            <BannerCarousel banners={banners} />
-          </div>
-        ) : (
-          <CatalogBanner
-            title="Premium Elevator Components"
-            subtitle="ISO Certified Quality | Pan-India Delivery"
-            backgroundImage="/images/image.png"
-            categories={categories.slice(0, 10)}
-            type="category"
-            slug="all"
-            variant={config.bannerVariant || "simple"}
-          />
-        )
+      {/* Browse All Banner - Full Width (Only for browse-all type and when banners exist) */}
+      {config.showBanner && !applicationData && !currentCategory && catalogType === "browse-all" && banners.length > 0 && (
+        <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
+          <BannerCarousel banners={banners} />
+        </div>
       )}
+
+      {/* Horizontal Filter Bars */}
+      {/* Application Page: Category Filters */}
+      {catalogType === 'application' && activeApplication?.categories && activeApplication.categories.length > 0 && (
+        <HorizontalFilterBar
+          title="Source by Categories"
+          filters={activeApplication.categories.map((cat: any) => ({
+            id: cat.id,
+            name: cat.name,
+            count: cat.product_count
+          }))}
+          activeFilter={selectedCategory}
+          paramName="category"
+        />
+      )}
+
+      {/* Category Page: Subcategory Filters */}
+      {catalogType === 'category' && activeCategory?.category_children && activeCategory.category_children.length > 0 && (
+        <HorizontalFilterBar
+          title="Source by Subcategories"
+          filters={activeCategory.category_children.map((sub: any) => ({
+            id: sub.id,
+            name: sub.name,
+            count: sub.product_count
+          }))}
+          activeFilter={selectedSubcategory}
+          paramName="subcategory"
+        />
+      )}
+
 
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-8 py-8">

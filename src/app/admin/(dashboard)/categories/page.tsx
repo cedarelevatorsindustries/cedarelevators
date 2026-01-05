@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Pagination } from "@/components/ui/pagination"
 import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, LoaderCircle, RefreshCw, Search } from "lucide-react"
 import Link from "next/link"
 import { useCategories, useCategoryStats, useDeleteCategory } from "@/hooks/queries/useCategories"
@@ -14,10 +15,14 @@ import type { CategoryWithChildren } from "@/lib/types/categories"
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
 
   const filters = {
     search: searchQuery || undefined,
     status: statusFilter !== 'all' ? (statusFilter as 'active' | 'inactive') : undefined,
+    page: currentPage,
+    limit: itemsPerPage
   }
 
   const { data, isLoading, refetch } = useCategories(filters)
@@ -26,6 +31,7 @@ export default function CategoriesPage() {
 
   const categories = data?.categories || []
   const stats = statsData || { total: 0, active: 0, applications: 0, categories: 0, subcategories: 0, total_products: 0 }
+  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this category?')) return
@@ -329,8 +335,22 @@ export default function CategoriesPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {!isLoading && categories.length > 0 && (
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(newLimit) => {
+              setItemsPerPage(newLimit)
+              setCurrentPage(1) // Reset to page 1 when changing items per page
+            }}
+          />
+        )}
       </div>
     </div>
   )
 }
-

@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getCategory, listCategories } from "@/lib/data/categories"
 import { listProducts } from "@/lib/data/products"
+import { getCategorySubcategories } from "@/lib/actions/category-subcategories"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
 
@@ -42,15 +43,20 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         notFound()
     }
 
-    // Fetch subcategories (children) for this category to show in banner
-    // Note: Currently returns empty as categories have flat structure
-    // TODO: Create subcategories for each main category
-    const children = await listCategories({ parent_id: category.id })
+    // Get CURATED subcategories for this category via junction table
+    const { success, links } = await getCategorySubcategories(category.id)
+    const curatedSubcategories = success
+        ? links.map(link => ({
+            ...link.subcategory,
+            handle: link.subcategory.handle || link.subcategory.slug,  // Ensure handle exists
+            sort_order: link.sort_order  // From junction table
+        })).sort((a, b) => a.sort_order - b.sort_order)
+        : []
 
-    // Construct activeCategory with children for the banner
+    // Construct activeCategory with curated children for the banner
     const activeCategory = {
         ...category,
-        category_children: children
+        category_children: curatedSubcategories
     }
 
     // Build query params

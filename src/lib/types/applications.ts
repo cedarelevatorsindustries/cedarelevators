@@ -60,6 +60,9 @@ export interface ApplicationFilters {
   search?: string
   status?: 'active' | 'inactive'
   is_active?: boolean
+  // Pagination
+  page?: number
+  limit?: number
 }
 
 export interface ApplicationStats {

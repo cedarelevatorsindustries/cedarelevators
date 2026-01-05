@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createServerSupabase } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import type {
   Application,
   ApplicationWithStats,
@@ -10,21 +10,34 @@ import type {
   ApplicationStats
 } from "@/lib/types/applications"
 
+// Helper to ensure supabase client is not null
+function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
+  if (!client) {
+    throw new Error('Failed to create Supabase client')
+  }
+  return client
+}
+
 // =============================================
 // GET APPLICATIONS
 // =============================================
 
 export async function getApplications(filters?: ApplicationFilters) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
-    // Applications are categories with parent_id = NULL
+    // Calculate pagination
+    const page = filters?.page || 1
+    const limit = filters?.limit || 20
+    const offset = (page - 1) * limit
+
+    // Get applications from categories table (these are top-level entities)
     let query = supabase
       .from('categories')
-      .select('*')
-      .is('parent_id', null)
+      .select('*', { count: 'exact' })
+      .eq('type', 'application') // Applications have type = 'application'
       .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
+      .order('title', { ascending: true })
 
     // Apply filters
     if (filters?.status) {
@@ -36,54 +49,65 @@ export async function getApplications(filters?: ApplicationFilters) {
     }
 
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1)
+
+    const { data, error, count } = await query
 
     if (error) throw error
 
     // Enhance with stats for each application
     const applicationsWithStats: ApplicationWithStats[] = await Promise.all(
       (data || []).map(async (app) => {
-        // Count categories (children with this app as parent)
+        // Count categories via junction table
         const { count: categoryCount } = await supabase
-          .from('categories')
-          .select('*', { count: 'exact', head: true })
-          .eq('parent_id', app.id)
-
-        // Count subcategories (grandchildren)
-        const { data: categories } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('parent_id', app.id)
-
-        let subcategoryCount = 0
-        if (categories && categories.length > 0) {
-          const categoryIds = categories.map(c => c.id)
-          const { count } = await supabase
-            .from('categories')
-            .select('*', { count: 'exact', head: true })
-            .in('parent_id', categoryIds)
-          subcategoryCount = count || 0
-        }
-
-        // Count products
-        const { count: productCount } = await supabase
-          .from('products')
+          .from('application_categories')
           .select('*', { count: 'exact', head: true })
           .eq('application_id', app.id)
+
+        // Count products via product_categories (products can belong to categories)
+        // Get all category IDs for this application
+        const { data: appCategories } = await supabase
+          .from('application_categories')
+          .select('category_id')
+          .eq('application_id', app.id)
+
+        let productCount = 0
+        if (appCategories && appCategories.length > 0) {
+          const categoryIds = appCategories.map(ac => ac.category_id)
+
+          // Count unique products in these categories
+          const { data: productCategories } = await supabase
+            .from('product_categories')
+            .select('product_id')
+            .in('category_id', categoryIds)
+
+          // Get unique product IDs
+          const uniqueProductIds = [...new Set((productCategories || []).map(pc => pc.product_id))]
+          productCount = uniqueProductIds.length
+        }
 
         return {
           ...app,
           category_count: categoryCount || 0,
-          subcategory_count: subcategoryCount,
-          product_count: productCount || 0
+          product_count: productCount
         }
       })
     )
 
-    return { applications: applicationsWithStats, success: true }
+    return {
+      applications: applicationsWithStats,
+      success: true,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    }
   } catch (error) {
     console.error('Error fetching applications:', error)
     return { applications: [], error: 'Failed to fetch applications', success: false }
@@ -96,32 +120,44 @@ export async function getApplications(filters?: ApplicationFilters) {
 
 export async function getApplicationById(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const { data, error } = await supabase
       .from('categories')
       .select('*')
       .eq('id', id)
-      .is('parent_id', null)
+      .eq('type', 'application')
       .single()
 
     if (error) throw error
 
-    // Get counts
+    // Get category count via junction table
     const { count: categoryCount } = await supabase
-      .from('categories')
-      .select('*', { count: 'exact', head: true })
-      .eq('parent_id', id)
-
-    const { count: productCount } = await supabase
-      .from('products')
+      .from('application_categories')
       .select('*', { count: 'exact', head: true })
       .eq('application_id', id)
+
+    // Get product count
+    const { data: appCategories } = await supabase
+      .from('application_categories')
+      .select('category_id')
+      .eq('application_id', id)
+
+    let productCount = 0
+    if (appCategories && appCategories.length > 0) {
+      const categoryIds = appCategories.map(ac => ac.category_id)
+      const { data: productCategories } = await supabase
+        .from('product_categories')
+        .select('product_id')
+        .in('category_id', categoryIds)
+      const uniqueProductIds = [...new Set((productCategories || []).map(pc => pc.product_id))]
+      productCount = uniqueProductIds.length
+    }
 
     const application: ApplicationWithStats = {
       ...data,
       category_count: categoryCount || 0,
-      product_count: productCount || 0
+      product_count: productCount
     }
 
     return { application, success: true }
@@ -137,15 +173,15 @@ export async function getApplicationById(id: string) {
 
 export async function createApplication(formData: ApplicationFormData) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const { data, error } = await supabase
       .from('categories')
       .insert({
-        name: formData.name,
+        title: formData.name,
         slug: formData.slug,
         description: formData.description,
-        parent_id: null, // Always null for applications
+        type: 'application', // Set type as application
         image_url: formData.image_url,
         thumbnail_image: formData.thumbnail_image,
         banner_image: formData.banner_image,
@@ -156,7 +192,6 @@ export async function createApplication(formData: ApplicationFormData) {
         status: formData.status || 'active',
         meta_title: formData.meta_title,
         meta_description: formData.meta_description,
-        application: formData.slug, // Set application field to its own slug
       })
       .select()
       .single()
@@ -178,23 +213,18 @@ export async function createApplication(formData: ApplicationFormData) {
 
 export async function updateApplication(id: string, formData: Partial<ApplicationFormData>) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const updateData: any = {
       ...formData,
       updated_at: new Date().toISOString(),
     }
 
-    // If name or slug changes, update application field
-    if (formData.slug) {
-      updateData.application = formData.slug
-    }
-
     const { data, error } = await supabase
       .from('categories')
       .update(updateData)
       .eq('id', id)
-      .is('parent_id', null) // Safety: only update applications
+      .eq('type', 'application')
       .select()
       .single()
 
@@ -216,31 +246,18 @@ export async function updateApplication(id: string, formData: Partial<Applicatio
 
 export async function deleteApplication(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
-    // Check if application has categories
+    // Check if application has categories via junction table
     const { count: categoryCount } = await supabase
-      .from('categories')
+      .from('application_categories')
       .select('*', { count: 'exact', head: true })
-      .eq('parent_id', id)
+      .eq('application_id', id)
 
     if (categoryCount && categoryCount > 0) {
       return {
         success: false,
-        error: `Cannot delete application with ${categoryCount} categories. Delete or reassign categories first.`
-      }
-    }
-
-    // Check if application has products
-    const { count: productCount } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('application_id', id)
-
-    if (productCount && productCount > 0) {
-      return {
-        success: false,
-        error: `Cannot delete application with ${productCount} products. Delete or reassign products first.`
+        error: `Cannot delete application with ${categoryCount} categories. Remove category assignments first.`
       }
     }
 
@@ -248,7 +265,7 @@ export async function deleteApplication(id: string) {
       .from('categories')
       .delete()
       .eq('id', id)
-      .is('parent_id', null)
+      .eq('type', 'application')
 
     if (error) throw error
 
@@ -267,66 +284,61 @@ export async function deleteApplication(id: string) {
 
 export async function getApplicationStats(): Promise<ApplicationStats> {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     // Total applications
     const { count: total } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
-      .is('parent_id', null)
+      .eq('type', 'application')
 
     // Active applications
     const { count: active } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
-      .is('parent_id', null)
+      .eq('type', 'application')
       .eq('is_active', true)
 
     // Get all application IDs
     const { data: applications } = await supabase
       .from('categories')
       .select('id')
-      .is('parent_id', null)
+      .eq('type', 'application')
 
-    const appIds = (applications || []).map(app => app.id)
+    const appIds = (applications || []).map((app: any) => app.id)
 
-    // Total categories (direct children of applications)
+    // Total categories via junction table
     const { count: totalCategories } = await supabase
-      .from('categories')
-      .select('*', { count: 'exact', head: true })
-      .in('parent_id', appIds)
-
-    // Get category IDs for subcategory count
-    const { data: categories } = await supabase
-      .from('categories')
-      .select('id')
-      .in('parent_id', appIds)
-
-    const categoryIds = (categories || []).map(cat => cat.id)
-
-    // Total subcategories (children of categories)
-    let totalSubcategories = 0
-    if (categoryIds.length > 0) {
-      const { count } = await supabase
-        .from('categories')
-        .select('*', { count: 'exact', head: true })
-        .in('parent_id', categoryIds)
-      totalSubcategories = count || 0
-    }
-
-    // Total products across all applications
-    const { count: totalProducts } = await supabase
-      .from('products')
+      .from('application_categories')
       .select('*', { count: 'exact', head: true })
       .in('application_id', appIds)
+
+    // Total products (unique across all categories in these applications)
+    let totalProducts = 0
+    if (appIds.length > 0) {
+      const { data: appCats } = await supabase
+        .from('application_categories')
+        .select('category_id')
+        .in('application_id', appIds)
+
+      if (appCats && appCats.length > 0) {
+        const categoryIds = appCats.map((ac: any) => ac.category_id)
+        const { data: prodCats } = await supabase
+          .from('product_categories')
+          .select('product_id')
+          .in('category_id', categoryIds)
+        const uniqueProductIds = [...new Set((prodCats || []).map((pc: any) => pc.product_id))]
+        totalProducts = uniqueProductIds.length
+      }
+    }
 
     return {
       total: total || 0,
       active: active || 0,
       inactive: (total || 0) - (active || 0),
       total_categories: totalCategories || 0,
-      total_subcategories: totalSubcategories,
-      total_products: totalProducts || 0
+      total_subcategories: 0, // Not applicable with junction tables
+      total_products: totalProducts
     }
   } catch (error) {
     console.error('Error fetching application stats:', error)
@@ -347,7 +359,7 @@ export async function getApplicationStats(): Promise<ApplicationStats> {
 
 export async function uploadApplicationImage(file: File) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`

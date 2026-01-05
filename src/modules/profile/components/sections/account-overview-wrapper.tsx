@@ -11,7 +11,7 @@ import { PROFILE_SECTIONS } from '@/lib/constants/profile'
 const sectionToRoute: Record<string, string> = {
   [PROFILE_SECTIONS.OVERVIEW]: '/profile',
   [PROFILE_SECTIONS.PERSONAL_INFO]: '/profile/account',
-  [PROFILE_SECTIONS.BUSINESS_INFO]: '/profile/account',
+  [PROFILE_SECTIONS.BUSINESS_INFO]: '/profile/business',
   [PROFILE_SECTIONS.ADDRESSES]: '/profile/addresses',
   [PROFILE_SECTIONS.NOTIFICATIONS]: '/profile/notifications',
   [PROFILE_SECTIONS.CHANGE_PASSWORD]: '/profile/password',
@@ -50,9 +50,10 @@ export default function AccountOverviewWrapper() {
   }
 
   // Convert user data to old UserProfile format for compatibility
+  // Prioritize clerkUser for immediate updates (firstName, lastName)
   const userProfile = {
-    first_name: user.name?.split(' ')[0] || '',
-    last_name: user.name?.split(' ').slice(1).join(' ') || '',
+    first_name: clerkUser?.firstName || user.name?.split(' ')[0] || '',
+    last_name: clerkUser?.lastName || user.name?.split(' ').slice(1).join(' ') || '',
     email: user.email || '',
     avatar_url: user.imageUrl || clerkUser?.imageUrl || null,
     company_name: user.business?.name || null,

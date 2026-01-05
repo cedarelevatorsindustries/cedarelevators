@@ -1,0 +1,15 @@
+title,description,short_description,image,base_price,compare_price,cost_per_item,stock_quantity,low_stock_threshold,allow_backorder,applications,categories,subcategories,types,collections,attributes,tags,variant_title,variant_option_1,variant_option_1_value,variant_option_2,variant_option_2_value,variant_price,variant_stock,status
+Gearless Traction Motor,High-efficiency permanent magnet synchronous motor for modern elevator systems. Features whisper-quiet operation and energy savings up to 40%.,PMSM motor with energy savings,,45000,55000,32000,25,5,FALSE,"traction, service",motors,traction motors ,industrial elevators,"trending this months, new drops"," {
+    ""rated_load_capacity"": ""1000 kg"",
+    ""rated_speed"": ""1.75 m/s"",
+    ""motor_power_rating"": ""11 kW"",
+    ""traction_sheave_diameter"": ""400 mm""
+  }","PMSM, Gearless, High Efficiency, Traction Machine, Lift Motor",Gearless Motor 1.0 m/s / 320 mm,Rated Speed,1.0 m/s,Sheave Diameter, 320 mm,45000,20,active
+Designer COP Panel,Premium stainless steel car operating panel with tactile buttons and LED indicators. Modern design complements any elevator interior.,Premium COP with LED display,,15000,18000,10000,50,10,FALSE,"modernization, testing",pannels,Accessories,hospital lifts,best sellers,"{
+    ""faceplate_finish"": ""Mirror Etched Stainless Steel"",
+    ""display_interface"": ""7-inch TFT Color LCD""
+  }","LCD Display, Stainless Steel, Elevator Fixture",COP Hairline SS - Blue LED,Faceplate Finish,Hairline Stainless Steel, Button LED Color,Blue,15000,20,active
+Designer COP Panel,Premium stainless steel car operating panel with tactile buttons and LED indicators. Modern design complements any elevator interior.,Premium COP with LED display,,15000,18000,10000,50,10,FALSE,"modernization, testing",pannels,Accessories,hospital lifts,best sellers,"{
+    ""faceplate_finish"": ""Mirror Etched Stainless Steel"",
+    ""display_interface"": ""7-inch TFT Color LCD""
+  }","LCD Display, Stainless Steel, Elevator Fixture",COP Hairline SS - Blue LED,Faceplate Finish,Hairline Stainless Steel, Button LED Color,green,15000,20,active

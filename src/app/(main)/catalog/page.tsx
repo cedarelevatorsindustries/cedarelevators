@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { listProducts } from "@/lib/data/products"
 import { listCategories } from "@/lib/data/categories"
+import { getApplicationBySlug, listApplications } from "@/lib/data/applications"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
 import { getBannersByPlacement } from "@/lib/actions/banners"
@@ -54,11 +55,16 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
-  // If application slug is provided, add to query params for server-side filtering
+  // If application slug is provided, fetch the application and add ID to query params
   // Support both 'application' and 'app' parameters for compatibility
   const applicationSlug = params.application || params.app
+  let applicationId: string | undefined
   if (applicationSlug) {
-    queryParams.application = applicationSlug
+    const application = await getApplicationBySlug(applicationSlug)
+    if (application) {
+      applicationId = application.id
+      queryParams.application_id = application.id
+    }
   }
 
   // Fetch from Medusa
@@ -72,6 +78,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   // Fetch banners for carousel
   const { banners = [] } = await getBannersByPlacement('hero-carousel')
+
+  // Fetch all applications for mobile view
+  const applications = await listApplications()
 
   return (
     <>
@@ -93,6 +102,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         <MobileCatalogTemplate
           products={products}
           categories={categories}
+          applications={applications}
           activeCategory={activeCategory || undefined}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}

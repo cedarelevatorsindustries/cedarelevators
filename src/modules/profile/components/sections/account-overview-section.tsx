@@ -1,7 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/lib/types/profile'
-import { CircleCheck, AlertCircle, ArrowRight, Building2, UserCircle } from 'lucide-react'
+import { CircleCheck, AlertCircle, ArrowRight, Building2, UserCircle, Edit2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
@@ -92,7 +92,7 @@ export default function AccountOverviewSection({
           {/* User Info */}
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-gray-900">
-              {user.company_name || `${user.first_name} ${user.last_name}`}
+              {user.company_name || `${user.first_name} ${user.last_name}`.trim() || user.email}
             </h2>
             <p className="text-gray-600 mt-1">{user.email}</p>
 
@@ -122,23 +122,25 @@ export default function AccountOverviewSection({
                 </span>
               )}
 
-              {/* Profile Switcher Button */}
+              {/* Profile Switcher Button - Only for Individual accounts */}
+              {!isBusiness && (
+                <button
+                  onClick={handleSwitch}
+                  disabled={isSwitching}
+                  className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  <Building2 size={14} />
+                  {isSwitching ? 'Switching...' : 'Switch to Business'}
+                </button>
+              )}
+
+              {/* Edit Profile Button */}
               <button
-                onClick={handleSwitch}
-                disabled={isSwitching}
-                className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                onClick={() => onNavigate('personal-info')}
+                className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1.5"
               >
-                {isBusiness ? (
-                  <>
-                    <UserCircle size={14} />
-                    {isSwitching ? 'Switching...' : 'Switch to Individual'}
-                  </>
-                ) : (
-                  <>
-                    <Building2 size={14} />
-                    {isSwitching ? 'Switching...' : 'Switch to Business'}
-                  </>
-                )}
+                <Edit2 size={14} />
+                Edit Profile
               </button>
             </div>
           </div>

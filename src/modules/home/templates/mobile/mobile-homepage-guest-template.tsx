@@ -33,6 +33,9 @@ export default function MobileHomepageGuest({
       {/* Hero Section */}
       <HeroSection />
 
+      {/* Shop by Application - Immediately after hero */}
+      <ApplicationsSection applications={applications} />
+
       {/* Categories - Horizontal scroll without scrollbar */}
       <CategoriesMobile categories={categories} />
 
@@ -40,9 +43,6 @@ export default function MobileHomepageGuest({
       {products.length > 0 && (
         <FeaturedProductsSection variant="mobile" />
       )}
-
-      {/* Shop by Application */}
-      <ApplicationsSection applications={applications} />
 
       {/* Shop by Elevator Type - 6 cards, 2 per row */}
       <ElevatorTypesSection variant="mobile" elevatorTypes={elevatorTypes} />

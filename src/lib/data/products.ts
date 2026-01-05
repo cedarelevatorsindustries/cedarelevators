@@ -7,7 +7,7 @@ interface ListProductsParams {
     limit?: number
     offset?: number
     category_id?: string[]
-    application?: string
+    application_id?: string
     q?: string
   }
 }
@@ -47,8 +47,13 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
     let query = supabase
       .from('products')
-      // Fetch joined category data using explicit relationships to avoid ambiguity
-      .select('*, category:categories!products_category_id_fkey(*), subcategory:categories!products_subcategory_id_fkey(*)', { count: 'exact' })
+      // Fetch categories via product_categories junction table
+      .select(`
+        *,
+        product_categories!inner(
+          category:categories(*)
+        )
+      `, { count: 'exact' })
       .eq('status', 'active') // Only fetch active products
       .range(offset, offset + limit - 1)
 
@@ -58,14 +63,14 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
     }
 
     if (queryParams?.category_id && queryParams.category_id.length > 0) {
-      query = query.in('category_id', queryParams.category_id)
+      // Filter by category via junction table
+      query = query.in('product_categories.category.id', queryParams.category_id)
     }
 
-    // TODO: Fix application filtering - products table has no metadata column
-    // if (queryParams?.application) {
-    //   // Filter by application in metadata JSONB column
-    //   query = query.contains('metadata', { application: queryParams.application })
-    // }
+    if (queryParams?.application_id) {
+      // Filter by application_id if products table has this column
+      query = query.eq('application_id', queryParams.application_id)
+    }
 
     const { data, error, count } = await query
 
@@ -86,8 +91,12 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       title: p.name, // Map name to title for compatibility
       handle: p.slug, // Map slug to handle for compatibility
       images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
-      // Map joined category and subcategory to categories array
-      categories: [p.category, p.subcategory].filter(Boolean)
+      // Extract categories from junction table
+      categories: p.product_categories?.map((pc: any) => ({
+        ...pc.category,
+        name: pc.category?.title,
+        handle: pc.category?.handle || pc.category?.slug
+      })).filter(Boolean) || []
     }))
 
     return {

@@ -27,7 +27,7 @@ export async function fetchApplicationProducts(applicationHandle: string) {
     const { response } = await listProducts({
         queryParams: {
             limit: 100,
-            application: applicationHandle
+            application_id: applicationHandle
         }
     })
 

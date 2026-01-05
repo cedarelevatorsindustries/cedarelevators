@@ -32,26 +32,12 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
 
   return (
     <div className="pb-20">
-      {/* Banner - Smaller with Rounded Corners */}
-      <div className="p-4">
-        {banners.length > 0 ? (
+      {/* Banner - Only show if banners exist */}
+      {banners.length > 0 && (
+        <div className="p-4">
           <BannerCarousel banners={banners} />
-        ) : (
-          <div className="relative aspect-[16/6] rounded-xl overflow-hidden">
-            <img
-              src="/images/image.png"
-              alt="Catalog Banner"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
-              <div className="px-6">
-                <h2 className="text-white text-xl font-bold mb-1">Premium Elevator Components</h2>
-                <p className="text-white/90 text-sm">Browse our complete catalog</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Product Sections - Horizontal Scroll */}
       <div className="space-y-2">

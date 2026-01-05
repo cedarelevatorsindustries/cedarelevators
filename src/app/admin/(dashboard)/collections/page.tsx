@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Pagination } from "@/components/ui/pagination"
 import { Plus, Layers, Package, Eye, EyeOff, Edit, Trash2, LoaderCircle, RefreshCw, Search, Star } from "lucide-react"
 import Link from "next/link"
 import { useCollections, useDeleteCollection, useToggleCollectionStatus } from "@/hooks/queries/useCollections"
@@ -15,11 +16,15 @@ export default function CollectionsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
 
   const filters = {
     search: searchQuery || undefined,
     type: typeFilter !== 'all' ? (typeFilter as 'manual' | 'automatic') : undefined,
     is_active: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+    page: currentPage,
+    limit: itemsPerPage
   }
 
   const { data, isLoading, refetch } = useCollections(filters)
@@ -28,6 +33,12 @@ export default function CollectionsPage() {
 
   const collections = data?.collections || []
   const stats = data?.stats || { total: 0, active: 0, featured: 0, total_products: 0 }
+  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 }
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = () => {
+    setCurrentPage(1)
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this collection?')) return
@@ -286,6 +297,21 @@ export default function CollectionsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {!isLoading && collections.length > 0 && (
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(newLimit) => {
+              setItemsPerPage(newLimit)
+              setCurrentPage(1) // Reset to page 1 when changing items per page
+            }}
+          />
+        )}
       </div>
     </div>
   )

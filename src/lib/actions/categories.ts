@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createServerSupabase } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 import type {
   Category,
   CategoryWithChildren,
@@ -11,33 +11,35 @@ import type {
   CategoryLevel
 } from "@/lib/types/categories"
 
+// Helper to ensure supabase client is not null
+function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
+  if (!client) {
+    throw new Error('Failed to create Supabase client')
+  }
+  return client
+}
+
 // =============================================
 // GET CATEGORIES
 // =============================================
 
 export async function getCategories(filters?: CategoryFilters) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
+
+    // Calculate pagination
+    const page = filters?.page || 1
+    const limit = filters?.limit || 20
+    const offset = (page - 1) * limit
 
     let query = supabase
       .from('categories')
-      .select('*')
+      .select('*', { count: 'exact' })
+      .eq('type', 'category') // Only get categories (not applications)
       .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
+      .order('title', { ascending: true })
 
     // Apply filters
-    if (filters?.parent_id !== undefined) {
-      if (filters.parent_id === null) {
-        query = query.is('parent_id', null)
-      } else {
-        query = query.eq('parent_id', filters.parent_id)
-      }
-    }
-
-    if (filters?.application) {
-      query = query.eq('application', filters.application)
-    }
-
     if (filters?.status) {
       query = query.eq('status', filters.status)
     }
@@ -47,21 +49,59 @@ export async function getCategories(filters?: CategoryFilters) {
     }
 
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1)
+
+    const { data, error, count } = await query
 
     if (error) throw error
 
-    // Build hierarchy if no parent_id filter
-    if (filters?.parent_id === undefined) {
-      const categories = buildCategoryTree(data || [])
-      const stats = await getCategoryStats()
-      return { categories, stats, success: true }
-    }
+    // Enhance with stats for each category
+    const categoriesWithStats = await Promise.all(
+      (data || []).map(async (category) => {
+        // Count subcategories via junction table
+        const { count: subcategoryCount } = await supabase
+          .from('category_subcategories')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id)
 
-    return { categories: data || [], success: true }
+        // Count products via product_categories
+        const { count: productCount } = await supabase
+          .from('product_categories')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id)
+
+        // Count applications using this category
+        const { count: applicationCount } = await supabase
+          .from('application_categories')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id)
+
+        return {
+          ...category,
+          subcategory_count: subcategoryCount || 0,
+          product_count: productCount || 0,
+          application_count: applicationCount || 0
+        }
+      })
+    )
+
+    const stats = await getCategoryStats()
+
+    return {
+      categories: categoriesWithStats,
+      stats,
+      success: true,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit)
+      }
+    }
   } catch (error) {
     console.error('Error fetching categories:', error)
     return { categories: [], error: 'Failed to fetch categories', success: false }
@@ -74,25 +114,33 @@ export async function getCategories(filters?: CategoryFilters) {
 
 export async function getCategoryById(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const { data, error } = await supabase
       .from('categories')
       .select('*')
       .eq('id', id)
+      .eq('type', 'category')
       .single()
 
     if (error) throw error
 
-    // Get product count
-    const { count } = await supabase
-      .from('products')
+    // Count subcategories via junction table
+    const { count: subcategoryCount } = await supabase
+      .from('category_subcategories')
       .select('*', { count: 'exact', head: true })
-      .eq('category', id)
+      .eq('category_id', id)
+
+    // Count products via product_categories
+    const { count: productCount } = await supabase
+      .from('product_categories')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', id)
 
     const category: CategoryWithChildren = {
       ...data,
-      product_count: count || 0
+      subcategory_count: subcategoryCount || 0,
+      product_count: productCount || 0
     }
 
     return { category, success: true }
@@ -108,7 +156,7 @@ export async function getCategoryById(id: string) {
 
 export async function getCategoryBySlug(slug: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const { data, error } = await supabase
       .from('categories')
@@ -131,16 +179,16 @@ export async function getCategoryBySlug(slug: string) {
 
 export async function createCategory(formData: CategoryFormData) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const { data, error } = await supabase
       .from('categories')
       .insert({
-        name: formData.name,
+        title: formData.name,
         slug: formData.slug,
         description: formData.description,
-        parent_id: formData.parent_id || null,
-        image_url: formData.image_url, // DEPRECATED: Use thumbnail_image instead
+        type: 'category', // Set type as category
+        image_url: formData.image_url,
         thumbnail_image: formData.thumbnail_image,
         banner_image: formData.banner_image,
         image_alt: formData.image_alt,
@@ -176,7 +224,7 @@ export async function createCategory(formData: CategoryFormData) {
 
 export async function updateCategory(id: string, formData: Partial<CategoryFormData>) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const updateData: any = {
       updated_at: new Date().toISOString()
@@ -226,18 +274,31 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
 
 export async function deleteCategory(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
-    // Check if category has children
-    const { count } = await supabase
-      .from('categories')
+    // Check if category has subcategories via junction table
+    const { count: subcategoryCount } = await supabase
+      .from('category_subcategories')
       .select('*', { count: 'exact', head: true })
-      .eq('parent_id', id)
+      .eq('category_id', id)
 
-    if (count && count > 0) {
+    if (subcategoryCount && subcategoryCount > 0) {
       return {
         success: false,
-        error: 'Cannot delete category with subcategories. Please delete subcategories first.'
+        error: 'Cannot delete category with subcategories. Remove subcategory assignments first.'
+      }
+    }
+
+    // Check if category is used in applications
+    const { count: applicationCount } = await supabase
+      .from('application_categories')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', id)
+
+    if (applicationCount && applicationCount > 0) {
+      return {
+        success: false,
+        error: 'Cannot delete category used in applications. Remove from applications first.'
       }
     }
 
@@ -267,7 +328,7 @@ export async function deleteCategory(id: string) {
 
 export async function uploadCategoryImage(file: File) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
@@ -303,41 +364,43 @@ export async function uploadCategoryImage(file: File) {
 
 export async function getCategoryStats(): Promise<CategoryStats> {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = ensureSupabase(createServerSupabaseClient())
 
+    // Total categories
     const { count: total } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
+      .eq('type', 'category')
 
+    // Active categories
     const { count: active } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
+      .eq('type', 'category')
       .eq('is_active', true)
 
+    // Total applications
     const { count: applications } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
-      .is('parent_id', null)
+      .eq('type', 'application')
 
+    // Total products
     const { count: totalProducts } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
 
-    // Count categories (mid-level) and subcategories
-    const { data: allCategories } = await supabase
-      .from('categories')
-      .select('id, parent_id')
-
-    const parentIds = new Set(allCategories?.filter(c => c.parent_id === null).map(c => c.id) || [])
-    const categories = allCategories?.filter(c => c.parent_id && parentIds.has(c.parent_id)).length || 0
-    const subcategories = allCategories?.filter(c => c.parent_id && !parentIds.has(c.parent_id)).length || 0
+    // Count subcategories via junction table
+    const { count: subcategories } = await supabase
+      .from('category_subcategories')
+      .select('*', { count: 'exact', head: true })
 
     return {
       total: total || 0,
       active: active || 0,
       applications: applications || 0,
-      categories,
-      subcategories,
+      categories: total || 0, // Same as total since we're only counting categories
+      subcategories: subcategories || 0,
       total_products: totalProducts || 0
     }
   } catch (error) {
