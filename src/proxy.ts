@@ -32,6 +32,12 @@ export default clerkMiddleware(async (auth, request) => {
 
   // 1. Admin Subdomain Logic
   if (isAdminSubdomain) {
+    // IMPORTANT: Skip API routes - they should pass through without rewriting
+    // API routes are already correctly namespaced (e.g., /api/admin/products/...)
+    if (url.pathname.startsWith('/api/')) {
+      return // Let the request pass through to the API route handler
+    }
+
     // Determine the path to rewrite to.
     // If the user requests `admin.com/dashboard`, we want to serve `/admin/dashboard`.
     // But `src/app/admin` is the folder.
