@@ -179,8 +179,8 @@ export default function MobileCatalogTemplate({
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14">
-      {/* Tabs - Sticky below topbar */}
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Tabs - Sticky below topbar - Only show when there are multiple tabs */}
+      {tabs.length > 1 && <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />}
 
       {/* Tab Content */}
       {activeTab === "products" && (
