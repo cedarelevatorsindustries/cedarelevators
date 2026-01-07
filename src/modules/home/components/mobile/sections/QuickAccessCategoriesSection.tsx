@@ -1,7 +1,7 @@
 "use client"
 
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { Package } from "lucide-react"
 
 interface QuickAccessCategoriesSectionProps {
   categories?: ProductCategory[]
@@ -25,7 +25,6 @@ export default function QuickAccessCategoriesSection({ categories = [] }: QuickA
             <p className="text-gray-500 text-xs">No categories available</p>
           ) : (
             categories.map((category) => {
-              const IconComponent = getCategoryIcon(category)
               const href = `/catalog?category=${category.handle}`
 
               return (
@@ -34,8 +33,16 @@ export default function QuickAccessCategoriesSection({ categories = [] }: QuickA
                   href={href}
                   className="flex flex-col gap-2 items-center min-w-[100px] group"
                 >
-                  <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer">
-                    <IconComponent className="w-9 h-9 text-blue-500" strokeWidth={1.5} />
+                  <div className="w-20 h-20 rounded-lg bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden">
+                    {category.thumbnail ? (
+                      <img
+                        src={category.thumbnail}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="w-9 h-9 text-gray-400" strokeWidth={1.5} />
+                    )}
                   </div>
                   <p className="text-[#181411] text-xs font-medium leading-normal text-center">
                     {category.name}

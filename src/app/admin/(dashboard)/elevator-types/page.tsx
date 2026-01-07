@@ -1,227 +1,254 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Eye, Edit, Trash2, Loader2, GripVertical } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, Wrench, Package, Edit, Trash2, LoaderCircle, RefreshCw, Search, Eye } from "lucide-react"
 import Link from "next/link"
-import { useElevatorTypes, useDeleteElevatorType } from "@/hooks/queries/useElevatorTypes"
-import { toast } from "sonner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { useElevatorTypes, useDeleteElevatorType, useElevatorTypeStats } from "@/hooks/queries/useElevatorTypes"
+import type { ElevatorTypeWithStats } from "@/lib/types/elevator-types"
 
-export default function ElevatorTypesListPage() {
+export default function ElevatorTypesPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  
-  const { data, isLoading } = useElevatorTypes()
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+
+  const { data, isLoading, refetch } = useElevatorTypes()
+  const { data: statsData } = useElevatorTypeStats()
   const deleteMutation = useDeleteElevatorType()
 
   const elevatorTypes = data?.elevatorTypes || []
+  const stats = statsData?.stats || { total: 0, active: 0, inactive: 0 }
 
   // Filter elevator types
-  const filteredTypes = elevatorTypes.filter((type) => {
-    if (!searchQuery) return true
-    return type.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           type.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredElevatorTypes = elevatorTypes.filter((type: ElevatorTypeWithStats) => {
+    const matchesSearch = !searchQuery ||
+      type.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (type.description && type.description.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const matchesStatus = statusFilter === 'all' || type.status === statusFilter
+
+    return matchesSearch && matchesStatus
   })
 
   const handleDelete = async (id: string) => {
-    const result = await deleteMutation.mutateAsync(id)
-    
-    if (result.success) {
-      toast.success('Elevator type deleted successfully')
-      setDeleteId(null)
-    } else {
-      toast.error(result.error || 'Failed to delete elevator type')
-      setDeleteId(null)
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-      </div>
-    )
+    if (!confirm('Are you sure you want to delete this elevator type? This action cannot be undone.')) return
+    await deleteMutation.mutateAsync(id)
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full max-w-full overflow-x-hidden bg-gray-50 min-h-screen p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Elevator Types
-            </h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900">Elevator Types</h1>
+            <p className="text-sm text-gray-500 mt-1">
               Manage elevator type classifications
             </p>
           </div>
-          <Button className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
-            <Link href="/admin/elevator-types/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Elevator Type
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="bg-white border-gray-200 hover:bg-gray-50"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
+              <Link href="/admin/elevator-types/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Elevator Type
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search elevator types..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
+              <Wrench className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <p className="text-xs text-gray-500 mt-1">All elevator types</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
+              <Eye className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.active}</div>
+              <p className="text-xs text-gray-500 mt-1">Currently active</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Products</CardTitle>
+              <Package className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {elevatorTypes.reduce((sum: number, type: ElevatorTypeWithStats) => sum + (type.product_count || 0), 0)}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Total products</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="bg-white border-gray-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-gray-900">Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search elevator types..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Elevator Types List */}
-        <Card>
+        <Card className="bg-white border-gray-200 shadow-sm">
           <CardHeader>
-            <CardTitle>All Elevator Types ({filteredTypes.length})</CardTitle>
+            <CardTitle className="text-base font-semibold text-gray-900">
+              All Elevator Types ({filteredElevatorTypes.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredTypes.length === 0 ? (
-              <div className="text-center py-12 space-y-3">
-                <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                  <GripVertical className="h-6 w-6 text-gray-400" />
-                </div>
-                <div>
-                  <p className="text-gray-600 font-medium">
-                    {searchQuery ? 'No elevator types found' : 'No elevator types yet'}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {searchQuery ? 'Try adjusting your search' : 'Create your first elevator type to get started'}
-                  </p>
-                </div>
-                {!searchQuery && (
-                  <Button variant="outline" asChild className="mt-4">
-                    <Link href="/admin/elevator-types/create">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create Elevator Type
-                    </Link>
-                  </Button>
-                )}
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <LoaderCircle className="h-8 w-8 animate-spin text-orange-500" />
+              </div>
+            ) : filteredElevatorTypes.length === 0 ? (
+              <div className="text-center py-12">
+                <Wrench className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                <h3 className="text-base font-medium text-gray-900 mb-2">No elevator types found</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {searchQuery || statusFilter !== "all"
+                    ? "Try adjusting your filters."
+                    : "Get started by creating your first elevator type."}
+                </p>
+                <Button asChild size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                  <Link href="/admin/elevator-types/create">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Elevator Type
+                  </Link>
+                </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b border-gray-200">
-                    <tr>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Slug</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Description</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Status</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Sort Order</th>
-                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredTypes.map((type) => (
-                      <tr key={type.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            {type.icon && (
-                              <span className="text-lg">{type.icon}</span>
-                            )}
-                            <span className="font-medium text-gray-900">{type.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm font-mono text-gray-600">{type.slug}</span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm text-gray-600 line-clamp-1">
-                            {type.description || '-'}
+              <div className="space-y-3">
+                {filteredElevatorTypes.map((type: ElevatorTypeWithStats, index: number) => (
+                  <div
+                    key={type.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-gradient-to-r from-orange-50/30 to-white"
+                  >
+                    <Link href={`/admin/elevator-types/${type.id}`} className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group">
+                      {type.thumbnail_image ? (
+                        <img
+                          src={type.thumbnail_image}
+                          alt={type.title}
+                          className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-orange-100 group-hover:border-orange-300 transition-colors"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-orange-200 group-hover:border-orange-300 transition-colors">
+                          <Wrench className="h-8 w-8 text-orange-600" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 text-lg mb-1 group-hover:text-orange-600 transition-colors">
+                          {type.title}
+                        </h3>
+                        {type.subtitle && (
+                          <p className="text-sm text-gray-600 mb-1">{type.subtitle}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Package className="h-3 w-3" />
+                            {type.product_count || 0} products
                           </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge
-                            variant={type.is_active ? 'default' : 'secondary'}
-                            className={type.is_active ? 'bg-green-100 text-green-800' : ''}
-                          >
-                            {type.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm text-gray-600">{type.sort_order}</span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/admin/elevator-types/${type.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/admin/elevator-types/${type.id}/edit`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteId(type.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+                    </Link>
+
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={type.status === "active"
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : type.status === "draft"
+                            ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                            : "bg-gray-50 text-gray-700 border-gray-200"}
+                      >
+                        {type.status}
+                      </Badge>
+
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-orange-100" asChild>
+                          <Link href={`/admin/elevator-types/${type.id}`}>
+                            <Eye className="h-4 w-4 text-orange-600" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" asChild>
+                          <Link href={`/admin/elevator-types/create?id=${type.id}`}>
+                            <Edit className="h-4 w-4 text-gray-600" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-red-50"
+                          onClick={() => handleDelete(type.id)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Elevator Type</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this elevator type? This action cannot be undone.
-              <br /><br />
-              <span className="font-medium text-gray-900">
-                Note: Deletion will fail if any products are assigned to this elevator type.
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteId && handleDelete(deleteId)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
-

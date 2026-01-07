@@ -1,50 +1,35 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Loader2, Package, Eye, Trash2 } from "lucide-react"
+import { use } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useElevatorType, useDeleteElevatorType, useProductsByElevatorType } from "@/hooks/queries/useElevatorTypes"
-import { toast } from "sonner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Edit, Trash2, Package, Calendar, Loader2, Image as ImageIcon, Search, FileText, ChevronRight } from "lucide-react"
+import { useElevatorType, useDeleteElevatorType, useElevatorTypeProducts } from "@/hooks/queries/useElevatorTypes"
+import { format } from "date-fns"
 
-export default function ElevatorTypeDetailPage({ params }: { params: { id: string } }) {
+export default function ElevatorTypeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const router = useRouter()
-  const { data: typeData, isLoading: isLoadingType } = useElevatorType(params.id)
-  const { data: productsData, isLoading: isLoadingProducts } = useProductsByElevatorType(params.id)
+  const { data, isLoading } = useElevatorType(resolvedParams.id)
+  const { data: productsData, isLoading: isLoadingProducts } = useElevatorTypeProducts(resolvedParams.id)
   const deleteMutation = useDeleteElevatorType()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  const elevatorType = typeData?.elevatorType
-  const products = productsData?.products || []
+  const elevatorType = data?.elevatorType
 
   const handleDelete = async () => {
-    const result = await deleteMutation.mutateAsync(params.id)
-    
+    if (!confirm('Are you sure you want to delete this elevator type? This action cannot be undone.')) return
+    const result = await deleteMutation.mutateAsync(resolvedParams.id)
     if (result.success) {
-      toast.success('Elevator type deleted successfully')
       router.push('/admin/elevator-types')
-    } else {
-      toast.error(result.error || 'Failed to delete elevator type')
-      setShowDeleteDialog(false)
     }
   }
 
-  if (isLoadingType) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
       </div>
     )
@@ -52,13 +37,11 @@ export default function ElevatorTypeDetailPage({ params }: { params: { id: strin
 
   if (!elevatorType) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 space-y-4">
-        <p className="text-gray-600">Elevator type not found</p>
-        <Button variant="outline" asChild>
-          <Link href="/admin/elevator-types">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Elevator Types
-          </Link>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Elevator Type Not Found</h2>
+        <p className="text-gray-500 mb-4">The elevator type you're looking for doesn't exist.</p>
+        <Button asChild>
+          <Link href="/admin/elevator-types">Back to Elevator Types</Link>
         </Button>
       </div>
     )
@@ -66,242 +49,288 @@ export default function ElevatorTypeDetailPage({ params }: { params: { id: strin
 
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              {elevatorType.icon && (
-                <span className="text-3xl">{elevatorType.icon}</span>
-              )}
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                {elevatorType.name}
-              </h1>
-              <Badge variant={elevatorType.is_active ? "default" : "secondary"} className={elevatorType.is_active ? "bg-green-100 text-green-800" : ""}>
-                {elevatorType.is_active ? "Active" : "Inactive"}
+              <h1 className="text-3xl font-bold text-gray-900">{elevatorType.title}</h1>
+              <Badge
+                variant="outline"
+                className={elevatorType.status === "active"
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : elevatorType.status === "draft"
+                    ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                    : "bg-gray-50 text-gray-700 border-gray-200"}
+              >
+                {elevatorType.status}
               </Badge>
             </div>
-            <p className="text-gray-600">
-              Elevator type details and assigned products
-            </p>
+            {elevatorType.subtitle && (
+              <p className="text-sm text-gray-500">{elevatorType.subtitle}</p>
+            )}
           </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" asChild>
+
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" asChild>
               <Link href="/admin/elevator-types">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm" asChild>
+              <Link href={`/admin/elevator-types/create?id=${elevatorType.id}`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
               </Link>
             </Button>
             <Button
               variant="outline"
-              onClick={() => setShowDeleteDialog(true)}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="border-red-200 text-red-600 hover:bg-red-50"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
-            </Button>
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
-              <Link href={`/admin/elevator-types/${params.id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
             </Button>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Elevator Type Details */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Type Information</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-orange-500" />
+                  Basic Information
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Slug</p>
-                  <p className="text-sm text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
-                    {elevatorType.slug}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Title</p>
+                  <p className="text-base text-gray-900 mt-1">{elevatorType.title}</p>
+                </div>
+
+                {elevatorType.subtitle && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Subtitle</p>
+                    <p className="text-base text-gray-900 mt-1">{elevatorType.subtitle}</p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-sm font-medium text-gray-600">URL Slug</p>
+                  <p className="text-base text-gray-900 mt-1 font-mono text-sm">{elevatorType.slug}</p>
                 </div>
 
                 {elevatorType.description && (
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Description</p>
-                    <p className="text-sm text-gray-900">{elevatorType.description}</p>
+                    <p className="text-sm font-medium text-gray-600">Description</p>
+                    <p className="text-base text-gray-700 mt-1 whitespace-pre-wrap">{elevatorType.description}</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
 
-                {elevatorType.icon && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Icon</p>
-                    <p className="text-2xl">{elevatorType.icon}</p>
+            {/* Media */}
+            {(elevatorType.thumbnail_image || elevatorType.banner_image) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-orange-500" />
+                    Media
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {elevatorType.thumbnail_image && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-3">Thumbnail</p>
+                      <img
+                        src={elevatorType.thumbnail_image}
+                        alt={elevatorType.title}
+                        className="w-full max-w-md rounded-lg border-2 border-gray-200 shadow-sm"
+                      />
+                    </div>
+                  )}
+
+                  {elevatorType.banner_image && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-3">Banner</p>
+                      <img
+                        src={elevatorType.banner_image}
+                        alt={elevatorType.title}
+                        className="w-full rounded-lg border-2 border-gray-200 shadow-sm"
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* SEO Information */}
+            {(elevatorType.meta_title || elevatorType.meta_description) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5 text-orange-500" />
+                    SEO Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {elevatorType.meta_title && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Meta Title</p>
+                      <p className="text-base text-gray-900 mt-1">{elevatorType.meta_title}</p>
+                      <p className="text-xs text-gray-500 mt-1">{elevatorType.meta_title.length} characters</p>
+                    </div>
+                  )}
+
+                  {elevatorType.meta_description && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Meta Description</p>
+                      <p className="text-base text-gray-700 mt-1">{elevatorType.meta_description}</p>
+                      <p className="text-xs text-gray-500 mt-1">{elevatorType.meta_description.length} characters</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+            {/* Products List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-orange-500" />
+                  Associated Products
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoadingProducts ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
                   </div>
-                )}
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Sort Order</p>
-                  <p className="text-sm text-gray-900">{elevatorType.sort_order}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Created</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(elevatorType.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-
-                {elevatorType.updated_at && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Last Updated</p>
-                    <p className="text-sm text-gray-900">
-                      {new Date(elevatorType.updated_at).toLocaleDateString()}
-                    </p>
+                ) : productsData?.products && productsData.products.length > 0 ? (
+                  <div className="space-y-4">
+                    {productsData.products.map((product: any) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-sm transition-all">
+                        <div className="flex items-center gap-4">
+                          {product.thumbnail_url ? (
+                            <img src={product.thumbnail_url} alt={product.name} className="w-12 h-12 rounded-md object-cover border border-gray-200" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-md bg-white border border-gray-200 flex items-center justify-center">
+                              <Package className="h-6 w-6 text-gray-300" />
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-medium text-gray-900">{product.name}</h4>
+                            <p className="text-xs text-gray-500 font-mono">{product.sku || 'No SKU'}</p>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/admin/products/${product.id}`}>
+                            View
+                            <ChevronRight className="ml-1 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                    <p>No products associated with this elevator type</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Assigned Products */}
-          <div className="lg:col-span-2">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Statistics */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Products Using This Type
-                      <Badge variant="secondary" className="ml-2">
-                        {products.length}
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      Products that have been assigned to this elevator type
-                    </CardDescription>
-                  </div>
-                </div>
+                <CardTitle className="text-base">Statistics</CardTitle>
               </CardHeader>
-              <CardContent>
-                {isLoadingProducts ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-600" />
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">Products</span>
                   </div>
-                ) : products.length === 0 ? (
-                  <div className="text-center py-12 space-y-3">
-                    <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Package className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-gray-600 font-medium">No products assigned yet</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Products will appear here when they assign themselves to this elevator type.
-                      </p>
-                    </div>
-                    <Button variant="outline" asChild className="mt-4">
-                      <Link href="/admin/products/create">
-                        Create Product
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Products List */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {products.map((product: any) => (
-                        <Card key={product.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex gap-4">
-                              {/* Product Image */}
-                              <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                {product.thumbnail ? (
-                                  <img 
-                                    src={product.thumbnail} 
-                                    alt={product.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-full w-full flex items-center justify-center">
-                                    <Package className="h-8 w-8 text-gray-400" />
-                                  </div>
-                                )}
-                              </div>
+                  <span className="text-lg font-semibold text-gray-900">{elevatorType.product_count || 0}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-                              {/* Product Info */}
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-gray-900 truncate">
-                                  {product.name}
-                                </h4>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  {product.sku || 'No SKU'}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  {product.price && (
-                                    <span className="text-sm font-semibold text-orange-600">
-                                      ${product.price.toFixed(2)}
-                                    </span>
-                                  )}
-                                  <Badge 
-                                    variant={product.status === 'active' ? 'default' : 'secondary'}
-                                    className={`text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : ''}`}
-                                  >
-                                    {product.status}
-                                  </Badge>
-                                </div>
-                              </div>
+            {/* Status & Metadata */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Status & Metadata</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Status</p>
+                  <Badge
+                    variant="outline"
+                    className={elevatorType.status === "active"
+                      ? "bg-green-50 text-green-700 border-green-200 mt-2"
+                      : elevatorType.status === "draft"
+                        ? "bg-yellow-50 text-yellow-700 border-yellow-200 mt-2"
+                        : "bg-gray-50 text-gray-700 border-gray-200 mt-2"}
+                  >
+                    {elevatorType.status}
+                  </Badge>
+                </div>
 
-                              {/* Actions */}
-                              <div className="flex items-start">
-                                <Button variant="ghost" size="sm" asChild>
-                                  <Link href={`/admin/products/${product.id}`}>
-                                    <Eye className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                    <Calendar className="h-3 w-3" />
+                    <span>Created</span>
                   </div>
-                )}
+                  <p className="text-sm text-gray-900">
+                    {format(new Date(elevatorType.created_at), 'PPP')}
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                    <Calendar className="h-3 w-3" />
+                    <span>Last Updated</span>
+                  </div>
+                  <p className="text-sm text-gray-900">
+                    {format(new Date(elevatorType.updated_at), 'PPP')}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <Link href={`/admin/elevator-types/create?id=${elevatorType.id}`}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Elevator Type
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Elevator Type
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Elevator Type</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{elevatorType.name}</strong>?
-              <br /><br />
-              {products.length > 0 ? (
-                <span className="text-red-600 font-medium">
-                  ⚠️ Cannot delete: This elevator type has {products.length} product(s) assigned.
-                  Please reassign products first.
-                </span>
-              ) : (
-                <span className="font-medium text-gray-900">
-                  This action cannot be undone.
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={products.length > 0}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

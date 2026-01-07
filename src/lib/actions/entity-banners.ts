@@ -1,10 +1,9 @@
 'use server'
 
-import { createServerSupabase } from '@/lib/supabase/server'
+import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from '@/lib/cloudinary/upload'
 
 /**
- * Upload entity banner image to Supabase Storage
- * Uses the 'banners' bucket (same as carousel banners)
+ * Upload entity banner image to Cloudinary
  * 
  * @param file - The image file to upload
  * @param entityType - Type of entity (category, elevator-type, collection, application)
@@ -15,37 +14,14 @@ export async function uploadEntityBannerImage(
     entityType: 'category' | 'elevator-type' | 'collection' | 'application'
 ): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        const folder = `cedar/entity-banners/${entityType}`
+        const result = await uploadToCloudinary(file, folder)
 
-        // Generate unique filename
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${entityType}-${Date.now()}.${fileExt}`
-        const filePath = `entity-banners/${fileName}`
-
-        // Convert File to ArrayBuffer for upload
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-
-        // Upload to storage
-        const { data, error } = await supabase.storage
-            .from('banners')
-            .upload(filePath, buffer, {
-                contentType: file.type,
-                cacheControl: '3600',
-                upsert: false
-            })
-
-        if (error) {
-            console.error('Error uploading entity banner:', error)
-            return { success: false, error: error.message }
+        if (!result.success || !result.url) {
+            throw new Error(result.error || 'Failed to upload image')
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from('banners')
-            .getPublicUrl(filePath)
-
-        return { success: true, url: publicUrl }
+        return { success: true, url: result.url }
     } catch (error) {
         console.error('Error uploading entity banner:', error)
         return { success: false, error: String(error) }
@@ -53,7 +29,7 @@ export async function uploadEntityBannerImage(
 }
 
 /**
- * Delete entity banner image from Supabase Storage
+ * Delete entity banner image from Cloudinary
  * 
  * @param imageUrl - The full URL of the image to delete
  * @returns Object with success status and error message if failed
@@ -62,25 +38,18 @@ export async function deleteEntityBannerImage(
     imageUrl: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
-
-        // Extract file path from URL
-        // URL format: https://{project}.supabase.co/storage/v1/object/public/banners/{filePath}
-        const urlParts = imageUrl.split('/banners/')
-        if (urlParts.length !== 2) {
-            return { success: false, error: 'Invalid image URL format' }
+        // Only delete from Cloudinary if it's a Cloudinary URL
+        if (!imageUrl.includes('cloudinary.com') && !imageUrl.includes('res.cloudinary.com')) {
+            // Not a Cloudinary URL, skip deletion (might be old Supabase URL)
+            return { success: true }
         }
 
-        const filePath = urlParts[1]
+        const publicId = await getPublicIdFromUrl(imageUrl)
+        const result = await deleteFromCloudinary(publicId)
 
-        // Delete from storage
-        const { error } = await supabase.storage
-            .from('banners')
-            .remove([filePath])
-
-        if (error) {
-            console.error('Error deleting entity banner:', error)
-            return { success: false, error: error.message }
+        if (!result.success) {
+            console.error('Error deleting entity banner:', result.error)
+            return { success: false, error: result.error }
         }
 
         return { success: true }
@@ -89,4 +58,3 @@ export async function deleteEntityBannerImage(
         return { success: false, error: String(error) }
     }
 }
-

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Save, ArrowRight, ArrowLeft, FileText, Image, Search, CheckCircle2, AlertCircle, ClipboardCheck, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { useCreateCategory, useUpdateCategory, useUploadCategoryImage, useCategory, useCategories } from "@/hooks/queries/useCategories"
+import { useCreateCategory, useUpdateCategory, useUpdateSubcategory, useUploadCategoryImage, useCategory, useSubcategory, useCategories } from "@/hooks/queries/useCategories"
 import type { CategoryFormData, CategoryStatus } from "@/lib/types/categories"
 import { CategoryPreview } from "./category-preview"
 import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
@@ -27,12 +27,21 @@ export default function CreateCategoryPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const categoryId = searchParams.get('id')
+  const parentId = searchParams.get('parent')
   const isEditMode = !!categoryId
+  const isSubcategory = !!parentId
 
-  const { data: existingData, isLoading: isLoadingExisting } = useCategory(categoryId || '')
+  // Fetch data based on whether it's a category or subcategory
+  const { data: categoryData, isLoading: isLoadingCategory } = useCategory(isEditMode && !isSubcategory ? categoryId || '' : '')
+  const { data: subcategoryData, isLoading: isLoadingSubcategory } = useSubcategory(isEditMode && isSubcategory ? categoryId || '' : '')
+
+  const existingData = isSubcategory ? subcategoryData : categoryData
+  const isLoadingExisting = isSubcategory ? isLoadingSubcategory : isLoadingCategory
+
   const { data: categoriesData } = useCategories()
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
+  const updateSubcategoryMutation = useUpdateSubcategory()
   const uploadMutation = useUploadCategoryImage()
 
   const [activeTab, setActiveTab] = useState("basic")
@@ -44,10 +53,10 @@ export default function CreateCategoryPage() {
     name: "",
     slug: "",
     description: "",
-    parent_id: null,
+    parent_id: parentId || null,
     thumbnail_image: "",
     banner_url: "",
-    sort_order: 0,
+    categories_card_position: "",
     is_active: true,
     status: "inactive",
     seo_meta_title: "",
@@ -67,12 +76,12 @@ export default function CreateCategoryPage() {
         description: cat.description || "",
         parent_id: cat.parent_id || null,
         thumbnail_image: cat.thumbnail || "",
-        banner_url: cat.banner_url || cat.metadata?.banner_image || "",
-        sort_order: cat.metadata?.sort_order || cat.rank || 0,
+        banner_url: cat.banner_url || "",
+        categories_card_position: cat.categories_card_position || "",
         is_active: cat.is_active ?? true,
         status: cat.status || "draft",
-        seo_meta_title: cat.seo_meta_title || cat.metadata?.meta_title || "",
-        seo_meta_description: cat.seo_meta_description || cat.metadata?.meta_description || ""
+        seo_meta_title: cat.seo_meta_title || "",
+        seo_meta_description: cat.seo_meta_description || ""
       })
     }
   }, [isEditMode, existingData])
@@ -138,24 +147,28 @@ export default function CreateCategoryPage() {
         status: (isDraft ? 'inactive' : formData.status) as CategoryStatus
       }
 
-      // Create or update category
+      console.log('[Form] Submitting category with payload:', payload)
+      console.log('[Form] parent_id value:', payload.parent_id, 'isSubcategory:', isSubcategory)
+
+      // Create or update category/subcategory using the appropriate mutation
       const result = isEditMode
-        ? await updateMutation.mutateAsync({ id: categoryId!, data: payload as any })
+        ? (isSubcategory
+          ? await updateSubcategoryMutation.mutateAsync({ id: categoryId!, data: payload as any })
+          : await updateMutation.mutateAsync({ id: categoryId!, data: payload as any }))
         : await createMutation.mutateAsync(payload as any)
 
       if (result.success && result.category) {
-        toast.success(isDraft ? 'Draft saved successfully' : isEditMode ? 'Category updated successfully!' : 'Category created successfully!')
         router.push('/admin/categories')
       }
     } catch (error) {
       console.error('Error saving category:', error)
-      toast.error(isEditMode ? 'Failed to update category' : 'Failed to create category')
+      // Toast is handled by mutation hooks
     } finally {
       setIsUploading(false)
     }
   }
 
-  const isLoading = createMutation.isPending || updateMutation.isPending || isUploading
+  const isLoading = createMutation.isPending || updateMutation.isPending || updateSubcategoryMutation.isPending || isUploading
 
   if (isEditMode && isLoadingExisting) {
     return (
@@ -199,10 +212,14 @@ export default function CreateCategoryPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
-              {isEditMode ? 'Edit Category' : 'Create Category'}
+              {isEditMode
+                ? (isSubcategory ? 'Edit Subcategory' : 'Edit Category')
+                : (isSubcategory ? 'Create Subcategory' : 'Create Category')}
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1 sm:mt-2">
-              {isEditMode ? 'Update category details' : 'Add a new product category'}
+              {isEditMode
+                ? (isSubcategory ? 'Update subcategory details' : 'Update category details')
+                : (isSubcategory ? `Add a new subcategory for ${categoriesData?.categories?.find(c => c.id === parentId)?.name || 'parent category'}` : 'Add a new product category')}
             </p>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
@@ -223,7 +240,9 @@ export default function CreateCategoryPage() {
               disabled={isLoading || !canPublish()}
             >
               <Save className="mr-2 h-4 w-4" />
-              {isLoading ? "Publishing..." : "Publish"}
+              {isLoading
+                ? (isSubcategory ? "Publishing Subcategory..." : "Publishing...")
+                : (isSubcategory ? "Publish Subcategory" : "Publish")}
             </Button>
           </div>
         </div>
@@ -288,27 +307,7 @@ export default function CreateCategoryPage() {
                     <CardDescription>Basic details about this category</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
-                    {/* Parent Category Selection */}
-                    <div className="space-y-2">
-                      <Label htmlFor="parent">Parent Category (Optional)</Label>
-                      <Select
-                        value={formData.parent_id || "none"}
-                        onValueChange={(val) => setFormData({ ...formData, parent_id: val === "none" ? null : val })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select parent category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None (Top-level category)</SelectItem>
-                          {parentCategories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-gray-500">
-                        Leave as "None" to create a top-level category, or select a parent to create a subcategory
-                      </p>
-                    </div>
+
 
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div className="space-y-2">
@@ -360,6 +359,22 @@ export default function CreateCategoryPage() {
                         {formData.description?.length || 0} characters • Keep it concise and informative
                       </p>
                     </div>
+
+
+                    <div className="space-y-2">
+                      <Label htmlFor="card_position">Display Order</Label>
+                      <Input
+                        id="card_position"
+                        type="number"
+                        min="1"
+                        placeholder={`Default: ${(categoriesData?.categories?.length || 0) + 1}`}
+                        value={formData.categories_card_position || ''}
+                        onChange={(e) => setFormData({ ...formData, categories_card_position: e.target.value })}
+                      />
+                      <p className="text-xs text-gray-500">
+                        Enter a number to set the display order (1, 2, 3...). Leave empty to add at the end.
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -408,33 +423,35 @@ export default function CreateCategoryPage() {
                       </div>
                     </div>
 
-                    {/* Banner Upload */}
-                    <div className="space-y-2">
-                      <Label>Banner Image</Label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              setBannerFile(file)
-                              const reader = new FileReader()
-                              reader.onloadend = () => {
-                                setFormData({ ...formData, banner_url: reader.result as string })
+                    {/* Banner Upload - Only for main categories */}
+                    {!isSubcategory && (
+                      <div className="space-y-2">
+                        <Label>Banner Image</Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                setBannerFile(file)
+                                const reader = new FileReader()
+                                reader.onloadend = () => {
+                                  setFormData({ ...formData, banner_url: reader.result as string })
+                                }
+                                reader.readAsDataURL(file)
                               }
-                              reader.readAsDataURL(file)
-                            }
-                          }}
-                          className="max-w-xs mx-auto"
-                        />
-                        {formData.banner_url && (
-                          <div className="mt-4">
-                            <img src={formData.banner_url} alt="Banner preview" className="max-w-full mx-auto rounded-lg" />
-                          </div>
-                        )}
+                            }}
+                            className="max-w-xs mx-auto"
+                          />
+                          {formData.banner_url && (
+                            <div className="mt-4">
+                              <img src={formData.banner_url} alt="Banner preview" className="max-w-full mx-auto rounded-lg" />
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -517,24 +534,26 @@ export default function CreateCategoryPage() {
                   </div>
                 </div>
 
-                {/* Section 2: Banner Preview */}
-                <div className="bg-gray-50/50 rounded-xl border border-gray-100 overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
-                    <h4 className="text-lg font-medium text-center text-gray-700">Category Banner Preview</h4>
-                  </div>
-                  <div className="relative">
-                    <div className="transform scale-[0.8] origin-top -mb-[20%] md:scale-100 md:mb-0">
-                      <CatalogBanner
-                        title={formData.name || "Category Name"}
-                        subtitle={formData.description}
-                        backgroundImage={formData.banner_url || formData.thumbnail_image}
-                        type="category"
-                        categories={[]}
-                        variant="full"
-                      />
+                {/* Section 2: Banner Preview - Hide for subcategories */}
+                {!isSubcategory && (
+                  <div className="bg-gray-50/50 rounded-xl border border-gray-100 overflow-hidden">
+                    <div className="p-4 border-b border-gray-200">
+                      <h4 className="text-lg font-medium text-center text-gray-700">Category Banner Preview</h4>
+                    </div>
+                    <div className="relative">
+                      <div className="transform scale-[0.8] origin-top -mb-[20%] md:scale-100 md:mb-0">
+                        <CatalogBanner
+                          title={formData.name || "Category Name"}
+                          subtitle={formData.description}
+                          backgroundImage={formData.banner_url || formData.thumbnail_image}
+                          type="category"
+                          categories={[]}
+                          variant="full"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div className="grid gap-8 md:grid-cols-2">
                   {/* Section 3: Quick Summary */}

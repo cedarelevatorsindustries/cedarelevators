@@ -402,23 +402,15 @@ export async function getApplicationStats(): Promise<ApplicationStats> {
 
 export async function uploadApplicationImage(file: File) {
   try {
-    const supabase = createAdminClient()
+    const { uploadToCloudinary } = await import('@/lib/cloudinary/upload')
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
-    const filePath = `applications/${fileName}`
+    const result = await uploadToCloudinary(file, 'cedar/applications')
 
-    const { data, error } = await supabase.storage
-      .from('categories')
-      .upload(filePath, file)
+    if (!result.success || !result.url) {
+      throw new Error(result.error || 'Failed to upload image')
+    }
 
-    if (error) throw error
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('categories')
-      .getPublicUrl(filePath)
-
-    return { url: publicUrl, success: true }
+    return { url: result.url, success: true }
   } catch (error) {
     console.error('Error uploading image:', error)
     return { url: null, error: 'Failed to upload image', success: false }

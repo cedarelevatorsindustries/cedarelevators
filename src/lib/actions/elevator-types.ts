@@ -1,62 +1,53 @@
 'use server'
 
-import { createServerSupabase } from '@/lib/supabase/server'
-import type {
-  ElevatorType,
-  ElevatorTypeFormData,
-  ElevatorTypeFilters,
-  CreateElevatorTypeResult,
-  UpdateElevatorTypeResult,
-  FetchElevatorTypesResult,
-  DeleteElevatorTypeResult,
-} from '@/lib/types/elevator-types'
+import { revalidatePath } from 'next/cache'
+import { createAdminClient } from '@/lib/supabase/server'
+import type { ElevatorType, ElevatorTypeFormData, ElevatorTypeWithStats } from '@/lib/types/elevator-types'
 
-/**
- * Fetch all elevator types with optional filters
- */
-export async function fetchElevatorTypes(
-  filters?: ElevatorTypeFilters
-): Promise<FetchElevatorTypesResult> {
+// =============================================
+// GET ALL ELEVATOR TYPES
+// =============================================
+
+export async function getElevatorTypes() {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('elevator_types')
       .select('*')
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
+      .order('title', { ascending: true })
 
-    // Apply filters
-    if (filters?.search) {
-      query = query.ilike('name', `%${filters.search}%`)
-    }
+    if (error) throw error
 
-    if (filters?.is_active !== undefined) {
-      query = query.eq('is_active', filters.is_active)
-    }
+    // Enhance with product counts
+    const elevatorTypesWithStats: ElevatorTypeWithStats[] = await Promise.all(
+      (data || []).map(async (type) => {
+        const { count } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('elevator_type_id', type.id)
 
-    const { data, error } = await query
+        return {
+          ...type,
+          product_count: count || 0
+        }
+      })
+    )
 
-    if (error) {
-      console.error('Error fetching elevator types:', error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, elevatorTypes: data as ElevatorType[] }
-  } catch (error: any) {
-    console.error('Error in fetchElevatorTypes:', error)
-    return { success: false, error: error.message }
+    return { elevatorTypes: elevatorTypesWithStats, success: true }
+  } catch (error) {
+    console.error('Error fetching elevator types:', error)
+    return { elevatorTypes: [], error: 'Failed to fetch elevator types', success: false }
   }
 }
 
-/**
- * Fetch single elevator type by ID
- */
-export async function fetchElevatorTypeById(
-  id: string
-): Promise<UpdateElevatorTypeResult> {
+// =============================================
+// GET ELEVATOR TYPE BY ID
+// =============================================
+
+export async function getElevatorTypeById(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
       .from('elevator_types')
@@ -64,26 +55,67 @@ export async function fetchElevatorTypeById(
       .eq('id', id)
       .single()
 
-    if (error) {
-      console.error('Error fetching elevator type:', error)
-      return { success: false, error: error.message }
+    if (error) throw error
+
+    // Get product count
+    const { count: productCount } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('elevator_type_id', id)
+
+    const elevatorType: ElevatorTypeWithStats = {
+      ...data,
+      product_count: productCount || 0
     }
 
-    return { success: true, elevatorType: data as ElevatorType }
-  } catch (error: any) {
-    console.error('Error in fetchElevatorTypeById:', error)
-    return { success: false, error: error.message }
+    return { elevatorType, success: true }
+  } catch (error) {
+    console.error('Error fetching elevator type:', error)
+    return { elevatorType: null, error: 'Failed to fetch elevator type', success: false }
   }
 }
 
-/**
- * Create new elevator type
- */
-export async function createElevatorType(
-  formData: ElevatorTypeFormData
-): Promise<CreateElevatorTypeResult> {
+// =============================================
+// GET ELEVATOR TYPE BY SLUG
+// =============================================
+
+export async function getElevatorTypeBySlug(slug: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
+
+    const { data, error } = await supabase
+      .from('elevator_types')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+
+    if (error) throw error
+
+    // Get product count
+    const { count: productCount } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('elevator_type_id', data.id)
+
+    const elevatorType: ElevatorTypeWithStats = {
+      ...data,
+      product_count: productCount || 0
+    }
+
+    return { elevatorType, success: true }
+  } catch (error) {
+    console.error('Error fetching elevator type by slug:', error)
+    return { elevatorType: null, error: 'Failed to fetch elevator type', success: false }
+  }
+}
+
+// =============================================
+// CREATE ELEVATOR TYPE
+// =============================================
+
+export async function createElevatorType(formData: ElevatorTypeFormData) {
+  try {
+    const supabase = createAdminClient()
 
     // Check if slug already exists
     const { data: existing } = await supabase
@@ -97,14 +129,15 @@ export async function createElevatorType(
     }
 
     const insertData = {
-      name: formData.name,
+      title: formData.title,
+      subtitle: formData.subtitle,
       slug: formData.slug,
       description: formData.description,
-      icon: formData.icon,
       thumbnail_image: formData.thumbnail_image,
       banner_image: formData.banner_image,
-      sort_order: formData.sort_order,
-      is_active: formData.is_active
+      status: formData.status || 'active',
+      meta_title: formData.meta_title,
+      meta_description: formData.meta_description
     }
 
     const { data, error } = await supabase
@@ -113,27 +146,24 @@ export async function createElevatorType(
       .select()
       .single()
 
-    if (error) {
-      console.error('Error creating elevator type:', error)
-      return { success: false, error: error.message }
-    }
+    if (error) throw error
+
+    revalidatePath('/admin/elevator-types')
 
     return { success: true, elevatorType: data as ElevatorType }
-  } catch (error: any) {
-    console.error('Error in createElevatorType:', error)
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error('Error creating elevator type:', error)
+    return { success: false, error: 'Failed to create elevator type' }
   }
 }
 
-/**
- * Update existing elevator type
- */
-export async function updateElevatorType(
-  id: string,
-  formData: Partial<ElevatorTypeFormData>
-): Promise<UpdateElevatorTypeResult> {
+// =============================================
+// UPDATE ELEVATOR TYPE
+// =============================================
+
+export async function updateElevatorType(id: string, formData: Partial<ElevatorTypeFormData>) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     // If slug is being updated, check uniqueness
     if (formData.slug) {
@@ -149,46 +179,46 @@ export async function updateElevatorType(
       }
     }
 
+    const updateData: any = { ...formData }
+
+    // Remove undefined values
+    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key])
+
     const { data, error } = await supabase
       .from('elevator_types')
-      .update(formData)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
 
-    if (error) {
-      console.error('Error updating elevator type:', error)
-      return { success: false, error: error.message }
-    }
+    if (error) throw error
+
+    revalidatePath('/admin/elevator-types')
+    revalidatePath(`/admin/elevator-types/${id}`)
 
     return { success: true, elevatorType: data as ElevatorType }
-  } catch (error: any) {
-    console.error('Error in updateElevatorType:', error)
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error('Error updating elevator type:', error)
+    return { success: false, error: 'Failed to update elevator type' }
   }
 }
 
-/**
- * Delete elevator type
- */
-export async function deleteElevatorType(
-  id: string
-): Promise<DeleteElevatorTypeResult> {
+// =============================================
+// DELETE ELEVATOR TYPE
+// =============================================
+
+export async function deleteElevatorType(id: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
-    // Check if elevator type is in use by any products
-    const { data: productsInUse } = await supabase
-      .from('product_elevator_types')
-      .select('id')
+    // Check if there are products associated with this elevator type
+    const { count } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
       .eq('elevator_type_id', id)
-      .limit(1)
 
-    if (productsInUse && productsInUse.length > 0) {
-      return {
-        success: false,
-        error: 'Cannot delete elevator type that is assigned to products',
-      }
+    if (count && count > 0) {
+      return { success: false, error: `Cannot delete: ${count} products are assigned to this elevator type` }
     }
 
     const { error } = await supabase
@@ -196,104 +226,120 @@ export async function deleteElevatorType(
       .delete()
       .eq('id', id)
 
-    if (error) {
-      console.error('Error deleting elevator type:', error)
-      return { success: false, error: error.message }
-    }
+    if (error) throw error
+
+    revalidatePath('/admin/elevator-types')
 
     return { success: true }
-  } catch (error: any) {
-    console.error('Error in deleteElevatorType:', error)
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error('Error deleting elevator type:', error)
+    return { success: false, error: 'Failed to delete elevator type' }
   }
 }
 
-/**
- * Bulk update elevator types sort order
- */
-export async function updateElevatorTypesOrder(
-  updates: Array<{ id: string; sort_order: number }>
-): Promise<{ success: boolean; error?: string }> {
+// =============================================
+// UPLOAD ELEVATOR TYPE IMAGE
+// =============================================
+
+export async function uploadElevatorTypeImage(file: File) {
   try {
-    const supabase = await createServerSupabase()
+    const { uploadToCloudinary } = await import('@/lib/cloudinary/upload')
 
-    const promises = updates.map((update) =>
-      supabase
-        .from('elevator_types')
-        .update({ sort_order: update.sort_order })
-        .eq('id', update.id)
-    )
+    const result = await uploadToCloudinary(file, 'cedar/elevator-types')
 
-    const results = await Promise.all(promises)
-
-    const hasError = results.some((result) => result.error)
-    if (hasError) {
-      return { success: false, error: 'Failed to update some elevator types' }
+    if (!result.success || !result.url) {
+      throw new Error(result.error || 'Failed to upload image')
     }
 
-    return { success: true }
-  } catch (error: any) {
-    console.error('Error in updateElevatorTypesOrder:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-/**
- * Get products by elevator type
- */
-export async function getProductsByElevatorType(
-  elevatorTypeId: string
-): Promise<{ success: boolean; products?: any[]; error?: string }> {
-  try {
-    const supabase = await createServerSupabase()
-
-    const { data, error } = await supabase.rpc('get_elevator_type_products', {
-      elevator_type_id_param: elevatorTypeId,
-    })
-
-    if (error) {
-      console.error('Error fetching products by elevator type:', error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, products: data }
-  } catch (error: any) {
-    console.error('Error in getProductsByElevatorType:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-/**
- * Upload elevator type image to Supabase Storage
- */
-export async function uploadElevatorTypeImage(
-  file: File,
-  type: 'thumbnail' | 'banner' = 'thumbnail'
-): Promise<{ success: boolean; url?: string; error?: string }> {
-  try {
-    const supabase = await createServerSupabase()
-
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${type}-${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-    const filePath = `${fileName}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('elevator-types')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      })
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('elevator-types')
-      .getPublicUrl(filePath)
-
-    return { success: true, url: publicUrl }
+    return { success: true, url: result.url }
   } catch (error: any) {
     console.error('Error uploading elevator type image:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error.message || 'Failed to upload image' }
   }
 }
 
+// =============================================
+// GET ELEVATOR TYPE STATS
+// =============================================
+
+export async function getElevatorTypeStats() {
+  try {
+    const supabase = createAdminClient()
+
+    const { count: totalCount } = await supabase
+      .from('elevator_types')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: activeCount } = await supabase
+      .from('elevator_types')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+
+    return {
+      success: true,
+      stats: {
+        total: totalCount || 0,
+        active: activeCount || 0,
+        inactive: (totalCount || 0) - (activeCount || 0)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching elevator type stats:', error)
+    return { success: false, error: 'Failed to fetch stats' }
+  }
+}
+
+// =============================================
+// GET PRODUCTS FOR ELEVATOR TYPE
+// =============================================
+
+export async function getProductsForElevatorType(id: string) {
+  try {
+    const supabase = createAdminClient()
+
+    // Query product_elevator_types to get related product IDs
+    const { data: relations, error: relationError } = await supabase
+      .from('product_elevator_types')
+      .select('product_id')
+      .eq('elevator_type_id', id)
+
+    // Fallback if table doesn't exist or is empty, try querying products directly if schema allows
+    // But for now assuming product_elevator_types is the way
+
+    // If relationError, we might want to check products table directly as fallback?
+    // Let's stick to relation table first.
+    if (relationError) {
+      // If relation table fails, try direct query on products table (legacy/alternative schema)
+      const { data: directProducts, error: directError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('elevator_type_id', id)
+
+      if (directError) throw relationError // Throw original error if both fail
+
+      return { products: directProducts || [], success: true }
+    }
+
+    const productIds = relations?.map(r => r.product_id) || []
+
+    if (productIds.length === 0) {
+      // Also check direct query just in case junction table is empty but direct column has data?
+      // This might be overkill and lead to duplicates if logic is mixed.
+      // Let's just return empty for now.
+      return { products: [], success: true }
+    }
+
+    // Fetch actual products
+    const { data: products, error: productsError } = await supabase
+      .from('products')
+      .select('*')
+      .in('id', productIds)
+
+    if (productsError) throw productsError
+
+    return { products, success: true }
+  } catch (error) {
+    console.error('Error fetching elevator type products:', error)
+    return { products: [], error: 'Failed to fetch products', success: false }
+  }
+}

@@ -30,7 +30,7 @@ export default function CategoriesPage() {
   const deleteMutation = useDeleteCategory()
 
   const categories = data?.categories || []
-  const stats = statsData || { total: 0, active: 0, inactive: 0, parent_categories: 0, subcategories: 0, total_products: 0 }
+  const stats = statsData || { total: 0, active: 0, applications: 0, categories: 0, subcategories: 0, total_products: 0 }
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 }
 
   const handleDelete = async (id: string) => {
@@ -99,7 +99,7 @@ export default function CategoriesPage() {
               <Eye className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.inactive}</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.total - stats.active}</div>
               <p className="text-xs text-gray-500 mt-1">Hidden from store</p>
             </CardContent>
           </Card>
@@ -110,7 +110,7 @@ export default function CategoriesPage() {
               <FolderTree className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.parent_categories || 0}</div>
+              <div className="text-2xl font-bold text-gray-900">{stats.applications || 0}</div>
               <p className="text-xs text-gray-500 mt-1">Top level</p>
             </CardContent>
           </Card>
@@ -210,10 +210,10 @@ export default function CategoriesPage() {
                     key={category.id}
                     className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/50 to-white"
                   >
-                    <Link href={`/admin/categories/${category.id}`} className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group">
-                      {(category.thumbnail || category.metadata?.icon) ? (
+                    <Link href={`/admin/categories/${category.slug || category.handle}`} className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group">
+                      {(category.thumbnail || category.icon) ? (
                         <img
-                          src={(category.thumbnail || category.metadata?.icon) as string}
+                          src={(category.thumbnail || category.icon) as string}
                           alt={category.name || ''}
                           className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
                         />
@@ -232,7 +232,7 @@ export default function CategoriesPage() {
                         <div className="flex items-center gap-4 text-xs text-gray-600">
                           <span className="flex items-center gap-1">
                             <FolderTree className="h-3 w-3" />
-                            {category.subcategory_count || 0} subcategories
+                            {category.children?.length || 0} subcategories
                           </span>
                           <span className="flex items-center gap-1">
                             <Package className="h-3 w-3" />
@@ -254,12 +254,12 @@ export default function CategoriesPage() {
 
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100" asChild>
-                          <Link href={`/admin/categories/${category.id}`}>
+                          <Link href={`/admin/categories/${category.slug || category.handle}`}>
                             <Eye className="h-4 w-4 text-blue-600" />
                           </Link>
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" asChild>
-                          <Link href={`/admin/categories/${category.id}/edit`}>
+                          <Link href={`/admin/categories/create?id=${category.id}`}>
                             <Edit className="h-4 w-4 text-gray-600" />
                           </Link>
                         </Button>

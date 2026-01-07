@@ -30,7 +30,7 @@ interface OrganizationData {
   subcategory_id?: string
   elevator_type_ids?: string[]
   collection_ids?: string[]
-  
+
   // Legacy (deprecated)
   categories?: string[]
   collections?: string[]
@@ -46,7 +46,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
   // Fetch data
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories()
   const { data: collectionsData, isLoading: collectionsLoading } = useCollections()
-  const { data: elevatorTypesData, isLoading: elevatorTypesLoading } = useElevatorTypes({ is_active: true })
+  const { data: elevatorTypesData, isLoading: elevatorTypesLoading } = useElevatorTypes()
 
   const allCategories = categoriesData?.categories || []
   const allCollections = collectionsData?.collections || []
@@ -83,7 +83,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
     if (!categoriesLoading && categories.length === 0 && organizationData.application_id) {
       const generalApp = applications.find((a) => a.slug === 'general')
       const uncategorizedCat = allCategories.find((c) => c.slug === 'uncategorized')
-      
+
       if (generalApp && uncategorizedCat && !organizationData.category_id) {
         onOrganizationDataChange({
           application_id: generalApp.id,
@@ -147,7 +147,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
       <Alert className="bg-blue-50 border-blue-200">
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
-          <strong>Cedar Golden Rule:</strong> Products assign themselves to categories. 
+          <strong>Cedar Golden Rule:</strong> Products assign themselves to categories.
           Select where this product belongs in the hierarchy, what types it applies to, and optional collections.
         </AlertDescription>
       </Alert>
@@ -278,7 +278,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                 <Alert className="bg-amber-50 border-amber-200">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
                   <AlertDescription className="text-amber-800">
-                    This product is marked as <strong>Uncategorized</strong>. 
+                    This product is marked as <strong>Uncategorized</strong>.
                     It will not be visible on the storefront until assigned to a proper category.
                   </AlertDescription>
                 </Alert>
@@ -334,18 +334,17 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                   <button
                     key={type.id}
                     onClick={() => toggleElevatorType(type.id)}
-                    className={`relative p-4 text-left rounded-lg border-2 transition-all ${
-                      isSelected
+                    className={`relative p-4 text-left rounded-lg border-2 transition-all ${isSelected
                         ? 'border-orange-500 bg-orange-50 text-orange-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     {isSelected && (
                       <div className="absolute top-2 right-2">
                         <Check className="h-4 w-4 text-orange-600" />
                       </div>
                     )}
-                    <div className="font-medium">{type.name}</div>
+                    <div className="font-medium">{type.title}</div>
                     {type.description && (
                       <div className="text-xs mt-1 opacity-70">{type.description}</div>
                     )}
@@ -365,7 +364,7 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                   const type = allElevatorTypes.find((t) => t.id === typeId)
                   return type ? (
                     <Badge key={typeId} variant="secondary" className="bg-orange-100 text-orange-800">
-                      {type.name}
+                      {type.title}
                     </Badge>
                   ) : null
                 })}
@@ -410,11 +409,10 @@ export function OrganizationTab({ organizationData, onOrganizationDataChange }: 
                   <button
                     key={collection.id}
                     onClick={() => toggleCollection(collection.id)}
-                    className={`relative p-4 text-left rounded-lg border-2 transition-all ${
-                      isSelected
+                    className={`relative p-4 text-left rounded-lg border-2 transition-all ${isSelected
                         ? 'border-orange-500 bg-orange-50 text-orange-700'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     {isSelected && (
                       <div className="absolute top-2 right-2">

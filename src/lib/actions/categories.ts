@@ -35,8 +35,7 @@ export async function getCategories(filters?: CategoryFilters) {
     let query = supabase
       .from('categories')
       .select('*', { count: 'exact' })
-      .eq('type', 'category') // Only get categories (not applications)
-      .order('sort_order', { ascending: true })
+      .order('categories_card_position', { ascending: true, nullsFirst: false })
       .order('title', { ascending: true })
 
     // Apply filters
@@ -82,6 +81,7 @@ export async function getCategories(filters?: CategoryFilters) {
 
         return {
           ...category,
+          name: category.title, // Map database 'title' to 'name' for UI
           subcategory_count: subcategoryCount || 0,
           product_count: productCount || 0,
           application_count: applicationCount || 0
@@ -120,7 +120,6 @@ export async function getCategoryById(id: string) {
       .from('categories')
       .select('*')
       .eq('id', id)
-      .eq('type', 'category')
       .single()
 
     if (error) throw error
@@ -139,6 +138,7 @@ export async function getCategoryById(id: string) {
 
     const category: CategoryWithChildren = {
       ...data,
+      name: data.title, // Map database 'title' to 'name' for UI
       subcategory_count: subcategoryCount || 0,
       product_count: productCount || 0
     }
@@ -166,7 +166,26 @@ export async function getCategoryBySlug(slug: string) {
 
     if (error) throw error
 
-    return { category: data, success: true }
+    // Count subcategories via junction table
+    const { count: subcategoryCount } = await supabase
+      .from('category_subcategories')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', data.id)
+
+    // Count products via product_categories
+    const { count: productCount } = await supabase
+      .from('product_categories')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', data.id)
+
+    const category: CategoryWithChildren = {
+      ...data,
+      name: data.title, // Map database 'title' to 'name' for UI
+      subcategory_count: subcategoryCount || 0,
+      product_count: productCount || 0
+    }
+
+    return { category, success: true }
   } catch (error) {
     console.error('Error fetching category:', error)
     return { category: null, error: 'Failed to fetch category', success: false }
@@ -181,39 +200,52 @@ export async function createCategory(formData: CategoryFormData) {
   try {
     const supabase = ensureSupabase(createServerSupabaseClient())
 
+    // This function only creates top-level categories
+    // For subcategories, use createSubcategory from subcategories.ts
+    if (formData.parent_id) {
+      // Import and use createSubcategory instead
+      const { createSubcategory } = await import('./subcategories')
+      return await createSubcategory(formData)
+    }
+
+    console.log('[createCategory] Creating category in categories table')
+
+    const categoryData = {
+      title: formData.name,
+      handle: formData.slug,
+      slug: formData.slug,
+      description: formData.description,
+      thumbnail: formData.thumbnail_image,
+      banner_url: formData.banner_url,
+      categories_card_position: formData.categories_card_position ? parseInt(String(formData.categories_card_position), 10) : null,
+      icon: formData.icon,
+      is_active: formData.is_active !== false,
+      status: formData.status || 'active',
+      seo_meta_title: formData.seo_meta_title,
+      seo_meta_description: formData.seo_meta_description
+    }
+
     const { data, error } = await supabase
       .from('categories')
-      .insert({
-        title: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        type: 'category', // Set type as category
-        image_url: formData.image_url,
-        thumbnail_image: formData.thumbnail_image,
-        banner_image: formData.banner_image,
-        image_alt: formData.image_alt,
-        icon: formData.icon,
-        sort_order: formData.sort_order || 0,
-        is_active: formData.is_active !== false,
-        status: formData.status || 'active',
-        meta_title: formData.meta_title,
-        meta_description: formData.meta_description
-      })
+      .insert(categoryData)
       .select()
       .single()
 
     if (error) throw error
 
+    console.log('[createCategory] Created category:', data?.id)
+
     revalidatePath('/admin/categories')
     revalidatePath('/')
 
-    return { category: data, success: true }
+    return { category: data, success: true, isSubcategory: false }
   } catch (error: any) {
     console.error('Error creating category:', error)
     return {
       category: null,
       error: error.message || 'Failed to create category',
-      success: false
+      success: false,
+      isSubcategory: false
     }
   }
 }
@@ -226,24 +258,30 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
   try {
     const supabase = ensureSupabase(createServerSupabaseClient())
 
+    // This function only updates categories
+    // For subcategories, use updateSubcategory from subcategories.ts
+
     const updateData: any = {
       updated_at: new Date().toISOString()
     }
 
-    if (formData.name !== undefined) updateData.name = formData.name
-    if (formData.slug !== undefined) updateData.slug = formData.slug
+    // Category fields
+    if (formData.name !== undefined) updateData.title = formData.name
+    if (formData.slug !== undefined) {
+      updateData.slug = formData.slug
+      updateData.handle = formData.slug
+    }
     if (formData.description !== undefined) updateData.description = formData.description
-    if (formData.parent_id !== undefined) updateData.parent_id = formData.parent_id
-    if (formData.image_url !== undefined) updateData.image_url = formData.image_url // DEPRECATED
-    if (formData.thumbnail_image !== undefined) updateData.thumbnail_image = formData.thumbnail_image
-    if (formData.banner_image !== undefined) updateData.banner_image = formData.banner_image
-    if (formData.image_alt !== undefined) updateData.image_alt = formData.image_alt
+    if (formData.thumbnail_image !== undefined) updateData.thumbnail = formData.thumbnail_image
+    if (formData.banner_url !== undefined) updateData.banner_url = formData.banner_url
+    if (formData.categories_card_position !== undefined) {
+      updateData.categories_card_position = formData.categories_card_position ? parseInt(String(formData.categories_card_position), 10) : null
+    }
     if (formData.icon !== undefined) updateData.icon = formData.icon
-    if (formData.sort_order !== undefined) updateData.sort_order = formData.sort_order
     if (formData.is_active !== undefined) updateData.is_active = formData.is_active
     if (formData.status !== undefined) updateData.status = formData.status
-    if (formData.meta_title !== undefined) updateData.meta_title = formData.meta_title
-    if (formData.meta_description !== undefined) updateData.meta_description = formData.meta_description
+    if (formData.seo_meta_title !== undefined) updateData.seo_meta_title = formData.seo_meta_title
+    if (formData.seo_meta_description !== undefined) updateData.seo_meta_description = formData.seo_meta_description
 
     const { data, error } = await supabase
       .from('categories')
@@ -328,26 +366,15 @@ export async function deleteCategory(id: string) {
 
 export async function uploadCategoryImage(file: File) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const { uploadToCloudinary } = await import('@/lib/cloudinary/upload')
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-    const filePath = `${fileName}`
+    const result = await uploadToCloudinary(file, 'cedar/categories')
 
-    const { error: uploadError } = await supabase.storage
-      .from('categories')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      })
+    if (!result.success || !result.url) {
+      throw new Error(result.error || 'Failed to upload image')
+    }
 
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('categories')
-      .getPublicUrl(filePath)
-
-    return { url: publicUrl, success: true }
+    return { url: result.url, success: true }
   } catch (error: any) {
     console.error('Error uploading image:', error)
     return {
@@ -370,20 +397,17 @@ export async function getCategoryStats(): Promise<CategoryStats> {
     const { count: total } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
-      .eq('type', 'category')
 
     // Active categories
     const { count: active } = await supabase
       .from('categories')
       .select('*', { count: 'exact', head: true })
-      .eq('type', 'category')
       .eq('is_active', true)
 
-    // Total applications
+    // Total applications - count from applications table instead
     const { count: applications } = await supabase
-      .from('categories')
+      .from('applications')
       .select('*', { count: 'exact', head: true })
-      .eq('type', 'application')
 
     // Total products
     const { count: totalProducts } = await supabase

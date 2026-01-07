@@ -179,26 +179,15 @@ export async function uploadSlideImage(file: File): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const { uploadToCloudinary } = await import('@/lib/cloudinary/upload')
 
-        const fileExt = file.name.split('.').pop()
-        const fileName = `slide-${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
-        const filePath = `${fileName}`
+        const result = await uploadToCloudinary(file, 'cedar/banner-slides')
 
-        const { error: uploadError } = await supabase.storage
-            .from('banners')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            })
+        if (!result.success || !result.url) {
+            throw new Error(result.error || 'Failed to upload image')
+        }
 
-        if (uploadError) throw uploadError
-
-        const { data: { publicUrl } } = supabase.storage
-            .from('banners')
-            .getPublicUrl(filePath)
-
-        return { success: true, url: publicUrl }
+        return { success: true, url: result.url }
     } catch (error: any) {
         console.error('Error uploading slide image:', error)
         return { success: false, error: error.message }

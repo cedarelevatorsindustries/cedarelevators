@@ -1,9 +1,8 @@
 "use client"
 
 import { useRef } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Package } from "lucide-react"
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import { getCategoryIcon } from "@/lib/utils/category-icons"
 
 interface QuickCategoriesSectionProps {
   categories?: ProductCategory[]
@@ -58,7 +57,6 @@ const QuickCategoriesSection = ({ categories = [] }: QuickCategoriesSectionProps
             <p className="text-gray-500 text-sm">No categories available</p>
           ) : (
             categories.map((category) => {
-              const IconComponent = getCategoryIcon(category)
               const href = `/catalog?category=${category.handle}`
 
               return (
@@ -67,8 +65,16 @@ const QuickCategoriesSection = ({ categories = [] }: QuickCategoriesSectionProps
                   href={href}
                   className="flex flex-col gap-3 items-center min-w-[140px] group"
                 >
-                  <div className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer">
-                    <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
+                  <div className="w-28 h-28 rounded-lg bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden">
+                    {category.thumbnail ? (
+                      <img
+                        src={category.thumbnail}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="w-12 h-12 text-gray-400" strokeWidth={1.5} />
+                    )}
                   </div>
                   <p className="text-[#181411] text-sm font-medium leading-normal text-center">
                     {category.name}

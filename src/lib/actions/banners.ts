@@ -409,7 +409,7 @@ export async function reorderBanners(
 }
 
 /**
- * Upload banner image to Supabase Storage
+ * Upload banner image to Cloudinary
  */
 export async function uploadBannerImage(file: File): Promise<{
     success: boolean
@@ -417,32 +417,15 @@ export async function uploadBannerImage(file: File): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const { uploadToCloudinary } = await import('@/lib/cloudinary/upload')
 
-        // Generate unique filename
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `${fileName}`
+        const result = await uploadToCloudinary(file, 'cedar/banners')
 
-        // Upload to storage
-        const { data, error } = await supabase.storage
-            .from('banners')
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            })
-
-        if (error) {
-            console.error('Error uploading banner image:', error)
-            return { success: false, error: error.message }
+        if (!result.success || !result.url) {
+            throw new Error(result.error || 'Failed to upload image')
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from('banners')
-            .getPublicUrl(data.path)
-
-        return { success: true, url: publicUrl }
+        return { success: true, url: result.url }
     } catch (error: any) {
         console.error('Error in uploadBannerImage:', error)
         return { success: false, error: error.message }

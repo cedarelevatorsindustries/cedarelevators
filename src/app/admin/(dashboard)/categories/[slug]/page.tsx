@@ -1,26 +1,58 @@
 "use client"
 
-import { use } from "react"
+import { use, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, Calendar, Link as LinkIcon, Image as ImageIcon, ChevronRight } from "lucide-react"
+import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, Calendar, Link as LinkIcon, Image as ImageIcon, ChevronRight, ChevronDown } from "lucide-react"
 import Link from "next/link"
-import { useCategory, useCategories } from "@/hooks/queries/useCategories"
+import { useCategory, useCategoryBySlug, useCategories, useSubcategories } from "@/hooks/queries/useCategories"
+import { useProductsByCategory } from "@/hooks/queries/useProductsByCategory"
 import { format } from "date-fns"
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default function CategoryDetailPage({ params }: PageProps) {
   const resolvedParams = use(params)
-  const { data, isLoading } = useCategory(resolvedParams.id)
-  const { data: categoriesData } = useCategories()
+
+  // Check if the parameter is a UUID (contains hyphens in UUID format)
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedParams.slug)
+
+  // Fetch by ID if UUID, otherwise by slug
+  const { data: dataBySlug, isLoading: isLoadingSlug } = useCategoryBySlug(resolvedParams.slug)
+  const { data: dataById, isLoading: isLoadingId } = useCategory(isUUID ? resolvedParams.slug : '')
+
+  const data = isUUID ? dataById : dataBySlug
+  const isLoading = isUUID ? isLoadingId : isLoadingSlug
+
   const category = data?.category
 
-  // Get subcategories (children of this category)
-  const subcategories = categoriesData?.categories?.filter(c => c.parent_id === resolvedParams.id) || []
+  // Fetch subcategories from subcategories table via junction table
+  const { data: subcategoriesData } = useSubcategories(category?.id || '')
+  const subcategories = subcategoriesData?.subcategories || []
+
+  // Fetch products for this category
+  const { data: productsData, isLoading: isLoadingProducts } = useProductsByCategory(category?.id || '')
+
+  // State for expandable subcategory sections
+  const [expandedSubcategories, setExpandedSubcategories] = useState<Set<string>>(new Set())
+
+  const toggleSubcategory = (subcategoryId: string) => {
+    setExpandedSubcategories(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(subcategoryId)) {
+        newSet.delete(subcategoryId)
+      } else {
+        newSet.add(subcategoryId)
+      }
+      return newSet
+    })
+  }
+
+  // Fetch all categories for parent lookup
+  const { data: categoriesData } = useCategories()
 
   // Get parent category if this is a subcategory
   const parentCategory = category?.parent_id
@@ -51,21 +83,21 @@ export default function CategoryDetailPage({ params }: PageProps) {
 
   const catName = category.name
   const catSlug = category.slug || category.handle
-  const catThumbnail = category.thumbnail || category.image_url
-  const catBanner = category.metadata?.banner_image
-  const metaTitle = category.metadata?.meta_title
-  const metaDescription = category.metadata?.meta_description
+  const catThumbnail = category.thumbnail
+  const catBanner = category.banner_url
+  const metaTitle = category.seo_meta_title
+  const metaDescription = category.seo_meta_description
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-full overflow-x-hidden bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
             {/* Breadcrumb */}
             {parentCategory && (
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                <Link href={`/admin/categories/${parentCategory.id}`} className="hover:text-gray-700">
+                <Link href={`/admin/categories/${parentCategory.slug || parentCategory.handle}`} className="hover:text-gray-700">
                   {parentCategory.name}
                 </Link>
                 <ChevronRight className="h-4 w-4" />
@@ -73,10 +105,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                {catName}
-              </h1>
+            <div className="flex items-center gap-2 mb-3">
               <Badge
                 variant="outline"
                 className={category.is_active
@@ -91,6 +120,12 @@ export default function CategoryDetailPage({ params }: PageProps) {
                 </Badge>
               )}
             </div>
+
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                {catName}
+              </h1>
+            </div>
             {category.description && (
               <p className="text-gray-500 max-w-3xl">{category.description}</p>
             )}
@@ -103,7 +138,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
               </Link>
             </Button>
             <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white">
-              <Link href={`/admin/categories/${category.id}/edit`}>
+              <Link href={`/admin/categories/create?id=${category.id}`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>
@@ -123,7 +158,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Name</label>
-                    <p className="text-gray-900 mt-1">{catName}</p>
+                    <p className="text-gray-900 mt-1 text-lg font-semibold">{catName}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Slug</label>
@@ -140,7 +175,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                     <div className="sm:col-span-2">
                       <label className="text-sm font-medium text-gray-700">Parent Category</label>
                       <Link
-                        href={`/admin/categories/${parentCategory.id}`}
+                        href={`/admin/categories/${parentCategory.slug || parentCategory.handle}`}
                         className="text-blue-600 hover:text-blue-700 mt-1 inline-flex items-center gap-2"
                       >
                         <FolderTree className="h-4 w-4" />
@@ -218,7 +253,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   </div>
                   <Button
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                     asChild
                   >
                     <Link href={`/admin/categories/create?parent=${category.id}`}>
@@ -237,7 +272,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                         className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/30 to-white"
                       >
                         <Link
-                          href={`/admin/categories/${subcat.id}`}
+                          href={`/admin/categories/${subcat.slug || subcat.handle}`}
                           className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group"
                         >
                           {subcat.thumbnail ? (
@@ -269,14 +304,14 @@ export default function CategoryDetailPage({ params }: PageProps) {
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <Badge
                             variant="outline"
-                            className={subcat.is_active
+                            className={subcat.status === 'active'
                               ? "bg-green-50 text-green-700 border-green-200"
                               : "bg-gray-50 text-gray-700 border-gray-200"}
                           >
-                            {subcat.is_active ? 'active' : 'inactive'}
+                            {subcat.status || 'inactive'}
                           </Badge>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
-                            <Link href={`/admin/categories/${subcat.id}/edit`}>
+                            <Link href={`/admin/categories/create?id=${subcat.id}&parent=${category?.id}`}>
                               <Edit className="h-4 w-4 text-gray-600" />
                             </Link>
                           </Button>
@@ -298,14 +333,150 @@ export default function CategoryDetailPage({ params }: PageProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Products</CardTitle>
-                <CardDescription>Products assigned to this category (read-only)</CardDescription>
+                <CardDescription>
+                  {productsData?.hasSubcategories
+                    ? 'Products grouped by subcategory'
+                    : 'Products assigned to this category'}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No products found</p>
-                  <p className="text-xs text-gray-400 mt-1">Products assign themselves to categories</p>
-                </div>
+                {isLoadingProducts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                  </div>
+                ) : productsData?.hasSubcategories && productsData.groupedProducts ? (
+                  // Parent category: Show products grouped by subcategory
+                  <div className="space-y-4">
+                    {productsData.groupedProducts.map((group: any) => {
+                      const isExpanded = expandedSubcategories.has(group.subcategory.id)
+                      const productCount = group.products.length
+
+                      return (
+                        <div key={group.subcategory.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          {/* Subcategory Header - Clickable */}
+                          <button
+                            onClick={() => toggleSubcategory(group.subcategory.id)}
+                            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50/50 to-white hover:from-blue-50 hover:to-blue-50/30 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5 text-blue-600" />
+                              ) : (
+                                <ChevronRight className="h-5 w-5 text-gray-400" />
+                              )}
+                              {group.subcategory.thumbnail ? (
+                                <img
+                                  src={group.subcategory.thumbnail}
+                                  alt={group.subcategory.name}
+                                  className="w-10 h-10 rounded-lg object-cover border-2 border-blue-100"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center border-2 border-blue-200">
+                                  <FolderTree className="h-5 w-5 text-blue-600" />
+                                </div>
+                              )}
+                              <div className="text-left">
+                                <h4 className="font-semibold text-gray-900">{group.subcategory.name}</h4>
+                                <p className="text-sm text-gray-500">{productCount} {productCount === 1 ? 'product' : 'products'}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {productCount}
+                            </Badge>
+                          </button>
+
+                          {/* Products List - Expandable */}
+                          {isExpanded && (
+                            <div className="p-4 bg-white border-t border-gray-100">
+                              {group.products.length > 0 ? (
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  {group.products.map((product: any) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/admin/products/${product.handle}`}
+                                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
+                                    >
+                                      {product.thumbnail ? (
+                                        <img
+                                          src={product.thumbnail}
+                                          alt={product.title}
+                                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
+                                        />
+                                      ) : (
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                          <Package className="h-6 w-6 text-gray-400" />
+                                        </div>
+                                      )}
+                                      <div className="min-w-0 flex-1">
+                                        <h5 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                                          {product.title}
+                                        </h5>
+                                        <p className="text-xs text-gray-500 truncate">{product.handle}</p>
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className={product.status === 'published'
+                                          ? "bg-green-50 text-green-700 border-green-200"
+                                          : "bg-gray-50 text-gray-700 border-gray-200"}
+                                      >
+                                        {product.status}
+                                      </Badge>
+                                    </Link>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">No products in this subcategory</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : productsData?.products && productsData.products.length > 0 ? (
+                  // Leaf category: Show products directly
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {productsData.products.map((product: any) => (
+                      <Link
+                        key={product.id}
+                        href={`/admin/products/${product.handle}`}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
+                      >
+                        {product.thumbnail ? (
+                          <img
+                            src={product.thumbnail}
+                            alt={product.title}
+                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Package className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h5 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                            {product.title}
+                          </h5>
+                          <p className="text-xs text-gray-500 truncate">{product.handle}</p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={product.status === 'published'
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-gray-50 text-gray-700 border-gray-200"}
+                        >
+                          {product.status}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No products found</p>
+                    <p className="text-xs text-gray-400 mt-1">Products assign themselves to categories</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

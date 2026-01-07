@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { hasRole } from '@/lib/auth/admin-roles'
-import { getProductsByElevatorType } from '@/lib/actions/elevator-types'
+import { getProductsForElevatorType } from '@/lib/actions/elevator-types'
 
 /**
  * GET /api/admin/elevator-types/[id]/products - Get all products assigned to this elevator type
@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Elevator type ID is required' }, { status: 400 })
     }
 
-    const result = await getProductsByElevatorType(id)
+    const result = await getProductsForElevatorType(id)
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 })

@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { hasRole } from '@/lib/auth/admin-roles'
 import {
-  fetchElevatorTypes,
+  getElevatorTypes,
   createElevatorType,
-  updateElevatorTypesOrder,
 } from '@/lib/actions/elevator-types'
 
 /**
@@ -29,10 +28,7 @@ export async function GET(request: NextRequest) {
       ? searchParams.get('is_active') === 'true'
       : undefined
 
-    const result = await fetchElevatorTypes({
-      search,
-      is_active,
-    })
+    const result = await getElevatorTypes()
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 })
@@ -90,50 +86,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * PATCH /api/admin/elevator-types - Bulk update elevator types sort order
- */
-export async function PATCH(request: NextRequest) {
-  try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
-    // Check admin role - only managers and above can reorder
-    const isAuthorized = await hasRole('manager')
-    if (!isAuthorized) {
-      return NextResponse.json(
-        { error: 'Forbidden - Manager access required' },
-        { status: 403 }
-      )
-    }
-
-    const { updates } = await request.json()
-
-    if (!updates || !Array.isArray(updates) || updates.length === 0) {
-      return NextResponse.json(
-        { error: 'Updates array is required' },
-        { status: 400 }
-      )
-    }
-
-    const result = await updateElevatorTypesOrder(updates)
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: `Updated sort order for ${updates.length} elevator types`,
-    })
-  } catch (error: any) {
-    console.error('Error updating elevator types order:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to update elevator types order' },
-      { status: 500 }
-    )
-  }
-}
 

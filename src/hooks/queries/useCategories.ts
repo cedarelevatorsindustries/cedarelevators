@@ -3,12 +3,20 @@ import { toast } from 'sonner'
 import {
   getCategories,
   getCategoryById,
+  getCategoryBySlug,
   createCategory,
   updateCategory,
   deleteCategory,
   uploadCategoryImage,
   getCategoryStats
 } from '@/lib/actions/categories'
+import {
+  getSubcategoriesByParentId,
+  getSubcategoryById,
+  createSubcategory,
+  updateSubcategory,
+  deleteSubcategory
+} from '@/lib/actions/subcategories'
 import type { CategoryFilters, CategoryFormData } from '@/lib/types/categories'
 
 // Query keys factory
@@ -40,6 +48,30 @@ export function useCategory(id: string) {
   })
 }
 
+export function useCategoryBySlug(slug: string) {
+  return useQuery({
+    queryKey: [...categoryKeys.all, 'slug', slug] as const,
+    queryFn: () => getCategoryBySlug(slug),
+    enabled: !!slug,
+  })
+}
+
+export function useSubcategories(parentId: string) {
+  return useQuery({
+    queryKey: [...categoryKeys.all, 'subcategories', parentId] as const,
+    queryFn: () => getSubcategoriesByParentId(parentId),
+    enabled: !!parentId,
+  })
+}
+
+export function useSubcategory(id: string) {
+  return useQuery({
+    queryKey: [...categoryKeys.all, 'subcategory', id] as const,
+    queryFn: () => getSubcategoryById(id),
+    enabled: !!id,
+  })
+}
+
 export function useCategoryStats() {
   return useQuery({
     queryKey: categoryKeys.stats(),
@@ -60,7 +92,9 @@ export function useCreateCategory() {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
         queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
-        toast.success('Category created successfully')
+        // Check if isSubcategory property exists in the result (it is returned by createCategory)
+        const isSub = (result as any).isSubcategory
+        toast.success(`${isSub ? 'Subcategory' : 'Category'} created successfully`)
       } else {
         toast.error(result.error || 'Failed to create category')
       }
@@ -89,6 +123,28 @@ export function useUpdateCategory() {
     },
     onError: () => {
       toast.error('Failed to update category')
+    },
+  })
+}
+
+export function useUpdateSubcategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CategoryFormData> }) =>
+      updateSubcategory(id, data),
+    onSuccess: (result, variables) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategory', variables.id] })
+        queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
+        toast.success('Subcategory updated successfully')
+      } else {
+        toast.error(result.error || 'Failed to update subcategory')
+      }
+    },
+    onError: () => {
+      toast.error('Failed to update subcategory')
     },
   })
 }

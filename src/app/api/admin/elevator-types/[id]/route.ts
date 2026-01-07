@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { hasRole } from '@/lib/auth/admin-roles'
 import {
-  fetchElevatorTypeById,
+  getElevatorTypeById,
   updateElevatorType,
   deleteElevatorType,
 } from '@/lib/actions/elevator-types'
@@ -32,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: 'Elevator type ID is required' }, { status: 400 })
     }
 
-    const result = await fetchElevatorTypeById(id)
+    const result = await getElevatorTypeById(id)
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 404 })

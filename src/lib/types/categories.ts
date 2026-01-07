@@ -12,7 +12,6 @@ export interface Category {
     slug: string
     handle?: string | null // Database column for URL handle
     description?: string | null
-    subtitle?: string | null
     parent_id?: string | null // NULL = Application, NOT NULL = Category/Subcategory
     // Visual Identity
     thumbnail?: string | null // Database column name for thumbnail
@@ -24,16 +23,13 @@ export interface Category {
     badge_text?: string | null
     badge_color?: string | null
     // Display Rules
-    card_position?: string | null
+    categories_card_position?: number | null // Position in category cards display
     default_sort?: string | null
     rank?: number | null // Database column for sort order
-    sort_order: number
     is_active: boolean
     status: CategoryStatus
     visibility?: string | null
-    // Metadata
-    metadata?: Record<string, any> | null // JSONB column in database
-    // ❌ REMOVED: application field - now handled via application_categories junction table
+    // SEO
     seo_meta_title?: string | null
     seo_meta_description?: string | null
     created_at: string
@@ -51,7 +47,6 @@ export interface CategoryFormData {
     name: string
     slug: string
     description?: string
-    subtitle?: string
     parent_id?: string | null
     // Visual Identity
     thumbnail_image?: string // Square/card image
@@ -61,9 +56,8 @@ export interface CategoryFormData {
     badge_text?: string
     badge_color?: string
     // Display Rules
-    card_position?: string
+    categories_card_position?: number | string // Position in category cards display
     default_sort?: string
-    sort_order?: number
     is_active?: boolean
     status?: CategoryStatus
     visibility?: string
