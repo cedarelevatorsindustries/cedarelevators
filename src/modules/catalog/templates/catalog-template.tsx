@@ -12,8 +12,8 @@ import { HorizontalFilterBar } from "@/modules/catalog/components/desktop/horizo
 import type { ViewMode } from "@/modules/catalog/sections"
 import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
-import { getApplicationConfig, getCategoriesForApplication } from "@/lib/config/applications"
 import { BannerWithSlides } from "@/lib/types/banners"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface CatalogTemplateProps {
   products: Product[]
@@ -133,18 +133,6 @@ export default function CatalogTemplate({
     return null
   }, [catalogType, effectiveSearchParams.category, categories, activeCategory])
 
-  // Get application config and categories
-  const applicationData = useMemo(() => {
-    if (effectiveSearchParams.application) {
-      const appConfig = getApplicationConfig(effectiveSearchParams.application)
-      if (appConfig) {
-        const appCategories = getCategoriesForApplication(effectiveSearchParams.application, categories)
-        return { config: appConfig, categories: appCategories }
-      }
-    }
-    return null
-  }, [effectiveSearchParams.application, categories])
-
   // Categories for sidebar
   const sidebarCategories = useMemo(() => {
     return categories.map(cat => ({
@@ -256,23 +244,23 @@ export default function CatalogTemplate({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-[80px]">
+    <div className="min-h-screen bg-gray-50 pt-[70px]">
 
       {/* Application Banner - Full Width */}
-      {config.showBanner && applicationData && (
+      {config.showBanner && activeApplication && (
         <CatalogBanner
-          title={applicationData.config.name}
-          subtitle={applicationData.config.subtitle}
-          backgroundImage={applicationData.config.backgroundImage}
-          categories={applicationData.categories}
+          title={activeApplication.name}
+          subtitle={activeApplication.description || activeApplication.subtitle}
+          backgroundImage={activeApplication.banner_image || activeApplication.image_url || "/images/image.png"}
+          categories={activeApplication.categories || []}
           type="application"
-          slug={applicationData.config.slug}
+          slug={activeApplication.slug}
           variant={config.bannerVariant || "full"}
         />
       )}
 
       {/* Category Banner - Full Width */}
-      {config.showBanner && !applicationData && currentCategory && (
+      {config.showBanner && !activeApplication && currentCategory && (
         <CatalogBanner
           title={currentCategory.name || ""}
           subtitle={currentCategory.description || undefined}
@@ -285,7 +273,7 @@ export default function CatalogTemplate({
       )}
 
       {/* Browse All Banner - Full Width (Only for browse-all type and when banners exist) */}
-      {config.showBanner && !applicationData && !currentCategory && catalogType === "browse-all" && banners.length > 0 && (
+      {config.showBanner && !activeApplication && !currentCategory && catalogType === "browse-all" && banners.length > 0 && (
         <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
           <BannerCarousel banners={banners} />
         </div>
@@ -401,22 +389,18 @@ export default function CatalogTemplate({
                   )}
                 </>
               ) : (
-                <div className="text-center py-20">
-                  <div className="text-gray-400 text-6xl mb-4">🔍</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                  <p className="text-gray-600 mb-6">
-                    Try adjusting your search or filter criteria
-                  </p>
-                  <button
-                    onClick={() => {
-                      setActiveFilters({})
-                      setSearchQuery("")
-                    }}
-                    className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
+                <EmptyState
+                  image="/empty state/no result found.png"
+                  title="No results found."
+                  description="We couldn't find any elevator components matching your search. Try different keywords or browse all parts."
+                  actionLabel="Clear Search & Browse All"
+                  onAction={() => {
+                    setActiveFilters({})
+                    setSearchQuery("")
+                    // Also clear URL params by pushing to base catalog URL
+                    router.push('/catalog')
+                  }}
+                />
               )}
             </div>
           </div>
@@ -465,22 +449,16 @@ export default function CatalogTemplate({
                 )}
               </>
             ) : (
-              <div className="text-center py-20">
-                <div className="text-gray-400 text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                <p className="text-gray-600 mb-6">
-                  Try adjusting your search or filter criteria
-                </p>
-                <button
-                  onClick={() => {
-                    setActiveFilters({})
-                    setSearchQuery("")
-                  }}
-                  className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
-                >
-                  Clear All Filters
-                </button>
-              </div>
+              <EmptyState
+                image="/empty state/no result found.png"
+                title="No products found"
+                description="Try adjusting your search or filter criteria"
+                actionLabel="Clear All Filters"
+                onAction={() => {
+                  setActiveFilters({})
+                  setSearchQuery("")
+                }}
+              />
             )}
           </div>
         )}

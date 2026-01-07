@@ -58,11 +58,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   // If application slug is provided, fetch the application and add ID to query params
   // Support both 'application' and 'app' parameters for compatibility
   const applicationSlug = params.application || params.app
-  let applicationId: string | undefined
+  let activeApplication: any = undefined
   if (applicationSlug) {
     const application = await getApplicationBySlug(applicationSlug)
     if (application) {
-      applicationId = application.id
+      activeApplication = application
       queryParams.application_id = application.id
     }
   }
@@ -90,6 +90,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           products={products}
           categories={categories}
           activeCategory={activeCategory || undefined}
+          activeApplication={activeApplication}
           searchParams={params}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}

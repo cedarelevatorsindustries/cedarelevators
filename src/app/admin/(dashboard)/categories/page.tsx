@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Pagination } from "@/components/ui/pagination"
-import { Plus, FolderTree, Package, Eye, Edit, Trash2, ChevronRight, LoaderCircle, RefreshCw, Search } from "lucide-react"
+import { Plus, FolderTree, Package, Edit, Trash2, LoaderCircle, RefreshCw, Search, Eye } from "lucide-react"
 import Link from "next/link"
-import { useCategories, useCategoryStats, useDeleteCategory } from "@/hooks/queries/useCategories"
+import { useCategories, useDeleteCategory, useCategoryStats } from "@/hooks/queries/useCategories"
 import type { CategoryWithChildren } from "@/lib/types/categories"
 
 export default function CategoriesPage() {
@@ -30,11 +30,11 @@ export default function CategoriesPage() {
   const deleteMutation = useDeleteCategory()
 
   const categories = data?.categories || []
-  const stats = statsData || { total: 0, active: 0, applications: 0, categories: 0, subcategories: 0, total_products: 0 }
+  const stats = statsData || { total: 0, active: 0, inactive: 0, parent_categories: 0, subcategories: 0, total_products: 0 }
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return
+    if (!confirm('Are you sure you want to delete this category? This will affect all related subcategories and products.')) return
     await deleteMutation.mutateAsync(id)
   }
 
@@ -46,7 +46,7 @@ export default function CategoriesPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Manage your 3-layer category structure
+              Manage product categories and subcategories
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -70,26 +70,48 @@ export default function CategoriesPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-6">
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Applications</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
               <FolderTree className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.applications}</div>
-              <p className="text-xs text-gray-500 mt-1">Top level</p>
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <p className="text-xs text-gray-500 mt-1">All categories</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Categories</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Active</CardTitle>
+              <Eye className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.active}</div>
+              <p className="text-xs text-gray-500 mt-1">Currently active</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Inactive</CardTitle>
+              <Eye className="h-4 w-4 text-gray-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{stats.inactive}</div>
+              <p className="text-xs text-gray-500 mt-1">Hidden from store</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Parents</CardTitle>
               <FolderTree className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.categories}</div>
-              <p className="text-xs text-gray-500 mt-1">Mid level</p>
+              <div className="text-2xl font-bold text-gray-900">{stats.parent_categories || 0}</div>
+              <p className="text-xs text-gray-500 mt-1">Top level</p>
             </CardContent>
           </Card>
 
@@ -99,19 +121,8 @@ export default function CategoriesPage() {
               <FolderTree className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.subcategories}</div>
-              <p className="text-xs text-gray-500 mt-1">Bottom level</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
-              <Eye className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-              <p className="text-xs text-gray-500 mt-1">All categories</p>
+              <div className="text-2xl font-bold text-gray-900">{stats.subcategories || 0}</div>
+              <p className="text-xs text-gray-500 mt-1">Child categories</p>
             </CardContent>
           </Card>
 
@@ -194,141 +205,75 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {categories.map((application: CategoryWithChildren) => (
-                  <div key={application.id} className="space-y-2">
-                    {/* Application Level */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white">
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
-                        {application.image_url ? (
-                          <img src={application.image_url} alt={application.name} className="w-12 h-12 rounded object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-12 h-12 bg-orange-50 rounded flex items-center justify-center flex-shrink-0">
-                            <FolderTree className="h-6 w-6 text-orange-500" />
-                          </div>
+                {categories.map((category: CategoryWithChildren) => (
+                  <div
+                    key={category.id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/50 to-white"
+                  >
+                    <Link href={`/admin/categories/${category.id}`} className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group">
+                      {(category.thumbnail || category.metadata?.icon) ? (
+                        <img
+                          src={(category.thumbnail || category.metadata?.icon) as string}
+                          alt={category.name || ''}
+                          className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-blue-200 group-hover:border-blue-300 transition-colors">
+                          <FolderTree className="h-8 w-8 text-blue-600" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors">
+                          {category.name}
+                        </h3>
+                        {category.description && (
+                          <p className="text-sm text-gray-500 truncate mb-2">{category.description}</p>
                         )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-900">{application.name}</h3>
-                            <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                              Application
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-500 truncate">{application.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <FolderTree className="h-3 w-3" />
+                            {category.subcategory_count || 0} subcategories
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Package className="h-3 w-3" />
+                            {category.product_count || 0} products
+                          </span>
                         </div>
                       </div>
+                    </Link>
 
-                      <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-gray-900">{application.product_count || 0}</p>
-                          <p className="text-xs text-gray-500">Products</p>
-                        </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={category.is_active
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-gray-50 text-gray-700 border-gray-200"}
+                      >
+                        {category.is_active ? 'active' : 'inactive'}
+                      </Badge>
 
-                        <Badge
-                          variant="outline"
-                          className={application.status === "active"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-gray-50 text-gray-700 border-gray-200"}
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-100" asChild>
+                          <Link href={`/admin/categories/${category.id}`}>
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" asChild>
+                          <Link href={`/admin/categories/${category.id}/edit`}>
+                            <Edit className="h-4 w-4 text-gray-600" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-red-50"
+                          onClick={() => handleDelete(category.id)}
+                          disabled={deleteMutation.isPending}
                         >
-                          {application.status}
-                        </Badge>
-
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100" asChild>
-                            <Link href={`/admin/categories/${application.id}/edit`}>
-                              <Edit className="h-4 w-4 text-gray-600" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-red-50"
-                            onClick={() => handleDelete(application.id)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
-                        </div>
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
                       </div>
                     </div>
-
-                    {/* Categories & Subcategories */}
-                    {application.children && application.children.length > 0 && (
-                      <div className="ml-8 space-y-2">
-                        {application.children.map((category) => (
-                          <div key={category.id} className="space-y-2">
-                            {/* Category Level */}
-                            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50/50 border border-blue-100">
-                              <div className="flex items-center gap-3 min-w-0 flex-1">
-                                <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-800 text-sm">{category.name}</h4>
-                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                      Category
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-4 flex-shrink-0">
-                                <span className="text-sm text-gray-600">{category.product_count || 0}</span>
-                                <div className="flex items-center gap-1">
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-blue-100" asChild>
-                                    <Link href={`/admin/categories/${category.id}/edit`}>
-                                      <Edit className="h-3 w-3 text-gray-600" />
-                                    </Link>
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 p-0 hover:bg-red-50"
-                                    onClick={() => handleDelete(category.id)}
-                                  >
-                                    <Trash2 className="h-3 w-3 text-red-600" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Subcategories */}
-                            {category.children && category.children.length > 0 && (
-                              <div className="ml-8 space-y-1">
-                                {category.children.map((subcategory) => (
-                                  <div key={subcategory.id} className="flex items-center justify-between p-2 rounded bg-purple-50/50 border border-purple-100">
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                                      <ChevronRight className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                                      <span className="text-sm text-gray-700">{subcategory.name}</span>
-                                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                                        Sub
-                                      </Badge>
-                                    </div>
-
-                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                      <span className="text-xs text-gray-600">{subcategory.product_count || 0}</span>
-                                      <div className="flex items-center gap-1">
-                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-purple-100" asChild>
-                                          <Link href={`/admin/categories/${subcategory.id}/edit`}>
-                                            <Edit className="h-3 w-3 text-gray-600" />
-                                          </Link>
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-6 w-6 p-0 hover:bg-red-50"
-                                          onClick={() => handleDelete(subcategory.id)}
-                                        >
-                                          <Trash2 className="h-3 w-3 text-red-600" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

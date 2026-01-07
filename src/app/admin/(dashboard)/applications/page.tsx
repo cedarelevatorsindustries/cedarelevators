@@ -199,25 +199,22 @@ export default function ApplicationsPage() {
                     key={application.id}
                     className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/50 to-white"
                   >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      {application.thumbnail_image || application.image_url ? (
+                    <Link href={`/admin/applications/${application.id}`} className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group">
+                      {(application.thumbnail || application.thumbnail_image || application.image_url) ? (
                         <img
-                          src={application.thumbnail_image || application.image_url}
-                          alt={application.name}
-                          className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100"
+                          src={application.thumbnail || application.thumbnail_image || application.image_url}
+                          alt={application.title || application.name}
+                          className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-blue-200">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-blue-200 group-hover:border-blue-300 transition-colors">
                           <Layers className="h-8 w-8 text-blue-600" />
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 text-lg">{application.name}</h3>
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                            Application
-                          </Badge>
-                        </div>
+                        <h3 className="font-semibold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors">
+                          {application.title || application.name}
+                        </h3>
                         {application.description && (
                           <p className="text-sm text-gray-500 truncate mb-2">{application.description}</p>
                         )}
@@ -232,7 +229,7 @@ export default function ApplicationsPage() {
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center gap-4 flex-shrink-0">
                       <Badge

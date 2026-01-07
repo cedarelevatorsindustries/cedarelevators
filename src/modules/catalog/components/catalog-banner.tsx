@@ -40,7 +40,7 @@ export function CatalogBanner({
     // Simple variant - compact rounded banner without category bar
     if (variant === "simple") {
         return (
-            <div className="w-full mt-[70px]">
+            <div className="w-full mt-0">
                 <div
                     className="relative h-[240px] rounded-2xl mx-8 overflow-hidden"
                     style={{
@@ -71,7 +71,7 @@ export function CatalogBanner({
 
     // Full variant - with horizontal category bar
     return (
-        <div className="w-full mt-[70px]">
+        <div className="w-full mt-0">
             {/* Banner Section */}
             <div
                 className="relative h-[320px] md:h-[360px] bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 overflow-visible"

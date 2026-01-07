@@ -5,6 +5,14 @@ export interface Application {
   id: string
   name: string
   slug: string
+  // Database column aliases (from categories table)
+  title?: string // Maps to name
+  handle?: string // Maps to slug
+  thumbnail?: string // Maps to thumbnail_image
+  banner_url?: string // Maps to banner_image
+  seo_meta_title?: string // Maps to meta_title
+  seo_meta_description?: string // Maps to meta_description
+  // End aliases
   description?: string
   subtitle?: string
   parent_id: null // Always null for applications
@@ -24,6 +32,7 @@ export interface Application {
   application?: string
   meta_title?: string
   meta_description?: string
+  metadata?: Record<string, any> // JSONB column from database
   created_at: string
   updated_at: string
 }

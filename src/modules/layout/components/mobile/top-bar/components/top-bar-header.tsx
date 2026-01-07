@@ -84,11 +84,11 @@ export function TopBarHeader({
       )}
 
       {/* Center: Website Title / Page Name */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 text-center flex justify-center">
+      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-auto max-w-[70%] text-center flex justify-center">
         {pathname === '/' ? (
           <Link
             href="/"
-            className={`font-bold leading-tight tracking-[-0.015em] truncate text-lg ${isTransparent ? 'text-white' : 'text-gray-900'
+            className={`font-bold leading-tight tracking-[-0.015em] text-sm whitespace-nowrap ${isTransparent ? 'text-white' : 'text-gray-900'
               }`}
           >
             {getPageTitle()}

@@ -1,45 +1,33 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { use } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Loader2, Package, Eye, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, Calendar, Link as LinkIcon, Image as ImageIcon, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import { useCategory } from "@/hooks/queries/useCategories"
-import { useProducts } from "@/hooks/queries/useProducts"
-import { useMemo } from "react"
+import { useCategory, useCategories } from "@/hooks/queries/useCategories"
+import { format } from "date-fns"
 
-export default function CategoryDetailPage({ params }: { params: { id: string } }) {
-  const { data: categoryData, isLoading: isLoadingCategory } = useCategory(params.id)
-  const { data: productsData, isLoading: isLoadingProducts } = useProducts({}, 1)
+interface PageProps {
+  params: Promise<{ id: string }>
+}
 
-  const category = categoryData?.category
-  const allProducts = productsData?.products || []
+export default function CategoryDetailPage({ params }: PageProps) {
+  const resolvedParams = use(params)
+  const { data, isLoading } = useCategory(resolvedParams.id)
+  const { data: categoriesData } = useCategories()
+  const category = data?.category
 
-  // Find products that have assigned themselves to this category
-  // Using the NEW category_id field (Cedar Interconnection Logic)
-  const assignedProducts = useMemo(() => {
-    if (!category) return []
+  // Get subcategories (children of this category)
+  const subcategories = categoriesData?.categories?.filter(c => c.parent_id === resolvedParams.id) || []
 
-    return allProducts.filter(p => {
-      // Check new hierarchy fields first (Cedar Interconnection Logic)
-      if (p.category_id === params.id ||
-        p.application_id === params.id ||
-        p.subcategory_id === params.id) {
-        return true
-      }
+  // Get parent category if this is a subcategory
+  const parentCategory = category?.parent_id
+    ? categoriesData?.categories?.find(c => c.id === category.parent_id)
+    : null
 
-      // Fallback to legacy category field for backward compatibility
-      if (p.category === params.id) {
-        return true
-      }
-
-      return false
-    })
-  }, [allProducts, params.id, category])
-
-  if (isLoadingCategory) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
@@ -49,9 +37,9 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
 
   if (!category) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 space-y-4">
-        <p className="text-gray-600">Category not found</p>
-        <Button variant="outline" asChild>
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Category not found</h3>
+        <Button asChild variant="outline">
           <Link href="/admin/categories">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Categories
@@ -61,250 +49,349 @@ export default function CategoryDetailPage({ params }: { params: { id: string } 
     )
   }
 
+  const catName = category.name
+  const catSlug = category.slug || category.handle
+  const catThumbnail = category.thumbnail || category.image_url
+  const catBanner = category.metadata?.banner_image
+  const metaTitle = category.metadata?.meta_title
+  const metaDescription = category.metadata?.meta_description
+
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            {/* Breadcrumb */}
+            {parentCategory && (
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <Link href={`/admin/categories/${parentCategory.id}`} className="hover:text-gray-700">
+                  {parentCategory.name}
+                </Link>
+                <ChevronRight className="h-4 w-4" />
+                <span className="text-gray-900 font-medium">{catName}</span>
+              </div>
+            )}
+
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                {category.name}
+                {catName}
               </h1>
-              <Badge variant={category.is_active ? "default" : "secondary"} className={category.is_active ? "bg-green-100 text-green-800" : ""}>
-                {category.is_active ? "Active" : "Inactive"}
+              <Badge
+                variant="outline"
+                className={category.is_active
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-gray-50 text-gray-700 border-gray-200"}
+              >
+                {category.is_active ? 'active' : 'inactive'}
               </Badge>
+              {!parentCategory && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  Parent Category
+                </Badge>
+              )}
             </div>
-            <p className="text-gray-600">
-              Category details and assigned products
-            </p>
+            {category.description && (
+              <p className="text-gray-500 max-w-3xl">{category.description}</p>
+            )}
           </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" asChild>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Button variant="outline" asChild className="border-gray-300 bg-white">
               <Link href="/admin/categories">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Link>
             </Button>
-            <Button className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
-              <Link href={`/admin/categories/${params.id}/edit`}>
+            <Button asChild className="bg-orange-600 hover:bg-orange-700 text-white">
+              <Link href={`/admin/categories/${category.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit Category
+                Edit
               </Link>
             </Button>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Category Details */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Main Content - Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Category Information</CardTitle>
+                <CardTitle>Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Slug</p>
-                  <p className="text-sm text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
-                    {category.slug}
-                  </p>
-                </div>
-
-                {category.description && (
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Description</p>
-                    <p className="text-sm text-gray-900">{category.description}</p>
+                    <label className="text-sm font-medium text-gray-700">Name</label>
+                    <p className="text-gray-900 mt-1">{catName}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Slug</label>
+                    <p className="text-gray-900 mt-1 font-mono text-sm flex items-center gap-2">
+                      <LinkIcon className="h-3 w-3 text-gray-400" />
+                      {catSlug}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-700">Description</label>
+                    <p className="text-gray-900 mt-1">{category.description || '-'}</p>
+                  </div>
+                  {parentCategory && (
+                    <div className="sm:col-span-2">
+                      <label className="text-sm font-medium text-gray-700">Parent Category</label>
+                      <Link
+                        href={`/admin/categories/${parentCategory.id}`}
+                        className="text-blue-600 hover:text-blue-700 mt-1 inline-flex items-center gap-2"
+                      >
+                        <FolderTree className="h-4 w-4" />
+                        {parentCategory.name}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Media */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Media</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {catThumbnail && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Thumbnail Image</label>
+                    <img
+                      src={catThumbnail}
+                      alt={catName}
+                      className="w-48 h-48 rounded-lg object-cover border-2 border-gray-200"
+                    />
                   </div>
                 )}
-
-
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Sort Order</p>
-                  <p className="text-sm text-gray-900">{category.sort_order}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Created</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(category.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-
-                {category.updated_at && (
+                {catBanner && (
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Last Updated</p>
-                    <p className="text-sm text-gray-900">
-                      {new Date(category.updated_at).toLocaleDateString()}
-                    </p>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Banner Image</label>
+                    <img
+                      src={catBanner as string}
+                      alt={`${catName} banner`}
+                      className="w-full max-w-2xl rounded-lg object-cover border-2 border-gray-200"
+                    />
+                  </div>
+                )}
+                {!catThumbnail && !catBanner && (
+                  <div className="text-center py-8 text-gray-500">
+                    <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No images uploaded</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {category.image_url && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5" />
-                    Category Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-lg overflow-hidden border border-gray-200">
-                    <img
-                      src={category.image_url}
-                      alt={category.image_alt || category.name}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                  {category.image_alt && (
-                    <p className="text-xs text-gray-500 mt-2">Alt: {category.image_alt}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            {/* SEO Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Meta Title</label>
+                  <p className="text-gray-900 mt-1">{metaTitle || '-'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Meta Description</label>
+                  <p className="text-gray-900 mt-1">{metaDescription || '-'}</p>
+                </div>
+              </CardContent>
+            </Card>
 
-            {(category.meta_title || category.meta_description) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>SEO Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {category.meta_title && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Meta Title</p>
-                      <p className="text-sm text-gray-900">{category.meta_title}</p>
-                    </div>
-                  )}
-                  {category.meta_description && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Meta Description</p>
-                      <p className="text-sm text-gray-900">{category.meta_description}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Assigned Products */}
-          <div className="lg:col-span-2">
+            {/* Hierarchical Subcategories Section */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Assigned Products
-                      <Badge variant="secondary" className="ml-2">
-                        {assignedProducts.length}
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      Products that have assigned themselves to this category
+                    <CardTitle>Subcategories</CardTitle>
+                    <CardDescription>
+                      {subcategories.length > 0
+                        ? `${subcategories.length} subcategories under this category`
+                        : 'No subcategories yet'}
                     </CardDescription>
                   </div>
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    asChild
+                  >
+                    <Link href={`/admin/categories/create?parent=${category.id}`}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Subcategory
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {isLoadingProducts ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-600" />
-                  </div>
-                ) : assignedProducts.length === 0 ? (
-                  <div className="text-center py-12 space-y-3">
-                    <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Package className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-gray-600 font-medium">No products assigned yet</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Products will appear here when they assign themselves to this category in their Organization tab.
-                      </p>
-                    </div>
-                    <Button variant="outline" asChild className="mt-4">
-                      <Link href="/admin/products/create">
-                        Create Product
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
+                {subcategories.length > 0 ? (
                   <div className="space-y-3">
-                    {/* Info Banner */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-start gap-3">
-                        <svg className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-sm text-blue-900">
-                          <p className="font-medium">Read-Only View</p>
-                          <p className="text-blue-700 mt-1">
-                            You cannot add/remove products here. Products manage their own category assignments in the Product form's Organization tab.
-                          </p>
+                    {subcategories.map((subcat) => (
+                      <div
+                        key={subcat.id}
+                        className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/30 to-white"
+                      >
+                        <Link
+                          href={`/admin/categories/${subcat.id}`}
+                          className="flex items-center gap-4 min-w-0 flex-1 cursor-pointer group"
+                        >
+                          {subcat.thumbnail ? (
+                            <img
+                              src={subcat.thumbnail}
+                              alt={subcat.name}
+                              className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-blue-200 group-hover:border-blue-300 transition-colors">
+                              <FolderTree className="h-6 w-6 text-blue-600" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {subcat.name}
+                            </h4>
+                            {subcat.description && (
+                              <p className="text-sm text-gray-500 truncate">{subcat.description}</p>
+                            )}
+                            <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+                              <span className="flex items-center gap-1">
+                                <Package className="h-3 w-3" />
+                                {subcat.product_count || 0} products
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge
+                            variant="outline"
+                            className={subcat.is_active
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : "bg-gray-50 text-gray-700 border-gray-200"}
+                          >
+                            {subcat.is_active ? 'active' : 'inactive'}
+                          </Badge>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
+                            <Link href={`/admin/categories/${subcat.id}/edit`}>
+                              <Edit className="h-4 w-4 text-gray-600" />
+                            </Link>
+                          </Button>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Products List */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {assignedProducts.map((product) => (
-                        <Card key={product.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex gap-4">
-                              {/* Product Image */}
-                              <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                {product.thumbnail_url ? (
-                                  <img
-                                    src={product.thumbnail_url}
-                                    alt={product.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-full w-full flex items-center justify-center">
-                                    <Package className="h-8 w-8 text-gray-400" />
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Product Info */}
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-gray-900 truncate">
-                                  {product.name}
-                                </h4>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  {product.sku || 'No SKU'}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  {product.price && (
-                                    <span className="text-sm font-semibold text-orange-600">
-                                      ${product.price.toFixed(2)}
-                                    </span>
-                                  )}
-                                  <Badge
-                                    variant={product.status === 'active' ? 'default' : 'secondary'}
-                                    className={`text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : ''}`}
-                                  >
-                                    {product.status}
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              {/* Actions */}
-                              <div className="flex items-start">
-                                <Button variant="ghost" size="sm" asChild>
-                                  <Link href={`/admin/products/${product.id}`}>
-                                    <Eye className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FolderTree className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No subcategories yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Click "Add Subcategory" to create one</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Products */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Products</CardTitle>
+                <CardDescription>Products assigned to this category (read-only)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">No products found</p>
+                  <p className="text-xs text-gray-400 mt-1">Products assign themselves to categories</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Right Column */}
+          <div className="space-y-6">
+            {/* Statistics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Statistics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600 flex items-center gap-2">
+                    <FolderTree className="h-4 w-4" />
+                    Subcategories
+                  </span>
+                  <span className="text-lg font-semibold text-gray-900">{subcategories.length}</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-600 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Products
+                  </span>
+                  <span className="text-lg font-semibold text-gray-900">{category.product_count || 0}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Hierarchy Info */}
+            {!parentCategory && (
+              <Card className="bg-blue-50 border-blue-200">
+                <CardHeader>
+                  <CardTitle className="text-base text-blue-900">Category Hierarchy</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-blue-800">
+                  <p className="mb-2">
+                    This is a <strong>parent category</strong>. You can create subcategories to organize products more specifically.
+                  </p>
+                  <p className="text-xs text-blue-700">
+                    Example: If this is "Motors", subcategories could be "AC Motors", "DC Motors", etc.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Status & Metadata */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Status & Metadata</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <div className="mt-1">
+                    <Badge
+                      variant="outline"
+                      className={category.is_active
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : "bg-gray-50 text-gray-700 border-gray-200"}
+                    >
+                      {category.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="h-3 w-3" />
+                    Created At
+                  </label>
+                  <p className="text-sm text-gray-900 mt-1">
+                    {format(new Date(category.created_at), 'PPP')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(category.created_at), 'p')}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Updated At</label>
+                  <p className="text-sm text-gray-900 mt-1">
+                    {format(new Date(category.updated_at), 'PPP')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(category.updated_at), 'p')}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>

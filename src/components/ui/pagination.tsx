@@ -62,23 +62,21 @@ export function Pagination({
     }
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-            {/* Items info */}
-            <div className="flex items-center gap-4">
-                <p className="text-sm text-gray-700">
-                    Showing <span className="font-medium">{startItem}</span> to{' '}
-                    <span className="font-medium">{endItem}</span> of{' '}
-                    <span className="font-medium">{totalItems}</span> results
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200 rounded-b-lg">
+            {/* Left side: Results info and Page size selector */}
+            <div className="flex items-center gap-6">
+                <p className="text-sm text-gray-500">
+                    Showing <span className="font-bold text-gray-900">{startItem}-{endItem}</span> of{' '}
+                    <span className="font-bold text-gray-900">{totalItems}</span> results
                 </p>
 
-                {/* Items per page selector */}
                 <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-700">Show:</label>
+                    <span className="text-sm text-gray-500">Show:</span>
                     <Select
                         value={itemsPerPage.toString()}
                         onValueChange={(value) => onItemsPerPageChange(Number(value))}
                     >
-                        <SelectTrigger className="w-20 h-8">
+                        <SelectTrigger className="w-[70px] h-9 rounded-lg border-gray-200 bg-white text-sm focus:ring-0">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -90,26 +88,24 @@ export function Pagination({
                 </div>
             </div>
 
-            {/* Page navigation */}
+            {/* Right side: Page navigation */}
             <div className="flex items-center gap-2">
-                {/* Previous button */}
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="h-8"
+                    className="h-9 px-4 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Previous
                 </Button>
 
-                {/* Page numbers */}
                 <div className="flex items-center gap-1">
                     {getPageNumbers().map((page, index) => {
                         if (page === '...') {
                             return (
-                                <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
+                                <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
                                     ...
                                 </span>
                             )
@@ -118,12 +114,12 @@ export function Pagination({
                         return (
                             <Button
                                 key={page}
-                                variant={currentPage === page ? "default" : "outline"}
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => onPageChange(page as number)}
-                                className={`h-8 w-8 p-0 ${currentPage === page
-                                        ? "bg-orange-500 hover:bg-orange-600 text-white"
-                                        : ""
+                                className={`h-9 w-9 p-0 rounded-full font-medium transition-colors ${currentPage === page
+                                    ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
+                                    : "text-gray-600 hover:bg-gray-100"
                                     }`}
                             >
                                 {page}
@@ -132,13 +128,12 @@ export function Pagination({
                     })}
                 </div>
 
-                {/* Next button */}
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="h-8"
+                    className="h-9 px-4 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Next
                     <ChevronRight className="h-4 w-4 ml-1" />

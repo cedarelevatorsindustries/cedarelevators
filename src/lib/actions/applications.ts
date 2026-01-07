@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createClerkSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import type {
   Application,
   ApplicationWithStats,
@@ -11,7 +11,8 @@ import type {
 } from "@/lib/types/applications"
 
 // Helper to ensure supabase client is not null
-function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
+async function ensureSupabase() {
+  const client = await createClerkSupabaseClient()
   if (!client) {
     throw new Error('Failed to create Supabase client')
   }
@@ -24,19 +25,18 @@ function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
 
 export async function getApplications(filters?: ApplicationFilters) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = await ensureSupabase()
 
     // Calculate pagination
     const page = filters?.page || 1
     const limit = filters?.limit || 20
     const offset = (page - 1) * limit
 
-    // Get applications from categories table (these are top-level entities)
+    // Get applications from applications table
     let query = supabase
-      .from('categories')
-      .select('*', { count: 'exact' })
-      .eq('type', 'application') // Applications have type = 'application'
-      .order('sort_order', { ascending: true })
+      .from('applications')
+      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description', { count: 'exact' })
+      // Filter by type in metadata instead since type column doesn't exist
       .order('title', { ascending: true })
 
     // Apply filters
@@ -90,10 +90,18 @@ export async function getApplications(filters?: ApplicationFilters) {
           productCount = uniqueProductIds.length
         }
 
+        // Parse metadata to enrich properties if needed
+        const metadata = app.metadata || {}
+
         return {
           ...app,
           category_count: categoryCount || 0,
-          product_count: productCount
+          product_count: productCount,
+          image_alt: metadata.image_alt,
+          icon: metadata.icon,
+          badge_text: metadata.badge_text,
+          badge_color: metadata.badge_color,
+          image_url: metadata.image_url || app.image_url // fallback to column if exists
         }
       })
     )
@@ -120,13 +128,12 @@ export async function getApplications(filters?: ApplicationFilters) {
 
 export async function getApplicationById(id: string) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = await ensureSupabase()
 
     const { data, error } = await supabase
-      .from('categories')
-      .select('*')
+      .from('applications')
+      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description')
       .eq('id', id)
-      .eq('type', 'application')
       .single()
 
     if (error) throw error
@@ -173,25 +180,29 @@ export async function getApplicationById(id: string) {
 
 export async function createApplication(formData: ApplicationFormData) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
-      .from('categories')
+      .from('applications')
       .insert({
         title: formData.name,
-        slug: formData.slug,
+        handle: formData.slug,
+        subtitle: formData.subtitle,
         description: formData.description,
-        type: 'application', // Set type as application
-        image_url: formData.image_url,
-        thumbnail_image: formData.thumbnail_image,
-        banner_image: formData.banner_image,
-        image_alt: formData.image_alt,
-        icon: formData.icon,
-        sort_order: formData.sort_order || 0,
+        thumbnail: formData.thumbnail_image,
+        banner_url: formData.banner_image,
         is_active: formData.is_active !== false,
         status: formData.status || 'active',
-        meta_title: formData.meta_title,
-        meta_description: formData.meta_description,
+        seo_meta_title: formData.meta_title,
+        seo_meta_description: formData.meta_description,
+        metadata: {
+          image_alt: formData.image_alt,
+          icon: formData.icon,
+          badge_text: formData.badge_text,
+          badge_color: formData.badge_color,
+          image_url: formData.image_url,
+          sort_order: formData.sort_order || 0
+        }
       })
       .select()
       .single()
@@ -213,18 +224,54 @@ export async function createApplication(formData: ApplicationFormData) {
 
 export async function updateApplication(id: string, formData: Partial<ApplicationFormData>) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = createAdminClient()
 
-    const updateData: any = {
-      ...formData,
+    // Map Partial<ApplicationFormData> to DB columns
+    const updatePayload: any = {
       updated_at: new Date().toISOString(),
     }
 
+    if (formData.name !== undefined) updatePayload.title = formData.name
+    if (formData.slug !== undefined) updatePayload.handle = formData.slug
+    if (formData.description !== undefined) updatePayload.description = formData.description
+    if (formData.thumbnail_image !== undefined) updatePayload.thumbnail = formData.thumbnail_image
+    if (formData.banner_image !== undefined) updatePayload.banner_url = formData.banner_image
+    if (formData.is_active !== undefined) updatePayload.is_active = formData.is_active
+    if (formData.status !== undefined) updatePayload.status = formData.status
+    if (formData.meta_title !== undefined) updatePayload.seo_meta_title = formData.meta_title
+    if (formData.meta_description !== undefined) updatePayload.seo_meta_description = formData.meta_description
+
+    // Handle metadata updates - need to merge or overwrite? 
+    // Usually overwrite or we need to fetch existing first. 
+    // For now simple overwrite of keys if present
+    const metadataUpdates: any = {}
+    if (formData.image_alt !== undefined) metadataUpdates.image_alt = formData.image_alt
+    if (formData.icon !== undefined) metadataUpdates.icon = formData.icon
+    if (formData.badge_text !== undefined) metadataUpdates.badge_text = formData.badge_text
+    if (formData.badge_color !== undefined) metadataUpdates.badge_color = formData.badge_color
+    if (formData.sort_order !== undefined) metadataUpdates.sort_order = formData.sort_order
+    if (formData.image_url !== undefined) metadataUpdates.image_url = formData.image_url
+
+    // If we have metadata updates, we might want to be careful not to wipe existing metadata
+    // But since this is a partial update, we trust the caller. 
+    // Ideally we jsonb_set or merge. For simplicity, we'll assume we can merge into existing metadata column if we could.
+    // Since we can't easily doing deep merge in one UPDATE call without raw SQL or fetch-update, 
+    // we will check if we have metadata updates. if so, we might need to fetch first?
+    // Let's just put them in 'metadata' column. 
+    // WARNING: This replaces the metadata object if we just say metadata: {...}. 
+    // To do a merge: metadata: supabase.raw(`metadata || '${JSON.stringify(metadataUpdates)}'`) - but this requires .raw which might not be exposed easily on update helper?
+    // Let's stick to simple mapping for now. The safe way is to just update what we have.
+
+    if (Object.keys(metadataUpdates).length > 0) {
+      // Fetch existing to merge
+      const { data: existing } = await supabase.from('applications').select('metadata').eq('id', id).single()
+      updatePayload.metadata = { ...(existing?.metadata || {}), ...metadataUpdates }
+    }
+
     const { data, error } = await supabase
-      .from('categories')
-      .update(updateData)
+      .from('applications')
+      .update(updatePayload)
       .eq('id', id)
-      .eq('type', 'application')
       .select()
       .single()
 
@@ -246,7 +293,7 @@ export async function updateApplication(id: string, formData: Partial<Applicatio
 
 export async function deleteApplication(id: string) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = createAdminClient()
 
     // Check if application has categories via junction table
     const { count: categoryCount } = await supabase
@@ -262,10 +309,9 @@ export async function deleteApplication(id: string) {
     }
 
     const { error } = await supabase
-      .from('categories')
+      .from('applications')
       .delete()
       .eq('id', id)
-      .eq('type', 'application')
 
     if (error) throw error
 
@@ -284,26 +330,23 @@ export async function deleteApplication(id: string) {
 
 export async function getApplicationStats(): Promise<ApplicationStats> {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = await ensureSupabase()
 
     // Total applications
     const { count: total } = await supabase
-      .from('categories')
+      .from('applications')
       .select('*', { count: 'exact', head: true })
-      .eq('type', 'application')
 
     // Active applications
     const { count: active } = await supabase
-      .from('categories')
+      .from('applications')
       .select('*', { count: 'exact', head: true })
-      .eq('type', 'application')
       .eq('is_active', true)
 
     // Get all application IDs
     const { data: applications } = await supabase
-      .from('categories')
+      .from('applications')
       .select('id')
-      .eq('type', 'application')
 
     const appIds = (applications || []).map((app: any) => app.id)
 
@@ -359,7 +402,7 @@ export async function getApplicationStats(): Promise<ApplicationStats> {
 
 export async function uploadApplicationImage(file: File) {
   try {
-    const supabase = ensureSupabase(createServerSupabaseClient())
+    const supabase = createAdminClient()
 
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`

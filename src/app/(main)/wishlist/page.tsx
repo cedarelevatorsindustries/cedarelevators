@@ -5,6 +5,8 @@ import ProductCard from "@/components/ui/product-card"
 import { Heart, ShoppingBag, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 
+import { EmptyState } from "@/components/ui/empty-state"
+
 export default function WishlistPage() {
   const { items, count, isLoading, removeItem } = useWishlist()
 
@@ -18,27 +20,14 @@ export default function WishlistPage() {
 
   if (count === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-[1400px] mx-auto px-4 py-16">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-12 h-12 text-gray-400" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">
-              Your Wishlist is Empty
-            </h1>
-            <p className="text-gray-600 mb-8">
-              Save your favorite products to your wishlist and shop them later.
-            </p>
-            <Link
-              href="/catalog"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              Browse Products
-            </Link>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 pt-20">
+        <EmptyState
+          image="/empty state/Wishlist empty state.png"
+          title="Your Wishlist is Empty"
+          description="Save your favorite products to your wishlist and shop them later."
+          actionLabel="Browse Products"
+          actionLink="/catalog"
+        />
       </div>
     )
   }

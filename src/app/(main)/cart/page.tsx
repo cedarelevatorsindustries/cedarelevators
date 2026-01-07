@@ -21,6 +21,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { UserType, ProfileType } from '@/types/cart.types'
 import { useRouter } from 'next/navigation'
+import EmptyCartState from '@/modules/cart/templates/empty-cart-state'
 
 export default function CartPage() {
   const router = useRouter()
@@ -96,37 +97,8 @@ export default function CartPage() {
   // Empty cart state
   if (summary.itemCount === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-[1400px] mx-auto px-4 py-16">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingBag className="w-12 h-12 text-gray-400" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">
-              Your Cart is Empty
-            </h1>
-            <p className="text-gray-600 mb-8">
-              {isSignedIn 
-                ? 'Add products to your cart and they will appear here.'
-                : 'Sign in to sync your cart across devices or continue shopping as guest.'}
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Link href="/catalog">
-                <Button size="lg">
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  Browse Products
-                </Button>
-              </Link>
-              {!isSignedIn && (
-                <Link href="/sign-in">
-                  <Button size="lg" variant="outline">
-                    Sign In
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <EmptyCartState />
       </div>
     )
   }
@@ -143,14 +115,14 @@ export default function CartPage() {
             <ArrowLeft className="w-4 h-4" />
             Continue Shopping
           </Link>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="cart-title">
                 Shopping Cart
               </h1>
               <p className="text-gray-600">
-                {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'} 
+                {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'}
                 {summary.uniqueProducts > 1 && ` • ${summary.uniqueProducts} products`}
               </p>
             </div>
@@ -225,7 +197,7 @@ export default function CartPage() {
               onCheckout={handleCheckout}
               onRequestQuote={handleRequestQuote}
             />
-            
+
             {/* Alternative Quote Button for Authenticated Users */}
             {isSignedIn && derivedItems.length > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
