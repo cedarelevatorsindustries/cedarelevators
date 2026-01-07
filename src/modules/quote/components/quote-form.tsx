@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileText, Upload, AlertCircle, Loader2, Info, TrendingUp, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createQuote } from '@/lib/actions/quotes';
 import {
     guestQuoteSchema,
     individualQuoteSchema,
@@ -21,6 +23,8 @@ interface QuoteFormProps {
 
 export function QuoteForm({ userType = 'guest', verificationStatus = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const router = useRouter();
 
     const getSchema = () => {
         switch (userType) {
@@ -43,9 +47,42 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
 
     const onSubmit = async (data: any) => {
         setIsSubmitting(true);
-        console.log("Submitting quote:", data);
-        // await createQuoteAction(data);
-        setTimeout(() => setIsSubmitting(false), 1000); // Mock
+        setSubmitError(null);
+
+        try {
+            // Transform data to match createQuote input format
+            const quoteData = userType === 'guest'
+                ? {
+                    items: [{ product_id: data.product_id, quantity: data.quantity }],
+                    account_type: 'guest' as const,
+                    notes: data.notes,
+                    name: data.name,
+                    email: data.email,
+                }
+                : {
+                    items: data.items,
+                    account_type: userType === 'verified' ? 'business' as const : userType as 'individual' | 'business',
+                    notes: data.notes,
+                    bulk_pricing_requested: data.bulk_pricing_requested,
+                };
+
+            const result = await createQuote(quoteData);
+
+            if (result.success) {
+                // Redirect to success page or quotes list
+                if (userType === 'guest') {
+                    router.push(`/quotes/success?id=${result.id}`);
+                } else {
+                    router.push('/quotes');
+                }
+            } else {
+                setSubmitError(result.error || 'Failed to submit quote');
+            }
+        } catch (error: any) {
+            setSubmitError(error.message || 'An unexpected error occurred');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -264,6 +301,17 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
                         )}
                     </div>
                 </div>
+
+                {/* Error Display */}
+                {submitError && (
+                    <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-sm font-medium text-red-900">Submission Failed</p>
+                            <p className="text-sm text-red-700 mt-1">{submitError}</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Submit Actions */}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">

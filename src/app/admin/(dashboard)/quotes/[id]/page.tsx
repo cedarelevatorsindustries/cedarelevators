@@ -455,7 +455,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                             </Button>
                         )}
 
-                        {statusConfig.action && quote.status === 'approved' && quote.user_type === 'verified' && (
+                        {statusConfig.action && quote.status === 'approved' && quote.account_type === 'verified' && (
                             <Button
                                 onClick={() => setShowConvertModal(true)}
                                 disabled={isSaving}
@@ -477,13 +477,13 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                     <Card data-testid="customer-context-panel">
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
-                                {quote.user_type === 'business' || quote.user_type === 'verified' ? (
+                                {quote.account_type === 'business' || quote.account_type === 'verified' ? (
                                     <Building2 className="w-5 h-5 text-purple-600" />
                                 ) : (
                                     <User className="w-5 h-5 text-blue-600" />
                                 )}
                                 Customer Information
-                                {quote.user_type === 'verified' && (
+                                {quote.account_type === 'verified' && (
                                     <BadgeCheck className="w-5 h-5 text-green-600" />
                                 )}
                             </CardTitle>
@@ -498,13 +498,13 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500">Account Type</p>
-                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${quote.user_type === 'verified' ? 'bg-green-100 text-green-700' :
-                                        quote.user_type === 'business' ? 'bg-purple-100 text-purple-700' :
-                                            quote.user_type === 'individual' ? 'bg-blue-100 text-blue-700' :
+                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${quote.account_type === 'verified' ? 'bg-green-100 text-green-700' :
+                                        quote.account_type === 'business' ? 'bg-purple-100 text-purple-700' :
+                                            quote.account_type === 'individual' ? 'bg-blue-100 text-blue-700' :
                                                 'bg-gray-100 text-gray-700'
                                         }`}>
-                                        {quote.user_type === 'verified' && <BadgeCheck className="w-3 h-3" />}
-                                        {quote.user_type.charAt(0).toUpperCase() + quote.user_type.slice(1)}
+                                        {quote.account_type === 'verified' && <BadgeCheck className="w-3 h-3" />}
+                                        {(quote.account_type || 'guest').charAt(0).toUpperCase() + (quote.account_type || 'guest').slice(1)}
                                     </span>
                                 </div>
                                 <div>
@@ -925,7 +925,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 </>
                             )}
 
-                            {quote.status === 'approved' && quote.user_type === 'verified' && (
+                            {quote.status === 'approved' && quote.account_type === 'verified' && (
                                 <Button
                                     onClick={() => setShowConvertModal(true)}
                                     disabled={isSaving}

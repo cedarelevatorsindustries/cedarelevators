@@ -18,13 +18,12 @@ export async function addAdminQuoteMessage(
         }
 
         const { error } = await supabase
-            .from('quote_messages')
+            .from('quote_admin_responses')
             .insert({
                 quote_id: quoteId,
-                sender_type: 'admin',
-                sender_name: 'Cedar Team',
-                message,
-                is_internal: isInternal
+                response_note: message,
+                responded_by: 'Cedar Team',
+                responded_at: new Date().toISOString()
             })
 
         if (error) {

@@ -172,7 +172,7 @@ export interface Quote {
   guest_name?: string
   guest_email?: string
   guest_phone?: string
-  user_type: UserType
+  account_type: UserType
   status: QuoteStatus
   priority: QuotePriority
   company_details?: {

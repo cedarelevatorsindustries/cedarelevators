@@ -25,7 +25,7 @@ export async function getAdminQuotes(filters?: {
             .select(`
                 *,
                 items:quote_items(*),
-                messages:quote_messages(*)
+                admin_responses:quote_admin_responses(*)
             `)
             .order('created_at', { ascending: false })
 
@@ -39,7 +39,7 @@ export async function getAdminQuotes(filters?: {
         }
 
         if (filters?.user_type && filters.user_type !== 'all') {
-            query = query.eq('user_type', filters.user_type)
+            query = query.eq('account_type', filters.user_type)
         }
 
         if (filters?.search) {
@@ -95,7 +95,7 @@ export async function getAdminQuoteById(quoteId: string): Promise<{ success: boo
             .select(`
                 *,
                 items:quote_items(*),
-                messages:quote_messages(*),
+                admin_responses:quote_admin_responses(*),
                 attachments:quote_attachments(*)
             `)
             .eq('id', quoteId)
@@ -336,13 +336,11 @@ export async function addAdminNote(
             return { success: false, error: 'Note cannot be empty' }
         }
 
-        const { error } = await supabase.from('quote_messages').insert({
+        const { error } = await supabase.from('quote_admin_responses').insert({
             quote_id: quoteId,
-            sender_type: 'admin',
-            sender_id: adminId,
-            sender_name: adminName,
-            message: note,
-            is_internal: isInternal
+            response_note: note,
+            responded_by: adminName,
+            responded_at: new Date().toISOString()
         })
 
         if (error) {

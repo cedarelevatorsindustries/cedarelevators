@@ -29,7 +29,7 @@ export async function getAdminQuotes(filters: AdminQuoteFilters): Promise<
             .select(`
         *,
         items:quote_items(*),
-        messages:quote_messages(*),
+        admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
             .order('created_at', { ascending: false })
@@ -46,7 +46,7 @@ export async function getAdminQuotes(filters: AdminQuoteFilters): Promise<
 
         // Apply user type filter
         if (filters.user_type && filters.user_type !== 'all') {
-            query = query.eq('user_type', filters.user_type)
+            query = query.eq('account_type', filters.user_type)
         }
 
         // Apply date range filter
@@ -108,7 +108,7 @@ export async function getAdminQuoteById(quoteId: string): Promise<
             .select(`
         *,
         items:quote_items(*),
-        messages:quote_messages(*),
+        admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
             .eq('id', quoteId)
@@ -144,7 +144,7 @@ export async function getAdminQuoteStats(): Promise<
 
         const { data: quotes, error } = await supabase
             .from('quotes')
-            .select('status, user_type, estimated_total')
+            .select('status, account_type, estimated_total')
 
         if (error) {
             console.error('Error fetching quote stats:', error)
@@ -158,7 +158,7 @@ export async function getAdminQuoteStats(): Promise<
             pending_count: quotes.filter(q => q.status === 'pending').length,
             accepted_count: quotes.filter(q => q.status === 'approved').length,
             reviewing_count: quotes.filter(q => q.status === 'reviewing').length,
-            business_count: quotes.filter(q => ['business', 'verified'].includes(q.user_type)).length
+            business_count: quotes.filter(q => ['business', 'verified'].includes(q.account_type)).length
         }
 
         return { success: true, stats }
