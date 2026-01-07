@@ -264,7 +264,7 @@ export default function CatalogTemplate({
         <CatalogBanner
           title={currentCategory.name || ""}
           subtitle={currentCategory.description || undefined}
-          backgroundImage={(currentCategory.metadata?.banner as string) || "/images/image.png"}
+          backgroundImage={currentCategory.banner_url || currentCategory.thumbnail || "/images/image.png"}
           categories={currentCategory.category_children || []}
           type="category"
           slug={currentCategory.handle || currentCategory.id}
@@ -281,32 +281,10 @@ export default function CatalogTemplate({
 
       {/* Horizontal Filter Bars */}
       {/* Application Page: Category Filters */}
-      {catalogType === 'application' && activeApplication?.categories && activeApplication.categories.length > 0 && (
-        <HorizontalFilterBar
-          title="Source by Categories"
-          filters={activeApplication.categories.map((cat: any) => ({
-            id: cat.id,
-            name: cat.name,
-            count: cat.product_count
-          }))}
-          activeFilter={selectedCategory}
-          paramName="category"
-        />
-      )}
+
 
       {/* Category Page: Subcategory Filters */}
-      {catalogType === 'category' && activeCategory?.category_children && activeCategory.category_children.length > 0 && (
-        <HorizontalFilterBar
-          title="Source by Subcategories"
-          filters={activeCategory.category_children.map((sub: any) => ({
-            id: sub.id,
-            name: sub.name,
-            count: sub.product_count
-          }))}
-          activeFilter={selectedSubcategory}
-          paramName="subcategory"
-        />
-      )}
+
 
 
       {/* Main Content */}

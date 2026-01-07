@@ -56,6 +56,8 @@ export interface ProductCategory {
     icon?: string
     thumbnail?: string
     thumbnail_image?: string // Added for category images from database
+    image_url?: string // Alias for thumbnail/icon
+    banner_url?: string // Category banner image
 }
 
 export interface Order {

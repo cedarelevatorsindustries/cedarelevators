@@ -47,14 +47,24 @@ export async function getSubcategoriesByParentId(parentId: string) {
 
         if (error) throw error
 
-        // Map title to name for UI consistency
-        const subcategories = (data || []).map(sub => ({
-            ...sub,
-            name: sub.title,
-            parent_id: parentId // Add parent_id for reference
-        }))
+        // Get product counts for each subcategory
+        const subcategoriesWithCounts = await Promise.all(
+            (data || []).map(async (sub) => {
+                const { count } = await supabase
+                    .from('product_subcategories')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('subcategory_id', sub.id)
 
-        return { subcategories, success: true }
+                return {
+                    ...sub,
+                    name: sub.title,
+                    parent_id: parentId,
+                    product_count: count || 0
+                }
+            })
+        )
+
+        return { subcategories: subcategoriesWithCounts, success: true }
     } catch (error) {
         console.error('Error fetching subcategories:', error)
         return { subcategories: [], error: 'Failed to fetch subcategories', success: false }

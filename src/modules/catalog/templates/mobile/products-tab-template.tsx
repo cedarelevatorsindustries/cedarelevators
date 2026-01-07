@@ -17,19 +17,6 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
   const [showFilters, setShowFilters] = useState(false)
   const [showSort, setShowSort] = useState(false)
 
-  // Organize products into sections
-  const trending = products.slice(0, 5)
-  const newArrivals = products.slice(5, 10)
-  const topChoices = products.slice(10, 15)
-  const bestSellers = products.slice(15, 20)
-  const recommended = products.slice(20, 25)
-  const recentlyViewed = products.slice(25, 30)
-  const favorites = products.slice(30, 35)
-  const exclusiveBusiness = products.slice(35, 40)
-  const limitedStock = products.slice(40, 45)
-  const seasonal = products.slice(45, 50)
-  const featured = products.slice(50, 55)
-
   return (
     <div className="pb-20">
       {/* Banner - Only show if banners exist */}
@@ -38,75 +25,6 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
           <BannerCarousel banners={banners} />
         </div>
       )}
-
-      {/* Product Sections - Horizontal Scroll */}
-      <div className="space-y-2">
-        <ProductSectionHorizontal
-          title="🔥 Trending Now"
-          products={trending}
-          viewAllLink="/catalog?filter=trending"
-        />
-
-        <ProductSectionHorizontal
-          title="✨ New Arrivals"
-          products={newArrivals}
-          viewAllLink="/catalog?filter=new"
-        />
-
-        <ProductSectionHorizontal
-          title="⭐ Top Choices This Month"
-          products={topChoices}
-          viewAllLink="/catalog?filter=top-choices"
-        />
-
-        <ProductSectionHorizontal
-          title="🏆 Best Sellers"
-          products={bestSellers}
-          viewAllLink="/catalog?filter=best-sellers"
-        />
-
-        <ProductSectionHorizontal
-          title="💡 Recommended for You"
-          products={recommended}
-          viewAllLink="/catalog?filter=recommended"
-        />
-
-        <ProductSectionHorizontal
-          title="👁️ Recently Viewed"
-          products={recentlyViewed}
-          viewAllLink="/catalog?filter=recent"
-        />
-
-        <ProductSectionHorizontal
-          title="❤️ Your Favorites"
-          products={favorites}
-          viewAllLink="/account/wishlist"
-        />
-
-        <ProductSectionHorizontal
-          title="💼 Exclusive to Business"
-          products={exclusiveBusiness}
-          viewAllLink="/catalog?filter=business-exclusive"
-        />
-
-        <ProductSectionHorizontal
-          title="⚡ Limited Stock"
-          products={limitedStock}
-          viewAllLink="/catalog?filter=limited"
-        />
-
-        <ProductSectionHorizontal
-          title="🎯 Seasonal Picks"
-          products={seasonal}
-          viewAllLink="/catalog?filter=seasonal"
-        />
-
-        <ProductSectionHorizontal
-          title="🌟 Featured Products"
-          products={featured}
-          viewAllLink="/catalog?filter=featured"
-        />
-      </div>
 
       {/* All Products - Infinite Scroll Grid with Filter Bar */}
       <div className="mt-6 bg-white">

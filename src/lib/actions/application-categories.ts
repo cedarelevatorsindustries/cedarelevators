@@ -97,12 +97,11 @@ export async function getApplicationCategories(applicationId: string) {
         category_id,
         sort_order,
         created_at,
-        updated_at,
         category:categories!category_id (
           id,
-          name,
+          title,
           slug,
-          thumbnail_image
+          thumbnail
         )
       `)
             .eq('application_id', applicationId)

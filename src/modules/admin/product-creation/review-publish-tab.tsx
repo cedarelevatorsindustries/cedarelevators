@@ -296,20 +296,44 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-500">Application</p>
-              <p className="text-sm font-medium">{formData.application_id || '—'}</p>
+              <p className="text-xs text-gray-500">Applications</p>
+              <p className="text-sm font-medium">
+                {formData.application_ids?.length > 0
+                  ? `${formData.application_ids.length} selected`
+                  : '—'}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Category</p>
-              <p className="text-sm font-medium">{formData.category_id || '—'}</p>
+              <p className="text-xs text-gray-500">Categories</p>
+              <p className="text-sm font-medium">
+                {formData.category_ids?.length > 0
+                  ? `${formData.category_ids.length} selected`
+                  : '—'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Subcategories</p>
+              <p className="text-sm font-medium">
+                {formData.subcategory_ids?.length > 0
+                  ? `${formData.subcategory_ids.length} selected`
+                  : '—'}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Elevator Types</p>
-              <p className="text-sm font-medium">{formData.elevator_type_ids?.length || 0} selected</p>
+              <p className="text-sm font-medium">
+                {formData.elevator_type_ids?.length > 0
+                  ? `${formData.elevator_type_ids.length} selected`
+                  : '0 selected'}
+              </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Collections</p>
-              <p className="text-sm font-medium">{formData.collection_ids?.length || 0} selected</p>
+              <p className="text-sm font-medium">
+                {formData.collection_ids?.length > 0
+                  ? `${formData.collection_ids.length} selected`
+                  : '0 selected'}
+              </p>
             </div>
           </div>
         </CardContent>

@@ -142,7 +142,7 @@ export function CatalogBanner({
                                                 {/* Image Container */}
                                                 <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
                                                     <img
-                                                        src={category.metadata?.icon as string || "/images/image.png"}
+                                                        src={category.thumbnail || category.thumbnail_image || category.image_url || "/images/image.png"}
                                                         alt={category.name || ""}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                                     />

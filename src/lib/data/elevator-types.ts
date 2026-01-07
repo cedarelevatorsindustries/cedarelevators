@@ -2,14 +2,13 @@ import { getSupabaseClient } from "@/lib/supabase/client"
 
 export interface ElevatorType {
   id: string
-  name: string
+  title: string
   slug: string
+  subtitle?: string
   description?: string
-  icon?: string
   thumbnail_image?: string
   banner_image?: string
-  sort_order: number
-  is_active: boolean
+  status: 'active' | 'draft' | 'archived'
   created_at: string
   updated_at: string
 }
@@ -24,9 +23,8 @@ export async function listElevatorTypes(): Promise<ElevatorType[]> {
     const { data, error } = await supabase
       .from('elevator_types')
       .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
+      .eq('status', 'active')
+      .order('title', { ascending: true })
 
     if (error) {
       console.error("Error fetching elevator types:", error)
@@ -51,7 +49,7 @@ export async function getElevatorTypeBySlug(slug: string): Promise<ElevatorType 
       .from('elevator_types')
       .select('*')
       .eq('slug', slug)
-      .eq('is_active', true)
+      .eq('status', 'active')
       .single()
 
     if (error || !data) {
@@ -64,4 +62,3 @@ export async function getElevatorTypeBySlug(slug: string): Promise<ElevatorType 
     return null
   }
 }
-

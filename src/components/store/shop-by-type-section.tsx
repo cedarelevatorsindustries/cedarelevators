@@ -33,7 +33,7 @@ export default function ShopByTypeSection({ hasProducts = false, elevatorTypes =
                     {elevatorTypes.map((type) => {
                         const imageSrc = type.thumbnail_image || type.banner_image || '/images/image.png'
                         const href = `/products?type=${type.slug}`
-                        
+
                         return (
                             <Link
                                 key={type.id}
@@ -44,7 +44,7 @@ export default function ShopByTypeSection({ hasProducts = false, elevatorTypes =
                                 <div className="absolute inset-0 bg-gray-200">
                                     <img
                                         src={imageSrc}
-                                        alt={type.name}
+                                        alt={type.title}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                     />
 
@@ -55,10 +55,10 @@ export default function ShopByTypeSection({ hasProducts = false, elevatorTypes =
                                 {/* Content Overlay */}
                                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                                     <h3 className="text-base font-bold mb-1 group-hover:text-blue-300 transition-colors line-clamp-2">
-                                        {type.name}
+                                        {type.title}
                                     </h3>
                                     <p className="text-gray-200 text-xs mb-2 leading-relaxed line-clamp-2">
-                                        {type.description || `Browse ${type.name.toLowerCase()} components`}
+                                        {type.description || `Browse ${type.title.toLowerCase()} components`}
                                     </p>
 
                                     {/* CTA Button */}

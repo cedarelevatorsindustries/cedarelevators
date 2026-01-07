@@ -54,10 +54,10 @@ interface ProductFormData {
   options: VariantOption[]
   variants: ProductVariant[]
 
-  // Step 5: Classification
-  application_id?: string
-  category_id?: string
-  subcategory_id?: string
+  // Step 5: Classification (all arrays for multi-select)
+  application_ids?: string[]
+  category_ids?: string[]
+  subcategory_ids?: string[]
   elevator_type_ids?: string[]
   collection_ids?: string[]
 
@@ -117,10 +117,10 @@ export default function CreateProductPage() {
     options: [],
     variants: [],
 
-    // Step 5: Classification
-    application_id: undefined,
-    category_id: undefined,
-    subcategory_id: undefined,
+    // Step 5: Classification (all arrays for multi-select)
+    application_ids: [],
+    category_ids: [],
+    subcategory_ids: [],
     elevator_type_ids: [],
     collection_ids: [],
 
@@ -297,12 +297,14 @@ export default function CreateProductPage() {
         short_description: formData.shortDescription,
         status: isDraft ? 'draft' : formData.status,
 
-        // Classification
-        application_id: formData.application_id,
-        category_id: formData.category_id,
-        subcategory_id: formData.subcategory_id,
+
+        // Classification (only arrays - handled via junction tables)
+        application_ids: formData.application_ids || [],
+        category_ids: formData.category_ids || [],
+        subcategory_ids: formData.subcategory_ids || [],
         elevator_type_ids: formData.elevator_type_ids || [],
         collection_ids: formData.collection_ids || [],
+
 
         // Pricing
         price: parseFloat(formData.price) || 0,
@@ -520,9 +522,9 @@ export default function CreateProductPage() {
             {activeTab === "classification" && (
               <ClassificationTab
                 formData={{
-                  application_id: formData.application_id,
-                  category_id: formData.category_id,
-                  subcategory_id: formData.subcategory_id,
+                  application_ids: formData.application_ids,
+                  category_ids: formData.category_ids,
+                  subcategory_ids: formData.subcategory_ids,
                   elevator_type_ids: formData.elevator_type_ids,
                   collection_ids: formData.collection_ids
                 }}

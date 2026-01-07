@@ -2,10 +2,12 @@ import { Metadata } from "next"
 import { listProducts } from "@/lib/data/products"
 import { listCategories } from "@/lib/data/categories"
 import { getApplicationBySlug, listApplications } from "@/lib/data/applications"
+import { listElevatorTypes } from "@/lib/data/elevator-types"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
 import { getBannersByPlacement } from "@/lib/actions/banners"
 import { BannerWithSlides } from "@/lib/types/banners"
+import { auth } from "@clerk/nextjs/server"
 
 export const metadata: Metadata = {
   title: "Product Catalog - Cedar Elevators | Premium Elevator Components",
@@ -26,6 +28,10 @@ interface CatalogPageProps {
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams
+
+  // Check authentication
+  const { userId } = await auth()
+  const isAuthenticated = !!userId
 
   // Build query params based on search params
   const queryParams: any = { limit: 100 }
@@ -55,7 +61,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
-  // If application slug is provided, fetch the application and add ID to query params
+  // If application slug is provided, fetch the application and get its categories
   // Support both 'application' and 'app' parameters for compatibility
   const applicationSlug = params.application || params.app
   let activeApplication: any = undefined
@@ -63,7 +69,20 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     const application = await getApplicationBySlug(applicationSlug)
     if (application) {
       activeApplication = application
-      queryParams.application_id = application.id
+
+      // Products don't have application_id - they're linked through categories
+      // So we need to get categories linked to this application
+      const { getApplicationCategories } = await import('@/lib/actions/application-categories')
+      const categoriesResult = await getApplicationCategories(application.id)
+
+      if (categoriesResult.success && categoriesResult.links.length > 0) {
+        // Extract category IDs from the application categories
+        const categoryIds = categoriesResult.links.map((link: any) => link.category.id)
+        queryParams.category_id = categoryIds
+        console.log('[CATALOG] Application categories found:', categoryIds)
+      } else {
+        console.log('[CATALOG] No categories found for application:', application.id, categoriesResult)
+      }
     }
   }
 
@@ -81,6 +100,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   // Fetch all applications for mobile view
   const applications = await listApplications()
+
+  // Fetch elevator types for mobile categories tab
+  const elevatorTypes = await listElevatorTypes()
 
   return (
     <>
@@ -104,10 +126,13 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           products={products}
           categories={categories}
           applications={applications}
+          elevatorTypes={elevatorTypes}
           activeCategory={activeCategory || undefined}
+          activeApplication={activeApplication}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={applicationSlug}
+          isAuthenticated={isAuthenticated}
         />
       </div>
     </>

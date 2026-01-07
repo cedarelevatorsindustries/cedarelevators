@@ -1,51 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Save, Upload, ArrowLeft, LoaderCircle } from "lucide-react"
+import { Save, ArrowLeft, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCreateCollection, useUploadCollectionImage } from "@/hooks/queries/useCollections"
-import type { CollectionFormData, CollectionContextType, CollectionDisplayType, SpecialCollectionLocation } from "@/lib/types/collections"
+import { useCreateCollection } from "@/hooks/queries/useCollections"
+import type { CollectionFormData, CollectionContextType } from "@/lib/types/collections"
 import { generateSlug } from "@/lib/types/collections"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { SEOAutoGenerateButton } from "@/components/admin/seo-auto-generate-button"
-import { useEffect, useState as useReactState } from "react"
 import { getCategories } from "@/lib/actions/categories"
 
 export default function CreateCollectionPage() {
   const router = useRouter()
   const createMutation = useCreateCollection()
-  const uploadMutation = useUploadCollectionImage()
 
   const [formData, setFormData] = useState<CollectionFormData>({
     title: "",
     slug: "",
     description: "",
-    image_url: "",
-    image_alt: "",
-    type: "manual",
     is_active: true,
-    is_featured: false,
-    sort_order: 0,
     meta_title: "",
     meta_description: "",
     // Context fields
     collection_type: "general",
     category_id: undefined,
-    is_business_only: false,
     display_order: 0,
-    // Display type system
-    display_type: "normal",
-    special_locations: []
+    show_in_guest: true, // New field for guest user visibility
   })
 
   const [categories, setCategories] = useState<any[]>([])
@@ -65,22 +52,6 @@ export default function CreateCollectionPage() {
     loadCategories()
   }, [])
 
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>("")
-  const [isUploading, setIsUploading] = useState(false)
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   const handleTitleChange = (title: string) => {
     setFormData({
       ...formData,
@@ -96,46 +67,30 @@ export default function CreateCollectionPage() {
         return
       }
 
-      // Validate special collections have at least one location
-      if (formData.display_type === 'special' && (!formData.special_locations || formData.special_locations.length === 0)) {
-        toast.error('Special collections must have at least one display location selected')
+      // Validate category-specific collections have a category selected
+      if (formData.collection_type === 'category_specific' && !formData.category_id) {
+        toast.error('Please select a category for category-specific collections')
         return
       }
 
-      let imageUrl = formData.image_url
-
-      // Upload image if selected
-      if (imageFile) {
-        setIsUploading(true)
-        const result = await uploadMutation.mutateAsync(imageFile)
-        if (result.success && result.url) {
-          imageUrl = result.url
-        }
-        setIsUploading(false)
-      }
-
       // Create collection
-      const result = await createMutation.mutateAsync({
-        ...formData,
-        image_url: imageUrl
-      })
+      const result = await createMutation.mutateAsync(formData)
 
       if (result.success) {
-        toast.success('Collection created successfully! Products can now assign themselves to this collection.')
+        toast.success('Collection created successfully!')
         router.push('/admin/collections')
       }
     } catch (error) {
       console.error('Error creating collection:', error)
       toast.error('Failed to create collection')
-      setIsUploading(false)
     }
   }
 
-  const isLoading = createMutation.isPending || isUploading
+  const isLoading = createMutation.isPending
 
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -154,411 +109,224 @@ export default function CreateCollectionPage() {
           </Button>
         </div>
 
-        {/* Main Form */}
-        <div className="grid gap-8 lg:grid-cols-12">
-          {/* Left Column - Main Form */}
-          <div className="lg:col-span-8 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>Collection details and settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Collection Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Summer Sale, Best Sellers"
-                      value={formData.title}
-                      onChange={(e) => handleTitleChange(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug *</Label>
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    />
-                  </div>
-                </div>
-
+        {/* Main Form - Single Column */}
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>Collection details and identification</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe this collection..."
-                    value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">Collection Type</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value: any) => setFormData({ ...formData, type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="manual">Manual</SelectItem>
-                      <SelectItem value="automatic">Automatic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    Manual: Products select this collection. Automatic: Products match rules.
-                  </p>
-                </div>
-
-                {/* Collection Context Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="collection_type">Collection Context *</Label>
-                  <Select
-                    value={formData.collection_type}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        collection_type: value as CollectionContextType,
-                        // Reset category_id if not category_specific
-                        category_id: value === 'category_specific' ? formData.category_id : undefined
-                      })
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General (Homepage)</SelectItem>
-                      <SelectItem value="category_specific">Category-Specific</SelectItem>
-                      <SelectItem value="business_specific">Business Hub</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    {formData.collection_type === 'general' && 'Shows on homepage with general collections'}
-                    {formData.collection_type === 'category_specific' && 'Shows on specific category pages'}
-                    {formData.collection_type === 'business_specific' && 'Shows in business hub only'}
-                  </p>
-                </div>
-
-                {/* Category Selector (conditional) */}
-                {formData.collection_type === 'category_specific' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="category_id">Category *</Label>
-                    <Select
-                      value={formData.category_id || ''}
-                      onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500">
-                      This collection will only appear on the selected category page
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Display Settings Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Display Settings</CardTitle>
-                <CardDescription>Control where and how this collection appears</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Display Type Selector */}
-                <div className="space-y-3">
-                  <Label>Display Type *</Label>
-                  <RadioGroup
-                    value={formData.display_type}
-                    onValueChange={(value: CollectionDisplayType) => {
-                      setFormData({
-                        ...formData,
-                        display_type: value,
-                        // Clear special_locations if changing to normal
-                        special_locations: value === 'normal' ? [] : formData.special_locations
-                      })
-                    }}
-                  >
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
-                      <RadioGroupItem value="normal" id="normal" className="mt-0.5" />
-                      <div className="flex-1">
-                        <Label htmlFor="normal" className="font-medium cursor-pointer">Normal Collection</Label>
-                        <p className="text-xs text-gray-500 mt-1">Displayed on the homepage</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors">
-                      <RadioGroupItem value="special" id="special" className="mt-0.5" />
-                      <div className="flex-1">
-                        <Label htmlFor="special" className="font-medium cursor-pointer">Special Collection</Label>
-                        <p className="text-xs text-gray-500 mt-1">Displayed in Categories tab and/or Business Hub</p>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Special Locations - Only show if display_type is 'special' */}
-                {formData.display_type === 'special' && (
-                  <div className="space-y-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                    <div>
-                      <Label className="text-orange-900">Display Locations *</Label>
-                      <p className="text-xs text-orange-700 mt-1">Select where this collection should appear (at least one required)</p>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id="categories"
-                          checked={formData.special_locations?.includes('categories')}
-                          onCheckedChange={(checked) => {
-                            const locations = formData.special_locations || []
-                            if (checked) {
-                              setFormData({ ...formData, special_locations: [...locations, 'categories'] })
-                            } else {
-                              setFormData({ ...formData, special_locations: locations.filter(l => l !== 'categories') })
-                            }
-                          }}
-                          className="mt-0.5"
-                        />
-                        <div className="flex-1">
-                          <Label htmlFor="categories" className="font-medium cursor-pointer">Categories Tab</Label>
-                          <p className="text-xs text-gray-600 mt-1">Show in the Categories section</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <Checkbox
-                          id="business_hub"
-                          checked={formData.special_locations?.includes('business_hub')}
-                          onCheckedChange={(checked) => {
-                            const locations = formData.special_locations || []
-                            if (checked) {
-                              setFormData({ ...formData, special_locations: [...locations, 'business_hub'] })
-                            } else {
-                              setFormData({ ...formData, special_locations: locations.filter(l => l !== 'business_hub') })
-                            }
-                          }}
-                          className="mt-0.5"
-                        />
-                        <div className="flex-1">
-                          <Label htmlFor="business_hub" className="font-medium cursor-pointer">Business Hub Tab</Label>
-                          <p className="text-xs text-gray-600 mt-1">Show in the Business Hub section</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Business Only Checkbox */}
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="is_business_only">Business Hub Only</Label>
-                    <p className="text-xs text-gray-500">
-                      Restrict this collection to business hub users
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    id="is_business_only"
-                    checked={formData.is_business_only}
-                    onChange={(e) => setFormData({ ...formData, is_business_only: e.target.checked })}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                  />
-                </div>
-
-                {/* Display Order */}
-                <div className="space-y-2">
-                  <Label htmlFor="display_order">Display Order</Label>
+                  <Label htmlFor="title">Collection Title *</Label>
                   <Input
-                    id="display_order"
-                    type="number"
-                    min="0"
-                    value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                    id="title"
+                    placeholder="e.g., Summer Sale, Best Sellers"
+                    value={formData.title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
                   />
-                  <p className="text-xs text-gray-500">
-                    Lower numbers appear first. Use 0 for default ordering.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Image Upload */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Collection Image</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Feature Image</Label>
-                  <div className="flex items-start gap-6">
-                    <div
-                      onClick={() => document.getElementById('image-upload')?.click()}
-                      className={cn(
-                        "h-32 w-32 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden",
-                        imagePreview ? "border-solid border-gray-200" : "border-gray-300 hover:border-orange-400 hover:bg-orange-50"
-                      )}
-                    >
-                      {imagePreview ? (
-                        <>
-                          <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm font-medium">
-                            Change
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                          <span className="text-xs text-gray-500">Upload</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="image_alt">Alt Text</Label>
-                        <Input
-                          id="image_alt"
-                          placeholder="Describe image for accessibility"
-                          value={formData.image_alt || ""}
-                          onChange={(e) => setFormData({ ...formData, image_alt: e.target.value })}
-                        />
-                      </div>
-                      <Input
-                        id="image-upload"
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                      <p className="text-xs text-gray-500">
-                        JPG, PNG or WEBP. Max 2MB.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Settings */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Golden Rule Info Card */}
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-blue-900 flex items-center gap-2 text-base">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Cedar Golden Rule
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-blue-900 space-y-2">
-                <p><strong>Products assign themselves</strong> to collections.</p>
-                <p className="text-xs text-blue-700">Once created, products can select this collection in their Organization tab.</p>
-                <p className="text-xs text-blue-700 pt-2">View assigned products on the collection detail page after creation.</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Publishing</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="is_active">Active</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="is_active"
-                      checked={formData.is_active}
-                      onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                      className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="is_featured">Featured</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="is_featured"
-                      checked={formData.is_featured}
-                      onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                      className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sort_order">Sort Order</Label>
+                  <Label htmlFor="slug">Slug *</Label>
                   <Input
-                    id="sort_order"
-                    type="number"
-                    min="0"
-                    value={formData.sort_order}
-                    onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">SEO</CardTitle>
-                  <SEOAutoGenerateButton
-                    name={formData.title}
-                    description={formData.description}
-                    onGenerate={(data) => setFormData({
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe this collection..."
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={4}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Collection Context */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Collection Context</CardTitle>
+              <CardDescription>Define where and how this collection appears</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="collection_type">Collection Context *</Label>
+                <Select
+                  value={formData.collection_type}
+                  onValueChange={(value) => {
+                    setFormData({
                       ...formData,
-                      meta_title: data.meta_title,
-                      meta_description: data.meta_description
-                    })}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="meta_title">Meta Title</Label>
-                  <Input
-                    id="meta_title"
-                    value={formData.meta_title || ""}
-                    onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="meta_description">Meta Description</Label>
-                  <Textarea
-                    id="meta_description"
-                    value={formData.meta_description || ""}
-                    onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                      collection_type: value as CollectionContextType,
+                      // Reset category_id if not category_specific
+                      category_id: value === 'category_specific' ? formData.category_id : undefined
+                    })
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General (Homepage)</SelectItem>
+                    <SelectItem value="category_specific">Category-Specific</SelectItem>
+                    <SelectItem value="business_specific">Business Hub</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  {formData.collection_type === 'general' && 'Shows on homepage for all users'}
+                  {formData.collection_type === 'category_specific' && 'Shows on specific category pages'}
+                  {formData.collection_type === 'business_specific' && 'Shows in business hub only'}
+                </p>
+              </div>
 
+              {/* Category Selector (conditional) */}
+              {formData.collection_type === 'category_specific' && (
+                <div className="space-y-2">
+                  <Label htmlFor="category_id">Category *</Label>
+                  <Select
+                    value={formData.category_id || ''}
+                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    This collection will only appear on the selected category page
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Display Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Display Settings</CardTitle>
+              <CardDescription>Control visibility and ordering</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="display_order">Display Order</Label>
+                <Input
+                  id="display_order"
+                  type="number"
+                  min="0"
+                  value={formData.display_order}
+                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                />
+                <p className="text-xs text-gray-500">
+                  Lower numbers appear first. Use 0 for default ordering.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="show_in_guest">Show to Guest Users</Label>
+                  <p className="text-xs text-gray-500">
+                    Display this collection on guest user homepage
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  id="show_in_guest"
+                  checked={formData.show_in_guest}
+                  onChange={(e) => setFormData({ ...formData, show_in_guest: e.target.checked })}
+                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="is_active">Active Status</Label>
+                  <p className="text-xs text-gray-500">
+                    Publish this collection to make it visible
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SEO */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>SEO</CardTitle>
+                <SEOAutoGenerateButton
+                  name={formData.title}
+                  description={formData.description}
+                  onGenerate={(data) => setFormData({
+                    ...formData,
+                    meta_title: data.meta_title,
+                    meta_description: data.meta_description
+                  })}
+                />
+              </div>
+              <CardDescription>Search engine optimization</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="meta_title">Meta Title</Label>
+                <Input
+                  id="meta_title"
+                  value={formData.meta_title || ""}
+                  onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
+                  placeholder="SEO title for search engines"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="meta_description">Meta Description</Label>
+                <Textarea
+                  id="meta_description"
+                  value={formData.meta_description || ""}
+                  onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
+                  rows={3}
+                  placeholder="SEO description for search engines"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex justify-end gap-4">
             <Button
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+              variant="outline"
+              asChild
+            >
+              <Link href="/admin/collections">Cancel</Link>
+            </Button>
+            <Button
+              className="bg-orange-600 hover:bg-orange-700 text-white"
               onClick={handleSubmit}
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  {isUploading ? 'Uploading...' : 'Creating...'}
+                  Creating...
                 </>
               ) : (
                 <>
@@ -573,4 +341,3 @@ export default function CreateCollectionPage() {
     </div>
   )
 }
-

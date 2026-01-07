@@ -18,7 +18,8 @@ import {
   MoreHorizontal,
   Archive,
   Trash2,
-  Plus
+  Plus,
+  FolderTree
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -500,6 +501,103 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
                   </Link>
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Classification - Display catalog placement */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FolderTree className="w-5 h-5 mr-2" />
+                Classification
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Applications */}
+              {product.application_ids && product.application_ids.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Applications</label>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-900 border-orange-300">
+                      {product.application_ids.length} selected
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Categories */}
+              {product.category_ids && product.category_ids.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Categories</label>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300">
+                      {product.category_ids.length} selected
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Subcategories */}
+              {product.subcategory_ids && product.subcategory_ids.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Subcategories</label>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-900 border-purple-300">
+                      {product.subcategory_ids.length} selected
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Elevator Types */}
+              {product.elevator_type_ids && product.elevator_type_ids.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Elevator Types</label>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="bg-green-100 text-green-900 border-green-300">
+                      {product.elevator_type_ids.length} selected
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Collections */}
+              {product.collection_ids && product.collection_ids.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Collections</label>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="bg-pink-100 text-pink-900 border-pink-300">
+                      {product.collection_ids.length} selected
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* No Classification Message */}
+              {(!product.application_ids || product.application_ids.length === 0) &&
+                (!product.category_ids || product.category_ids.length === 0) &&
+                (!product.subcategory_ids || product.subcategory_ids.length === 0) &&
+                (!product.elevator_type_ids || product.elevator_type_ids.length === 0) &&
+                (!product.collection_ids || product.collection_ids.length === 0) && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">No classifications assigned</p>
+                    <Button variant="outline" size="sm" className="mt-2" asChild>
+                      <Link href={`/admin/products/${product.id}/edit`}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Add Classifications
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+
+              <Separator />
+
+              <Button variant="outline" className="w-full" asChild>
+                <Link href={`/admin/products/${product.id}/edit`}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Classifications
+                </Link>
+              </Button>
             </CardContent>
           </Card>
 

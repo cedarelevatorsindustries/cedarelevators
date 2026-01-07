@@ -1,6 +1,9 @@
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
+"use client"
+
+import { Product, ProductCategory } from "@/lib/types/domain"
 import type { Application } from "@/lib/data/applications"
 import type { ElevatorType } from "@/lib/data/elevator-types"
+import type { Collection } from "@/lib/types/collections"
 import {
   HeroGuestMobile as HeroSection,
   CategoriesMobile
@@ -8,10 +11,10 @@ import {
 import {
   ElevatorTypesSection,
   WhyCedarSection,
-  TestimonialsSection,
-  FeaturedProductsSection
+  TestimonialsSection
 } from "@/components/shared/sections"
 import { ApplicationsSection } from "@/components/store/applications-section"
+import CollectionSection from "@/components/store/collection-section"
 
 interface MobileHomepageGuestProps {
   products: Product[]
@@ -19,6 +22,7 @@ interface MobileHomepageGuestProps {
   applications: Application[]
   elevatorTypes: ElevatorType[]
   testimonials: any[]
+  collections?: Array<Collection & { products: Product[] }>
 }
 
 export default function MobileHomepageGuest({
@@ -26,7 +30,8 @@ export default function MobileHomepageGuest({
   categories,
   applications,
   elevatorTypes,
-  testimonials
+  testimonials,
+  collections = []
 }: MobileHomepageGuestProps) {
   return (
     <div className="w-full">
@@ -39,16 +44,22 @@ export default function MobileHomepageGuest({
       {/* Categories - Horizontal scroll without scrollbar */}
       <CategoriesMobile categories={categories} />
 
-      {/* Featured Products - 2 products with View More button */}
-      {products.length > 0 && (
-        <FeaturedProductsSection variant="mobile" />
-      )}
-
       {/* Shop by Elevator Type - 6 cards, 2 per row */}
       <ElevatorTypesSection variant="mobile" elevatorTypes={elevatorTypes} />
 
+      {/* General Collections - After Elevator Types */}
+      {collections.map((collection) => (
+        <CollectionSection
+          key={collection.id}
+          title={collection.title}
+          slug={collection.slug}
+          products={collection.products}
+          variant="mobile"
+        />
+      ))}
+
       {/* Why Cedar */}
-      <WhyCedarSection variant="mobile" />
+      <WhyCedarSection variant="desktop" />
 
       {/* Customer Reviews - Short testimonial */}
       {testimonials.length > 0 && (

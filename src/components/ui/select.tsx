@@ -22,6 +22,8 @@ interface SelectContextValue {
   value: string
   onValueChange: (value: string) => void
   triggerRef: React.RefObject<HTMLButtonElement | null>
+  valueLabel: string | null
+  setValueLabel: (label: string | null) => void
 }
 
 const SelectContext = createContext<SelectContextValue | null>(null)
@@ -52,6 +54,7 @@ function Select({
 }: SelectProps) {
   const [open, setOpen] = useState(false)
   const [internalValue, setInternalValue] = useState(defaultValue)
+  const [valueLabel, setValueLabel] = useState<string | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const value = controlledValue !== undefined ? controlledValue : internalValue
@@ -95,7 +98,7 @@ function Select({
   }, [open])
 
   return (
-    <SelectContext.Provider value={{ open, setOpen, value, onValueChange: handleValueChange, triggerRef }}>
+    <SelectContext.Provider value={{ open, setOpen, value, onValueChange: handleValueChange, triggerRef, valueLabel, setValueLabel }}>
       <div className="relative inline-block w-full" data-cedar-select data-disabled={disabled || undefined}>
         {children}
       </div>
@@ -153,30 +156,15 @@ interface SelectValueProps {
 }
 
 function SelectValue({ placeholder }: SelectValueProps) {
-  const { value } = useSelectContext()
+  const { value, valueLabel } = useSelectContext()
 
-  // Find the selected item's label from the DOM
-  const [displayValue, setDisplayValue] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (value) {
-      // Try to find the matching item
-      const items = document.querySelectorAll(`[data-cedar-select-item][data-value="${value}"]`)
-      if (items.length > 0) {
-        setDisplayValue(items[0].textContent || value)
-      } else {
-        setDisplayValue(value)
-      }
-    } else {
-      setDisplayValue(null)
-    }
-  }, [value])
-
-  if (!displayValue) {
+  // If we have a stored label, use it. Otherwise show placeholder or nothing.
+  if (!value) {
     return <span className="text-gray-400">{placeholder}</span>
   }
 
-  return <span>{displayValue}</span>
+  // Use the stored label if available, otherwise show the value as fallback
+  return <span>{valueLabel || value}</span>
 }
 
 // SelectContent
@@ -231,18 +219,37 @@ function SelectItem({
   disabled = false,
   ...props
 }: SelectItemProps) {
-  const { value, onValueChange } = useSelectContext()
+  const { value, onValueChange, setValueLabel } = useSelectContext()
   const isSelected = value === itemValue
+  const itemRef = useRef<HTMLDivElement>(null)
+
+  // When this item is selected, store its label text
+  const handleClick = () => {
+    if (disabled) return
+    // Extract text content from children for the label
+    const labelText = itemRef.current?.textContent || String(children)
+    setValueLabel(labelText)
+    onValueChange(itemValue)
+  }
+
+  // Set label on mount if this item is already selected
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      const labelText = itemRef.current.textContent || String(children)
+      setValueLabel(labelText)
+    }
+  }, [isSelected, children, setValueLabel])
 
   return (
     <div
+      ref={itemRef}
       role="option"
       aria-selected={isSelected}
       data-cedar-select-item
       data-value={itemValue}
       data-selected={isSelected || undefined}
       data-disabled={disabled || undefined}
-      onClick={() => !disabled && onValueChange(itemValue)}
+      onClick={handleClick}
       className={cn(
         "relative flex cursor-pointer select-none items-center rounded-md px-3 py-2 text-sm outline-none transition-colors",
         "hover:bg-orange-50 hover:text-orange-700",

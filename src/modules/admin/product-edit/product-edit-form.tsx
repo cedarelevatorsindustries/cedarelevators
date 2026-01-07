@@ -47,9 +47,10 @@ interface ProductFormData {
   images: ProductImage[]
   description: string
   attributes: ProductAttribute[]
-  application_id?: string
-  category_id?: string
-  subcategory_id?: string
+  // Classification (all arrays for multi-select)
+  application_ids?: string[]
+  category_ids?: string[]
+  subcategory_ids?: string[]
   elevator_type_ids?: string[]
   collection_ids?: string[]
   price: string
@@ -105,9 +106,10 @@ export function ProductEditForm({
       key: spec.key || "",
       value: spec.value || ""
     })),
-    application_id: product.application_id,
-    category_id: product.category_id,
-    subcategory_id: product.subcategory_id,
+    // Classification - convert singular IDs to arrays for multi-select
+    application_ids: product.application_id ? [product.application_id] : (product.application_ids || []),
+    category_ids: product.category_id ? [product.category_id] : (product.category_ids || []),
+    subcategory_ids: product.subcategory_id ? [product.subcategory_id] : (product.subcategory_ids || []),
     elevator_type_ids: product.elevator_type_ids || [],
     collection_ids: product.collection_ids || [],
     price: product.price?.toString() || "",
@@ -143,9 +145,10 @@ export function ProductEditForm({
         description: formData.description,
         short_description: formData.shortDescription,
         status: formData.status,
-        application_id: formData.application_id,
-        category_id: formData.category_id,
-        subcategory_id: formData.subcategory_id,
+        // Classification (only arrays - handled via junction tables)
+        application_ids: formData.application_ids || [],
+        category_ids: formData.category_ids || [],
+        subcategory_ids: formData.subcategory_ids || [],
         elevator_type_ids: formData.elevator_type_ids || [],
         collection_ids: formData.collection_ids || [],
         price: parseFloat(formData.price) || 0,
@@ -296,9 +299,9 @@ export function ProductEditForm({
             {activeTab === "classification" && (
               <ClassificationTab
                 formData={{
-                  application_id: formData.application_id,
-                  category_id: formData.category_id,
-                  subcategory_id: formData.subcategory_id,
+                  application_ids: formData.application_ids,
+                  category_ids: formData.category_ids,
+                  subcategory_ids: formData.subcategory_ids,
                   elevator_type_ids: formData.elevator_type_ids,
                   collection_ids: formData.collection_ids
                 }}

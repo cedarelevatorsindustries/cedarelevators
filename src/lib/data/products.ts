@@ -45,6 +45,33 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       }
     }
 
+    // If filtering by categories, first get product IDs from junction table
+    let productIds: string[] | null = null
+    if (queryParams?.category_id && queryParams.category_id.length > 0) {
+      console.log('[listProducts] Filtering by category IDs:', queryParams.category_id)
+      const { data: junctionData } = await supabase
+        .from('product_categories')
+        .select('product_id')
+        .in('category_id', queryParams.category_id)
+
+      console.log('[listProducts] Junction table returned:', junctionData?.length || 0, 'products')
+
+      if (junctionData && junctionData.length > 0) {
+        productIds = junctionData.map(j => j.product_id)
+        console.log('[listProducts] Product IDs:', productIds)
+      } else {
+        // No products found for these categories
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
+    }
+
     let query = supabase
       .from('products')
       // Fetch categories via product_categories junction table
@@ -55,24 +82,22 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         )
       `, { count: 'exact' })
       .eq('status', 'active') // Only fetch active products
-      .range(offset, offset + limit - 1)
+
+    // Apply category filter if we have product IDs
+    if (productIds !== null) {
+      query = query.in('id', productIds)
+    }
 
     if (queryParams?.q) {
       // Search in name field (products table uses 'name' not 'title')
       query = query.ilike('name', `%${queryParams.q}%`)
     }
 
-    if (queryParams?.category_id && queryParams.category_id.length > 0) {
-      // Filter by category via junction table
-      query = query.in('product_categories.category.id', queryParams.category_id)
-    }
-
-    if (queryParams?.application_id) {
-      // Filter by application_id if products table has this column
-      query = query.eq('application_id', queryParams.application_id)
-    }
+    query = query.range(offset, offset + limit - 1)
 
     const { data, error, count } = await query
+
+    console.log('[listProducts] Query completed. Found:', data?.length || 0, 'products, count:', count)
 
     if (error) {
       console.error("Error fetching products from Supabase:", error)
@@ -95,7 +120,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,
         thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
-        // Extract categories from junction table
+        // Extract categories from junctiontable
         categories: p.product_categories?.map((pc: any) => ({
           ...pc.category,
           name: pc.category?.title,

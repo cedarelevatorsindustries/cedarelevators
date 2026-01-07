@@ -31,7 +31,7 @@ export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevato
             {/* Mobile: Title and Description Outside Card */}
             <div className="md:hidden mb-2">
               <h3 className="text-base font-bold text-gray-900 mb-1">
-                {type.name}
+                {type.title}
               </h3>
               <p className="text-gray-600 text-xs leading-relaxed">
                 {type.description}
@@ -47,7 +47,7 @@ export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevato
                 {type.thumbnail_image ? (
                   <img
                     src={type.thumbnail_image}
-                    alt={type.name}
+                    alt={type.title}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                 ) : (
@@ -61,7 +61,7 @@ export default function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevato
               {/* Content Overlay - Desktop Only */}
               <div className="hidden md:block absolute bottom-0 left-0 right-0 p-4 text-white">
                 <h3 className="text-base font-bold mb-1 group-hover:text-blue-300 transition-colors line-clamp-2">
-                  {type.name}
+                  {type.title}
                 </h3>
                 <p className="text-gray-200 text-xs mb-2 leading-relaxed line-clamp-2">
                   {type.description}

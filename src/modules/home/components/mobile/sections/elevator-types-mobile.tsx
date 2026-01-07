@@ -36,11 +36,15 @@ export default function ElevatorTypesMobile({ elevatorTypes }: ElevatorTypesMobi
                         className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all group"
                     >
                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                            {type.icon || '🏢'}
+                            {type.thumbnail_image ? (
+                                <img src={type.thumbnail_image} alt={type.title} className="w-full h-full object-cover rounded-full" />
+                            ) : (
+                                '🏢'
+                            )}
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-semibold text-gray-900 group-hover:text-blue-700">
-                                {type.name}
+                                {type.title}
                             </div>
                             {type.description && (
                                 <div className="text-xs text-gray-500 mt-0.5">

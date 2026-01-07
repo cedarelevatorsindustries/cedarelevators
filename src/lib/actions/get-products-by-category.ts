@@ -47,12 +47,12 @@ export async function getProductsByCategory(categoryId: string) {
             const groupedProducts = await Promise.all(
                 (subcategories || []).map(async (subcat) => {
                     // Get product IDs for this subcategory
-                    const { data: productCategoryData } = await supabase
-                        .from('product_categories')
+                    const { data: productSubcategoryData } = await supabase
+                        .from('product_subcategories')
                         .select('product_id')
-                        .eq('category_id', subcat.id)
+                        .eq('subcategory_id', subcat.id)
 
-                    const productIds = productCategoryData?.map(pc => pc.product_id) || []
+                    const productIds = productSubcategoryData?.map(pc => pc.product_id) || []
 
                     if (productIds.length === 0) {
                         return {
@@ -69,9 +69,9 @@ export async function getProductsByCategory(categoryId: string) {
                     // Fetch product details
                     const { data: products } = await supabase
                         .from('products')
-                        .select('id, title, handle, thumbnail, status, created_at')
+                        .select('id, name, slug, thumbnail_url, status, created_at')
                         .in('id', productIds)
-                        .order('title', { ascending: true })
+                        .order('name', { ascending: true })
 
                     return {
                         subcategory: {
@@ -109,9 +109,9 @@ export async function getProductsByCategory(categoryId: string) {
 
             const { data: products, error: productsError } = await supabase
                 .from('products')
-                .select('id, title, handle, thumbnail, status, created_at')
+                .select('id, name, slug, thumbnail_url, status, created_at')
                 .in('id', productIds)
-                .order('title', { ascending: true })
+                .order('name', { ascending: true })
 
             if (productsError) throw productsError
 

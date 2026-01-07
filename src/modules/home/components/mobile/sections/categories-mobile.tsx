@@ -1,7 +1,7 @@
 "use client"
 
 import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import { getCategoryIcon } from "@/lib/utils/category-icons"
+import { Package } from "lucide-react"
 
 interface CategoriesMobileProps {
   categories?: ProductCategory[]
@@ -21,24 +21,35 @@ export default function CategoriesMobile({ categories = [] }: CategoriesMobilePr
         className="overflow-x-auto overflow-y-hidden [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="flex items-stretch gap-4 pb-2">
+        <div className="flex items-stretch gap-3 pb-2">
           {categories.length === 0 ? (
             <p className="text-gray-500 text-xs">No categories available</p>
           ) : (
             categories.map((category) => {
-              const IconComponent = getCategoryIcon(category)
-              const href = `/catalog?category=${category.handle}`
+              const thumbnailSrc = category.thumbnail || category.thumbnail_image || '/images/image.png'
+              const href = `/catalog?category=${category.handle || category.slug}`
 
               return (
                 <a
                   key={category.id}
                   href={href}
-                  className="flex flex-col gap-2 items-center min-w-[100px] group"
+                  className="flex flex-col gap-2 min-w-[120px] max-w-[120px] items-center group"
                 >
-                  <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer">
-                    <IconComponent className="w-9 h-9 text-blue-500" strokeWidth={1.5} />
+                  {/* Square thumbnail image - increased size */}
+                  <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 group-hover:border-blue-500 transition-all">
+                    {thumbnailSrc ? (
+                      <img
+                        src={thumbnailSrc}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50">
+                        <Package className="w-9 h-9 text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                  <p className="text-[#181411] text-xs font-medium leading-normal text-center">
+                  <p className="text-[#181411] text-xs font-medium leading-snug text-center line-clamp-2 break-words">
                     {category.name}
                   </p>
                 </a>

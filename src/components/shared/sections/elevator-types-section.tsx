@@ -83,7 +83,7 @@ function DesktopGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
                         <div className="absolute inset-0 bg-gray-200">
                             <img
                                 src={imageSrc}
-                                alt={type.name}
+                                alt={type.title}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
                             {/* Dark Overlay */}
@@ -93,7 +93,7 @@ function DesktopGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
                         {/* Content Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                             <h3 className="text-base font-bold mb-1 group-hover:text-blue-300 transition-colors line-clamp-2">
-                                {type.name}
+                                {type.title}
                             </h3>
                             <p className="text-gray-200 text-xs mb-2 leading-relaxed line-clamp-2">
                                 {type.description || 'Browse products for this elevator type'}
@@ -125,7 +125,7 @@ function MobileGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
                         <div className="relative aspect-square overflow-hidden">
                             <img
                                 src={imageSrc}
-                                alt={type.name}
+                                alt={type.title}
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -133,7 +133,7 @@ function MobileGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
                         {/* Content */}
                         <div className="p-3 flex flex-col gap-2">
                             <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">
-                                {type.name}
+                                {type.title}
                             </h3>
                             <p className="text-gray-600 text-[10px] leading-relaxed truncate">
                                 {type.description || 'Explore components'}

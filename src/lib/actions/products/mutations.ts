@@ -25,15 +25,21 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
             return { success: false, error: 'Product with this URL handle already exists' }
         }
 
-        // Separate elevator_type_ids, collection_ids, and variants from main product data
-        const { elevator_type_ids, collection_ids, variants, ...mainProductData } = productData
+        // Separate junction table IDs and variants from main product data
+        const {
+            elevator_type_ids,
+            collection_ids,
+            application_ids,
+            category_ids,
+            subcategory_ids,
+            variants,
+            ...mainProductData
+        } = productData
 
-        // Set is_categorized based on whether product has proper category
+        // Set is_categorized based on whether product has proper classification
         const is_categorized = !!(
-            mainProductData.application_id &&
-            mainProductData.category_id &&
-            mainProductData.application_id !== 'general' &&
-            mainProductData.category_id !== 'uncategorized'
+            (application_ids && application_ids.length > 0) &&
+            (category_ids && category_ids.length > 0)
         )
 
         // Process images: upload deferred images to Cloudinary
@@ -149,6 +155,54 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
             }
         }
 
+        // Insert application relationships
+        if (application_ids && application_ids.length > 0) {
+            const applicationRecords = application_ids.map((applicationId: string) => ({
+                product_id: product.id,
+                application_id: applicationId,
+            }))
+
+            const { error: applicationsError } = await supabase
+                .from('product_applications')
+                .insert(applicationRecords)
+
+            if (applicationsError) {
+                logger.error('Error creating product-application relationships', applicationsError)
+            }
+        }
+
+        // Insert category relationships
+        if (category_ids && category_ids.length > 0) {
+            const categoryRecords = category_ids.map((categoryId: string) => ({
+                product_id: product.id,
+                category_id: categoryId,
+            }))
+
+            const { error: categoriesError } = await supabase
+                .from('product_categories')
+                .insert(categoryRecords)
+
+            if (categoriesError) {
+                logger.error('Error creating product-category relationships', categoriesError)
+            }
+        }
+
+        // Insert subcategory relationships
+        if (subcategory_ids && subcategory_ids.length > 0) {
+            const subcategoryRecords = subcategory_ids.map((subcategoryId: string) => ({
+                product_id: product.id,
+                subcategory_id: subcategoryId,
+            }))
+
+            const { error: subcategoriesError } = await supabase
+                .from('product_subcategories')
+                .insert(subcategoryRecords)
+
+            if (subcategoriesError) {
+                logger.error('Error creating product-subcategory relationships', subcategoriesError)
+            }
+        }
+
         // Insert product variants
         let variantsToInsert = [];
 
@@ -236,6 +290,9 @@ export async function updateProduct(productId: string, productData: any): Promis
             variants,
             elevator_type_ids,
             collection_ids,
+            application_ids,
+            category_ids,
+            subcategory_ids,
             images,
             ...productToUpdate
         } = productData
@@ -284,7 +341,10 @@ export async function updateProduct(productId: string, productData: any): Promis
             .from('products')
             .update({
                 ...productToUpdate,
-                is_categorized: !!(productToUpdate.application_id && productToUpdate.category_id && productToUpdate.application_id !== 'general' && productToUpdate.category_id !== 'uncategorized'),
+                is_categorized: !!(
+                    (application_ids && application_ids.length > 0) &&
+                    (category_ids && category_ids.length > 0)
+                ),
                 thumbnail_url: productToUpdate.thumbnail_url || processedImages.find(img => img.is_primary)?.url || processedImages[0]?.url,
                 tags: productToUpdate.tags || [],
                 technical_specs: productToUpdate.technical_specs || {},
@@ -343,6 +403,75 @@ export async function updateProduct(productId: string, productData: any): Promis
 
                 if (collectionsError) {
                     logger.error('Error updating collections', collectionsError)
+                }
+            }
+        }
+
+        // Update applications junction table
+        if (application_ids !== undefined) {
+            await supabase
+                .from('product_applications')
+                .delete()
+                .eq('product_id', productId)
+
+            if (application_ids.length > 0) {
+                const applicationAssociations = application_ids.map((applicationId: string) => ({
+                    product_id: productId,
+                    application_id: applicationId
+                }))
+
+                const { error: applicationsError } = await supabase
+                    .from('product_applications')
+                    .insert(applicationAssociations)
+
+                if (applicationsError) {
+                    logger.error('Error updating applications', applicationsError)
+                }
+            }
+        }
+
+        // Update categories junction table
+        if (category_ids !== undefined) {
+            await supabase
+                .from('product_categories')
+                .delete()
+                .eq('product_id', productId)
+
+            if (category_ids.length > 0) {
+                const categoryAssociations = category_ids.map((categoryId: string) => ({
+                    product_id: productId,
+                    category_id: categoryId
+                }))
+
+                const { error: categoriesError } = await supabase
+                    .from('product_categories')
+                    .insert(categoryAssociations)
+
+                if (categoriesError) {
+                    logger.error('Error updating categories', categoriesError)
+                }
+            }
+        }
+
+        // Update subcategories junction table
+        if (subcategory_ids !== undefined) {
+            await supabase
+                .from('product_subcategories')
+                .delete()
+                .eq('product_id', productId)
+
+            if (subcategory_ids.length > 0) {
+                const subcategoryAssociations = subcategory_ids.map((subcategoryId: string) => ({
+                    product_id: productId,
+                    subcategory_id: subcategoryId
+                }))
+
+                const { error: subcategoriesError } = await supabase
+                    .from('product_subcategories')
+                    .insert(subcategoryAssociations)
+
+                if (subcategoriesError) {
+                    logger.error('Error updating subcategories', subcategoriesError)
                 }
             }
         }

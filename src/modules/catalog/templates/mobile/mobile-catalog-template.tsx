@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import { Product, ProductCategory } from "@/lib/types/domain"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import Tabs from "../../components/mobile/tabs"
 import ProductsTabTemplate from "./products-tab-template"
 import CategoriesTabTemplate from "./categories-tab-template"
+import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 import { CategoryHeroGrid } from "@/components/store/category-hero-grid"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { FilterSidebar } from "../../components/mobile/filter-sidebar"
@@ -14,6 +16,7 @@ interface MobileCatalogTemplateProps {
   products: Product[]
   categories: ProductCategory[]
   applications?: any[]
+  elevatorTypes?: ElevatorType[]
   activeCategory?: ProductCategory & {
     category_children?: any[]
   }
@@ -25,23 +28,32 @@ interface MobileCatalogTemplateProps {
   banners?: BannerWithSlides[]
   tab?: string
   app?: string
+  isAuthenticated?: boolean
 }
-
-const tabs = [
-  { id: "products", label: "Products" },
-  { id: "categories", label: "Categories" }
-  // Applications removed - now shown on homepage
-]
 
 export default function MobileCatalogTemplate({
   products,
   categories,
+  elevatorTypes = [],
   activeCategory,
   activeApplication,
   banners = [],
   tab,
-  app
+  app,
+  isAuthenticated = false
 }: MobileCatalogTemplateProps) {
+  // Define tabs based on authentication
+  const tabs = useMemo(() => {
+    const baseTabs = [{ id: "products", label: "Products" }]
+
+    // Only show categories tab for authenticated users
+    if (isAuthenticated) {
+      baseTabs.push({ id: "categories", label: "Categories" })
+    }
+
+    return baseTabs
+  }, [isAuthenticated])
+
   const [activeTab, setActiveTab] = useState(tab || "products")
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -131,6 +143,40 @@ export default function MobileCatalogTemplate({
     return products
   }, [products, selectedCategory, selectedSubcategory])
 
+  // If activeCategory exists, show QuickCommerce UI directly
+  if (activeCategory) {
+    return (
+      <QuickCommerceSubcategoryTemplate
+        category={activeCategory}
+        products={products}
+        allCategories={categories}
+        onBack={() => router.push('/')}
+      />
+    )
+  }
+
+  // If activeApplication exists, convert to category format and show QuickCommerce UI
+  if (activeApplication) {
+    const appAsCategory: ProductCategory = {
+      id: activeApplication.id,
+      name: activeApplication.name,
+      handle: activeApplication.slug,
+      slug: activeApplication.slug,
+      description: activeApplication.description,
+      category_children: (activeApplication as any).categories || [],
+      thumbnail: activeApplication.thumbnail_image || activeApplication.image_url
+    }
+
+    return (
+      <QuickCommerceSubcategoryTemplate
+        category={appAsCategory}
+        products={products}
+        allCategories={categories}
+        onBack={() => router.push('/')}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pt-14">
       {/* Tabs - Sticky below topbar */}
@@ -148,7 +194,7 @@ export default function MobileCatalogTemplate({
         </>
       )}
 
-      {activeTab === "categories" && (
+      {activeTab === "categories" && isAuthenticated && (
         <>
           {/* Category Hero Grid - When coming from application */}
           {app ? (
@@ -157,6 +203,7 @@ export default function MobileCatalogTemplate({
             <CategoriesTabTemplate
               categories={categories}
               products={products}
+              elevatorTypes={elevatorTypes}
             />
           )}
         </>

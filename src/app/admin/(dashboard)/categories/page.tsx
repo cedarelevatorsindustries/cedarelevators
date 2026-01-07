@@ -232,7 +232,7 @@ export default function CategoriesPage() {
                         <div className="flex items-center gap-4 text-xs text-gray-600">
                           <span className="flex items-center gap-1">
                             <FolderTree className="h-3 w-3" />
-                            {category.children?.length || 0} subcategories
+                            {category.subcategory_count || 0} subcategories
                           </span>
                           <span className="flex items-center gap-1">
                             <Package className="h-3 w-3" />

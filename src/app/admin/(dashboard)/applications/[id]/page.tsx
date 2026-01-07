@@ -1,14 +1,18 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, X, Calendar, Link as LinkIcon, Image as ImageIcon } from "lucide-react"
+import { SearchableMultiSelect } from "@/components/ui/searchable-multi-select"
+import { ArrowLeft, Edit, Loader2, FolderTree, Package, Calendar, Link as LinkIcon, Image as ImageIcon, X, ChevronDown, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { useApplication } from "@/hooks/queries/useApplications"
+import { useApplicationCategories, useLinkCategoryToApplication, useUnlinkCategoryFromApplication } from "@/hooks/queries/useApplicationCategories"
+import { useCategories } from "@/hooks/queries/useCategories"
 import { format } from "date-fns"
+import { toast } from "sonner"
+import { getApplicationProducts } from "@/lib/actions/application-products"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -18,7 +22,94 @@ export default function ApplicationDetailPage({ params }: PageProps) {
   const resolvedParams = use(params)
   const { data, isLoading } = useApplication(resolvedParams.id)
   const application = data?.application
-  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false)
+
+  // Fetch linked categories
+  const { data: linkedCategoriesData, isLoading: isLoadingLinkedCategories } = useApplicationCategories(application?.id || '')
+  const linkedCategories = linkedCategoriesData || []
+
+  // Fetch all categories for the dropdown
+  const { data: allCategoriesData } = useCategories()
+  const allCategories = allCategoriesData?.categories || []
+
+  // Mutations for linking/unlinking categories
+  const linkCategoryMutation = useLinkCategoryToApplication()
+  const unlinkCategoryMutation = useUnlinkCategoryFromApplication()
+
+  // Get linked category IDs
+  const linkedCategoryIds = linkedCategories.map((link: any) => link.category_id)
+
+  // State to hold products from linked categories
+  const [groupedProducts, setGroupedProducts] = useState<any[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+
+  // Toggle category expansion
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId)
+      } else {
+        newSet.add(categoryId)
+      }
+      return newSet
+    })
+  }
+
+  // Fetch products when application or categories change
+  useEffect(() => {
+    async function fetchProducts() {
+      if (!application?.id) return
+
+      setIsLoadingProducts(true)
+      try {
+        const result = await getApplicationProducts(application.id)
+        if (result.success) {
+          setGroupedProducts(result.groupedProducts)
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+
+    fetchProducts()
+  }, [application?.id, linkedCategories.length])
+
+  // Handle category selection change
+  const handleCategoryChange = async (selectedIds: string[]) => {
+    if (!application?.id) return
+
+    const addedIds = selectedIds.filter(id => !linkedCategoryIds.includes(id))
+    const removedIds = linkedCategoryIds.filter(id => !selectedIds.includes(id))
+
+    // Link new categories
+    for (const categoryId of addedIds) {
+      await linkCategoryMutation.mutateAsync({
+        application_id: application.id,
+        category_id: categoryId
+      })
+    }
+
+    // Unlink removed categories
+    for (const categoryId of removedIds) {
+      const link = linkedCategories.find((l: any) => l.category_id === categoryId)
+      if (link) {
+        await unlinkCategoryMutation.mutateAsync(link.id)
+      }
+    }
+  }
+
+  // Handle individual category removal
+  const handleRemoveCategory = async (linkId: string) => {
+    try {
+      await unlinkCategoryMutation.mutateAsync(linkId)
+      toast.success('Category unlinked successfully')
+    } catch (error) {
+      toast.error('Failed to unlink category')
+    }
+  }
 
   if (isLoading) {
     return (
@@ -180,26 +271,76 @@ export default function ApplicationDetailPage({ params }: PageProps) {
               </CardContent>
             </Card>
 
-            {/* Categories */}
+            {/* Categories with SearchableMultiSelect */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Categories</CardTitle>
-                    <CardDescription>Manage categories linked to this application</CardDescription>
-                  </div>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Category
-                  </Button>
+                <div>
+                  <CardTitle>Categories</CardTitle>
+                  <CardDescription>Link categories to this application</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <FolderTree className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No categories linked yet</p>
-                  <p className="text-xs text-gray-400 mt-1">Click "Add Category" to link categories</p>
-                </div>
+              <CardContent className="space-y-4">
+                <SearchableMultiSelect
+                  items={allCategories.map((cat: any) => ({
+                    id: cat.id,
+                    name: cat.title || cat.name
+                  }))}
+                  selectedIds={linkedCategoryIds}
+                  onSelectionChange={handleCategoryChange}
+                  placeholder="Search and select categories..."
+                  emptyMessage="No categories found"
+                  hideSelectedBadges={true}
+                />
+
+                {/* Display linked categories */}
+                {linkedCategories.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    {linkedCategories.map((link: any) => (
+                      <div
+                        key={link.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all bg-gradient-to-r from-blue-50/30 to-white"
+                      >
+                        <Link
+                          href={`/admin/categories/${link.category.slug}`}
+                          className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group"
+                        >
+                          {link.category.thumbnail ? (
+                            <img
+                              src={link.category.thumbnail}
+                              alt={link.category.title}
+                              className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-blue-200 group-hover:border-blue-300 transition-colors">
+                              <FolderTree className="h-5 w-5 text-blue-600" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {link.category.title}
+                            </h4>
+                          </div>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                          onClick={() => handleRemoveCategory(link.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {linkedCategories.length === 0 && !isLoadingLinkedCategories && (
+                  <div className="text-center py-8 text-gray-500">
+                    <FolderTree className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No categories linked yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Use the dropdown above to link categories</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -207,14 +348,116 @@ export default function ApplicationDetailPage({ params }: PageProps) {
             <Card>
               <CardHeader>
                 <CardTitle>Products</CardTitle>
-                <CardDescription>Products from all linked categories (read-only)</CardDescription>
+                <CardDescription>
+                  {groupedProducts.length > 0
+                    ? 'Products grouped by category'
+                    : 'Products from linked categories'}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No products found</p>
-                  <p className="text-xs text-gray-400 mt-1">Products are managed via categories</p>
-                </div>
+                {isLoadingProducts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                  </div>
+                ) : groupedProducts.length > 0 ? (
+                  <div className="space-y-4">
+                    {groupedProducts.map((group: any) => {
+                      const isExpanded = expandedCategories.has(group.category.id)
+                      const productCount = group.products.length
+
+                      return (
+                        <div key={group.category.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          {/* Category Header - Clickable */}
+                          <button
+                            onClick={() => toggleCategory(group.category.id)}
+                            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50/50 to-white hover:from-blue-50 hover:to-blue-50/30 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5 text-blue-600" />
+                              ) : (
+                                <ChevronRight className="h-5 w-5 text-gray-400" />
+                              )}
+                              {group.category.thumbnail ? (
+                                <img
+                                  src={group.category.thumbnail}
+                                  alt={group.category.title}
+                                  className="w-10 h-10 rounded-lg object-cover border-2 border-blue-100"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center border-2 border-blue-200">
+                                  <FolderTree className="h-5 w-5 text-blue-600" />
+                                </div>
+                              )}
+                              <div className="text-left">
+                                <h4 className="font-semibold text-gray-900">{group.category.title}</h4>
+                                <p className="text-sm text-gray-500">{productCount} {productCount === 1 ? 'product' : 'products'}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {productCount}
+                            </Badge>
+                          </button>
+
+                          {/* Products List - Expandable */}
+                          {isExpanded && (
+                            <div className="p-4 bg-white border-t border-gray-100">
+                              {group.products.length > 0 ? (
+                                <div className="grid gap-3">
+                                  {group.products.map((product: any) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/admin/products/${product.slug}`}
+                                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
+                                    >
+                                      {product.thumbnail_url ? (
+                                        <img
+                                          src={product.thumbnail_url}
+                                          alt={product.name}
+                                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
+                                        />
+                                      ) : (
+                                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                          <Package className="h-6 w-6 text-gray-400" />
+                                        </div>
+                                      )}
+                                      <div className="min-w-0 flex-1">
+                                        <h5 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                                          {product.name}
+                                        </h5>
+                                        <p className="text-xs text-gray-500 truncate">{product.slug}</p>
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className={product.status === 'active' || product.status === 'published'
+                                          ? "bg-green-50 text-green-700 border-green-200"
+                                          : "bg-gray-50 text-gray-700 border-gray-200"}
+                                      >
+                                        {product.status}
+                                      </Badge>
+                                    </Link>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">No products in this category</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No products found</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {linkedCategories.length === 0
+                        ? "Link categories to see their products"
+                        : "Products are managed via categories"}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -232,14 +475,16 @@ export default function ApplicationDetailPage({ params }: PageProps) {
                     <FolderTree className="h-4 w-4" />
                     Categories
                   </span>
-                  <span className="text-lg font-semibold text-gray-900">{application.category_count || 0}</span>
+                  <span className="text-lg font-semibold text-gray-900">{linkedCategories.length}</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-600 flex items-center gap-2">
                     <Package className="h-4 w-4" />
                     Products
                   </span>
-                  <span className="text-lg font-semibold text-gray-900">{application.product_count || 0}</span>
+                  <span className="text-lg font-semibold text-gray-900">
+                    {groupedProducts.reduce((sum, group) => sum + group.products.length, 0)}
+                  </span>
                 </div>
               </CardContent>
             </Card>

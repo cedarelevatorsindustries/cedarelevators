@@ -1,19 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import LocalizedClientLink from "@/components/ui/localized-client-link"
+import { Product, ProductCategory } from "@/lib/types/domain"
+import type { ElevatorType } from "@/lib/data/elevator-types"
 import { Package } from "lucide-react"
 import ElevatorTypesMobile from "@/modules/home/components/mobile/sections/elevator-types-mobile"
-import ProductCard from "@/components/ui/product-card"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
 
 interface CategoriesTabProps {
   categories: ProductCategory[]
   products: Product[]
+  elevatorTypes?: ElevatorType[]
 }
 
-export default function CategoriesTabTemplate({ categories, products }: CategoriesTabProps) {
+export default function CategoriesTabTemplate({ categories, products, elevatorTypes = [] }: CategoriesTabProps) {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null)
 
   // Handle browser back button
@@ -45,7 +45,6 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
     )
   }
 
-
   return (
     <div className="pb-24 bg-gray-50 space-y-6">
       {/* 1. Shop by Categories - 3 Column Grid */}
@@ -65,26 +64,39 @@ export default function CategoriesTabTemplate({ categories, products }: Categori
           </button>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          {categories.slice(0, 9).map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category)}
-              className="flex flex-col items-center gap-2 group"
-            >
-              <div className="w-full aspect-square bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center group-hover:border-blue-500 group-hover:bg-blue-50 transition-all">
-                <Package className="w-8 h-8 text-gray-400 group-hover:text-blue-600 transition-colors" />
-              </div>
-              <span className="text-xs font-medium text-gray-700 text-center leading-tight line-clamp-2 group-hover:text-blue-700">
-                {category.name}
-              </span>
-            </button>
-          ))}
+          {categories.slice(0, 9).map((category) => {
+            const thumbnailSrc = category.thumbnail || category.thumbnail_image || category.image_url
+
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category)}
+                className="flex flex-col items-center gap-2 group"
+              >
+                <div className="w-full aspect-square bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center group-hover:border-orange-500 group-hover:bg-orange-50 transition-all overflow-hidden">
+                  {thumbnailSrc ? (
+                    <img
+                      src={thumbnailSrc}
+                      alt={category.name || ""}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Package className="w-8 h-8 text-gray-400 group-hover:text-orange-600 transition-colors" />
+                  )}
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center leading-tight line-clamp-2 group-hover:text-orange-700">
+                  {category.name}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* 2. Shop by Elevator Type - Reused Component */}
-      <ElevatorTypesMobile elevatorTypes={[]} />
-
+      {/* 2. Shop by Elevator Type */}
+      {elevatorTypes.length > 0 && (
+        <ElevatorTypesMobile elevatorTypes={elevatorTypes} />
+      )}
     </div>
   )
 }

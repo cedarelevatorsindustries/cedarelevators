@@ -90,6 +90,8 @@ export interface CollectionFormData {
     display_type?: CollectionDisplayType
     special_locations?: SpecialCollectionLocation[]
     product_ids?: string[]
+    // Guest User Visibility
+    show_in_guest?: boolean
 }
 
 

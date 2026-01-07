@@ -98,12 +98,17 @@ export interface ProductFormData {
     // Legacy (deprecated)
     category?: string
 
-    // New relationship fields (Cedar Interconnection Logic)
-    application_id?: string
-    category_id?: string
-    subcategory_id?: string
-    elevator_type_ids?: string[] // Multi-select
-    collection_ids?: string[] // Multi-select (optional)
+    // Relationship fields - supports both single (deprecated) and multi-entity (new)
+    application_id?: string // Deprecated - use application_ids instead
+    category_id?: string // Deprecated - use category_ids instead
+    subcategory_id?: string // Deprecated - use subcategory_ids instead
+
+    // New multi-entity relationship fields
+    application_ids?: string[] // Multi-select applications
+    category_ids?: string[] // Multi-select categories
+    subcategory_ids?: string[] // Multi-select subcategories
+    elevator_type_ids?: string[] // Multi-select elevator types
+    collection_ids?: string[] // Multi-select collections (optional)
 
     // New fields
     technical_specs?: Record<string, any>

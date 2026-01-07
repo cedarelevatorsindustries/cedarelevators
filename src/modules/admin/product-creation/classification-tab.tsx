@@ -2,27 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, AlertCircle, FolderTree, Plus, PackageX } from 'lucide-react'
+import { AlertCircle, FolderTree, Plus, PackageX } from 'lucide-react'
 import { getApplications, getCategories, getSubcategories, getElevatorTypes, getCollections } from '@/lib/actions/catalog'
 import Link from 'next/link'
+import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select'
 
 interface ClassificationData {
+  application_ids?: string[]
+  category_ids?: string[]
+  subcategory_ids?: string[]
+  elevator_type_ids?: string[]
+  collection_ids?: string[]
+  // Keep backward compatibility with single IDs
   application_id?: string
   category_id?: string
   subcategory_id?: string
-  elevator_type_ids?: string[]
-  collection_ids?: string[]
 }
 
 interface ClassificationTabProps {
@@ -38,67 +34,22 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
   const [collections, setCollections] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Load applications on mount
+  // Load all data on mount
   useEffect(() => {
-    const loadApplications = async () => {
+    const loadInitialData = async () => {
       try {
-        const result = await getApplications()
-        if (result.success && result.data) {
-          setApplications(result.data)
-        }
-      } catch (error) {
-        console.error('Error loading applications:', error)
-      }
-    }
-    loadApplications()
-  }, [])
-
-  // Load categories when application changes
-  useEffect(() => {
-    const loadCategories = async () => {
-      if (!formData.application_id) {
-        setCategories([])
-        return
-      }
-      try {
-        const result = await getCategories(formData.application_id)
-        if (result.success && result.data) {
-          setCategories(result.data)
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error)
-      }
-    }
-    loadCategories()
-  }, [formData.application_id])
-
-  // Load subcategories when category changes
-  useEffect(() => {
-    const loadSubcategories = async () => {
-      if (!formData.category_id) {
-        setSubcategories([])
-        return
-      }
-      try {
-        const result = await getSubcategories(formData.category_id)
-        if (result.success && result.data) {
-          setSubcategories(result.data)
-        }
-      } catch (error) {
-        console.error('Error loading subcategories:', error)
-      }
-    }
-    loadSubcategories()
-  }, [formData.category_id])
-
-  // Load elevator types and collections
-  useEffect(() => {
-    const loadOptionalData = async () => {
-      try {
-        const [typesResult, collectionsResult] = await Promise.all([
+        const [appsResult, catsResult, typesResult, collectionsResult] = await Promise.all([
+          getApplications(),
+          getCategories(), // Load all categories
           getElevatorTypes(),
           getCollections()
         ])
+        if (appsResult.success && appsResult.data) {
+          setApplications(appsResult.data)
+        }
+        if (catsResult.success && catsResult.data) {
+          setCategories(catsResult.data)
+        }
         if (typesResult.success && typesResult.data) {
           setElevatorTypes(typesResult.data)
         }
@@ -106,38 +57,58 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
           setCollections(collectionsResult.data)
         }
       } catch (error) {
-        console.error('Error loading optional data:', error)
+        console.error('Error loading initial data:', error)
       } finally {
         setLoading(false)
       }
     }
-    loadOptionalData()
+    loadInitialData()
   }, [])
 
-  const toggleElevatorType = (typeId: string) => {
-    const current = formData.elevator_type_ids || []
-    const updated = current.includes(typeId)
-      ? current.filter(id => id !== typeId)
-      : [...current, typeId]
-    onFormDataChange({ elevator_type_ids: updated })
-  }
+  // Load subcategories when categories change
+  useEffect(() => {
+    const loadSubcategories = async () => {
+      const categoryIds = formData.category_ids || []
+      if (categoryIds.length === 0) {
+        setSubcategories([])
+        return
+      }
+      try {
+        // Load subcategories for all selected categories
+        const results = await Promise.all(
+          categoryIds.map(catId => getSubcategories(catId))
+        )
+        const allSubcategories: any[] = []
+        const seenIds = new Set<string>()
+        results.forEach(result => {
+          if (result.success && result.data) {
+            result.data.forEach((sub: any) => {
+              if (!seenIds.has(sub.id)) {
+                seenIds.add(sub.id)
+                allSubcategories.push(sub)
+              }
+            })
+          }
+        })
+        setSubcategories(allSubcategories)
+      } catch (error) {
+        console.error('Error loading subcategories:', error)
+      }
+    }
+    loadSubcategories()
+  }, [formData.category_ids])
 
-  const toggleCollection = (collectionId: string) => {
-    const current = formData.collection_ids || []
-    const updated = current.includes(collectionId)
-      ? current.filter(id => id !== collectionId)
-      : [...current, collectionId]
-    onFormDataChange({ collection_ids: updated })
-  }
-
-  const hasClassification = formData.application_id || formData.category_id || (formData.elevator_type_ids?.length || 0) > 0
+  const hasClassification =
+    (formData.application_ids?.length || 0) > 0 ||
+    (formData.category_ids?.length || 0) > 0 ||
+    (formData.elevator_type_ids?.length || 0) > 0
 
   return (
     <div className="space-y-6">
       {/* Header Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="font-semibold text-blue-900 mb-1">Step 5: Classification (Optional)</h3>
-        <p className="text-sm text-blue-700">Define where this product appears in your storefront catalog</p>
+        <p className="text-sm text-blue-700">Define where this product appears in your storefront catalog. Use the search to find and select multiple items.</p>
       </div>
 
       {/* Info Notice */}
@@ -145,165 +116,130 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-amber-900 mb-1">Classification is Optional</h4>
+            <h4 className="font-semibold text-amber-900 mb-1">Searchable Multi-Select</h4>
             <p className="text-sm text-amber-700">
-              Products can be created without catalog placement. You can add classification later.
-              However, unclassified products won't appear in catalog browsing.
+              Search and select items from dropdowns. Selected items appear as removable badges. Products can belong to multiple classifications.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Required Classification */}
+      {/* Applications */}
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <FolderTree className="h-5 w-5" />
-            Catalog Placement
-            {hasClassification && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+            Applications
+            {(formData.application_ids?.length || 0) > 0 && (
+              <Badge variant="secondary">{formData.application_ids?.length} selected</Badge>
+            )}
           </CardTitle>
           <CardDescription className="text-gray-500">
-            Organize your product in the catalog hierarchy
+            Select all applications where this product should appear
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Application */}
-          <div className="space-y-2">
-            <Label htmlFor="application" className="flex items-center gap-2">
-              Application
-              {formData.application_id && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-            </Label>
+        <CardContent>
+          {loading ? (
+            <p className="text-gray-500">Loading applications...</p>
+          ) : applications.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <h4 className="font-semibold text-gray-700 mb-1">No Applications Found</h4>
+              <p className="text-sm text-gray-500 mb-4">
+                Create an application first to organize your products
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/applications/create" target="_blank">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Application
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <SearchableMultiSelect
+              items={applications}
+              selectedIds={formData.application_ids || []}
+              onSelectionChange={(ids) => onFormDataChange({ application_ids: ids })}
+              placeholder="Search applications..."
+              emptyMessage="All applications selected"
+            />
+          )}
+        </CardContent>
+      </Card>
 
-            {applications.length === 0 ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-700 mb-1">No Applications Found</h4>
-                <p className="text-sm text-gray-500 mb-4">
-                  Create an application first to organize your products
-                </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/admin/applications/create" target="_blank">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Application
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Select
-                  value={formData.application_id}
-                  onValueChange={(value) => {
-                    onFormDataChange({
-                      application_id: value,
-                      category_id: undefined,
-                      subcategory_id: undefined
-                    })
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select an application" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {applications.map((app) => (
-                      <SelectItem key={app.id} value={app.id}>
-                        {app.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">Top-level category (e.g., Passenger Elevators, Freight Elevators)</p>
-              </>
+      {/* Categories */}
+      <Card className="bg-white border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Categories
+            {(formData.category_ids?.length || 0) > 0 && (
+              <Badge variant="secondary">{formData.category_ids?.length} selected</Badge>
             )}
-          </div>
+          </CardTitle>
+          <CardDescription className="text-gray-500">
+            Select all categories where this product should appear
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-gray-500">Loading categories...</p>
+          ) : categories.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <h4 className="font-semibold text-gray-700 mb-1">No Categories Found</h4>
+              <p className="text-sm text-gray-500 mb-4">
+                Create a category first
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/categories/create" target="_blank">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Category
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <SearchableMultiSelect
+              items={categories}
+              selectedIds={formData.category_ids || []}
+              onSelectionChange={(ids) => onFormDataChange({ category_ids: ids })}
+              placeholder="Search categories..."
+              emptyMessage="All categories selected"
+            />
+          )}
+        </CardContent>
+      </Card>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label htmlFor="category" className="flex items-center gap-2">
-              Category
-              {formData.category_id && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-            </Label>
-
-            {!formData.application_id ? (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p className="text-sm text-gray-500 text-center">Select an application first</p>
-              </div>
-            ) : categories.length === 0 ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <PackageX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <h4 className="font-semibold text-gray-700 mb-1">No Categories Found</h4>
-                <p className="text-sm text-gray-500 mb-4">
-                  Create a category for this application first
-                </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/admin/categories/create" target="_blank">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Category
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => {
-                    onFormDataChange({
-                      category_id: value,
-                      subcategory_id: undefined
-                    })
-                  }}
-                  disabled={!formData.application_id}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">Product category within the application</p>
-              </>
+      {/* Subcategories */}
+      <Card className="bg-white border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            Subcategories (Optional)
+            {(formData.subcategory_ids?.length || 0) > 0 && (
+              <Badge variant="outline">{formData.subcategory_ids?.length} selected</Badge>
             )}
-          </div>
-
-          {/* Subcategory */}
-          <div className="space-y-2">
-            <Label htmlFor="subcategory">Subcategory (Optional)</Label>
-
-            {!formData.category_id ? (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p className="text-sm text-gray-500 text-center">Select a category first</p>
-              </div>
-            ) : subcategories.length === 0 ? (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p className="text-sm text-gray-500 text-center">No subcategories available for this category</p>
-              </div>
-            ) : (
-              <>
-                <Select
-                  value={formData.subcategory_id}
-                  onValueChange={(value) => onFormDataChange({ subcategory_id: value })}
-                  disabled={!formData.category_id}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {subcategories.map((subcat) => (
-                      <SelectItem key={subcat.id} value={subcat.id}>
-                        {subcat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">Further refinement of product category</p>
-              </>
-            )}
-          </div>
+          </CardTitle>
+          <CardDescription className="text-gray-500">
+            Select subcategories for finer product organization
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {(formData.category_ids?.length || 0) === 0 ? (
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <p className="text-sm text-gray-500 text-center">Select at least one category first to see available subcategories</p>
+            </div>
+          ) : subcategories.length === 0 ? (
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <p className="text-sm text-gray-500 text-center">No subcategories available for the selected categories</p>
+            </div>
+          ) : (
+            <SearchableMultiSelect
+              items={subcategories}
+              selectedIds={formData.subcategory_ids || []}
+              onSelectionChange={(ids) => onFormDataChange({ subcategory_ids: ids })}
+              placeholder="Search subcategories..."
+              emptyMessage="All subcategories selected"
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -338,20 +274,13 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {elevatorTypes.map((type) => (
-                <div key={type.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                  <Checkbox
-                    id={`type-${type.id}`}
-                    checked={formData.elevator_type_ids?.includes(type.id) || false}
-                    onCheckedChange={() => toggleElevatorType(type.id)}
-                  />
-                  <Label htmlFor={`type-${type.id}`} className="cursor-pointer flex-1">
-                    {type.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <SearchableMultiSelect
+              items={elevatorTypes}
+              selectedIds={formData.elevator_type_ids || []}
+              onSelectionChange={(ids) => onFormDataChange({ elevator_type_ids: ids })}
+              placeholder="Search elevator types..."
+              emptyMessage="All elevator types selected"
+            />
           )}
         </CardContent>
       </Card>
@@ -387,24 +316,16 @@ export function ClassificationTab({ formData, onFormDataChange }: Classification
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {collections.map((collection) => (
-                <div key={collection.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                  <Checkbox
-                    id={`collection-${collection.id}`}
-                    checked={formData.collection_ids?.includes(collection.id) || false}
-                    onCheckedChange={() => toggleCollection(collection.id)}
-                  />
-                  <Label htmlFor={`collection-${collection.id}`} className="cursor-pointer flex-1">
-                    {collection.title}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            <SearchableMultiSelect
+              items={collections}
+              selectedIds={formData.collection_ids || []}
+              onSelectionChange={(ids) => onFormDataChange({ collection_ids: ids })}
+              placeholder="Search collections..."
+              emptyMessage="All collections selected"
+            />
           )}
         </CardContent>
       </Card>
     </div>
   )
 }
-

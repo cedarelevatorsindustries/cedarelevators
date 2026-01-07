@@ -45,9 +45,9 @@ export function ApplicationsSection({ applications }: ApplicationsSectionProps) 
         return null
     }
 
-    const handleApplicationClick = (slug: string) => {
-        // Always go to catalog page with application filter (for both logged-in and guest users)
-        router.push(`/catalog?application=${slug}`)
+    const handleApplicationClick = (app: Application) => {
+        // Navigate to catalog page for both mobile and desktop
+        router.push(`/catalog?application=${app.slug}`)
     }
 
     return (
@@ -69,11 +69,11 @@ export function ApplicationsSection({ applications }: ApplicationsSectionProps) 
                         const IconComponent = app.icon && iconMap[app.icon.toLowerCase()] ? iconMap[app.icon.toLowerCase()] : Grid3x3
                         const imageSrc = app.thumbnail_image || app.image_url || '/images/image.png'
                         const badgeColor = badgeColorMap[app.icon?.toLowerCase() || 'blue'] || 'bg-blue-600'
-                        
+
                         return (
                             <button
                                 key={app.slug}
-                                onClick={() => handleApplicationClick(app.slug)}
+                                onClick={() => handleApplicationClick(app)}
                                 className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 aspect-[4/3] text-left w-full"
                             >
                                 {/* Background Image */}
@@ -118,11 +118,11 @@ export function ApplicationsSection({ applications }: ApplicationsSectionProps) 
                             const IconComponent = app.icon && iconMap[app.icon.toLowerCase()] ? iconMap[app.icon.toLowerCase()] : Grid3x3
                             const imageSrc = app.thumbnail_image || app.image_url || '/images/image.png'
                             const badgeColor = badgeColorMap[app.icon?.toLowerCase() || 'blue'] || 'bg-blue-600'
-                            
+
                             return (
                                 <button
                                     key={app.slug}
-                                    onClick={() => handleApplicationClick(app.slug)}
+                                    onClick={() => handleApplicationClick(app)}
                                     className="group relative overflow-hidden rounded-2xl shadow-md flex-shrink-0 w-[280px] aspect-[4/3] text-left"
                                 >
                                     {/* Background Image */}

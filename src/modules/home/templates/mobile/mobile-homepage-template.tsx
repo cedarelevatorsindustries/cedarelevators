@@ -41,7 +41,7 @@ export default function MobileHomepage({ products, categories, testimonials, ele
       <CategoryBlocksSection categories={categories} />
 
       {/* Why Cedar */}
-      <WhyCedarSection variant="mobile" />
+      <WhyCedarSection variant="desktop" />
 
       {/* Customer Reviews - No padding, touches Why Cedar */}
       {testimonials.length > 0 && (

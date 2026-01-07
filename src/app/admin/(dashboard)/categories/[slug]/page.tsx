@@ -389,17 +389,17 @@ export default function CategoryDetailPage({ params }: PageProps) {
                           {isExpanded && (
                             <div className="p-4 bg-white border-t border-gray-100">
                               {group.products.length > 0 ? (
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-3">
                                   {group.products.map((product: any) => (
                                     <Link
                                       key={product.id}
-                                      href={`/admin/products/${product.handle}`}
+                                      href={`/admin/products/${product.slug}`}
                                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
                                     >
-                                      {product.thumbnail ? (
+                                      {product.thumbnail_url ? (
                                         <img
-                                          src={product.thumbnail}
-                                          alt={product.title}
+                                          src={product.thumbnail_url}
+                                          alt={product.name}
                                           className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
                                         />
                                       ) : (
@@ -409,9 +409,9 @@ export default function CategoryDetailPage({ params }: PageProps) {
                                       )}
                                       <div className="min-w-0 flex-1">
                                         <h5 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-                                          {product.title}
+                                          {product.name}
                                         </h5>
-                                        <p className="text-xs text-gray-500 truncate">{product.handle}</p>
+                                        <p className="text-xs text-gray-500 truncate">{product.slug}</p>
                                       </div>
                                       <Badge
                                         variant="outline"
@@ -435,17 +435,17 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   </div>
                 ) : productsData?.products && productsData.products.length > 0 ? (
                   // Leaf category: Show products directly
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3">
                     {productsData.products.map((product: any) => (
                       <Link
                         key={product.id}
-                        href={`/admin/products/${product.handle}`}
+                        href={`/admin/products/${product.slug}`}
                         className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
                       >
-                        {product.thumbnail ? (
+                        {product.thumbnail_url ? (
                           <img
-                            src={product.thumbnail}
-                            alt={product.title}
+                            src={product.thumbnail_url}
+                            alt={product.name}
                             className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
                           />
                         ) : (
@@ -455,9 +455,9 @@ export default function CategoryDetailPage({ params }: PageProps) {
                         )}
                         <div className="min-w-0 flex-1">
                           <h5 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-                            {product.title}
+                            {product.name}
                           </h5>
-                          <p className="text-xs text-gray-500 truncate">{product.handle}</p>
+                          <p className="text-xs text-gray-500 truncate">{product.slug}</p>
                         </div>
                         <Badge
                           variant="outline"
