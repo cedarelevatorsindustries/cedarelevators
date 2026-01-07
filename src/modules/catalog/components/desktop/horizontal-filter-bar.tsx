@@ -45,8 +45,8 @@ export function HorizontalFilterBar({ title, filters, activeFilter, paramName }:
                         <button
                             onClick={() => handleFilterSelect(null)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${!activeFilter
-                                    ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300 hover:text-orange-600'
+                                ? 'bg-orange-500 text-white border-orange-500 shadow-md'
+                                : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300 hover:text-orange-600'
                                 }`}
                         >
                             All
@@ -58,8 +58,8 @@ export function HorizontalFilterBar({ title, filters, activeFilter, paramName }:
                                 key={filter.id}
                                 onClick={() => handleFilterSelect(filter.id)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border flex items-center gap-2 ${activeFilter === filter.id
-                                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300 hover:text-orange-600'
+                                    ? 'bg-orange-500 text-white border-orange-500 shadow-md'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:border-orange-300 hover:text-orange-600'
                                     }`}
                             >
                                 <span>{filter.name}</span>
@@ -73,25 +73,6 @@ export function HorizontalFilterBar({ title, filters, activeFilter, paramName }:
                         ))}
                     </div>
                 </div>
-
-                {/* Active Filter Indicator */}
-                {activeFilter && (
-                    <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-gray-600">Active filter:</span>
-                        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
-                            <span className="font-medium">
-                                {filters.find(f => f.id === activeFilter)?.name}
-                            </span>
-                            <button
-                                onClick={() => handleFilterSelect(null)}
-                                className="hover:bg-orange-200 rounded-full p-0.5 transition-colors"
-                                aria-label="Clear filter"
-                            >
-                                <X className="h-3 w-3" />
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
 
             <style jsx>{`

@@ -10,15 +10,17 @@ interface TitleBadgesSectionProps {
   badges?: Array<"bestseller" | "new" | "featured" | "verified">
   sku?: string
   description?: string
+  onClickReviews?: () => void
 }
 
-export default function TitleBadgesSection({ 
-  title, 
-  rating = 4.0, 
-  reviewCount = 120,
+export default function TitleBadgesSection({
+  title,
+  rating = 0,
+  reviewCount = 0,
   badges = [],
   sku,
-  description
+  description,
+  onClickReviews
 }: TitleBadgesSectionProps) {
   const [copied, setCopied] = useState(false)
 
@@ -38,9 +40,9 @@ export default function TitleBadgesSection({
   }
 
   // Truncate description to 2-3 lines (approximately 150 characters)
-  const truncatedDescription = description 
-    ? description.length > 150 
-      ? description.substring(0, 150) + "..." 
+  const truncatedDescription = description
+    ? description.length > 150
+      ? description.substring(0, 150) + "..."
       : description
     : ""
 
@@ -95,25 +97,28 @@ export default function TitleBadgesSection({
         </div>
       )}
 
-      {/* Rating */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={`w-5 h-5 ${
-                star <= Math.floor(rating) 
-                  ? "fill-yellow-400 text-yellow-400" 
-                  : "text-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-        <span className="text-sm text-gray-600">
-          {rating.toFixed(1)} ({reviewCount} reviews)
-        </span>
-      </div>
+      {/* Rating - Only show if reviews exist */}
+      {reviewCount > 0 && (
+        <button
+          onClick={onClickReviews}
+          className="flex items-center gap-3 hover:opacity-75 transition-opacity"
+        >
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`w-5 h-5 ${star <= Math.floor(rating || 0)
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                  }`}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-gray-600">
+            {(rating || 0).toFixed(1)} ({reviewCount} reviews)
+          </span>
+        </button>
+      )}
     </div>
   )
 }
-

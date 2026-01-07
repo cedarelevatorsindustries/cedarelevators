@@ -44,14 +44,8 @@ export function filterProductsByType(
       break
 
     case "application":
-      if (application) {
-        // Note: Server-side filtering by application_id is preferred
-        // This client-side filter is a fallback for any missed products
-        primary = products.filter((p) =>
-          p.application_id === application ||
-          p.metadata?.application === application
-        )
-      }
+      // Server-side already filters by application's categories, so we just pass through
+      primary = products
       break
 
     case "recently-viewed":

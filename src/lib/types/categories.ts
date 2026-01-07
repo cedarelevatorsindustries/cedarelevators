@@ -40,6 +40,7 @@ export interface Category {
 export interface CategoryWithChildren extends Category {
     children?: CategoryWithChildren[]
     product_count?: number
+    subcategory_count?: number
     level?: CategoryLevel
 }
 

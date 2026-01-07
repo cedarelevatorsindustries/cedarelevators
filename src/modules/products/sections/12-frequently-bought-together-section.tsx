@@ -22,8 +22,8 @@ export default function FrequentlyBoughtTogetherSection({
 
   if (bundleProducts.length === 0) return null
 
-  // Show up to 3 bundle products (4 total with main product)
-  const limitedBundleProducts = bundleProducts.slice(0, 3)
+  // Show up to 4 bundle products for mobile, 3 for desktop
+  const limitedBundleProducts = bundleProducts.slice(0, isMobile ? 3 : 3)
 
   // All products including main product
   const allProducts = [mainProduct, ...limitedBundleProducts]
@@ -94,8 +94,8 @@ export default function FrequentlyBoughtTogetherSection({
                 <button
                   onClick={() => toggleProduct(product.id)}
                   className={`absolute top-3 left-3 z-10 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all shadow-md ${isSelected
-                      ? 'bg-blue-600 border-blue-600'
-                      : 'bg-white/90 border-gray-300 hover:border-blue-400'
+                    ? 'bg-blue-600 border-blue-600'
+                    : 'bg-white/90 border-gray-300 hover:border-blue-400'
                     }`}
                 >
                   {isSelected && (
@@ -149,10 +149,10 @@ export default function FrequentlyBoughtTogetherSection({
 
             <button
               onClick={onAddBundle}
-              className="bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 px-6 py-3 shadow-lg"
+              className="bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 px-6 py-3 shadow-lg text-sm"
             >
               <ShoppingCart className="w-5 h-5" />
-              Add to Bundle
+              Add Bundle
             </button>
           </div>
         </div>

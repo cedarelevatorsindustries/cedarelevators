@@ -45,14 +45,15 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
 
   // If category slug is provided, look up the category to get its ID
   if (params.category) {
-    const { getCategory, listCategories } = await import('@/lib/data/categories')
+    const { getCategory } = await import('@/lib/data/categories')
+    const { getSubcategoriesByParentId } = await import('@/lib/actions/subcategories')
     const category = await getCategory(params.category)
     if (category) {
       queryParams.category_id = [category.id]
 
       // Fetch subcategories (children) for this category to show in banner
-      // Note: Currently returns empty as categories have flat structure
-      const children = await listCategories({ parent_id: category.id })
+      const subcategoriesResult = await getSubcategoriesByParentId(category.id)
+      const children = subcategoriesResult.success ? subcategoriesResult.subcategories : []
 
       activeCategory = {
         ...category,
@@ -68,8 +69,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   if (applicationSlug) {
     const application = await getApplicationBySlug(applicationSlug)
     if (application) {
-      activeApplication = application
-
       // Products don't have application_id - they're linked through categories
       // So we need to get categories linked to this application
       const { getApplicationCategories } = await import('@/lib/actions/application-categories')
@@ -79,9 +78,18 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         // Extract category IDs from the application categories
         const categoryIds = categoriesResult.links.map((link: any) => link.category.id)
         queryParams.category_id = categoryIds
-        console.log('[CATALOG] Application categories found:', categoryIds)
+
+        // Add categories to activeApplication for banner display
+        // Map title to name for compatibility
+        activeApplication = {
+          ...application,
+          categories: categoriesResult.links.map((link: any) => ({
+            ...link.category,
+            name: link.category.title || link.category.name
+          }))
+        }
       } else {
-        console.log('[CATALOG] No categories found for application:', application.id, categoriesResult)
+        activeApplication = application
       }
     }
   }

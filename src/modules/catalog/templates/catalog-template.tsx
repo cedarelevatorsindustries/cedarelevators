@@ -152,14 +152,33 @@ export default function CatalogTemplate({
 
     let filtered = [...combined]
 
-    // Apply horizontal filter bar filters
-    if (selectedCategory) {
+    // Apply horizontal filter bar filters (check both id and slug/handle)
+    // Skip filtering if the selected category is the same as the page's main category
+    // (backend already filtered for main category)
+    const isMainCategory = selectedCategory && (
+      selectedCategory === effectiveSearchParams.category ||
+      (currentCategory && (
+        selectedCategory === currentCategory.id ||
+        selectedCategory === currentCategory.handle ||
+        selectedCategory === currentCategory.slug
+      ))
+    )
+
+    if (selectedCategory && !isMainCategory) {
       filtered = filtered.filter(product =>
-        product.categories?.some((cat: any) => cat.id === selectedCategory)
+        product.categories?.some((cat: any) =>
+          cat.id === selectedCategory ||
+          cat.handle === selectedCategory ||
+          cat.slug === selectedCategory
+        )
       )
     } else if (selectedSubcategory) {
       filtered = filtered.filter(product =>
-        product.categories?.some((cat: any) => cat.id === selectedSubcategory)
+        product.categories?.some((cat: any) =>
+          cat.id === selectedSubcategory ||
+          cat.handle === selectedSubcategory ||
+          cat.slug === selectedSubcategory
+        )
       )
     }
 
@@ -278,13 +297,6 @@ export default function CatalogTemplate({
           <BannerCarousel banners={banners} />
         </div>
       )}
-
-      {/* Horizontal Filter Bars */}
-      {/* Application Page: Category Filters */}
-
-
-      {/* Category Page: Subcategory Filters */}
-
 
 
       {/* Main Content */}

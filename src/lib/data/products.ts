@@ -97,8 +97,6 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
     const { data, error, count } = await query
 
-    console.log('[listProducts] Query completed. Found:', data?.length || 0, 'products, count:', count)
-
     if (error) {
       console.error("Error fetching products from Supabase:", error)
       return {

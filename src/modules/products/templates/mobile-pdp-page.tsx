@@ -46,12 +46,15 @@ export default function MobileProductDetailPage({
   const router = useRouter()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const imageScrollRef = useRef<HTMLDivElement>(null)
+  const fullScreenScrollRef = useRef<HTMLDivElement>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const ctaSectionRef = useRef<HTMLDivElement>(null)
   const [showFloatingBar, setShowFloatingBar] = useState(false)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const [isFavorite, setIsFavorite] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
+  const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0)
 
   // User type and pricing logic
   const isGuest = !user
@@ -217,6 +220,17 @@ export default function MobileProductDetailPage({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Sync full-screen carousel scroll with image index
+  useEffect(() => {
+    if (isFullScreenOpen && fullScreenScrollRef.current) {
+      const scrollLeft = fullScreenImageIndex * fullScreenScrollRef.current.offsetWidth
+      fullScreenScrollRef.current.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      })
+    }
+  }, [fullScreenImageIndex, isFullScreenOpen])
+
   return (
     <>
       <style jsx global>{`
@@ -273,7 +287,13 @@ export default function MobileProductDetailPage({
             {allImages.length > 0 ? (
               allImages.map((image, i) => (
                 <div key={i} className="flex-shrink-0 w-full snap-center">
-                  <div className="aspect-square bg-white relative">
+                  <div
+                    className="aspect-[3/4] bg-white relative cursor-pointer"
+                    onClick={() => {
+                      setFullScreenImageIndex(i)
+                      setIsFullScreenOpen(true)
+                    }}
+                  >
                     <img
                       src={image}
                       alt={`${product.title} - View ${i + 1}`}
@@ -310,13 +330,130 @@ export default function MobileProductDetailPage({
                     behavior: 'smooth'
                   })
                 }}
-                className={`h - 1.5 rounded - full transition - all ${i === currentImageIndex ? "bg-white w-6" : "bg-white/50 w-1.5"
-                  } `}
-                aria-label={`Go to image ${i + 1} `}
+                className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? "bg-white w-6" : "bg-white/50 w-1.5"
+                  }`}
+                aria-label={`Go to image ${i + 1}`}
               />
             ))}
           </div>
+
+          {/* Thumbnail Gallery */}
+          {allImages.length > 1 && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent pt-16 pb-4 px-4">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                {allImages.map((image, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      imageScrollRef.current?.scrollTo({
+                        left: i * (imageScrollRef.current?.offsetWidth || 0),
+                        behavior: 'smooth'
+                      })
+                    }}
+                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === currentImageIndex
+                      ? 'border-white opacity-100 scale-105'
+                      : 'border-white/30 opacity-60'
+                      }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Full-Screen Image Viewer Modal */}
+        {isFullScreenOpen && (
+          <div className="fixed inset-0 bg-black z-[100] flex flex-col">
+            {/* Header */}
+            <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/80 to-transparent">
+              <button
+                onClick={() => setIsFullScreenOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <ChevronLeft size={24} className="text-white" />
+              </button>
+              <span className="text-white text-sm font-medium">
+                {fullScreenImageIndex + 1} / {allImages.length}
+              </span>
+              <div className="w-10" /> {/* Spacer for centering */}
+            </div>
+
+            {/* Image Carousel */}
+            <div
+              ref={fullScreenScrollRef}
+              className="flex-1 flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            >
+              {allImages.map((image, i) => (
+                <div key={i} className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center">
+                  <img
+                    src={image}
+                    alt={`${product.title} - View ${i + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect()
+                      const clickX = e.clientX - rect.left
+                      const width = rect.width
+
+                      if (clickX < width / 3 && fullScreenImageIndex > 0) {
+                        // Click left third - previous image
+                        setFullScreenImageIndex(fullScreenImageIndex - 1)
+                      } else if (clickX > (width * 2) / 3 && fullScreenImageIndex < allImages.length - 1) {
+                        // Click right third - next image
+                        setFullScreenImageIndex(fullScreenImageIndex + 1)
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Navigation Arrows */}
+            {fullScreenImageIndex > 0 && (
+              <button
+                onClick={() => setFullScreenImageIndex(fullScreenImageIndex - 1)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+              >
+                <ChevronLeft size={24} className="text-white" />
+              </button>
+            )}
+            {fullScreenImageIndex < allImages.length - 1 && (
+              <button
+                onClick={() => setFullScreenImageIndex(fullScreenImageIndex + 1)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+              >
+                <ChevronLeft size={24} className="text-white rotate-180" />
+              </button>
+            )}
+
+            {/* Thumbnail Strip at Bottom */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent pt-8 pb-4 px-4">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide justify-center">
+                {allImages.map((image, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setFullScreenImageIndex(i)}
+                    className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${i === fullScreenImageIndex
+                      ? 'border-white opacity-100'
+                      : 'border-white/30 opacity-50'
+                      }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="px-4 py-6 space-y-6">
@@ -371,6 +508,10 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
               title={product.title || ""}
               badges={badges}
               description={product.description || ""}
+              sku={product.metadata?.sku as string}
+              rating={reviews.length > 0 ? (product.metadata?.rating as number) || 0 : undefined}
+              reviewCount={reviews.length}
+              onClickReviews={scrollToReviews}
             />
 
             <PricingBlockSection
