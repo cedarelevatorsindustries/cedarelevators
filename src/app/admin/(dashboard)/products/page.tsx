@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Pagination } from "@/components/ui/pagination"
 import { Plus, Package, Edit, Trash2, Eye, EyeOff, Search, RefreshCw, LoaderCircle, AlertTriangle, Archive, ExternalLink, Upload, X } from "lucide-react"
 import Link from "next/link"
 import { useProducts, useProductStats, useDeleteProduct, useUpdateProduct } from "@/hooks/queries/useProducts"
@@ -16,11 +17,15 @@ export default function ProductsPage() {
   const [searchInput, setSearchInput] = useState("")  // User input
   const debouncedSearch = useDebounce(searchInput, 400) // Debounced value (400ms)
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(20)
 
   // Note: We'll implement pagination later, for now fetching page 1
   const { data, isLoading, refetch } = useProducts({
     search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? (statusFilter as 'active' | 'draft' | 'archived') : undefined,
+    page: currentPage,
+    limit: itemsPerPage,
   })
 
   const { data: stats } = useProductStats()
@@ -29,6 +34,12 @@ export default function ProductsPage() {
 
   const products = data?.products || []
   const productStats = stats || { total: 0, active: 0, draft: 0, archived: 0, out_of_stock: 0, low_stock: 0 }
+  const pagination = {
+    page: data?.page || 1,
+    limit: data?.limit || 20,
+    total: data?.total || 0,
+    totalPages: data?.totalPages || 1
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return
@@ -240,7 +251,7 @@ export default function ProductsPage() {
                       <div className="col-span-1 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-1">
                           <Link href={`/admin/products/${product.id}`}>
-                            <h3 className="font-medium text-gray-900 truncate hover:text-orange-600 transition-colors cursor-pointer" title={product.name}>{product.name}</h3>
+                            <h3 className="font-medium text-gray-900 truncate max-w-md hover:text-orange-600 transition-colors cursor-pointer" title={product.name}>{product.name}</h3>
                           </Link>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -349,6 +360,21 @@ export default function ProductsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {!isLoading && products.length > 0 && (
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.total}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(newLimit) => {
+              setItemsPerPage(newLimit)
+              setCurrentPage(1) // Reset to page 1 when changing items per page
+            }}
+          />
+        )}
       </div>
     </div>
   )

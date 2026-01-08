@@ -779,7 +779,7 @@ export default function ProductImportPage() {
             </Card>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${importResults.productsUpdated > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
@@ -787,13 +787,30 @@ export default function ProductImportPage() {
                       <CheckCircle2 className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-green-700">All Products Created</p>
+                      <p className="text-sm text-green-700">Products Created</p>
                       <p className="text-2xl font-bold text-green-900">{importResults.productsCreated}</p>
-                      <p className="text-xs text-green-600">These items are now live in your catalog</p>
+                      <p className="text-xs text-green-600">New items added to catalog</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+              {importResults.productsUpdated > 0 && (
+                <Card className="border-blue-200 bg-blue-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-blue-700">Products Updated</p>
+                        <p className="text-2xl font-bold text-blue-900">{importResults.productsUpdated}</p>
+                        <p className="text-xs text-blue-600">Existing items refreshed</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {importResults.failed > 0 && (
                 <Card className="border-yellow-200 bg-yellow-50">
@@ -822,7 +839,7 @@ export default function ProductImportPage() {
                 <CardTitle>WHAT YOU CAN DO NEXT</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <Link href="/admin/products">
                     <Button className="w-full bg-orange-600 hover:bg-orange-700">
                       <FileText className="mr-2 h-4 w-4" />
@@ -832,10 +849,6 @@ export default function ProductImportPage() {
                   <Button variant="outline" className="w-full">
                     <Download className="mr-2 h-4 w-4" />
                     Import Another CSV
-                  </Button>
-                  <Button variant="outline" className="w-full" onClick={downloadErrorReport}>
-                    <FileWarning className="mr-2 h-4 w-4" />
-                    View Import Log
                   </Button>
                 </div>
               </CardContent>

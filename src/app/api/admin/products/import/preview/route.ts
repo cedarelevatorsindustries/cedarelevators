@@ -238,6 +238,7 @@ function processCSVRows(
     // Parse pricing
     const basePrice = parseFloat(row.base_price) || 0
     const comparePrice = row.compare_price ? parseFloat(row.compare_price) : undefined
+    const costPerItem = row.cost_per_item ? parseFloat(row.cost_per_item) : undefined
 
     // Validate price
     if (basePrice <= 0) {
@@ -299,17 +300,32 @@ function processCSVRows(
         // Product identification
         title,
         slug: generateSlug(title),
+        sku: generateSKU(title),
 
         // Product details
         description: row.description || '',
         short_description: row.short_description || '',
         status: status as 'draft' | 'active',
+        image_url: row.image || undefined,
 
         // Pricing & Inventory
         price: basePrice,
+        base_price: basePrice,
         compare_at_price: comparePrice,
+        compare_price: comparePrice,
+        cost_per_item: costPerItem,
         track_inventory: true,
         stock_quantity: parseInt(row.stock_quantity) || 0,
+        allow_backorder: parseBoolean(row.allow_backorder),
+        low_stock_threshold: row.low_stock_threshold ? parseInt(row.low_stock_threshold) : 10,
+
+        // SEO & Tags
+        meta_title: undefined,
+        meta_description: undefined,
+        tags: row.tags ? parseCommaSeparated(row.tags) : [],
+
+        // Attributes
+        attributes: row.attributes ? parseAttributes(row.attributes) : undefined,
 
         // Catalog relationships (slugs from CSV for display)
         application_slug: firstApplication,
@@ -320,9 +336,13 @@ function processCSVRows(
 
         // Resolved IDs (after validation)
         application_id: appResult.ids[0],
+        application_ids: appResult.ids,
         category_id: catResult.ids[0],
+        category_ids: catResult.ids,
         subcategory_id: subResult.ids[0],
+        subcategory_ids: subResult.ids,
         elevator_type_ids: typeResult.ids,
+        type_ids: typeResult.ids,
         collection_ids: collResult.ids,
 
         // Variants

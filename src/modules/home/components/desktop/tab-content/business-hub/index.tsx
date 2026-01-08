@@ -62,21 +62,14 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
         <DynamicCollectionSection key={collection.id} collection={collection} />
       ))}
 
-      {/* 4. Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Action Cards (2/3 width) */}
-        <div className="lg:col-span-2">
-          <ActionCardsGrid />
-        </div>
+      {/* 4. Action Cards */}
+      <ActionCardsGrid />
 
-        {/* Right: Quotes & Orders Sidebar (1/3 width) */}
-        <div className="lg:col-span-1">
-          <QuotesSidebar
-            activeQuotes={stats.activeQuotes}
-            activeOrders={stats.activeOrders}
-          />
-        </div>
-      </div>
+      {/* 5. Quotes & Orders Section */}
+      <QuotesSidebar
+        activeQuotes={stats.activeQuotes}
+        activeOrders={stats.activeOrders}
+      />
     </div>
   )
 }

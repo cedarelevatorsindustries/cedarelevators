@@ -17,7 +17,7 @@ export function ActionCardsGrid() {
         {
             icon: Package,
             title: "Browse Catalog",
-            description: "Explore our inventory of over 50,000 industrial parts.",
+            description: "Explore our extensive inventory of industrial parts.",
             href: "/catalog",
             bgColor: "bg-emerald-50",
             iconColor: "text-emerald-600",

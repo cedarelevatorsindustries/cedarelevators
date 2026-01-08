@@ -3,10 +3,10 @@ import { getProducts, getProduct, createProduct, updateProduct, deleteProduct, g
 import type { Product, ProductFormData, ProductFilters } from "@/lib/types/products"
 import { toast } from "sonner"
 
-export function useProducts(filters: ProductFilters = {}, page = 1) {
+export function useProducts(filters: ProductFilters = {}) {
     return useQuery({
-        queryKey: ['products', filters, page],
-        queryFn: () => getProducts(filters, page),
+        queryKey: ['products', filters],
+        queryFn: () => getProducts(filters, filters.page || 1),
     })
 }
 

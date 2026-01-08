@@ -113,28 +113,11 @@ export default function MobileProductDetailPage({
   }
 
   const handleRequestQuote = () => {
-    startTransition(async () => {
-      try {
-        const result = await addToQuoteBasket({
-          id: `${product.id}-${Date.now()}`,
-          product_id: product.id,
-          product_name: product.title || "",
-          product_sku: (product.metadata?.sku as string) || product.id,
-          product_thumbnail: product.thumbnail || "",
-          quantity: 1,
-          bulk_pricing_requested: false
-        })
-
-        if (result.success) {
-          toast.success("Added to quote basket")
-          router.push("/quote")
-        } else {
-          toast.error(result.error || "Failed to add to quote basket")
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to request quote")
-      }
+    const params = new URLSearchParams({
+      productId: product.id,
+      productName: product.title || ""
     })
+    router.push(`/quotes/new?${params.toString()}`)
   }
 
   const handleWishlist = () => {

@@ -113,10 +113,10 @@ export async function buildCatalogLookupMaps(): Promise<CatalogLookupMaps> {
                 .from('subcategories')
                 .select('id, title'),
 
-            // Elevator Types table (uses 'name' not 'title')
+            // Elevator Types table
             supabase
                 .from('elevator_types')
-                .select('id, name'),
+                .select('id, title'),
 
             // Collections table
             supabase
@@ -171,10 +171,10 @@ export async function buildCatalogLookupMaps(): Promise<CatalogLookupMaps> {
             }
         }
 
-        // Populate types map (uses 'name' field)
+        // Populate types map
         if (typesData.data) {
             for (const type of typesData.data) {
-                const normalized = normalizeName(type.name)
+                const normalized = normalizeName(type.title)
                 maps.types.set(normalized, type.id)
             }
         }

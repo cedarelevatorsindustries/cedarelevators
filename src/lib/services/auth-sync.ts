@@ -57,12 +57,17 @@ import { User } from '@clerk/nextjs/server'
  */
 export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User | null): Promise<SupabaseUser | null> {
     try {
+
+
         const supabase = createAdminClient()
 
         // If user object not provided, fetch it
         const clerkUser = clerkUserObj !== undefined ? clerkUserObj : await currentUser()
 
-        if (!clerkUser) return null
+        if (!clerkUser) {
+
+            return null
+        }
 
         // Ensure the ID matches if both provided
         if (clerkUserObj && clerkUser.id !== clerkUserId) {
@@ -78,6 +83,8 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
             .single()
 
         if (existingUser) {
+
+
             // Update user info if changed
             const { data: updatedUser } = await supabase
                 .from('users')
@@ -93,6 +100,8 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
 
             return updatedUser || existingUser
         }
+
+
 
         // Create new user
         const { data: newUser, error } = await supabase
@@ -111,14 +120,20 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
             return null
         }
 
+
+
         // Create default individual profile
-        await supabase
+        const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
                 user_id: newUser.id,
                 profile_type: 'individual',
                 is_active: true
             })
+
+        if (profileError) {
+            console.error('Error creating default profile:', profileError)
+        }
 
         return newUser
     } catch (error) {
@@ -132,14 +147,20 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
  */
 export async function getActiveProfile(userId: string): Promise<UserProfile | null> {
     try {
+
+
         const supabase = createAdminClient()
 
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('user_id', userId)
             .eq('is_active', true)
             .single()
+
+        if (error) {
+            console.error('Error fetching active profile:', error)
+        }
 
         return profile
     } catch (error) {

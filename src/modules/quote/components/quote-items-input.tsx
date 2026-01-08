@@ -11,6 +11,11 @@ interface QuoteItemsInputProps {
     register: UseFormRegister<any>;
     errors: FieldErrors<any>;
     userType: UserType | 'verified' | string;
+    prefilledProduct?: {
+        id: string;
+        name: string;
+        price?: number;
+    } | null;
 }
 
 // Custom Dropdown Component with Search
@@ -101,7 +106,7 @@ function CustomSelect({ value, onChange, options, placeholder, error, onSearch, 
     );
 }
 
-export function QuoteItemsInput({ control, register, errors, userType }: QuoteItemsInputProps) {
+export function QuoteItemsInput({ control, register, errors, userType, prefilledProduct }: QuoteItemsInputProps) {
     const { fields, append, remove } = useFieldArray({
         control,
         name: "items"
@@ -124,7 +129,22 @@ export function QuoteItemsInput({ control, register, errors, userType }: QuoteIt
             : await getProductsForQuote();
 
         if (result.success && result.products) {
-            setProductOptions(result.products);
+            let products = result.products;
+
+            // If we have a prefilled product and no query (initial load), ensure it's in the list
+            if (!query && prefilledProduct) {
+                const exists = products.some(p => p.value === prefilledProduct.id);
+                if (!exists) {
+                    const prefilledOption: ProductOption = {
+                        value: prefilledProduct.id,
+                        label: prefilledProduct.name,
+                        price: prefilledProduct.price
+                    };
+                    products = [prefilledOption, ...products];
+                }
+            }
+
+            setProductOptions(products);
         }
         setIsLoadingProducts(false);
     };

@@ -142,6 +142,8 @@ export interface ProductFilters {
     is_featured?: boolean
     min_price?: number
     max_price?: number
+    page?: number
+    limit?: number
 }
 
 // Product Variant

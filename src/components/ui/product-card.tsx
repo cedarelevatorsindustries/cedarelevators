@@ -7,6 +7,7 @@ import { useUser } from "@/lib/auth/client"
 import { useState, useEffect } from "react"
 import { useFavorites } from "@/hooks/use-favorites"
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed"
+import { useRouter } from "next/navigation"
 
 interface ProductCardProps {
   product: Product
@@ -22,6 +23,7 @@ export default function ProductCard({
   const { user } = useUser()
   const { isFavorite, toggle } = useFavorites(product.id)
   const { trackView } = useRecentlyViewed()
+  const router = useRouter()
 
   // Track view on mount (only for default/special variants, not mobile list to avoid spam?)
   // User asked for "Recently Viewed - Help user resume browsing".
@@ -61,8 +63,11 @@ export default function ProductCard({
 
   const handleRequestQuote = (e: React.MouseEvent) => {
     e.preventDefault()
-    console.log("Request quote:", product.id)
-    // TODO: Implement request quote modal/form
+    const params = new URLSearchParams({
+      productId: product.id,
+      productName: product.title
+    })
+    router.push(`/quotes/new?${params.toString()}`)
   }
 
   const handleWishlist = (e: React.MouseEvent) => {

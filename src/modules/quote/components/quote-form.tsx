@@ -19,9 +19,14 @@ import { getQuotePermissions } from '../utils/quote-permissions';
 interface QuoteFormProps {
     userType?: 'guest' | 'individual' | 'business' | 'verified';
     verificationStatus?: string | null;
+    prefilledProduct?: {
+        id: string;
+        name: string;
+        price?: number;
+    } | null;
 }
 
-export function QuoteForm({ userType = 'guest', verificationStatus = null }: QuoteFormProps) {
+export function QuoteForm({ userType = 'guest', verificationStatus = null, prefilledProduct = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const router = useRouter();
@@ -41,8 +46,8 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
     const { register, control, handleSubmit, formState: { errors } } = useForm<any>({
         resolver: zodResolver(schema),
         defaultValues: userType === 'guest'
-            ? { product_id: "", quantity: 1, name: "", email: "", notes: "" }
-            : { items: [{ product_id: "", quantity: 1 }], bulk_pricing_requested: false, notes: "" }
+            ? { product_id: prefilledProduct?.id || "", quantity: 1, name: "", email: "", notes: "" }
+            : { items: [{ product_id: prefilledProduct?.id || "", quantity: 1 }], bulk_pricing_requested: false, notes: "" }
     });
 
     const onSubmit = async (data: any) => {
@@ -162,18 +167,6 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
                     </div>
                 )}
 
-                {userType === 'verified' && (
-                    <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-green-900">Verified Business Account</p>
-                            <p className="text-sm text-green-700 mt-1">
-                                You have access to all premium features including bulk pricing, instant checkout, and credit terms.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
                 {/* Items Section */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
@@ -186,6 +179,7 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null }: Quo
                             register={register}
                             errors={errors}
                             userType={userType}
+                            prefilledProduct={prefilledProduct}
                         />
                     </div>
                 </div>

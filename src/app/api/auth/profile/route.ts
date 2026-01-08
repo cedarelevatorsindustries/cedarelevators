@@ -4,22 +4,30 @@ import { getUserWithProfile } from '@/lib/services/auth-sync'
 
 export async function GET(request: NextRequest) {
     try {
+
+
         // Note: currentUser() cannot be cached with unstable_cache because it uses headers() internally
         // Clerk handles session caching internally, and we use Cache-Control header for response caching
         const clerkUser = await currentUser()
 
         if (!clerkUser) {
+
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             )
         }
 
+
+
         // Get user with profile from Supabase
         // Pass the cached clerkUser to avoid redundant API calls
         const userWithProfile = await getUserWithProfile(clerkUser.id, clerkUser)
 
+
+
         if (!userWithProfile) {
+
             return NextResponse.json(
                 { error: 'User profile not found' },
                 { status: 404 }

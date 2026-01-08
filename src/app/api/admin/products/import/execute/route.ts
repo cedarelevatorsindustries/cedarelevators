@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+// CSV Import Execute - Handles product and variant creation/updates
 import { createAdminClient } from '@/lib/supabase/server'
 import type { ProductGroup, ImportResult, ImportError } from '@/lib/types/csv-import'
 
@@ -73,55 +74,81 @@ async function importProductGroup(
   const productData = {
     name: group.title,
     slug: group.slug,
-    sku: group.sku,
+    sku: group.sku || null,
     description: group.description,
     short_description: group.short_description,
     status: group.status,
     thumbnail_url: group.image_url || null,
 
-    // Pricing
-    price: group.base_price,
-    compare_at_price: group.compare_price || null,
+    // Pricing - use base_price or price
+    price: group.base_price || group.price,
+    compare_at_price: group.compare_price || group.compare_at_price || null,
     cost_per_item: group.cost_per_item || null,
 
     // Inventory (product-level defaults)
     stock_quantity: group.stock_quantity,
     track_inventory: true,
-    allow_backorders: group.allow_backorder,
-    low_stock_threshold: group.low_stock_threshold,
+    allow_backorders: group.allow_backorder || false,
+    low_stock_threshold: group.low_stock_threshold || 10,
 
     // SEO
-    meta_title: group.meta_title,
-    meta_description: group.meta_description,
+    meta_title: group.meta_title || null,
+    meta_description: group.meta_description || null,
 
     // Other
-    is_featured: false,
-    view_count: 0,
-    tags: group.tags,
+    tags: group.tags || [],
 
     // Specifications (attributes)
-    specifications: Object.entries(group.attributes).map(([key, value]) => ({
-      key,
-      value
-    }))
+    specifications: group.attributes && typeof group.attributes === 'object'
+      ? Object.entries(group.attributes).map(([key, value]) => ({
+        key,
+        value
+      }))
+      : []
   }
 
-  // Insert product
+  // Insert or update product (upsert based on slug)
   const { data: product, error: productError } = await supabase
     .from('products')
-    .insert(productData)
+    .upsert(productData, {
+      onConflict: 'slug',
+      ignoreDuplicates: false
+    })
     .select()
     .single()
 
   if (productError) {
-    throw new Error(`Failed to create product: ${productError.message}`)
+    throw new Error(`Failed to create/update product: ${productError.message}`)
   }
 
-  result.productsCreated++
+  // Check if this was an update or insert
+  const isUpdate = await supabase
+    .from('products')
+    .select('id')
+    .eq('slug', group.slug)
+    .single()
+    .then((res: any) => res.data !== null)
+
+  if (isUpdate) {
+    result.productsUpdated++
+  } else {
+    result.productsCreated++
+  }
+
   const productId = product.id
+
+  // Delete existing junction table entries before creating new ones
+  await Promise.all([
+    supabase.from('product_categories').delete().eq('product_id', productId),
+    supabase.from('product_types').delete().eq('product_id', productId),
+    supabase.from('product_collections').delete().eq('product_id', productId)
+  ])
 
   // Create junction table entries for classifications
   await createJunctionTableEntries(supabase, productId, group)
+
+  // Delete existing variants before creating new ones (for updates)
+  await supabase.from('product_variants').delete().eq('product_id', productId)
 
   // Create variants
   for (const variant of group.variants) {
@@ -144,7 +171,7 @@ async function createJunctionTableEntries(
   group: ProductGroup
 ): Promise<void> {
   // Applications (stored in product_categories with type='application')
-  if (group.application_ids.length > 0) {
+  if (group.application_ids?.length > 0) {
     const applicationEntries = group.application_ids.map((categoryId, index) => ({
       product_id: productId,
       category_id: categoryId,
@@ -162,7 +189,7 @@ async function createJunctionTableEntries(
   }
 
   // Categories
-  if (group.category_ids.length > 0) {
+  if (group.category_ids?.length > 0) {
     const categoryEntries = group.category_ids.map((categoryId, index) => ({
       product_id: productId,
       category_id: categoryId,
@@ -180,7 +207,7 @@ async function createJunctionTableEntries(
   }
 
   // Subcategories
-  if (group.subcategory_ids.length > 0) {
+  if (group.subcategory_ids?.length > 0) {
     const subcategoryEntries = group.subcategory_ids.map((categoryId, index) => ({
       product_id: productId,
       category_id: categoryId,
@@ -198,7 +225,7 @@ async function createJunctionTableEntries(
   }
 
   // Elevator Types
-  if (group.type_ids.length > 0) {
+  if (group.type_ids?.length > 0) {
     const typeEntries = group.type_ids.map(typeId => ({
       product_id: productId,
       elevator_type_id: typeId
@@ -214,7 +241,7 @@ async function createJunctionTableEntries(
   }
 
   // Collections
-  if (group.collection_ids.length > 0) {
+  if (group.collection_ids?.length > 0) {
     const collectionEntries = group.collection_ids.map(collectionId => ({
       product_id: productId,
       collection_id: collectionId
@@ -241,17 +268,16 @@ async function createVariant(
 ): Promise<void> {
   const variantData = {
     product_id: productId,
-    title: variant.title,
+    name: variant.title,
     sku: variant.sku,
-    price: variant.price,
-    compare_at_price: group.compare_price || null,
+
+    // Pricing - use variant price if available, otherwise product price
+    price: variant.price || group.base_price || group.price,
+    compare_at_price: variant.compare_at_price || group.compare_price || group.compare_at_price || null,
     cost_per_item: group.cost_per_item || null,
 
     // Inventory
-    stock_quantity: variant.stock,
-    track_inventory: true,
-    allow_backorders: group.allow_backorder,
-    low_stock_threshold: group.low_stock_threshold,
+    inventory_quantity: variant.stock || 0,
 
     // Options
     option1_name: variant.option1_name || null,
@@ -262,9 +288,8 @@ async function createVariant(
     // Image (inherit from product if not specified)
     image_url: group.image_url || null,
 
-    // Status
-    is_active: group.status === 'active',
-    position: 0
+    // Status (must be 'active' or 'inactive')
+    status: group.status === 'active' ? 'active' : 'inactive'
   }
 
   const { error } = await supabase

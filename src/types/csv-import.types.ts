@@ -27,7 +27,7 @@ export interface CSVRow {
     track_inventory?: string // 'true' or 'false'
     product_stock: string
     status?: string // 'draft' or 'active'
-    
+
     // Variant-level fields
     variant_title?: string
     variant_option_1_name?: string
@@ -37,7 +37,7 @@ export interface CSVRow {
     variant_price?: string
     variant_mrp?: string // maps to compare_at_price
     variant_stock?: string
-    
+
     // Metadata
     attributes?: string // JSON string
 }
@@ -61,35 +61,54 @@ export interface ProductGroup {
     // Product identification
     title: string
     slug: string
-    
+    sku?: string
+
     // Product details
     description?: string
     short_description: string
     status: 'draft' | 'active'
-    
+    image_url?: string
+
     // Pricing & Inventory
     price: number
+    base_price?: number // Alias for price
     compare_at_price?: number // This is MRP
+    compare_price?: number // Alias for compare_at_price
+    cost_per_item?: number
     track_inventory: boolean
     stock_quantity: number
-    
+    allow_backorder?: boolean
+    low_stock_threshold?: number
+
+    // SEO
+    meta_title?: string
+    meta_description?: string
+    tags?: string[]
+
+    // Attributes/Specifications
+    attributes?: Record<string, any>
+
     // Catalog relationships (slugs from CSV)
     application_slug: string
     category_slug: string
     subcategory_slug?: string
     elevator_type_slugs: string[]
     collection_slugs: string[]
-    
+
     // Resolved IDs (after validation)
     application_id?: string
+    application_ids?: string[]
     category_id?: string
+    category_ids?: string[]
     subcategory_id?: string
+    subcategory_ids?: string[]
     elevator_type_ids?: string[]
     collection_ids?: string[]
-    
+    type_ids?: string[]
+
     // Variants
     variants: ProductVariant[]
-    
+
     // Validation results
     errors: ValidationError[]
     warnings: ValidationError[]

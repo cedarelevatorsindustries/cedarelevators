@@ -59,7 +59,9 @@ export interface ProductGroup {
     tags: string[]
 
     // Pricing
+    price: number // Alias for base_price
     base_price: number
+    compare_at_price?: number // Alias for compare_price
     compare_price?: number
     cost_per_item?: number
 
@@ -91,6 +93,7 @@ export interface ProductGroup {
 export interface ProductVariant {
     title: string
     price: number
+    compare_at_price?: number
     stock: number
     sku: string
     option1_name?: string

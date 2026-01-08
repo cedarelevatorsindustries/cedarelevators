@@ -27,12 +27,7 @@ export function QuotesSidebar({ activeQuotes = 0, activeOrders = 0 }: QuotesSide
                     <p className="text-sm text-slate-500 mb-6 max-w-[200px]">
                         You don't have any orders in progress. Start your first project today.
                     </p>
-                    <Link
-                        href="/quotes/new"
-                        className="w-full rounded-lg bg-[#F97316]/10 hover:bg-[#F97316]/20 text-[#F97316] py-2.5 text-sm font-bold transition-colors"
-                    >
-                        Create New Quote
-                    </Link>
+
                 </div>
             ) : (
                 // Active State
