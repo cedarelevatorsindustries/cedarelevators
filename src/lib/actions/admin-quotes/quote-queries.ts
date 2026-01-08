@@ -28,7 +28,10 @@ export async function getAdminQuotes(filters: AdminQuoteFilters): Promise<
             .from('quotes')
             .select(`
         *,
-        items:quote_items(*),
+        items:quote_items(
+          *,
+          product:products(id, name, thumbnail_url, sku)
+        ),
         admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
@@ -107,7 +110,10 @@ export async function getAdminQuoteById(quoteId: string): Promise<
             .from('quotes')
             .select(`
         *,
-        items:quote_items(*),
+        items:quote_items(
+          *,
+          product:products(id, name, thumbnail_url, sku)
+        ),
         admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
@@ -120,6 +126,18 @@ export async function getAdminQuoteById(quoteId: string): Promise<
             }
             console.error('Error fetching quote:', error)
             return { success: false, error: error.message }
+        }
+
+        // Map nested product data to flat item fields for backwards compatibility
+        if (quote && quote.items) {
+            quote.items = quote.items.map((item: any) => ({
+                ...item,
+                product_name: item.product?.name || 'Unknown Product',
+                product_thumbnail: item.product?.thumbnail_url || null,
+                product_sku: item.product?.sku || null,
+                // Remove the nested product object
+                product: undefined
+            }))
         }
 
         return { success: true, quote: quote as Quote }

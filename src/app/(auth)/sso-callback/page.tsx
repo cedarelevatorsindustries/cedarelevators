@@ -1,11 +1,11 @@
 "use client"
 
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 
-export default function SSOCallback() {
+function SSOCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isLoaded } = useUser()
@@ -51,16 +51,17 @@ export default function SSOCallback() {
 
       // Check for account type from URL params first (most reliable), then sessionStorage (fallback)
       const accountTypeFromUrl = searchParams.get('accountType')
-      const pendingAccountType = accountTypeFromUrl || sessionStorage.getItem('pendingAccountType')
+      const pendingAccountType = accountTypeFromUrl || (typeof window !== 'undefined' ? sessionStorage.getItem('pendingAccountType') : null)
 
       console.log("Account type from URL:", accountTypeFromUrl)
-      console.log("Account type from sessionStorage:", sessionStorage.getItem('pendingAccountType'))
       console.log("Final pending account type:", pendingAccountType)
 
       if (pendingAccountType) {
         console.log("Pending account type found:", pendingAccountType)
         // Clear the pending account type immediately
-        sessionStorage.removeItem('pendingAccountType')
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('pendingAccountType')
+        }
 
         // Set the account type via API
         const setAccountType = async () => {
@@ -105,7 +106,7 @@ export default function SSOCallback() {
         router.push("/choose-type")
       }
     }
-  }, [user, isLoaded, router, isProcessing, callbackComplete])
+  }, [user, isLoaded, router, isProcessing, callbackComplete, searchParams])
 
   // Fallback timeout - if stuck loading for more than 60 seconds, redirect to choose-type
   useEffect(() => {
@@ -145,3 +146,23 @@ export default function SSOCallback() {
   )
 }
 
+function LoadingFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="inline-flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#F97316]"></div>
+          <span className="text-lg font-medium text-gray-700">Loading...</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SSOCallback() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SSOCallbackContent />
+    </Suspense>
+  )
+}

@@ -136,10 +136,10 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
 
     // Calculate totals from edited items
     const calculatedTotals = useMemo(() => {
-        const subtotal = editedItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
+        const subtotal = editedItems.reduce((sum, item) => sum + ((item.unit_price || 0) * (item.quantity || 0)), 0)
         const discount = editedItems.reduce((sum, item) => {
-            const itemTotal = item.unit_price * item.quantity
-            const discountAmount = itemTotal * (item.discount_percentage / 100)
+            const itemTotal = (item.unit_price || 0) * (item.quantity || 0)
+            const discountAmount = itemTotal * ((item.discount_percentage || 0) / 100)
             return sum + discountAmount
         }, 0)
         const subtotalAfterDiscount = subtotal - discount
@@ -651,13 +651,13 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                                     {isEditingItems ? (
                                                         <input
                                                             type="number"
-                                                            value={item.unit_price}
+                                                            value={item.unit_price || 0}
                                                             onChange={(e) => handleItemPriceChange(item.id, 'unit_price', Number(e.target.value))}
                                                             className="w-24 px-2 py-1 text-right border border-gray-200 rounded"
                                                         />
                                                     ) : (
                                                         <span className="font-medium text-gray-900">
-                                                            {item.unit_price > 0 ? `₹${item.unit_price.toLocaleString()}` : '—'}
+                                                            {(item.unit_price || 0) > 0 ? `₹${(item.unit_price || 0).toLocaleString()}` : '—'}
                                                         </span>
                                                     )}
                                                 </td>
@@ -665,19 +665,19 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                                     {isEditingItems ? (
                                                         <input
                                                             type="number"
-                                                            value={item.discount_percentage}
+                                                            value={item.discount_percentage || 0}
                                                             onChange={(e) => handleItemPriceChange(item.id, 'discount_percentage', Number(e.target.value))}
                                                             className="w-16 px-2 py-1 text-right border border-gray-200 rounded"
                                                             min="0"
                                                             max="100"
                                                         />
                                                     ) : (
-                                                        <span className="text-gray-700">{item.discount_percentage}%</span>
+                                                        <span className="text-gray-700">{item.discount_percentage || 0}%</span>
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-4 text-right">
                                                     <span className="font-semibold text-gray-900">
-                                                        ₹{item.total_price.toLocaleString()}
+                                                        ₹{(item.total_price || 0).toLocaleString()}
                                                     </span>
                                                 </td>
                                             </tr>
