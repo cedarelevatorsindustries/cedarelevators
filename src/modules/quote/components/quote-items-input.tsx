@@ -14,6 +14,7 @@ interface QuoteItemsInputProps {
     prefilledProduct?: {
         id: string;
         name: string;
+        sku?: string;
         price?: number;
     } | null;
 }
@@ -138,6 +139,7 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
                     const prefilledOption: ProductOption = {
                         value: prefilledProduct.id,
                         label: prefilledProduct.name,
+                        sku: prefilledProduct.sku || '',
                         price: prefilledProduct.price
                     };
                     products = [prefilledOption, ...products];

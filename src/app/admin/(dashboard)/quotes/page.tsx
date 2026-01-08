@@ -113,7 +113,7 @@ export default function AdminQuotesPage() {
                 setQuotes([])
                 console.error('Error loading quotes:', quotesResult.error)
             }
-            
+
             if (statsResult.success) {
                 // Map reviewing_count to in_review_count for local interface
                 setStats({
@@ -337,7 +337,7 @@ export default function AdminQuotesPage() {
                                 {quotes.map((quote) => {
                                     const statusConfig = getStatusConfig(quote.status)
                                     const priorityConfig = getPriorityConfig(quote.priority)
-                                    const userTypeConfig = getUserTypeConfig(quote.user_type)
+                                    const userTypeConfig = getUserTypeConfig(quote.account_type)
                                     const UserTypeIcon = userTypeConfig.icon
 
                                     return (
