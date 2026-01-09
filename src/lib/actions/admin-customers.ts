@@ -72,82 +72,173 @@ export async function getCustomers(
       return { success: false, error: 'Database connection failed' }
     }
 
-    // This is a simplified query - in production you'd query Clerk API + Supabase data
-    // For now, we'll query business_profiles and customer_meta
-    let query = supabase
-      .from('business_profiles')
+    // CRITICAL: Filter by commercial intent
+    // A customer exists only when there is intent or transaction
+
+    // Get user_profiles with commercial intent indicators
+    const { data: allProfiles, error: profileError } = await supabase
+      .from('user_profiles')
       .select(`
         *,
-        documents:verification_documents(count)
-      `, { count: 'exact' })
+        quotes:quotes(count),
+        orders:orders(count, total_amount),
+        business_verification:business_verifications(
+          id,
+          status,
+          legal_business_name,
+          submitted_at
+        )
+      `)
 
-    // Apply filters
-    if (filters.verification_status && filters.verification_status !== 'all') {
-      query = query.eq('verification_status', filters.verification_status)
+    if (profileError) {
+      console.error('Error fetching profiles:', profileError)
+      return { success: false, error: profileError.message }
     }
 
-    if (filters.date_range && filters.date_range !== 'all') {
-      const now = new Date()
-      let startDate: Date
+    // Filter to only users with commercial intent
+    let filteredProfiles = (allProfiles || []).filter((profile: any) => {
+      const hasQuotes = profile.quotes && profile.quotes.length > 0
+      const hasOrders = profile.orders && profile.orders.length > 0
+      const hasVerification = profile.business_verification && profile.business_verification.length > 0
 
-      switch (filters.date_range) {
-        case 'last_7_days':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          break
-        case 'last_30_days':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          break
-        case 'last_90_days':
-          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-          break
-        default:
-          startDate = new Date(0)
+      return hasQuotes || hasOrders || hasVerification
+    })
+
+    // Apply additional filters
+    if (filters.account_type && filters.account_type !== 'all') {
+      filteredProfiles = filteredProfiles.filter((p: any) =>
+        p.account_type === filters.account_type
+      )
+    }
+
+    if (filters.verification_status && filters.verification_status !== 'all') {
+      filteredProfiles = filteredProfiles.filter((p: any) =>
+        p.verification_status === filters.verification_status
+      )
+    }
+
+    if (filters.has_orders !== undefined) {
+      filteredProfiles = filteredProfiles.filter((p: any) => {
+        const hasOrders = p.orders && p.orders.length > 0
+        return filters.has_orders ? hasOrders : !hasOrders
+      })
+    }
+
+    if (filters.has_quotes !== undefined) {
+      filteredProfiles = filteredProfiles.filter((p: any) => {
+        const hasQuotes = p.quotes && p.quotes.length > 0
+        return filters.has_quotes ? hasQuotes : !hasQuotes
+      })
+    }
+
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      filteredProfiles = filteredProfiles.filter((p: any) =>
+        p.email?.toLowerCase().includes(searchLower) ||
+        p.first_name?.toLowerCase().includes(searchLower) ||
+        p.last_name?.toLowerCase().includes(searchLower)
+      )
+    }
+
+    // Calculate customer_type for each profile
+    const customersWithType = filteredProfiles.map((profile: any) => {
+      const quotesCount = profile.quotes?.[0]?.count || 0
+      const ordersCount = profile.orders?.[0]?.count || 0
+      const totalRevenue = profile.orders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0
+      const avgOrderValue = ordersCount > 0 ? totalRevenue / ordersCount : 0
+
+      const verification = profile.business_verification?.[0]
+      const verificationStatus = verification?.status || 'incomplete'
+
+      // Determine customer_type
+      let customerType: 'lead' | 'customer' | 'business' | 'individual'
+      if (verificationStatus === 'approved') {
+        customerType = 'business'
+      } else if (ordersCount > 0) {
+        customerType = 'customer'
+      } else if (quotesCount > 0) {
+        customerType = 'lead'
+      } else {
+        customerType = 'individual'
       }
 
-      query = query.gte('created_at', startDate.toISOString())
+      // Calculate last_activity
+      const activities = []
+      if (profile.created_at) activities.push(new Date(profile.created_at))
+      if (profile.updated_at) activities.push(new Date(profile.updated_at))
+      if (verification?.submitted_at) activities.push(new Date(verification.submitted_at))
+      const lastActivity = activities.length > 0
+        ? new Date(Math.max(...activities.map(d => d.getTime()))).toISOString()
+        : profile.created_at
+
+      return {
+        ...profile,
+        customer_type: customerType,
+        total_quotes: quotesCount,
+        total_orders: ordersCount,
+        total_spent: totalRevenue,
+        average_order_value: avgOrderValue,
+        last_activity: lastActivity,
+        verification_status: verificationStatus,
+      }
+    })
+
+    // Apply customer_type filter
+    let finalCustomers = customersWithType
+    if (filters.customer_type && filters.customer_type !== 'all') {
+      finalCustomers = customersWithType.filter((c: any) =>
+        c.customer_type === filters.customer_type
+      )
     }
+
+    // Sort by last_activity desc
+    finalCustomers.sort((a: any, b: any) =>
+      new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
+    )
 
     // Apply pagination
+    const total = finalCustomers.length
     const from = (page - 1) * limit
-    const to = from + limit - 1
-    query = query.range(from, to)
+    const to = from + limit
+    const paginatedCustomers = finalCustomers.slice(from, to)
 
-    const { data, error, count } = await query
-
-    if (error) {
-      console.error('Error fetching customers:', error)
-      return { success: false, error: error.message }
-    }
-
-    // Transform data to Customer format
-    const customers: Customer[] = (data || []).map((profile: any) => ({
+    // Transform to Customer format
+    const customers: Customer[] = paginatedCustomers.map((profile: any) => ({
       id: profile.id,
       clerk_user_id: profile.clerk_user_id,
-      email: '', // Would come from Clerk
-      account_type: 'business',
-      business_verified: profile.verification_status === 'verified',
+      email: profile.email || '',
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      full_name: profile.first_name && profile.last_name
+        ? `${profile.first_name} ${profile.last_name}`
+        : profile.first_name || profile.last_name || '',
+      account_type: profile.account_type || 'individual',
+      customer_type: profile.customer_type,
+      business_verified: profile.verification_status === 'approved',
       verification_status: profile.verification_status,
       phone: profile.phone,
-      total_orders: 0, // Would need to count orders
-      total_spent: 0, // Would need to sum order totals
-      average_order_value: 0,
+      total_quotes: profile.total_quotes,
+      total_orders: profile.total_orders,
+      total_spent: profile.total_spent,
+      average_order_value: profile.average_order_value,
+      last_activity: profile.last_activity,
       registration_date: profile.created_at,
       status: 'active',
       created_at: profile.created_at,
       updated_at: profile.updated_at,
-      business_profile: profile,
     }))
 
     return {
       success: true,
       customers,
-      total: count || 0,
+      total,
     }
   } catch (error: any) {
     console.error('Error in getCustomers:', error)
     return { success: false, error: error.message || 'Failed to fetch customers' }
   }
 }
+
 
 // =====================================================
 // GET SINGLE CUSTOMER (ADMIN)
@@ -201,6 +292,7 @@ export async function getCustomerById(
       .order('created_at', { ascending: false })
 
     // Calculate stats
+    const totalQuotes = quotes?.length || 0
     const totalOrders = orders?.length || 0
     const totalSpent = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
     const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0
@@ -214,6 +306,7 @@ export async function getCustomerById(
       business_verified: customerMeta?.business_verified || false,
       verification_status: businessProfile?.verification_status,
       phone: customerMeta?.phone || businessProfile?.phone,
+      total_quotes: totalQuotes,
       total_orders: totalOrders,
       total_spent: totalSpent,
       average_order_value: averageOrderValue,
@@ -249,37 +342,69 @@ export async function getCustomerStats(): Promise<
       return { success: false, error: 'Database connection failed' }
     }
 
-    // Get business profiles count
-    const { data: businessProfiles, error: businessError } = await supabase
-      .from('business_profiles')
-      .select('verification_status')
+    // Get all profiles with commercial intent
+    const { data: profiles } = await supabase
+      .from('user_profiles')
+      .select(`
+        *,
+        quotes:quotes(count),
+        orders:orders(count, total_amount),
+        business_verification:business_verifications(status)
+      `)
 
-    if (businessError) {
-      console.error('Error fetching business stats:', businessError)
-    }
+    // Filter to only users with commercial intent
+    const customersWithIntent = (profiles || []).filter((profile: any) => {
+      const hasQuotes = profile.quotes && profile.quotes.length > 0
+      const hasOrders = profile.orders && profile.orders.length > 0
+      const hasVerification = profile.business_verification && profile.business_verification.length > 0
+      return hasQuotes || hasOrders || hasVerification
+    })
 
-    // Get customer meta count
-    const { count: individualCount } = await supabase
-      .from('customer_meta')
-      .select('*', { count: 'exact', head: true })
-      .eq('account_type', 'individual')
+    // Calculate stats
+    let leads = 0
+    let activeCustomers = 0
+    let individualCustomers = 0
+    let businessCustomers = 0
+    let verifiedBusinesses = 0
+    let pendingVerifications = 0
+    let totalRevenue = 0
 
-    // Get total revenue from orders
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('total_amount')
-      .eq('payment_status', 'paid')
+    customersWithIntent.forEach((profile: any) => {
+      const quotesCount = profile.quotes?.[0]?.count || 0
+      const ordersCount = profile.orders?.[0]?.count || 0
+      const verification = profile.business_verification?.[0]
+      const verificationStatus = verification?.status || 'incomplete'
 
-    const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      // Customer type classification
+      if (verificationStatus === 'approved') {
+        verifiedBusinesses++
+      } else if (ordersCount > 0) {
+        activeCustomers++
+      } else if (quotesCount > 0) {
+        leads++
+      }
 
-    const businessCount = businessProfiles?.length || 0
-    const verifiedBusinesses = businessProfiles?.filter(p => p.verification_status === 'verified').length || 0
-    const pendingVerifications = businessProfiles?.filter(p => p.verification_status === 'pending').length || 0
+      // Account type
+      if (profile.account_type === 'business') {
+        businessCustomers++
+        if (verificationStatus === 'pending') {
+          pendingVerifications++
+        }
+      } else {
+        individualCustomers++
+      }
+
+      // Revenue
+      const revenue = profile.orders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0
+      totalRevenue += revenue
+    })
 
     const stats: CustomerStats = {
-      total_customers: businessCount + (individualCount || 0),
-      individual_customers: individualCount || 0,
-      business_customers: businessCount,
+      total_customers: customersWithIntent.length,
+      leads,
+      active_customers: activeCustomers,
+      individual_customers: individualCustomers,
+      business_customers: businessCustomers,
       verified_businesses: verifiedBusinesses,
       pending_verifications: pendingVerifications,
       total_revenue: totalRevenue,
@@ -851,7 +976,7 @@ export async function exportCustomersAction(filters: CustomerFilters): Promise<{
 }> {
   try {
     const result = await getCustomers(filters, 1, 10000)
-    
+
     if (!result.success) {
       return { success: false, error: result.error }
     }

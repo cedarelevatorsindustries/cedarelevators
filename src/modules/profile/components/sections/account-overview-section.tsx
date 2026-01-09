@@ -244,42 +244,7 @@ export default function AccountOverviewSection({
         )
       }
 
-      {/* Quick Links to Settings */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <button
-          onClick={() => onNavigate(accountType === 'business' ? 'business-info' : 'personal-info')}
-          className="p-4 bg-white border border-gray-200 rounded-lg hover:border-orange-500 transition-colors text-left group"
-        >
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-500 transition-colors">
-            {accountType === 'business' ? 'Business Information' : 'Personal Information'}
-          </h3>
-          <p className="text-sm text-gray-600">Update your {accountType === 'business' ? 'company' : 'profile'} details</p>
-        </button>
 
-        <button
-          onClick={() => onNavigate('addresses')}
-          className="p-4 bg-white border border-gray-200 rounded-lg hover:border-orange-500 transition-colors text-left group"
-        >
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-500 transition-colors">Addresses</h3>
-          <p className="text-sm text-gray-600">Manage your shipping and billing addresses</p>
-        </button>
-
-        <button
-          onClick={() => onNavigate('notifications')}
-          className="p-4 bg-white border border-gray-200 rounded-lg hover:border-orange-500 transition-colors text-left group"
-        >
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-500 transition-colors">Notifications</h3>
-          <p className="text-sm text-gray-600">Configure your notification preferences</p>
-        </button>
-
-        <button
-          onClick={() => onNavigate('security')}
-          className="p-4 bg-white border border-gray-200 rounded-lg hover:border-orange-500 transition-colors text-left group"
-        >
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-orange-500 transition-colors">Security Settings</h3>
-          <p className="text-sm text-gray-600">Manage password and security options</p>
-        </button>
-      </div>
     </div >
   )
 }

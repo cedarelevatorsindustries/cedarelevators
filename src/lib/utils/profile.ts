@@ -7,84 +7,22 @@ export function getInitials(firstName: string, lastName: string): string {
 }
 
 export function getProfileNavigation(accountType: AccountType): ProfileNavigationGroup[] {
-  const commonNavigation: ProfileNavigationGroup[] = [
-    {
-      title: 'Account',
-      icon: 'User',
-      items: [
-        {
-          section: PROFILE_SECTIONS.OVERVIEW,
-          label: 'Account Overview',
-          icon: 'User',
-        },
-        {
-          section: PROFILE_SECTIONS.PERSONAL_INFO,
-          label: 'Personal Info',
-          icon: 'User',
-        },
-        {
-          section: PROFILE_SECTIONS.ADDRESSES,
-          label: 'Addresses',
-          icon: 'MapPin',
-        },
-      ],
-    },
-    {
-      title: 'Activity',
-      icon: 'Package',
-      items: [
-        {
-          section: PROFILE_SECTIONS.QUOTES,
-          label: 'Quotes',
-          icon: 'FileText',
-        },
-        {
-          section: PROFILE_SECTIONS.ORDER_HISTORY,
-          label: 'Orders',
-          icon: 'Package',
-        },
-        {
-          section: PROFILE_SECTIONS.WISHLISTS,
-          label: 'Wishlist',
-          icon: 'Heart',
-        },
-      ],
-    },
-    {
-      title: 'Settings',
-      icon: 'Settings',
-      items: [
-        {
-          section: PROFILE_SECTIONS.SECURITY,
-          label: 'Security',
-          icon: 'Shield',
-        },
-      ],
-    },
-  ]
-
-  // Add business-specific navigation
-  if (accountType === 'business') {
+  // INDIVIDUAL USER - Desktop matches mobile + density
+  if (accountType === 'individual') {
     return [
       {
-        title: 'Account',
+        title: 'Profile',
         icon: 'User',
         items: [
           {
             section: PROFILE_SECTIONS.OVERVIEW,
-            label: 'Account Overview',
+            label: 'Profile Overview',
+            icon: 'LayoutDashboard',
+          },
+          {
+            section: PROFILE_SECTIONS.PERSONAL_INFO,
+            label: 'Personal Info',
             icon: 'User',
-          },
-          {
-            section: PROFILE_SECTIONS.BUSINESS_INFO,
-            label: 'Business Info',
-            icon: 'Building2',
-          },
-          {
-            section: PROFILE_SECTIONS.APPROVALS,
-            label: 'Verification',
-            icon: 'CircleCheck',
-            badge: 'status',
           },
           {
             section: PROFILE_SECTIONS.ADDRESSES,
@@ -102,6 +40,78 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             label: 'Quotes',
             icon: 'FileText',
           },
+          {
+            section: PROFILE_SECTIONS.ORDER_HISTORY,
+            label: 'Orders',
+            icon: 'Package',
+          },
+        ],
+      },
+      {
+        title: 'Settings',
+        icon: 'Settings',
+        items: [
+          {
+            section: PROFILE_SECTIONS.SECURITY,
+            label: 'Security',
+            icon: 'Shield',
+          },
+        ],
+      },
+      {
+        title: 'Support',
+        icon: 'CircleHelp',
+        items: [
+          {
+            section: PROFILE_SECTIONS.OVERVIEW, // Will be updated to help center
+            label: 'Help Center',
+            icon: 'CircleHelp',
+          },
+        ],
+      },
+    ]
+  }
+
+  // BUSINESS USER - Desktop matches mobile + density
+  if (accountType === 'business') {
+    return [
+      {
+        title: 'Business Profile',
+        icon: 'Building2',
+        items: [
+          {
+            section: PROFILE_SECTIONS.OVERVIEW,
+            label: 'Business Overview',
+            icon: 'LayoutDashboard',
+          },
+          {
+            section: PROFILE_SECTIONS.BUSINESS_INFO,
+            label: 'Business Info',
+            icon: 'Building2',
+          },
+          {
+            section: PROFILE_SECTIONS.ADDRESSES,
+            label: 'Addresses',
+            icon: 'MapPin',
+          },
+        ],
+      },
+      {
+        title: 'Compliance',
+        icon: 'CircleCheck',
+        items: [
+          {
+            section: PROFILE_SECTIONS.APPROVALS,
+            label: 'Verification',
+            icon: 'CircleCheck',
+            badge: 'status',
+          },
+        ],
+      },
+      {
+        title: 'Operations',
+        icon: 'Package',
+        items: [
           {
             section: PROFILE_SECTIONS.ORDER_HISTORY,
             label: 'Orders',
@@ -125,10 +135,22 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           },
         ],
       },
+      {
+        title: 'Support',
+        icon: 'CircleHelp',
+        items: [
+          {
+            section: PROFILE_SECTIONS.OVERVIEW, // Will be updated to help center
+            label: 'Help Center',
+            icon: 'CircleHelp',
+          },
+        ],
+      },
     ]
   }
 
-  return commonNavigation
+  // GUEST - Should not reach here, but return empty
+  return []
 }
 
 export function formatPhoneNumber(phone: string): string {

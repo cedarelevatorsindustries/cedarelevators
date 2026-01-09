@@ -112,6 +112,8 @@ export interface CustomerMeta {
 // Customer Interface (Complete)
 // =====================================================
 
+export type CustomerType = 'lead' | 'customer' | 'business' | 'individual'
+
 export interface Customer {
   id: string
   clerk_user_id: string
@@ -121,13 +123,16 @@ export interface Customer {
   full_name?: string
   image_url?: string
   account_type: AccountType
+  customer_type?: CustomerType
   business_verified: boolean
   verification_status?: VerificationStatus
   phone?: string
+  total_quotes: number
   total_orders: number
   total_spent: number
   average_order_value: number
   last_order_date?: string
+  last_activity?: string
   registration_date: string
   status: 'active' | 'inactive'
   created_at: string
@@ -189,7 +194,10 @@ export interface CustomerNote {
 
 export interface CustomerFilters {
   account_type?: AccountType | 'all'
+  customer_type?: CustomerType | 'all'
   verification_status?: VerificationStatus | 'all'
+  has_orders?: boolean
+  has_quotes?: boolean
   date_range?: 'last_7_days' | 'last_30_days' | 'last_90_days' | 'all'
   search?: string
   status?: 'active' | 'inactive' | 'all'
@@ -197,6 +205,8 @@ export interface CustomerFilters {
 
 export interface CustomerStats {
   total_customers: number
+  leads: number
+  active_customers: number
   individual_customers: number
   business_customers: number
   verified_businesses: number

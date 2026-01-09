@@ -7,6 +7,7 @@ export interface MobileMenuItem {
   onClick?: (() => void) | string
   badge?: string
   chevron?: boolean
+  isLogout?: boolean
 }
 
 export interface MobileMenuSection {
@@ -31,19 +32,27 @@ export function getMobileProfileMenu(
   isVerified: boolean = false
 ): MobileMenuSection[] {
 
-  // GUEST USER MENU (5 items total)
+  // GUEST USER MENU
   if (accountType === 'guest') {
     return [
       {
+        title: 'Explore', // First item now
         items: [
           { label: 'Browse Products', icon: 'Package', href: '/catalog' },
         ]
       },
       {
+        title: 'Engage',
+        items: [
+          { label: 'Get a Quote', icon: 'FileText', href: '/quotes/new' },
+          { label: 'Contact Sales / Request Callback', icon: 'Phone', href: '/contact' },
+        ]
+      },
+      {
         title: 'Support',
         items: [
-          { label: 'Contact Sales', icon: 'Phone', href: '/contact' },
           { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
+          { label: 'About Cedar', icon: 'Info', href: '/about' },
         ]
       }
     ]
@@ -63,9 +72,7 @@ export function getMobileProfileMenu(
       {
         title: 'Activity',
         items: [
-          { label: 'Quotes', icon: 'FileText', href: '/profile/quotes' },
           { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
-          { label: 'Wishlist', icon: 'Heart', href: '/wishlist' },
         ]
       },
       {
@@ -88,20 +95,20 @@ export function getMobileProfileMenu(
   // BUSINESS USER MENU (10-11 items based on verification)
   if (accountType === 'business') {
     if (!isVerified) {
-      // BUSINESS UNVERIFIED (10 items)
+      // BUSINESS UNVERIFIED
       return [
         {
-          title: 'Account',
+          title: 'Business',
           items: [
+            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
             { label: 'Business Info', icon: 'Building2', href: '/profile/business-info' },
-            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
+            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
           ]
         },
         {
           title: 'Activity',
           items: [
-            { label: 'Quotes', icon: 'FileText', href: '/profile/quotes' },
             { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
           ]
         },
@@ -112,31 +119,30 @@ export function getMobileProfileMenu(
           ]
         },
         {
-          title: 'Support & Auth',
+          title: 'Support',
           items: [
             { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
-            { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
+            { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false, isLogout: true },
           ]
         }
       ]
     } else {
-      // BUSINESS VERIFIED (11 items)
+      // BUSINESS VERIFIED
       return [
         {
-          title: 'Account',
+          title: 'Business',
           items: [
+            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
             { label: 'Business Info', icon: 'Building2', href: '/profile/business-info' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
-            { label: 'Payment Preferences', icon: 'CreditCard', href: '/profile/payment-methods' },
+            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals' },
           ]
         },
         {
           title: 'Activity',
           items: [
-            { label: 'Quotes', icon: 'FileText', href: '/profile/quotes' },
             { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
-            { label: 'Invoices', icon: 'FileText', href: '/profile/invoices' },
           ]
         },
         {
@@ -146,11 +152,11 @@ export function getMobileProfileMenu(
           ]
         },
         {
-          title: 'Support & Auth',
+          title: 'Support',
           items: [
             { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
-            { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
+            { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false, isLogout: true },
           ]
         }
       ]

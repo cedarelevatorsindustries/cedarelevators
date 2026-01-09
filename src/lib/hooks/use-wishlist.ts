@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useUser } from "@/lib/auth/client"
 import { toast } from "sonner"
 
-interface WishlistItem {
+export interface WishlistItem {
   id: string
   variant_id: string
   product_id: string

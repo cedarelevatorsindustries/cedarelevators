@@ -28,9 +28,9 @@ interface MobileMenuProps {
 export default function MobileMenu({ accountType, isVerified = false }: MobileMenuProps) {
   const router = useRouter()
   const { signOut } = useClerk()
-  
+
   const menuSections = getMobileProfileMenu(accountType, isVerified)
-  
+
   const handleMenuItemClick = async (item: any) => {
     if (item.onClick === 'logout') {
       await signOut()
@@ -39,7 +39,7 @@ export default function MobileMenu({ accountType, isVerified = false }: MobileMe
       router.push(item.href)
     }
   }
-  
+
   return (
     <div className="flex flex-col">
       {menuSections.map((section, sectionIndex) => (
@@ -47,15 +47,19 @@ export default function MobileMenu({ accountType, isVerified = false }: MobileMe
           {section.items.map((item, itemIndex) => {
             // Dynamically get icon component
             const IconComponent = (Icons as any)[item.icon] || Icons.Circle
-            
+
+            // Check if this is the logout button
+            const isLogout = item.isLogout || item.onClick === 'logout'
+
             return (
               <MenuItem
                 key={itemIndex}
                 icon={IconComponent}
                 label={item.label}
                 href={item.href || '#'}
-                bgColor="bg-gray-100"
-                iconColor="text-gray-600"
+                bgColor={isLogout ? 'bg-red-50' : 'bg-gray-100'}
+                iconColor={isLogout ? 'text-red-600' : 'text-gray-600'}
+                textColor={isLogout ? 'text-red-600' : undefined}
                 badge={item.badge}
                 onClick={item.onClick === 'logout' ? () => handleMenuItemClick(item) : undefined}
                 showChevron={item.chevron !== false}

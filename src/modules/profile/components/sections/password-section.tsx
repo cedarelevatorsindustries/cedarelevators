@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Lock, CircleCheck, XCircle, AlertCircle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { validatePasswordStrength } from '@/lib/utils/profile'
-import { useUser } from '@/lib/auth/client'
+import { useUser as useClerkUser } from '@clerk/nextjs'
 import { toast } from 'sonner'
 
 interface PasswordSectionProps {
@@ -16,7 +16,7 @@ export default function PasswordSection({
   onUpdate,
   className,
 }: PasswordSectionProps) {
-  const { user, isLoaded } = useUser()
+  const { user: clerkUser, isLoaded } = useClerkUser()
   const [isSaving, setIsSaving] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -33,12 +33,12 @@ export default function PasswordSection({
 
   // Check if user has password enabled
   useEffect(() => {
-    if (isLoaded && user) {
+    if (isLoaded && clerkUser) {
       // Check if user has password authentication enabled
-      const passwordEnabled = user.passwordEnabled
+      const passwordEnabled = clerkUser.passwordEnabled
       setHasPassword(passwordEnabled)
     }
-  }, [isLoaded, user])
+  }, [isLoaded, clerkUser])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,10 +70,10 @@ export default function PasswordSection({
 
     setIsSaving(true)
     try {
-      if (!user) throw new Error('User not loaded')
+      if (!clerkUser) throw new Error('User not loaded')
 
       // Use Clerk's updatePassword method
-      await user.updatePassword({
+      await clerkUser.updatePassword({
         newPassword: formData.newPassword,
         ...(hasPassword && { currentPassword: formData.currentPassword }),
       })

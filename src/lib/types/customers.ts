@@ -17,9 +17,19 @@ export interface CustomerWithStats extends Customer {
     lastOrderDate: string | null
 }
 
+export type CustomerType = 'lead' | 'customer' | 'business' | 'individual'
+export type VerificationStatus = 'incomplete' | 'pending' | 'approved' | 'rejected'
+
 export interface CustomerFilters {
     status?: 'all' | 'active' | 'inactive'
+    account_type?: 'individual' | 'business' | 'all'
+    customer_type?: CustomerType | 'all'
+    verification_status?: VerificationStatus | 'all'
+    has_orders?: boolean
+    has_quotes?: boolean
     search?: string
+    date_range?: 'all' | 'last_7_days' | 'last_30_days' | 'last_90_days'
 }
+
 
 

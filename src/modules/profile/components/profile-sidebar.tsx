@@ -4,7 +4,7 @@ import { ProfileSection, AccountType } from '@/lib/constants/profile'
 import { getProfileNavigation, getInitials } from '@/lib/utils/profile'
 import { UserProfile } from '@/lib/types/profile'
 import { useClerk } from '@clerk/nextjs'
-import { 
+import {
   User, LayoutDashboard, Settings, Activity, Building2, Lock, CircleHelp, LogOut,
   House, Mail, Phone, MapPin, Bell, Globe, Shield, MessageSquare, Package,
   FileText, Heart, Copy, Eye, CreditCard, CircleCheck, BarChart3, Key,
@@ -68,15 +68,15 @@ export default function ProfileSidebar({
   const { signOut } = useClerk()
   const router = useRouter()
   const navigation = getProfileNavigation(accountType)
-  
+
   const handleSignOut = async () => {
     await signOut()
     router.push('/')
   }
-  
+
   const getVerificationBadge = () => {
     if (accountType !== 'business') return null
-    
+
     switch (verificationStatus) {
       case 'approved':
         return <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded font-medium whitespace-nowrap">Verified</span>
@@ -128,18 +128,35 @@ export default function ProfileSidebar({
       <nav className="px-4 pt-2 flex-1 overflow-y-auto">
         {navigation.map((group, groupIndex) => {
           const GroupIcon = iconMap[group.icon] || User
-          
+
           return (
             <div key={group.title} className={groupIndex > 0 ? 'mt-6' : ''}>
               <h4 className="px-3 text-xs font-semibold uppercase tracking-wider mb-3 text-gray-600">
                 {group.title}
               </h4>
-              
+
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = activeSection === item.section
                   const ItemIcon = iconMap[item.icon] || User
-                  
+
+                  // Handle Help Center as external link
+                  if (item.label === 'Help Center') {
+                    return (
+                      <a
+                        key={item.section}
+                        href="/help"
+                        className={cn(
+                          'w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+                          'text-gray-700 hover:bg-white/50'
+                        )}
+                      >
+                        <ItemIcon size={20} className="flex-shrink-0" />
+                        <span className="flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
+                      </a>
+                    )
+                  }
+
                   return (
                     <button
                       key={item.section}
@@ -167,13 +184,9 @@ export default function ProfileSidebar({
         })}
       </nav>
 
-      {/* Bottom Actions - Fixed at bottom with divider */}
-      <div className="flex-shrink-0 border-t border-gray-300 p-4 space-y-1 bg-transparent">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-white/50 cursor-pointer">
-          <CircleHelp size={20} />
-          <span>Help Center</span>
-        </button>
-        <button 
+      {/* Bottom Actions - Fixed at bottom with divider - Only Logout */}
+      <div className="flex-shrink-0 border-t border-gray-300 p-4 bg-transparent">
+        <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-red-600 hover:bg-red-50 cursor-pointer"
         >

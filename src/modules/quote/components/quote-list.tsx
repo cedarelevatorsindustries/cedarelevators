@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Quote, UserType } from '../types';
 import { QuoteStatusBadge } from './quote-status-badge'; // We need to create this
+import Image from 'next/image';
 
 interface QuoteListProps {
     userType: UserType | 'verified';
@@ -22,13 +23,25 @@ export function QuoteList({ userType, quotes, isLoading }: QuoteListProps) {
 
     if (quotes.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 bg-neutral-50 rounded-lg border border-neutral-200">
-                <p className="text-neutral-500 mb-4">You haven't requested any quotes yet.</p>
+            <div className="flex flex-col items-center justify-center py-12 px-4 rounded-lg bg-white">
+                <div className="relative w-64 h-64 mb-6">
+                    <Image
+                        src="/empty-states/empty-quotes.png"
+                        alt="No quotes found"
+                        fill
+                        className="object-contain"
+                        priority
+                    />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No quotes requested yet</h3>
+                <p className="text-gray-500 mb-8 text-center max-w-sm">
+                    It looks like you haven't requested any quotes. Browse our products and request a quote to get started.
+                </p>
                 <Link
                     href="/quotes/new"
-                    className="bg-cedar-orange text-white px-6 py-2 rounded font-medium hover:bg-orange-600 transition-colors"
+                    className="bg-cedar-orange text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-none"
                 >
-                    Request a Quote
+                    Request a New Quote
                 </Link>
             </div>
         );

@@ -4,13 +4,13 @@ import { cookies } from 'next/headers'
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const supabase = await createServerSupabase()
         const { data: { user } } = await supabase.auth.getUser()
 
-        const itemId = params.id
+        const { id: itemId } = await params
 
         // Get session ID for guest users
         const cookieStore = await cookies()

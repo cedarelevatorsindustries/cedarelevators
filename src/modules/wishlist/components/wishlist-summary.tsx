@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useCart } from "@/lib/hooks/use-cart"
 import { useWishlist } from "@/lib/hooks"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, Loader2, Trash2 } from "lucide-react" // Ensure Trash2 is imported or use another icon
-import { formatCurrency } from "@/lib/utils" // Assuming this utility exists, or I will use Intl.NumberFormat
+import { ShoppingBag, Loader2, Trash2 } from "lucide-react"
+import { formatCurrency } from "@/lib/utils/currency"
 import { toast } from "sonner"
 import type { WishlistItem } from "@/lib/hooks/use-wishlist"
 

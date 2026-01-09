@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server'
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { userId } = await auth()
@@ -16,7 +16,7 @@ export async function PATCH(
             )
         }
 
-        const addressId = params.id
+        const { id: addressId } = await params
         const supabase = await createClerkSupabaseClient()
 
         // Set this address as default (trigger will unset others)

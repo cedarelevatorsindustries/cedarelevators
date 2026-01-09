@@ -9,9 +9,48 @@ import { getBannersByPlacement } from "@/lib/actions/banners"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { auth } from "@clerk/nextjs/server"
 
-export const metadata: Metadata = {
-  title: "Product Catalog - Cedar Elevators | Premium Elevator Components",
-  description: "Browse our complete catalog of premium elevator components. ISO certified quality with pan-India delivery.",
+export async function generateMetadata({ searchParams }: CatalogPageProps): Promise<Metadata> {
+  const params = await searchParams
+
+  // Search results page
+  if (params.search) {
+    return {
+      title: `Search Results for "${params.search}" | Cedar Elevators`,
+      description: `Find ${params.search} and related elevator components. ISO certified quality with pan-India delivery. Browse our complete catalog of premium parts.`,
+      openGraph: {
+        title: `Search: ${params.search} | Cedar Elevators`,
+        description: `Find ${params.search} and related elevator components with ISO certified quality.`,
+      },
+      keywords: `${params.search}, elevator parts, elevator components, Cedar Elevators`,
+    }
+  }
+
+  // Category page
+  if (params.category) {
+    return {
+      title: `${params.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} - Cedar Elevators`,
+      description: `Browse ${params.category.split('-').join(' ')} for elevators. Premium quality components with pan-India delivery.`,
+    }
+  }
+
+  // Application page
+  if (params.application || params.app) {
+    const appName = (params.application || params.app)!.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    return {
+      title: `${appName} Components - Cedar Elevators`,
+      description: `Premium elevator components for ${appName.toLowerCase()}. ISO certified quality with pan-India delivery.`,
+    }
+  }
+
+  // Default catalog page
+  return {
+    title: "Product Catalog - Cedar Elevators | Premium Elevator Components",
+    description: "Browse our complete catalog of premium elevator components. ISO certified quality with pan-India delivery.",
+    openGraph: {
+      title: "Product Catalog | Cedar Elevators",
+      description: "Premium elevator components with ISO certified quality.",
+    },
+  }
 }
 
 interface CatalogPageProps {

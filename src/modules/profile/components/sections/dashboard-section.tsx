@@ -3,7 +3,7 @@
 import { UserProfile } from '@/lib/types/profile'
 import {
   FileText, Package, Heart, Clock,
-  CircleCheck, AlertCircle, ArrowRight,
+  CircleCheck, ArrowRight,
   Truck, CircleHelp, MessageCircle, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -43,7 +43,7 @@ export default function DashboardSection({
   onSectionChange,
 }: DashboardSectionProps) {
   const isVerified = accountType === 'business' && verificationStatus === 'approved'
-  const needsVerification = accountType === 'business' && verificationStatus !== 'approved'
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -147,58 +147,7 @@ export default function DashboardSection({
       </div>
 
       {/* Verification Banner with Illustration */}
-      {needsVerification && (
-        <div className={cn(
-          'rounded-lg p-6 border',
-          verificationStatus === 'pending'
-            ? 'bg-orange-50 border-orange-200'
-            : 'bg-red-50 border-red-200'
-        )}>
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Illustration */}
-            <div className="flex-shrink-0">
-              <img
-                src="/images/verification/verification_illustration.png"
-                alt={verificationStatus === 'pending' ? 'Verification in progress' : 'Action required'}
-                className="w-24 h-24 md:w-32 md:h-32 object-contain"
-              />
-            </div>
 
-            {/* Content */}
-            <div className="flex-1 text-center md:text-left">
-              {verificationStatus !== 'pending' && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 text-sm font-semibold rounded-full mb-3">
-                  <AlertCircle size={16} />
-                  Action Required
-                </div>
-              )}
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {verificationStatus === 'pending'
-                  ? 'Verification in Progress'
-                  : 'Complete Business Verification'
-                }
-              </h3>
-              <p className={cn(
-                'text-sm mb-4',
-                verificationStatus === 'pending' ? 'text-orange-800' : 'text-red-800'
-              )}>
-                {verificationStatus === 'pending'
-                  ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours).'
-                  : 'Complete business verification to unlock quotes & bulk ordering features.'
-                }
-              </p>
-              {verificationStatus !== 'pending' && (
-                <button
-                  onClick={() => onSectionChange('approvals')}
-                  className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
-                >
-                  Complete Verification →
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Verified Success Banner */}
       {isVerified && (

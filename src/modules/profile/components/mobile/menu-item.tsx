@@ -9,17 +9,19 @@ interface MenuItemProps {
   href: string
   bgColor: string
   iconColor: string
+  textColor?: string
   badge?: string | number
   onClick?: () => void
   showChevron?: boolean
 }
 
-export default function MenuItem({ 
-  icon: Icon, 
-  label, 
-  href, 
-  bgColor, 
-  iconColor, 
+export default function MenuItem({
+  icon: Icon,
+  label,
+  href,
+  bgColor,
+  iconColor,
+  textColor,
   badge,
   onClick,
   showChevron = true
@@ -30,7 +32,7 @@ export default function MenuItem({
         <div className={`h-10 w-10 ${bgColor} rounded-xl flex items-center justify-center`}>
           <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
-        <span className="text-gray-900 font-medium text-[15px]">{label}</span>
+        <span className={`${textColor || 'text-gray-900'} font-medium text-[15px]`}>{label}</span>
       </div>
       <div className="flex items-center gap-2">
         {badge && (
@@ -44,7 +46,7 @@ export default function MenuItem({
       </div>
     </>
   )
-  
+
   if (onClick) {
     return (
       <button
@@ -55,10 +57,10 @@ export default function MenuItem({
       </button>
     )
   }
-  
+
   return (
-    <Link 
-      href={href} 
+    <Link
+      href={href}
       className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors"
     >
       {content}

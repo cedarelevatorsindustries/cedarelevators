@@ -36,6 +36,13 @@ export function CustomersFilters({
     })
   }
 
+  const handleCustomerTypeChange = (value: string) => {
+    onFiltersChange({
+      ...filters,
+      customer_type: value as any,
+    })
+  }
+
   const handleVerificationStatusChange = (value: string) => {
     onFiltersChange({
       ...filters,
@@ -43,32 +50,35 @@ export function CustomersFilters({
     })
   }
 
-  const handleDateRangeChange = (value: string) => {
+  const handleHasOrdersChange = (value: string) => {
     onFiltersChange({
       ...filters,
-      date_range: value as any,
+      has_orders: value === 'all' ? undefined : value === 'yes',
     })
   }
 
-  const handleStatusChange = (value: string) => {
+  const handleHasQuotesChange = (value: string) => {
     onFiltersChange({
       ...filters,
-      status: value as any,
+      has_quotes: value === 'all' ? undefined : value === 'yes',
     })
   }
 
   const hasActiveFilters =
     filters.search ||
     (filters.account_type && filters.account_type !== 'all') ||
+    (filters.customer_type && filters.customer_type !== 'all') ||
     (filters.verification_status && filters.verification_status !== 'all') ||
-    (filters.date_range && filters.date_range !== 'all') ||
-    (filters.status && filters.status !== 'all')
+    filters.has_orders !== undefined ||
+    filters.has_quotes !== undefined
 
   const clearFilters = () => {
     onFiltersChange({
       account_type: 'all',
+      customer_type: 'all',
       verification_status: 'all',
-      date_range: 'all',
+      has_orders: undefined,
+      has_quotes: undefined,
       search: '',
       status: 'all',
     })
@@ -101,7 +111,7 @@ export function CustomersFilters({
       </div>
 
       {/* Filter Dropdowns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Account Type Filter */}
         <Select
           value={filters.account_type || 'all'}
@@ -117,51 +127,79 @@ export function CustomersFilters({
           </SelectContent>
         </Select>
 
-        {/* Verification Status Filter */}
+        {/* Customer Type Filter */}
+        <Select
+          value={filters.customer_type || 'all'}
+          onValueChange={handleCustomerTypeChange}
+        >
+          <SelectTrigger data-testid="customer-type-filter">
+            <SelectValue placeholder="Customer Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="lead">Leads</SelectItem>
+            <SelectItem value="customer">Customers</SelectItem>
+            <SelectItem value="business">Business</SelectItem>
+            <SelectItem value="individual">Individual</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Verification Status Filter - Only relevant for business */}
         <Select
           value={filters.verification_status || 'all'}
           onValueChange={handleVerificationStatusChange}
         >
           <SelectTrigger data-testid="verification-status-filter">
-            <SelectValue placeholder="Verification Status" />
+            <SelectValue placeholder="Verification" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="unverified">Unverified</SelectItem>
-            <SelectItem value="pending">Pending Review</SelectItem>
-            <SelectItem value="verified">Verified</SelectItem>
+            <SelectItem value="incomplete">Incomplete</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
 
-        {/* Date Range Filter */}
+        {/* Has Orders Filter */}
         <Select
-          value={filters.date_range || 'all'}
-          onValueChange={handleDateRangeChange}
+          value={
+            filters.has_orders === undefined
+              ? 'all'
+              : filters.has_orders
+                ? 'yes'
+                : 'no'
+          }
+          onValueChange={handleHasOrdersChange}
         >
-          <SelectTrigger data-testid="date-range-filter">
-            <SelectValue placeholder="Registration Date" />
+          <SelectTrigger data-testid="has-orders-filter">
+            <SelectValue placeholder="Has Orders" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Time</SelectItem>
-            <SelectItem value="last_7_days">Last 7 Days</SelectItem>
-            <SelectItem value="last_30_days">Last 30 Days</SelectItem>
-            <SelectItem value="last_90_days">Last 90 Days</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="yes">Has Orders</SelectItem>
+            <SelectItem value="no">No Orders</SelectItem>
           </SelectContent>
         </Select>
 
-        {/* Status Filter */}
+        {/* Has Quotes Filter */}
         <Select
-          value={filters.status || 'all'}
-          onValueChange={handleStatusChange}
+          value={
+            filters.has_quotes === undefined
+              ? 'all'
+              : filters.has_quotes
+                ? 'yes'
+                : 'no'
+          }
+          onValueChange={handleHasQuotesChange}
         >
-          <SelectTrigger data-testid="status-filter">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger data-testid="has-quotes-filter">
+            <SelectValue placeholder="Has Quotes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="yes">Has Quotes</SelectItem>
+            <SelectItem value="no">No Quotes</SelectItem>
           </SelectContent>
         </Select>
 
@@ -181,4 +219,3 @@ export function CustomersFilters({
     </div>
   )
 }
-

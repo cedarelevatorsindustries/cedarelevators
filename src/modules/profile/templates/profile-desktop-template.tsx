@@ -63,6 +63,49 @@ export default function ProfileDesktopTemplate() {
           />
         )
 
+      case PROFILE_SECTIONS.BUSINESS_INFO:
+        const billingAddress = addresses.find(a => a.is_default_billing) || addresses[0]
+        const shippingAddress = addresses.find(a => a.is_default_shipping) || addresses[0]
+
+        return (
+          <CompanyInfoSection
+            company={{
+              company_name: user?.company_name || '',
+              company_logo: user?.avatar_url,
+              tax_id: '', // TODO: Add to UserProfile type
+              industry: '', // TODO: Add to UserProfile type
+              company_size: '', // TODO: Add to UserProfile type
+              billing_address: {
+                line1: billingAddress?.address_line_1 || '',
+                line2: billingAddress?.address_line_2,
+                city: billingAddress?.city || '',
+                state: billingAddress?.state || '',
+                postal_code: billingAddress?.postal_code || '',
+                country: billingAddress?.country || '',
+              },
+              shipping_address: {
+                line1: shippingAddress?.address_line_1 || '',
+                line2: shippingAddress?.address_line_2,
+                city: shippingAddress?.city || '',
+                state: shippingAddress?.state || '',
+                postal_code: shippingAddress?.postal_code || '',
+                country: shippingAddress?.country || '',
+              },
+              contact_email: user?.email || '',
+              contact_phone: user?.phone || '',
+            }}
+            onUpdate={async (updates) => {
+              console.log('Update company:', updates)
+              // TODO: Implement company update
+            }}
+            onUploadLogo={async (file) => {
+              console.log('Upload logo:', file)
+              // TODO: Implement logo upload
+              return ''
+            }}
+          />
+        )
+
       case PROFILE_SECTIONS.APPROVALS:
         // Business Verification Section
         return (
@@ -83,6 +126,7 @@ export default function ProfileDesktopTemplate() {
       case PROFILE_SECTIONS.ADDRESSES:
         return (
           <AddressesSection
+            accountType={accountType}
             addresses={addresses}
             onAdd={addAddress}
             onUpdate={updateAddress}
