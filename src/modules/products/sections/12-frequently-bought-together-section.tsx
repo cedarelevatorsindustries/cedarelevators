@@ -70,7 +70,7 @@ export default function FrequentlyBoughtTogetherSection({
       <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 mb-6`}>
         {allProducts.map((product) => {
           const productPrice = product.variants?.[0]?.calculated_price?.calculated_amount || 0
-          const formattedPrice = productPrice ? `₹${(productPrice / 100).toLocaleString("en-IN")}` : null
+          const formattedPrice = productPrice ? `₹${Number(productPrice).toLocaleString("en-IN")}` : null
           const isSelected = selectedProducts.has(product.id)
 
           return (
@@ -138,7 +138,7 @@ export default function FrequentlyBoughtTogetherSection({
               </p>
               {showPrice && totalPrice > 0 ? (
                 <p className="text-2xl font-bold text-gray-900">
-                  ₹{(totalPrice / 100).toLocaleString("en-IN")}
+                  ₹{Number(totalPrice).toLocaleString("en-IN")}
                 </p>
               ) : (
                 <p className="text-lg font-semibold text-orange-600">

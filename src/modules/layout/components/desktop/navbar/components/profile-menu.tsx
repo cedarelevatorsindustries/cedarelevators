@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { User, FileText, Settings, LogOut, Building2, UserCircle } from "lucide-react"
+import { User, FileText, LogOut, Building2, UserCircle } from "lucide-react"
 import { useClerk } from "@clerk/nextjs"
 import { useUser } from "@/lib/auth/client"
 import LocalizedClientLink from "@/components/ui/localized-client-link"
@@ -148,29 +148,20 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
               My Orders
             </LocalizedClientLink>
 
-            <div className="border-t border-gray-200 my-1"></div>
-
             {/* Simple Switch Button - Only show for individual users */}
             {isIndividual && (
-              <button
-                className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors w-full text-left disabled:opacity-50"
-                onClick={handleSwitch}
-                disabled={isSwitching}
-              >
-                <Building2 size={16} />
-                {isSwitching ? "Switching..." : "Switch to Business"}
-              </button>
+              <>
+                <div className="border-t border-gray-200 my-1"></div>
+                <button
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition-colors w-full text-left disabled:opacity-50"
+                  onClick={handleSwitch}
+                  disabled={isSwitching}
+                >
+                  <Building2 size={16} />
+                  {isSwitching ? "Switching..." : "Switch to Business"}
+                </button>
+              </>
             )}
-
-            <div className="border-t border-gray-200 my-1"></div>
-            <LocalizedClientLink
-              href="/account/settings"
-              className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Settings size={16} />
-              Settings
-            </LocalizedClientLink>
             <div className="border-t border-gray-200 my-1"></div>
             <button
               className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"

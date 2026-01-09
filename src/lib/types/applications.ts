@@ -27,7 +27,7 @@ export interface Application {
   default_sort?: 'newest' | 'popular' | 'manual' | 'price-low' | 'price-high'
   sort_order: number
   is_active: boolean
-  status: 'active' | 'inactive' | 'draft' | 'archived'
+  status: 'active' | 'draft' | 'archived'
   visibility?: 'public' | 'hidden'
   application?: string
   meta_title?: string
@@ -59,7 +59,7 @@ export interface ApplicationFormData {
   default_sort?: 'newest' | 'popular' | 'manual' | 'price-low' | 'price-high'
   sort_order: number
   is_active: boolean
-  status: 'active' | 'inactive' | 'draft' | 'archived'
+  status: 'active' | 'draft' | 'archived'
   visibility?: 'public' | 'hidden'
   meta_title?: string
   meta_description?: string
@@ -67,7 +67,7 @@ export interface ApplicationFormData {
 
 export interface ApplicationFilters {
   search?: string
-  status?: 'active' | 'inactive'
+  status?: 'active' | 'draft' | 'archived'
   is_active?: boolean
   // Pagination
   page?: number

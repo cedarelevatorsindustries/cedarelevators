@@ -15,6 +15,7 @@ export type NavbarVariant =
   | 'checkout'
   | 'account'
   | 'content-pages'
+  | 'wishlist'
 
 export interface NavbarConfig {
   // Layout
@@ -332,6 +333,36 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
       showSidebar: true,
     },
   },
+
+  // 10. Wishlist - Custom bottom bar
+  'wishlist': {
+    position: 'fixed',
+    transparent: false,
+    scrollBehavior: 'sticky',
+    showMegaMenu: false,
+    showBrowseProducts: true,
+    showBreadcrumb: false,
+    showSecondaryFilterBar: false,
+    showStickyProductBar: false,
+    showCategoryHero: false,
+    searchVariant: 'full',
+    scrollThreshold: 0,
+    height: {
+      initial: 70,
+      scrolled: 70,
+    },
+    zIndex: {
+      initial: 1000,
+      scrolled: 1000,
+    },
+    mobile: {
+      showLogo: false,
+      showPageTitle: true,
+      transparentTopBar: false,
+      showBottomNav: false, // Critical: Hide bottom nav
+      showSidebar: true,
+    },
+  },
 }
 
 /**
@@ -340,6 +371,9 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
 export function getNavbarVariant(pathname: string): NavbarVariant {
   // Homepage
   if (pathname === '/') return 'homepage'
+
+  // Wishlist - Ensure this comes before other checks
+  if (pathname === '/wishlist') return 'wishlist'
 
   // Checkout
   if (pathname.startsWith('/checkout')) return 'checkout'

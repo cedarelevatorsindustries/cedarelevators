@@ -3,6 +3,7 @@
 import { Menu, Heart, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
 
 interface TopBarHeaderProps {
   pathname: string
@@ -19,6 +20,7 @@ export function TopBarHeader({
   isTransparent = false
 }: TopBarHeaderProps) {
   const router = useRouter()
+  const { count } = useWishlist()
 
   // Define root pages where Hamburger menu is shown
   const isRootPage = [
@@ -103,13 +105,18 @@ export function TopBarHeader({
 
       {/* Right: Icons (Wishlist Only) */}
       <div className="flex items-center justify-end gap-1">
-        {/* Wishlist/Like Icon */}
+        {/* Wishlist/Like Icon with Badge */}
         <Link
-          href="/saved"
-          className={`flex items-center justify-center h-10 w-10 transition-colors ${iconColorClass}`}
+          href="/wishlist"
+          className={`flex items-center justify-center h-10 w-10 transition-colors relative ${iconColorClass}`}
           aria-label="View wishlist"
         >
           <Heart size={24} />
+          {count > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {count}
+            </span>
+          )}
         </Link>
       </div>
     </nav>

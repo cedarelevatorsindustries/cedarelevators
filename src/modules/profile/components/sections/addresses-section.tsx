@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { Address } from '@/lib/types/profile'
+import { AccountType } from '@/lib/constants/profile'
 import { MapPin, Plus, Edit2, Trash2, Star, House, Building2, Warehouse, MapPinned } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { IndividualAddressForm } from '../forms/individual-address-form'
+import { BusinessAddressForm } from '../forms/business-address-form'
 
 interface AddressesSectionProps {
   addresses: Address[]
+  accountType: AccountType
   onAdd: (address: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>
   onUpdate: (addressId: string, updates: Partial<Address>) => Promise<void>
   onDelete: (addressId: string) => Promise<void>
@@ -16,6 +20,7 @@ interface AddressesSectionProps {
 
 export default function AddressesSection({
   addresses,
+  accountType,
   onAdd,
   onUpdate,
   onDelete,
@@ -24,24 +29,11 @@ export default function AddressesSection({
 }: AddressesSectionProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<Partial<Address>>({
-    type: 'House',
-    is_default: false,
-    label: '',
-    first_name: '',
-    last_name: '',
-    company: '',
-    address_line_1: '',
-    address_line_2: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: 'India',
-    phone: '',
-  })
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
 
   const getAddressIcon = (type: string) => {
     switch (type) {
+      case 'home':
       case 'House':
         return <House size={20} />
       case 'office':
@@ -53,63 +45,37 @@ export default function AddressesSection({
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      if (editingId) {
-        await onUpdate(editingId, formData)
-        setEditingId(null)
-      } else {
-        await onAdd(formData as Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>)
-        setShowAddForm(false)
-      }
-      resetForm()
-    } catch (error) {
-      console.error('Error saving address:', error)
-      alert('Failed to save address. Please try again.')
+  const handleSubmit = async (formData: any) => {
+    if (editingId) {
+      await onUpdate(editingId, formData)
+      setEditingId(null)
+      setEditingAddress(null)
+    } else {
+      await onAdd(formData)
+      setShowAddForm(false)
     }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      type: 'House',
-      is_default: false,
-      label: '',
-      first_name: '',
-      last_name: '',
-      company: '',
-      address_line_1: '',
-      address_line_2: '',
-      city: '',
-      state: '',
-      postal_code: '',
-      country: 'India',
-      phone: '',
-    })
-  }
-
-  const handleEdit = (address: Address) => {
-    setFormData(address)
-    setEditingId(address.id)
-    setShowAddForm(true)
   }
 
   const handleCancel = () => {
     setShowAddForm(false)
     setEditingId(null)
-    resetForm()
+    setEditingAddress(null)
+  }
+
+  const handleEdit = (address: Address) => {
+    setEditingAddress(address)
+    setEditingId(address.id)
+    setShowAddForm(true)
   }
 
   const handleDelete = async (addressId: string) => {
     if (confirm('Are you sure you want to delete this address?')) {
-      try {
-        await onDelete(addressId)
-      } catch (error) {
-        console.error('Error deleting address:', error)
-        alert('Failed to delete address. Please try again.')
-      }
+      await onDelete(addressId)
     }
   }
+
+  // Determine which form to use based on account type
+  const AddressFormComponent = accountType === 'business' ? BusinessAddressForm : IndividualAddressForm
 
   return (
     <div className={cn('bg-white rounded-lg shadow-sm', className)}>
@@ -136,202 +102,14 @@ export default function AddressesSection({
       <div className="p-6">
         {/* Add/Edit Form */}
         {showAddForm && (
-          <form onSubmit={handleSubmit} className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingId ? 'Edit Address' : 'Add New Address'}
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Address Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address Type *
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as Address['type'] })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="House">House</option>
-                  <option value="office">Office</option>
-                  <option value="warehouse">Warehouse</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              {/* Label */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Label (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.label}
-                  onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Main Office, House"
-                />
-              </div>
-
-              {/* First Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.first_name}
-                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.last_name}
-                  onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Company */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Company (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Address Line 1 */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address Line 1 *
-                </label>
-                <input
-                  type="text"
-                  value={formData.address_line_1}
-                  onChange={(e) => setFormData({ ...formData, address_line_1: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Street address, P.O. box"
-                  required
-                />
-              </div>
-
-              {/* Address Line 2 */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address Line 2 (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.address_line_2}
-                  onChange={(e) => setFormData({ ...formData, address_line_2: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Apartment, suite, unit, building, floor, etc."
-                />
-              </div>
-
-              {/* City */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* State */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  State *
-                </label>
-                <input
-                  type="text"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Postal Code */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Postal Code *
-                </label>
-                <input
-                  type="text"
-                  value={formData.postal_code}
-                  onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="+91 XXXXX XXXXX"
-                  required
-                />
-              </div>
-
-              {/* Set as Default */}
-              <div className="md:col-span-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_default}
-                    onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">Set as default address</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Form Actions */}
-            <div className="flex items-center gap-3 mt-6">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                {editingId ? 'Update Address' : 'Add Address'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+          <div className="mb-6">
+            <AddressFormComponent
+              initialData={editingAddress}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isEditing={!!editingId}
+            />
+          </div>
         )}
 
         {/* Address List */}
@@ -366,11 +144,11 @@ export default function AddressesSection({
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="text-gray-600">
-                      {getAddressIcon(address.type || 'House')}
+                      {getAddressIcon(address.address_type || address.type || 'home')}
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900 capitalize">
-                        {address.label || address.type}
+                        {address.label || address.address_type || address.type}
                       </h4>
                       {address.is_default && (
                         <span className="inline-flex items-center gap-1 text-xs text-blue-600">
@@ -403,7 +181,7 @@ export default function AddressesSection({
                   <p className="font-medium text-gray-900">
                     {address.first_name} {address.last_name}
                   </p>
-                  {address.company && <p>{address.company}</p>}
+                  {address.company && <p className="font-medium text-gray-700">{address.company}</p>}
                   <p>{address.address_line_1}</p>
                   {address.address_line_2 && <p>{address.address_line_2}</p>}
                   <p>
@@ -430,4 +208,3 @@ export default function AddressesSection({
     </div>
   )
 }
-

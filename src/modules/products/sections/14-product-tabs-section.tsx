@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 
 interface Specification {
   label: string
@@ -24,7 +25,7 @@ interface ProductTabsSectionProps {
   onScrollToReviews?: () => void
 }
 
-export default function ProductTabsSection({ 
+export default function ProductTabsSection({
   description,
   features = [],
   specifications,
@@ -32,7 +33,7 @@ export default function ProductTabsSection({
   onScrollToReviews
 }: ProductTabsSectionProps) {
   const [activeTab, setActiveTab] = useState<'description' | 'attributes' | 'reviews'>('description')
-  
+
   const handleReviewsClick = () => {
     onScrollToReviews?.()
   }
@@ -44,11 +45,10 @@ export default function ProductTabsSection({
         <div className="flex">
           <button
             onClick={() => setActiveTab('description')}
-            className={`px-6 py-4 text-base font-semibold transition-all relative ${
-              activeTab === 'description'
-                ? 'text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-6 py-4 text-base font-semibold transition-all relative ${activeTab === 'description'
+              ? 'text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             Description
             {activeTab === 'description' && (
@@ -57,11 +57,10 @@ export default function ProductTabsSection({
           </button>
           <button
             onClick={() => setActiveTab('attributes')}
-            className={`px-6 py-4 text-base font-semibold transition-all relative ${
-              activeTab === 'attributes'
-                ? 'text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-6 py-4 text-base font-semibold transition-all relative ${activeTab === 'attributes'
+              ? 'text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
           >
             Attributes
             {activeTab === 'attributes' && (
@@ -88,25 +87,6 @@ export default function ProductTabsSection({
                 {description}
               </p>
             </div>
-
-            {features.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <table className="w-full">
-                    <tbody>
-                      {features.map((feature, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <td className="px-4 py-3 text-gray-700 border-b border-gray-200 last:border-0">
-                            {feature}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -132,7 +112,18 @@ export default function ProductTabsSection({
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">No specifications available</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="relative w-32 h-32 mb-4">
+                  <Image
+                    src="/empty-states/no-attributes.png"
+                    alt="No attributes available"
+                    fill
+                    className="object-contain opacity-80"
+                  />
+                </div>
+                <p className="text-gray-500 font-medium">No specifications available</p>
+                <p className="text-sm text-gray-400 mt-1">This product has no additional attributes listed.</p>
+              </div>
             )}
           </div>
         )}

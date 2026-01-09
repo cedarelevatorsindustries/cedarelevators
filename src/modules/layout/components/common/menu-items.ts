@@ -43,7 +43,7 @@ export const loggedInMoreMenuItems: MenuItem[] = [
 // Mobile hamburger menu items - Logged-in user
 export const loggedInShoppingItems: MenuItem[] = [
   { icon: ShoppingCart, label: "My Cart", href: "/cart" },
-  { icon: Heart, label: "Saved Items / Wishlist", href: "/saved" }
+  { icon: Heart, label: "Saved Items / Wishlist", href: "/wishlist" }
 ]
 
 export const loggedInActivityItems: MenuItem[] = [

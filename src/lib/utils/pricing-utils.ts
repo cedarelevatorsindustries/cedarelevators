@@ -104,8 +104,8 @@ export function getPricingPermissions(state: UserPricingState): PricingPermissio
  * Format price for display
  */
 export function formatPrice(price: number | null | undefined): string {
-    if (!price) return '₹ 0'
-    return `₹ ${(price / 100).toLocaleString('en-IN')}`
+    if (!price) return '₹0'
+    return `₹${price.toLocaleString('en-IN')}`
 }
 
 /**

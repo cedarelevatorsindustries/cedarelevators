@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Product, ProductCategory } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
-import { Pagination, ResultsHeader, FilterSidebar } from "@/modules/catalog/sections"
+import { Pagination, ResultsHeader } from "@/modules/catalog/sections"
+import { UnifiedFilterSidebar, FilterBottomSheet } from "@/modules/catalog/components/filters"
 import { BannerCarousel } from "@/modules/catalog/components/banner-carousel"
 import { HeroLite } from "@/modules/catalog/components/hero-lite"
 import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
@@ -324,9 +325,7 @@ export default function CatalogTemplate({
           /* Two-Column Layout with Filters */
           <div className="flex gap-8">
             {/* Filter Sidebar */}
-            <FilterSidebar
-              onFilterChange={handleFilterChange}
-            />
+            <UnifiedFilterSidebar />
 
             {/* Products Column */}
             <div className="flex-1">
@@ -380,7 +379,7 @@ export default function CatalogTemplate({
                 </>
               ) : (
                 <EmptyState
-                  image="/empty state/no result found.png"
+                  image="/empty-states/no-result-found.png"
                   title="No results found."
                   description="We couldn't find any elevator components matching your search. Try different keywords or browse all parts."
                   actionLabel="Clear Search & Browse All"
@@ -440,7 +439,7 @@ export default function CatalogTemplate({
               </>
             ) : (
               <EmptyState
-                image="/empty state/no result found.png"
+                image="/empty-states/no-result-found.png"
                 title="No products found"
                 description="Try adjusting your search or filter criteria"
                 actionLabel="Clear All Filters"

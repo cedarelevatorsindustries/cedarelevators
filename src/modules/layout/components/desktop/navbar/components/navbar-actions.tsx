@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ShoppingCart, Heart } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { ProfileMenu } from "./profile-menu"
 import { MoreMenu } from "./more-menu"
 import { DeliverToMenu } from "./deliver-to-menu"
@@ -21,16 +22,13 @@ interface NavbarActionsProps {
 
 export function NavbarActions({ config, isTransparent, pathname, isScrolled }: NavbarActionsProps) {
     const { user, isLoaded } = useUser()
+    const { count: wishlistCount } = useWishlist()
     const [cartItemCount] = useState(0) // TODO: Get from cart context
-    const [wishlistCount] = useState(0) // TODO: Get from wishlist context
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
 
     // Mock cart data - TODO: Get from cart context
     const cartItems: never[] = [] // Empty for now
     const cartTotal = "₹0.00"
-
-    // Mock wishlist - TODO: Get from wishlist context
-    const wishlistItems: never[] = [] // Empty for now
 
     return (
         <div
@@ -52,7 +50,7 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
                 badge={wishlistCount}
                 onHover={() => setIsMoreMenuOpen(false)}
             >
-                <WishlistHoverCardContent items={wishlistItems} />
+                <WishlistHoverCardContent />
             </LinkHoverCard>
 
             {/* Shopping Cart with Hover Card */}

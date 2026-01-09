@@ -7,6 +7,7 @@ import { LoaderCircle } from 'lucide-react'
 export default function AddressesSectionWrapper() {
   const {
     addresses,
+    accountType,
     isLoading,
     addAddress,
     updateAddress,
@@ -28,6 +29,7 @@ export default function AddressesSectionWrapper() {
   return (
     <AddressesSection
       addresses={addresses}
+      accountType={accountType}
       onAdd={addAddress}
       onUpdate={updateAddress}
       onDelete={deleteAddress}

@@ -3,7 +3,7 @@
 // 3-Layer Architecture: Application > Categories > Subcategories
 // =============================================
 
-export type CategoryStatus = 'active' | 'inactive'
+export type CategoryStatus = 'active' | 'draft' | 'archived'
 export type CategoryLevel = 'application' | 'category' | 'subcategory' | 'elevator-type'
 
 export interface Category {

@@ -812,7 +812,7 @@ export default function ProductImportPage() {
                 </Card>
               )}
 
-              {importResults.failed > 0 && (
+              {(importResults.failed ?? 0) > 0 && (
                 <Card className="border-yellow-200 bg-yellow-50">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
@@ -821,7 +821,7 @@ export default function ProductImportPage() {
                       </div>
                       <div>
                         <p className="text-sm text-yellow-700">Saved as Draft</p>
-                        <p className="text-2xl font-bold text-yellow-900">{importResults.failed}</p>
+                        <p className="text-2xl font-bold text-yellow-900">{importResults.failed ?? 0}</p>
                         <p className="text-xs text-yellow-600">Due to missing catalog references or invalid data</p>
                         <Button variant="link" className="text-yellow-700 p-0 h-auto text-xs mt-1">
                           Review Drafts →
@@ -832,6 +832,47 @@ export default function ProductImportPage() {
                 </Card>
               )}
             </div>
+
+            {/* Catalog Assignments Summary */}
+            {importResults.catalogStats && (
+              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-purple-900 flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-purple-600" />
+                    </div>
+                    Catalog Assignments
+                  </CardTitle>
+                  <CardDescription className="text-purple-700">
+                    Products linked to catalog entities
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-5 gap-4">
+                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
+                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.applications}</p>
+                      <p className="text-xs text-purple-600 font-medium">Applications</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
+                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.categories}</p>
+                      <p className="text-xs text-purple-600 font-medium">Categories</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
+                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.subcategories}</p>
+                      <p className="text-xs text-purple-600 font-medium">Subcategories</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
+                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.types}</p>
+                      <p className="text-xs text-purple-600 font-medium">Elevator Types</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
+                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.collections}</p>
+                      <p className="text-xs text-purple-600 font-medium">Collections</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* What You Can Do Next */}
             <Card>

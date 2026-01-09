@@ -6,6 +6,7 @@ import { ArrowLeft, Search, Package2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProductCard from "@/components/ui/product-card"
 import { EmptyState } from "@/components/ui/empty-state"
+import { FilterBottomSheet } from "@/modules/catalog/components/filters"
 
 interface SubcategoryTemplateProps {
   category: ProductCategory
@@ -156,12 +157,15 @@ export default function SubcategoryTemplate({
                 {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <button
-              onClick={() => setShowSearch(!showSearch)}
-              className={`p-2 rounded-full transition-colors ${showSearch ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100 text-gray-600'}`}
-            >
-              <Search size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <FilterBottomSheet variant="icon" />
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className={`p-2 rounded-full transition-colors ${showSearch ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100 text-gray-600'}`}
+              >
+                <Search size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Search Bar (conditional) */}
@@ -214,7 +218,7 @@ export default function SubcategoryTemplate({
               ) : (
                 /* Empty State - Same as Desktop */
                 <EmptyState
-                  image="/empty state/no result found.png"
+                  image="/empty-states/no-result-found.png"
                   title="No products found"
                   description={searchQuery
                     ? `No products match "${searchQuery}". Try a different search term.`

@@ -1,34 +1,36 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useUser } from "@/lib/auth/client"
+import { toast } from "sonner"
 
 interface WishlistItem {
   id: string
   variant_id: string
   product_id: string
-  title: string
-  thumbnail: string | null
-  price: number
   quantity: number
-}
-
-const WISHLIST_STORAGE_KEY = "cedar-wishlist"
-
-// Helper functions for localStorage
-function getStoredWishlist(): WishlistItem[] {
-  if (typeof window === "undefined") return []
-  try {
-    const stored = localStorage.getItem(WISHLIST_STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
+  notes?: string
+  // Product snapshot fields (flat structure)
+  product_title?: string
+  product_thumbnail?: string | null
+  product_handle?: string
+  variant_title?: string
+  price?: number
+  // Legacy nested structure (for backwards compatibility)
+  products?: {
+    id: string
+    title: string
+    thumbnail: string | null
+    handle: string
   }
-}
-
-function saveWishlist(items: WishlistItem[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items))
+  variants?: {
+    id: string
+    title: string
+    price: number
+    calculated_price?: {
+      calculated_amount: number
+    }
+  }
 }
 
 export function useWishlist() {
@@ -37,17 +39,28 @@ export function useWishlist() {
   const [count, setCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchWishlist = async () => {
-    // Load from localStorage
-    const storedItems = getStoredWishlist()
-    setItems(storedItems)
-    setCount(storedItems.length)
-    setIsLoading(false)
-  }
+  const fetchWishlist = useCallback(async () => {
+    try {
+      const response = await fetch('/api/wishlist')
+      const data = await response.json()
+
+      if (data.success) {
+        setItems(data.items || [])
+        setCount(data.count || 0)
+      } else {
+        console.error('fetch failed:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching wishlist:', error)
+      toast.error('Failed to load wishlist')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     fetchWishlist()
-  }, [user])
+  }, [fetchWishlist, user])
 
   const addItem = async (
     variantId: string,
@@ -56,40 +69,100 @@ export function useWishlist() {
     thumbnail: string | null,
     price: number
   ) => {
-    const currentItems = getStoredWishlist()
 
-    // Check if item already exists
-    if (currentItems.some(item => item.variant_id === variantId)) {
-      return { items: currentItems, count: currentItems.length }
-    }
-
-    const newItem: WishlistItem = {
-      id: `wishlist_${Date.now()}_${variantId}`,
+    // Optimistic update with flat structure
+    const optimisticItem: WishlistItem = {
+      id: `temp_${Date.now()}`,
       variant_id: variantId,
       product_id: productId,
-      title,
-      thumbnail,
-      price,
       quantity: 1,
+      product_title: title,
+      product_thumbnail: thumbnail,
+      product_handle: '',
+      variant_title: '',
+      price: price
     }
 
-    const updatedItems = [...currentItems, newItem]
-    saveWishlist(updatedItems)
-    setItems(updatedItems)
-    setCount(updatedItems.length)
+    const previousItems = [...items]
+    const previousCount = count
 
-    return { items: updatedItems, count: updatedItems.length }
+    setItems([optimisticItem, ...items])
+    setCount(count + 1)
+
+    try {
+      const response = await fetch('/api/wishlist/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: productId,
+          variant_id: variantId,
+          quantity: 1,
+          // Product snapshot data
+          product_title: title,
+          product_thumbnail: thumbnail,
+          product_handle: '',
+          variant_title: '',
+          price: price
+        })
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to add item')
+      }
+
+      // Refresh to get accurate data (replace temp ID with real ID)
+      await fetchWishlist()
+      toast.success('Added to wishlist')
+
+      return { items: data.items, count: data.count }
+    } catch (error) {
+      // Rollback on error
+      console.error('add failed, rolling back:', error)
+      setItems(previousItems)
+      setCount(previousCount)
+      toast.error('Failed to add to wishlist')
+      throw error
+    }
   }
 
   const removeItem = async (variantId: string) => {
-    const currentItems = getStoredWishlist()
-    const updatedItems = currentItems.filter(item => item.variant_id !== variantId)
+    const itemToRemove = items.find(item => item.variant_id === variantId)
+    if (!itemToRemove) {
+      return
+    }
 
-    saveWishlist(updatedItems)
-    setItems(updatedItems)
-    setCount(updatedItems.length)
+    // Optimistic update
+    const previousItems = [...items]
+    const previousCount = count
 
-    return { items: updatedItems, count: updatedItems.length }
+    setItems(items.filter(item => item.variant_id !== variantId))
+    setCount(count - 1)
+
+    try {
+      // If it's a temp item, we can't delete it from server yet, but checking for 'temp_' prefix is risky if ID format changes.
+      // However, fetchWishlist replaces temp IDs with real ones, so usually this is fine.
+      const response = await fetch(`/api/wishlist/items/${itemToRemove.id}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to remove item')
+      }
+
+      toast.success('Removed from wishlist')
+      return { items: data.items, count: data.count }
+    } catch (error) {
+      // Rollback on error
+      console.error('delete failed, rolling back:', error)
+      setItems(previousItems)
+      setCount(previousCount)
+      toast.error('Failed to remove from wishlist')
+      throw error
+    }
   }
 
   const isInWishlist = (variantId: string) => {
@@ -110,17 +183,61 @@ export function useWishlist() {
     }
   }
 
-  const mergeGuestWishlist = async (sessionId: string) => {
-    // For localStorage-only implementation, no merging needed
-    // Just reload the current wishlist
-    await fetchWishlist()
+  const mergeGuestWishlist = async () => {
+    if (!user) return
+
+    try {
+      const response = await fetch('/api/wishlist/merge', {
+        method: 'POST'
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        await fetchWishlist()
+        if (data.count > 0) {
+          toast.success(`Merged ${data.count} items from your guest wishlist`)
+        }
+      }
+    } catch (error) {
+      console.error('Error merging wishlist:', error)
+    }
   }
 
-  const clearWishlist = () => {
-    saveWishlist([])
+  const clearWishlist = async () => {
+    const previousItems = [...items]
+    const previousCount = count
+
     setItems([])
     setCount(0)
+
+    try {
+      const response = await fetch('/api/wishlist/clear', {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to clear wishlist')
+      }
+
+      toast.success('Wishlist cleared')
+    } catch (error) {
+      setItems(previousItems)
+      setCount(previousCount)
+      console.error('Error clearing wishlist:', error)
+      toast.error('Failed to clear wishlist')
+      throw error
+    }
   }
+
+  // Auto-merge on login
+  useEffect(() => {
+    if (user) {
+      mergeGuestWishlist()
+    }
+  }, [user?.id])
 
   return {
     items,
@@ -135,4 +252,3 @@ export function useWishlist() {
     refresh: fetchWishlist,
   }
 }
-

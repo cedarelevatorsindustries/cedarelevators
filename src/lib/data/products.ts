@@ -181,6 +181,7 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       handle: data.slug, // Map slug to handle
       images: parsedImages,
       thumbnail: data.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+      variants: data.product_variants || [], // Include variants with prices
     } as Product
   } catch (error) {
     console.error("Error in getProductByHandle:", error)

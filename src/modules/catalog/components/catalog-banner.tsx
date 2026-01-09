@@ -2,6 +2,7 @@
 
 import { ProductCategory } from "@/lib/types/domain"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CatalogFilterDrawer } from "@/modules/catalog/components/filters"
 import Link from "next/link"
 import { useRef } from "react"
 
@@ -102,26 +103,30 @@ export function CatalogBanner({
                 {categories.length > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 translate-y-1/2">
                         <div className="max-w-[1300px] mx-auto px-8">
-                            <div className="bg-white rounded-lg shadow-xl p-6 relative">
-                                <h2 className="text-base font-semibold text-gray-900 mb-5">
-                                    {type === "application" ? "Source by Categories" : "Source by Subcategory"}
-                                </h2>
-
-                                {/* Scroll Buttons */}
-                                <button
-                                    onClick={() => scroll('left')}
-                                    className="absolute top-4 right-16 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                                    aria-label="Scroll left"
-                                >
-                                    <ChevronLeft className="w-5 h-5 text-gray-600" />
-                                </button>
-                                <button
-                                    onClick={() => scroll('right')}
-                                    className="absolute top-4 right-6 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                                    aria-label="Scroll right"
-                                >
-                                    <ChevronRight className="w-5 h-5 text-gray-600" />
-                                </button>
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between relative">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                        {type === "application" ? "Source by Categories" : "Source by Subcategory"}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <CatalogFilterDrawer variant="icon" />
+                                        {/* Scroll Buttons */}
+                                        <button
+                                            onClick={() => scroll('left')}
+                                            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                                            aria-label="Scroll left"
+                                        >
+                                            <ChevronLeft className="w-5 h-5 text-gray-600" />
+                                        </button>
+                                        <button
+                                            onClick={() => scroll('right')}
+                                            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                                            aria-label="Scroll right"
+                                        >
+                                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                                        </button>
+                                    </div>
+                                </div>
 
                                 {/* Horizontal Scroll Container */}
                                 <div

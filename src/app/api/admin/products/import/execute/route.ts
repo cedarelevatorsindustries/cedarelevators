@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // CSV Import Execute - Handles product and variant creation/updates
 import { createAdminClient } from '@/lib/supabase/server'
 import type { ProductGroup, ImportResult, ImportError } from '@/lib/types/csv-import'
+import { generateSKU } from '@/lib/actions/sku-generator'
 
 /**
  * POST /api/admin/products/import/execute
@@ -27,7 +28,14 @@ export async function POST(request: NextRequest) {
       productsCreated: 0,
       productsUpdated: 0,
       variantsCreated: 0,
-      errors: []
+      errors: [],
+      catalogStats: {
+        applications: 0,
+        categories: 0,
+        subcategories: 0,
+        types: 0,
+        collections: 0
+      }
     }
 
     // Process each product group
@@ -63,6 +71,57 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Sanitize string values - convert empty strings, rectangles, or null-like values to null
+ */
+function sanitizeString(value: string | null | undefined): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (trimmed === '' || trimmed === '□' || trimmed === 'null' || trimmed === 'NULL') {
+    return null
+  }
+  return trimmed
+}
+
+/**
+ * Generate meta title from product name
+ */
+function generateMetaTitle(name: string): string {
+  // Keep it simple and SEO-friendly
+  return name.length > 60 ? name.substring(0, 57) + '...' : name
+}
+
+/**
+ * Generate meta description from product description
+ */
+function generateMetaDescription(description: string | null, shortDescription: string | null): string {
+  const source = shortDescription || description || ''
+  // Meta descriptions should be 150-160 characters
+  return source.length > 160 ? source.substring(0, 157) + '...' : source
+}
+
+/**
+ * Validate and sanitize attributes
+ */
+function sanitizeAttributes(attributes: any): any[] {
+  if (!attributes || typeof attributes !== 'object') return []
+
+  // Check if it's a valid object with entries
+  const entries = Object.entries(attributes)
+  if (entries.length === 0) return []
+
+  // Filter out invalid entries (empty or rectangle characters)
+  const validEntries = entries.filter(([key, value]) => {
+    const k = sanitizeString(key)
+    const v = sanitizeString(String(value))
+    return k && v
+  })
+
+  if (validEntries.length === 0) return []
+
+  return validEntries.map(([key, value]) => ({ key, value }))
+}
+
+/**
  * Imports a single product group with its variants using junction tables
  */
 async function importProductGroup(
@@ -78,7 +137,7 @@ async function importProductGroup(
     description: group.description,
     short_description: group.short_description,
     status: group.status,
-    thumbnail_url: group.image_url || null,
+    thumbnail_url: sanitizeString(group.image_url),
 
     // Pricing - use base_price or price
     price: group.base_price || group.price,
@@ -91,20 +150,15 @@ async function importProductGroup(
     allow_backorders: group.allow_backorder || false,
     low_stock_threshold: group.low_stock_threshold || 10,
 
-    // SEO
-    meta_title: group.meta_title || null,
-    meta_description: group.meta_description || null,
+    // SEO - Auto-generate if not provided
+    meta_title: group.meta_title || generateMetaTitle(group.title),
+    meta_description: group.meta_description || generateMetaDescription(group.description, group.short_description),
 
     // Other
     tags: group.tags || [],
 
-    // Specifications (attributes)
-    specifications: group.attributes && typeof group.attributes === 'object'
-      ? Object.entries(group.attributes).map(([key, value]) => ({
-        key,
-        value
-      }))
-      : []
+    // Specifications (attributes) - Sanitize to prevent rectangle characters
+    specifications: sanitizeAttributes(group.attributes)
   }
 
   // Insert or update product (upsert based on slug)
@@ -139,13 +193,15 @@ async function importProductGroup(
 
   // Delete existing junction table entries before creating new ones
   await Promise.all([
+    supabase.from('product_applications').delete().eq('product_id', productId),
     supabase.from('product_categories').delete().eq('product_id', productId),
-    supabase.from('product_types').delete().eq('product_id', productId),
+    supabase.from('product_subcategories').delete().eq('product_id', productId),
+    supabase.from('product_elevator_types').delete().eq('product_id', productId),
     supabase.from('product_collections').delete().eq('product_id', productId)
   ])
 
   // Create junction table entries for classifications
-  await createJunctionTableEntries(supabase, productId, group)
+  await createJunctionTableEntries(supabase, productId, group, result)
 
   // Delete existing variants before creating new ones (for updates)
   await supabase.from('product_variants').delete().eq('product_id', productId)
@@ -168,23 +224,24 @@ async function importProductGroup(
 async function createJunctionTableEntries(
   supabase: any,
   productId: string,
-  group: ProductGroup
+  group: ProductGroup,
+  result: ImportResult
 ): Promise<void> {
-  // Applications (stored in product_categories with type='application')
+  // Applications (stored in product_applications)
   if (group.application_ids?.length > 0) {
-    const applicationEntries = group.application_ids.map((categoryId, index) => ({
+    const applicationEntries = group.application_ids.map((applicationId) => ({
       product_id: productId,
-      category_id: categoryId,
-      is_primary: index === 0, // First one is primary
-      position: index
+      application_id: applicationId
     }))
 
     const { error } = await supabase
-      .from('product_categories')
+      .from('product_applications')
       .insert(applicationEntries)
 
     if (error) {
       console.error('Error creating application assignments:', error)
+    } else {
+      result.catalogStats!.applications += applicationEntries.length
     }
   }
 
@@ -203,28 +260,30 @@ async function createJunctionTableEntries(
 
     if (error) {
       console.error('Error creating category assignments:', error)
+    } else {
+      result.catalogStats!.categories += categoryEntries.length
     }
   }
 
-  // Subcategories
+  // Subcategories (stored in product_subcategories)
   if (group.subcategory_ids?.length > 0) {
-    const subcategoryEntries = group.subcategory_ids.map((categoryId, index) => ({
+    const subcategoryEntries = group.subcategory_ids.map((subcategoryId) => ({
       product_id: productId,
-      category_id: categoryId,
-      is_primary: index === 0,
-      position: index
+      subcategory_id: subcategoryId
     }))
 
     const { error } = await supabase
-      .from('product_categories')
+      .from('product_subcategories')
       .insert(subcategoryEntries)
 
     if (error) {
       console.error('Error creating subcategory assignments:', error)
+    } else {
+      result.catalogStats!.subcategories += subcategoryEntries.length
     }
   }
 
-  // Elevator Types
+  // Elevator Types (stored in product_elevator_types)
   if (group.type_ids?.length > 0) {
     const typeEntries = group.type_ids.map(typeId => ({
       product_id: productId,
@@ -232,11 +291,13 @@ async function createJunctionTableEntries(
     }))
 
     const { error } = await supabase
-      .from('product_types')
+      .from('product_elevator_types')
       .insert(typeEntries)
 
     if (error) {
       console.error('Error creating type assignments:', error)
+    } else {
+      result.catalogStats!.types += typeEntries.length
     }
   }
 
@@ -253,6 +314,8 @@ async function createJunctionTableEntries(
 
     if (error) {
       console.error('Error creating collection assignments:', error)
+    } else {
+      result.catalogStats!.collections += collectionEntries.length
     }
   }
 }
@@ -266,10 +329,16 @@ async function createVariant(
   variant: ProductGroup['variants'][0],
   group: ProductGroup
 ): Promise<void> {
+  // Auto-generate SKU if missing or invalid
+  let variantSKU = variant.sku
+  if (!variantSKU || variantSKU.trim() === '') {
+    variantSKU = await generateSKU()
+  }
+
   const variantData = {
     product_id: productId,
     name: variant.title,
-    sku: variant.sku,
+    sku: variantSKU,
 
     // Pricing - use variant price if available, otherwise product price
     price: variant.price || group.base_price || group.price,
@@ -279,17 +348,31 @@ async function createVariant(
     // Inventory
     inventory_quantity: variant.stock || 0,
 
-    // Options
-    option1_name: variant.option1_name || null,
-    option1_value: variant.option1_value || null,
-    option2_name: variant.option2_name || null,
-    option2_value: variant.option2_value || null,
+    // Options - JSONB field only (old columns removed)
+    options: (() => {
+      const opts: Record<string, string> = {}
+      if (variant.option1_name && variant.option1_value) {
+        opts[variant.option1_name] = variant.option1_value
+      }
+      if (variant.option2_name && variant.option2_value) {
+        opts[variant.option2_name] = variant.option2_value
+      }
+      return opts
+    })(),
 
-    // Image (inherit from product if not specified)
-    image_url: group.image_url || null,
+    // Auto-generate variant_title from options
+    variant_title: (() => {
+      const values: string[] = []
+      if (variant.option1_value) values.push(variant.option1_value)
+      if (variant.option2_value) values.push(variant.option2_value)
+      return values.length > 0 ? values.join(' - ') : variant.title
+    })(),
 
-    // Status (must be 'active' or 'inactive')
-    status: group.status === 'active' ? 'active' : 'inactive'
+    // Image (inherit from product if not specified) - Sanitize
+    image_url: sanitizeString(group.image_url),
+
+    // Status (must be 'active' or 'draft')
+    status: group.status === 'active' ? 'active' : 'draft'
   }
 
   const { error } = await supabase

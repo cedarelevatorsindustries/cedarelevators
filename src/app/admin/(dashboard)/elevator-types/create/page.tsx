@@ -127,7 +127,7 @@ export default function CreateElevatorTypePage() {
         ...formData,
         thumbnail_image: thumbnailUrl,
         banner_image: bannerUrl,
-        status: (isDraft ? 'inactive' : formData.status) as ElevatorTypeStatus
+        status: (isDraft ? 'draft' : formData.status) as ElevatorTypeStatus
       }
 
       const result = isEditMode

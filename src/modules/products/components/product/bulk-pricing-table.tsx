@@ -25,7 +25,7 @@ export default function BulkPricingTable({
   if (tiers.length === 0) return null
 
   const formatPrice = (amount: number) => {
-    return `₹${(amount / 100).toLocaleString("en-IN")}`
+    return `₹${Number(amount).toLocaleString("en-IN")}`
   }
 
   const isCurrentTier = (tier: PriceTier) => {
@@ -45,7 +45,7 @@ export default function BulkPricingTable({
       <div className="divide-y divide-gray-200">
         {tiers.map((tier, index) => {
           const isCurrent = isCurrentTier(tier)
-          
+
           return (
             <div
               key={index}

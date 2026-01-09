@@ -14,10 +14,11 @@ export async function createProductVariant(data: {
   compare_at_price?: number
   cost_per_item?: number
   inventory_quantity?: number
-  status?: 'active' | 'inactive'
+  status?: 'active' | 'draft' | 'archived'
   barcode?: string
   weight?: number
   image_url?: string
+  variant_title?: string
   option1_name?: string
   option1_value?: string
   option2_name?: string
@@ -28,27 +29,27 @@ export async function createProductVariant(data: {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // Validate required fields
     if (!data.product_id || !data.name || !data.sku || !data.price) {
       return { success: false, error: 'Product ID, name, SKU, and price are required' }
     }
-    
+
     // Check if SKU already exists
     const { data: existing } = await supabase
       .from('product_variants')
       .select('id')
       .eq('sku', data.sku)
       .single()
-    
+
     if (existing) {
       return { success: false, error: 'Variant with this SKU already exists' }
     }
-    
+
     const { data: variant, error } = await supabase
       .from('product_variants')
       .insert({
@@ -63,6 +64,7 @@ export async function createProductVariant(data: {
         barcode: data.barcode,
         weight: data.weight,
         image_url: data.image_url,
+        variant_title: data.variant_title,
         option1_name: data.option1_name,
         option1_value: data.option1_value,
         option2_name: data.option2_name,
@@ -72,12 +74,12 @@ export async function createProductVariant(data: {
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error creating variant:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, variant }
   } catch (error: any) {
     console.error('Error in createProductVariant:', error)
@@ -97,10 +99,11 @@ export async function updateProductVariant(
     compare_at_price: number
     cost_per_item: number
     inventory_quantity: number
-    status: 'active' | 'inactive'
+    status: 'active' | 'draft' | 'archived'
     barcode: string
     weight: number
     image_url: string
+    variant_title: string
     option1_name: string
     option1_value: string
     option2_name: string
@@ -112,11 +115,11 @@ export async function updateProductVariant(
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // If SKU is being updated, check uniqueness
     if (updates.sku) {
       const { data: existing } = await supabase
@@ -125,24 +128,24 @@ export async function updateProductVariant(
         .eq('sku', updates.sku)
         .neq('id', id)
         .single()
-      
+
       if (existing) {
         return { success: false, error: 'Variant with this SKU already exists' }
       }
     }
-    
+
     const { data: variant, error } = await supabase
       .from('product_variants')
       .update(updates)
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error updating variant:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, variant }
   } catch (error: any) {
     console.error('Error in updateProductVariant:', error)
@@ -157,21 +160,21 @@ export async function deleteProductVariant(id: string) {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     const { error } = await supabase
       .from('product_variants')
       .delete()
       .eq('id', id)
-    
+
     if (error) {
       console.error('Error deleting variant:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true }
   } catch (error: any) {
     console.error('Error in deleteProductVariant:', error)
@@ -185,18 +188,18 @@ export async function deleteProductVariant(id: string) {
 export async function getProductVariants(productId: string) {
   try {
     const supabase = await createServerSupabase()
-    
+
     const { data: variants, error } = await supabase
       .from('product_variants')
       .select('*')
       .eq('product_id', productId)
       .order('created_at')
-    
+
     if (error) {
       console.error('Error fetching variants:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, variants }
   } catch (error: any) {
     console.error('Error in getProductVariants:', error)
@@ -210,7 +213,7 @@ export async function getProductVariants(productId: string) {
 export async function getVariantById(id: string) {
   try {
     const supabase = await createServerSupabase()
-    
+
     const { data: variant, error } = await supabase
       .from('product_variants')
       .select(`
@@ -219,12 +222,12 @@ export async function getVariantById(id: string) {
       `)
       .eq('id', id)
       .single()
-    
+
     if (error) {
       console.error('Error fetching variant:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, variant }
   } catch (error: any) {
     console.error('Error in getVariantById:', error)
@@ -239,22 +242,22 @@ export async function bulkCreateVariants(productId: string, variants: any[]) {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     if (!variants || variants.length === 0) {
       return { success: false, error: 'No variants provided' }
     }
-    
+
     // Validate each variant has required fields
     for (const variant of variants) {
       if (!variant.name || !variant.sku || !variant.price) {
         return { success: false, error: 'Each variant must have name, SKU, and price' }
       }
     }
-    
+
     // Add product_id to each variant
     const variantsToInsert = variants.map(v => ({
       ...v,
@@ -262,17 +265,17 @@ export async function bulkCreateVariants(productId: string, variants: any[]) {
       status: v.status || 'active',
       inventory_quantity: v.inventory_quantity || 0,
     }))
-    
+
     const { data: createdVariants, error } = await supabase
       .from('product_variants')
       .insert(variantsToInsert)
       .select()
-    
+
     if (error) {
       console.error('Error bulk creating variants:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, variants: createdVariants }
   } catch (error: any) {
     console.error('Error in bulkCreateVariants:', error)
@@ -287,11 +290,11 @@ export async function updateVariantInventory(id: string, quantity: number, opera
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     if (operation === 'set') {
       const { data: variant, error } = await supabase
         .from('product_variants')
@@ -299,12 +302,12 @@ export async function updateVariantInventory(id: string, quantity: number, opera
         .eq('id', id)
         .select()
         .single()
-      
+
       if (error) {
         console.error('Error updating inventory:', error)
         return { success: false, error: error.message }
       }
-      
+
       return { success: true, variant }
     } else {
       // For increment/decrement, we need to fetch current value first
@@ -313,27 +316,27 @@ export async function updateVariantInventory(id: string, quantity: number, opera
         .select('inventory_quantity')
         .eq('id', id)
         .single()
-      
+
       if (!current) {
         return { success: false, error: 'Variant not found' }
       }
-      
+
       const newQuantity = operation === 'increment'
         ? (current.inventory_quantity || 0) + quantity
         : Math.max(0, (current.inventory_quantity || 0) - quantity)
-      
+
       const { data: variant, error } = await supabase
         .from('product_variants')
         .update({ inventory_quantity: newQuantity })
         .eq('id', id)
         .select()
         .single()
-      
+
       if (error) {
         console.error('Error updating inventory:', error)
         return { success: false, error: error.message }
       }
-      
+
       return { success: true, variant }
     }
   } catch (error: any) {

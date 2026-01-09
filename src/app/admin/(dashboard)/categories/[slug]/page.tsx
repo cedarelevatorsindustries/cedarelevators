@@ -112,7 +112,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                   ? "bg-green-50 text-green-700 border-green-200"
                   : "bg-gray-50 text-gray-700 border-gray-200"}
               >
-                {category.is_active ? 'active' : 'inactive'}
+                {category.is_active ? 'active' : 'draft'}
               </Badge>
               {!parentCategory && (
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -308,7 +308,7 @@ export default function CategoryDetailPage({ params }: PageProps) {
                               ? "bg-green-50 text-green-700 border-green-200"
                               : "bg-gray-50 text-gray-700 border-gray-200"}
                           >
-                            {subcat.status || 'inactive'}
+                            {subcat.status || 'draft'}
                           </Badge>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
                             <Link href={`/admin/categories/create?id=${subcat.id}&parent=${category?.id}`}>

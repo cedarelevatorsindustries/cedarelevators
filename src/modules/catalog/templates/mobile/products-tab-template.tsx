@@ -5,6 +5,7 @@ import { useState } from "react"
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react"
 import ProductSectionHorizontal from "../../sections/mobile/product-section-horizontal"
 import ProductCard from "@/components/ui/product-card"
+import { FilterBottomSheet } from "@/modules/catalog/components/filters"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { BannerCarousel } from "../../components/banner-carousel"
 
@@ -28,11 +29,12 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
 
       {/* All Products - Infinite Scroll Grid with Filter Bar */}
       <div className="mt-6 bg-white">
-        <div className="px-4 py-4 border-b border-gray-200">
-          <h2 className="text-base font-bold text-gray-900 mb-3">All Products</h2>
-
+        <div className="px-4 py-3 bg-white border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-900">All Products</h2>
+            <FilterBottomSheet variant="icon" />
+          </div>
           {/* Filter Bar */}
-
         </div>
 
         <div className="grid grid-cols-2 gap-3 px-4 py-4">
@@ -44,4 +46,3 @@ export default function ProductsTabTemplate({ products, banners = [] }: Products
     </div>
   )
 }
-

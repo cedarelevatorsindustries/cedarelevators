@@ -20,7 +20,7 @@ export default function ApplicationsPage() {
 
   const filters = {
     search: searchQuery || undefined,
-    status: statusFilter !== 'all' ? (statusFilter as 'active' | 'inactive') : undefined,
+    status: statusFilter !== 'all' ? (statusFilter as 'active' | 'draft' | 'archived') : undefined,
     page: currentPage,
     limit: itemsPerPage
   }

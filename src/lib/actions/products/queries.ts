@@ -99,17 +99,10 @@ export async function getProductWithVariants(id: string) {
                 cost_per_item,
                 inventory_quantity,
                 status,
-                barcode,
-                weight,
                 image_url,
+                options,
                 created_at,
-                updated_at,
-                inventory_items (
-                    id,
-                    quantity,
-                    reserved,
-                    available_quantity
-                )
+                updated_at
             )
         `)
         .eq('id', id)

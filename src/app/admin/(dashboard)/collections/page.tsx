@@ -22,7 +22,7 @@ export default function CollectionsPage() {
   const filters = {
     search: searchQuery || undefined,
     type: typeFilter !== 'all' ? (typeFilter as 'manual' | 'automatic') : undefined,
-    is_active: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+    is_active: statusFilter === 'active' ? true : statusFilter === 'draft' ? false : undefined,
     page: currentPage,
     limit: itemsPerPage
   }

@@ -3,33 +3,40 @@
 import { useState } from "react"
 import { Heart, LoaderCircle } from "lucide-react"
 import { useWishlist } from "@/lib/hooks"
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import { Product } from "@/lib/types/domain"
+import { cn } from "@/lib/utils"
 
 interface WishlistButtonProps {
   product: Product
   variant?: "icon" | "button"
   size?: "sm" | "md" | "lg"
   className?: string
+  showLabel?: boolean
 }
 
 export default function WishlistButton({
   product,
   variant = "icon",
   size = "md",
-  className = ""
+  className = "",
+  showLabel = false
 }: WishlistButtonProps) {
   const { toggleItem, isInWishlist } = useWishlist()
   const [isLoading, setIsLoading] = useState(false)
 
   const variantId = product.variants?.[0]?.id || ""
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount || 0
+  const price = product.variants?.[0]?.calculated_price?.calculated_amount ||
+    product.variants?.[0]?.price || 0
   const isWishlisted = isInWishlist(variantId)
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (!variantId) return
+    if (!variantId) {
+      console.warn('No variant ID available for wishlist')
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -63,26 +70,32 @@ export default function WishlistButton({
     return (
       <button
         onClick={handleClick}
-        disabled={isLoading}
-        className={`
-          ${sizeClasses[size]}
-          rounded-full bg-white/90 backdrop-blur-sm
-          flex items-center justify-center
-          hover:bg-white transition-all
-          shadow-md hover:shadow-lg
-          disabled:opacity-50 disabled:cursor-not-allowed
-          ${className}
-        `}
+        disabled={isLoading || !variantId}
+        className={cn(
+          sizeClasses[size],
+          "rounded-full bg-white/90 backdrop-blur-sm",
+          "flex items-center justify-center",
+          "hover:bg-white transition-all",
+          "shadow-md hover:shadow-lg",
+          "disabled:opacity-50 disabled:cursor-not-allowed",
+          "active:scale-95",
+          "touch-manipulation", // Better mobile touch response
+          className
+        )}
         title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
       >
         {isLoading ? (
-          <LoaderCircle className={`${iconSizes[size]} animate-spin text-gray-600`} />
+          <LoaderCircle className={cn(iconSizes[size], "animate-spin text-gray-600")} />
         ) : (
           <Heart
-            className={`${iconSizes[size]} transition-all ${isWishlisted
+            className={cn(
+              iconSizes[size],
+              "transition-all",
+              isWishlisted
                 ? "fill-red-500 text-red-500"
                 : "text-gray-600 hover:text-red-500"
-              }`}
+            )}
           />
         )}
       </button>
@@ -92,34 +105,35 @@ export default function WishlistButton({
   return (
     <button
       onClick={handleClick}
-      disabled={isLoading}
-      className={`
-        flex items-center justify-center gap-2
-        px-4 py-2 rounded-lg
-        border-2 transition-all
-        font-medium text-sm
-        disabled:opacity-50 disabled:cursor-not-allowed
-        ${isWishlisted
-          ? "border-red-500 text-red-500 bg-red-50"
-          : "border-gray-300 text-gray-700 hover:border-gray-400"
-        }
-        ${className}
-      `}
+      disabled={isLoading || !variantId}
+      className={cn(
+        "flex items-center justify-center gap-2",
+        "px-4 py-2 rounded-lg",
+        "border-2 transition-all",
+        "font-medium text-sm",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "active:scale-95",
+        "touch-manipulation",
+        isWishlisted
+          ? "border-red-500 text-red-500 bg-red-50 hover:bg-red-100"
+          : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50",
+        className
+      )}
+      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
     >
       {isLoading ? (
         <>
           <LoaderCircle className="w-5 h-5 animate-spin" />
-          {isWishlisted ? "Removing..." : "Adding..."}
+          {showLabel && (isWishlisted ? "Removing..." : "Adding...")}
         </>
       ) : (
         <>
           <Heart
-            className={`w-5 h-5 ${isWishlisted ? "fill-red-500" : ""}`}
+            className={cn("w-5 h-5", isWishlisted && "fill-red-500")}
           />
-          {isWishlisted ? "Saved" : "Save"}
+          {showLabel && (isWishlisted ? "Saved" : "Save")}
         </>
       )}
     </button>
   )
 }
-

@@ -58,7 +58,7 @@ export default function CreateCategoryPage() {
     banner_url: "",
     categories_card_position: "",
     is_active: true,
-    status: "inactive",
+    status: "draft",
     seo_meta_title: "",
     seo_meta_description: ""
   })
@@ -144,7 +144,7 @@ export default function CreateCategoryPage() {
         ...formData,
         thumbnail_image: thumbnailUrl,
         banner_url: bannerUrl,
-        status: (isDraft ? 'inactive' : formData.status) as CategoryStatus
+        status: (isDraft ? 'draft' : formData.status) as CategoryStatus
       }
 
       console.log('[Form] Submitting category with payload:', payload)

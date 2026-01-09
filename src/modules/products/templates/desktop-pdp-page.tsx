@@ -57,8 +57,8 @@ export default function ProductDetailPage({
   const isVerified = user?.unsafeMetadata?.is_verified === true
   const showPrice = isBusiness && isVerified
 
-  const price = product.price?.amount || 0
-  const originalPrice = (product.metadata?.compare_at_price as number) || null
+  const price = (product as any).price || product.price?.amount || 0
+  const originalPrice = (product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null
 
   // Check favorite status on mount
   useEffect(() => {
@@ -86,12 +86,12 @@ export default function ProductDetailPage({
   const variants = product.variants ? (() => {
     const groups: Record<string, Set<string>> = {}
 
-    // Collect all unique option values
-    product.variants.forEach(v => {
-      if (v.options) {
+    // Collect all unique option values from options JSONB
+    product.variants.forEach((v: any) => {
+      if (v.options && typeof v.options === 'object') {
         Object.entries(v.options).forEach(([key, value]) => {
           if (!groups[key]) groups[key] = new Set()
-          groups[key].add(value)
+          groups[key].add(value as string)
         })
       }
     })
@@ -103,7 +103,7 @@ export default function ProductDetailPage({
         id: val,
         name: val,
         value: val,
-        inStock: true // Simplified logic
+        inStock: true
       }))
     }))
   })() : []
@@ -125,13 +125,27 @@ export default function ProductDetailPage({
     if (!product.variants || product.variants.length === 0) return product.id
 
     // Find variant matching selected options
-    const matchingVariant = product.variants.find(v => {
-      if (!v.options) return false
+    const matchingVariant = product.variants.find((v: any) => {
+      if (!v.options || typeof v.options !== 'object') return false
+
       return Object.entries(selectedVariants).every(([key, value]) =>
-        v.options?.[key] === value
+        v.options[key] === value
       )
     })
     return matchingVariant?.id || product.variants[0]?.id || product.id
+  }
+
+  // Get selected variant title
+  const getSelectedVariantTitle = () => {
+    if (!product.variants || product.variants.length === 0 || !allVariantsSelected) return undefined
+
+    const matchingVariant = product.variants.find((v: any) => {
+      if (!v.options || typeof v.options !== 'object') return false
+      return Object.entries(selectedVariants).every(([key, value]) =>
+        v.options[key] === value
+      )
+    })
+    return matchingVariant?.variant_title
   }
 
   // Handlers
@@ -263,6 +277,7 @@ export default function ProductDetailPage({
                 {variants.length > 0 && (
                   <VariantSelector
                     variants={variants}
+                    selectedVariantTitle={getSelectedVariantTitle()}
                     onVariantChange={handleVariantChange}
                   />
                 )}

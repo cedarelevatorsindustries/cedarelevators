@@ -73,7 +73,7 @@ export async function generateSKUs(count: number): Promise<string[]> {
 /**
  * Validate SKU format
  */
-export function isValidSKU(sku: string): boolean {
+export async function isValidSKU(sku: string): Promise<boolean> {
     // SKU must be 18 characters, start with PROD-, and contain only alphanumeric + hyphen
     const skuRegex = /^PROD-[A-Z0-9]{13}$/
     return skuRegex.test(sku)

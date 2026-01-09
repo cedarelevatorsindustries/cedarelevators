@@ -63,8 +63,8 @@ export default function MobileProductDetailPage({
   const isVerified = user?.unsafeMetadata?.is_verified === true
   const showPrice = isBusiness && isVerified
 
-  const price = product.price?.amount || 0
-  const originalPrice = (product.metadata?.compare_at_price as number) || null
+  const price = (product as any).price || product.price?.amount || 0
+  const originalPrice = (product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null
 
   // Check favorite status on mount
   useEffect(() => {
@@ -86,7 +86,30 @@ export default function MobileProductDetailPage({
   ]
   const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
-  const variants = product.metadata?.variants as any[] || []
+
+  // Transform variants from product.variants using options JSONB
+  const variants = product.variants ? (() => {
+    const groups: Record<string, Set<string>> = {}
+
+    product.variants.forEach((v: any) => {
+      if (v.options && typeof v.options === 'object') {
+        Object.entries(v.options).forEach(([key, value]) => {
+          if (!groups[key]) groups[key] = new Set()
+          groups[key].add(value as string)
+        })
+      }
+    })
+
+    return Object.entries(groups).map(([type, values]) => ({
+      type,
+      options: Array.from(values).map(val => ({
+        id: val,
+        name: val,
+        value: val,
+        inStock: true
+      }))
+    }))
+  })() : []
 
   // Check if all variants are selected
   const allVariantsSelected = variants.length === 0 ||
@@ -556,7 +579,7 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
                   <>
                     <p className="text-xs text-gray-500">Price</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ₹{(price / 100).toLocaleString("en-IN")}
+                      ₹{Number(price).toLocaleString("en-IN")}
                     </p>
                   </>
                 ) : (

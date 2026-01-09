@@ -136,9 +136,16 @@ export interface ImportResult {
     productsCreated: number
     productsUpdated: number
     variantsCreated: number
-    variantsUpdated: number
-    failed: number
+    variantsUpdated?: number
+    failed?: number
     errors?: ImportError[]
+    catalogStats?: {
+        applications: number
+        categories: number
+        subcategories: number
+        types: number
+        collections: number
+    }
 }
 
 // Catalog entity lookup results

@@ -3,7 +3,7 @@
 // =============================================
 
 export type CollectionType = 'manual' | 'automatic'
-export type CollectionStatus = 'active' | 'inactive'
+export type CollectionStatus = 'active' | 'draft' | 'archived'
 export type CollectionContextType = 'general' | 'category_specific' | 'business_specific'
 export type CollectionDisplayType = 'normal' | 'special'
 export type SpecialCollectionLocation = 'categories' | 'business_hub'
@@ -118,7 +118,7 @@ export interface CollectionStats {
 
 // Helper to get collection status
 export function getCollectionStatus(collection: Collection): CollectionStatus {
-    return collection.is_active ? 'active' : 'inactive'
+    return collection.is_active ? 'active' : 'draft'
 }
 
 // Helper to generate slug from title

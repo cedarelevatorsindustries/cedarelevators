@@ -24,10 +24,10 @@ export default function PriceDisplay({
   size = "lg"
 }: PriceDisplayProps) {
   const formatPrice = (amount: number) => {
-    return `₹${(amount / 100).toLocaleString("en-IN")}`
+    return `₹${Number(amount).toLocaleString("en-IN")}`
   }
 
-  const discount = originalPrice && price 
+  const discount = originalPrice && price
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : null
 
@@ -59,7 +59,7 @@ export default function PriceDisplay({
             </>
           )}
         </div>
-        
+
         <div className="flex items-start gap-2 text-sm text-green-700 bg-green-50 p-2 rounded">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <p>

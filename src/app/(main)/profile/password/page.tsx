@@ -7,13 +7,6 @@ export const metadata: Metadata = {
 }
 
 export default function PasswordPage() {
-  return (
-    <PasswordSection
-      onUpdate={async (currentPassword, newPassword) => {
-        'use server'
-        console.log('Update password:', { currentPassword, newPassword })
-      }}
-    />
-  )
+  return <PasswordSection />
 }
 

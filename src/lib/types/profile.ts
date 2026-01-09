@@ -42,11 +42,13 @@ export interface Address {
   is_default: boolean
   is_default_shipping: boolean
   is_default_billing: boolean
-  type?: 'House' | 'office' | 'warehouse' | 'other'
+  type?: 'home' | 'House' | 'office' | 'warehouse' | 'other'
+  address_type?: 'home' | 'office' | 'warehouse' | 'other'
   label?: string
   created_at: string
   updated_at: string
 }
+
 
 export interface NotificationPreferences {
   order_updates_email: boolean

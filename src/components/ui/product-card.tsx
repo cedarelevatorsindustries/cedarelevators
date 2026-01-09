@@ -5,7 +5,7 @@ import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
 import { useState, useEffect } from "react"
-import { useFavorites } from "@/hooks/use-favorites"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed"
 import { useRouter } from "next/navigation"
 
@@ -21,9 +21,15 @@ export default function ProductCard({
   badge
 }: ProductCardProps) {
   const { user } = useUser()
-  const { isFavorite, toggle } = useFavorites(product.id)
+  const { isInWishlist, toggleItem } = useWishlist()
   const { trackView } = useRecentlyViewed()
   const router = useRouter()
+
+  // Get variant and price info for wishlist
+  // Use variant ID if available, otherwise use product ID as fallback
+  const variantId = product.variants?.[0]?.id || product.id || ""
+  const wishlistPrice = product.variants?.[0]?.calculated_price?.calculated_amount || product.variants?.[0]?.price || 0
+  const isWishlisted = isInWishlist(variantId)
 
   // Track view on mount (only for default/special variants, not mobile list to avoid spam?)
   // User asked for "Recently Viewed - Help user resume browsing".
@@ -70,10 +76,26 @@ export default function ProductCard({
     router.push(`/quotes/new?${params.toString()}`)
   }
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation() // Prevent navigation
-    toggle()
+
+    if (!variantId) {
+      console.warn('No variant ID available for wishlist')
+      return
+    }
+
+    try {
+      await toggleItem(
+        variantId,
+        product.id!,
+        product.title || "",
+        product.thumbnail || null,
+        wishlistPrice
+      )
+    } catch (error) {
+      console.error('Error toggling wishlist:', error)
+    }
   }
 
   // Badge configuration
@@ -124,7 +146,7 @@ export default function ProductCard({
               className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
             >
               <Heart
-                className={`w-3 h-3 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
               />
             </button>
           </div>
@@ -245,7 +267,7 @@ export default function ProductCard({
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
           >
             <Heart
-              className={`w-3.5 h-3.5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
             />
           </button>
         </Link>
@@ -336,7 +358,7 @@ export default function ProductCard({
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors z-10"
           >
             <Heart
-              className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
             />
           </button>
         </div>

@@ -20,7 +20,7 @@ export default function CategoriesPage() {
 
   const filters = {
     search: searchQuery || undefined,
-    status: statusFilter !== 'all' ? (statusFilter as 'active' | 'inactive') : undefined,
+    status: statusFilter !== 'all' ? (statusFilter as 'active' | 'draft' | 'archived') : undefined,
     page: currentPage,
     limit: itemsPerPage
   }
@@ -249,7 +249,7 @@ export default function CategoriesPage() {
                           ? "bg-green-50 text-green-700 border-green-200"
                           : "bg-gray-50 text-gray-700 border-gray-200"}
                       >
-                        {category.is_active ? 'active' : 'inactive'}
+                        {category.is_active ? 'active' : 'draft'}
                       </Badge>
 
                       <div className="flex items-center gap-2">

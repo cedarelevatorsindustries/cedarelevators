@@ -1,20 +1,14 @@
-/**
- * Filter Components - Cedar Elevators Store
- * 
- * Production-ready filter system with:
- * - Desktop sidebar
- * - Mobile modal
- * - Multiple filter types
- * - URL state management
- * - Faceted filtering
- */
-
-export { ProductFilterSidebar } from './ProductFilterSidebar'
-export { ProductFilterModal } from './ProductFilterModal'
-export { PriceRangeSlider } from './PriceRangeSlider'
-export { CheckboxFilter } from './CheckboxFilter'
-export { RatingFilter } from './RatingFilter'
-export { StockFilter } from './StockFilter'
+export { CatalogFiltersComponent as CatalogFilters } from './CatalogFilters'
+export { PLPFiltersComponent as PLPFilters } from './PLPFilters'
+export { UnifiedFiltersComponent as UnifiedFilters } from './UnifiedFilters'
 export { FilterGroup } from './FilterGroup'
+export { CheckboxFilter } from './CheckboxFilter'
+export { PriceRangeSlider } from './PriceRangeSlider'
+export { RatingFilter } from './RatingFilter'
+export { SortFilter } from './SortFilter'
+export { RadioFilter } from './RadioFilter'
+export { FilterBottomSheet } from './FilterBottomSheet'
+export { CatalogFilterDrawer } from './CatalogFilterDrawer'
+export { PLPFilterDrawer } from './PLPFilterDrawer'
+export { UnifiedFilterSidebar } from './UnifiedFilterSidebar'
 export { ActiveFilterChips } from './ActiveFilterChips'
-

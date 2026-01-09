@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { UserProfile, Address, NotificationPreferences } from '@/lib/types/profile'
 import { AccountType, ProfileSection } from '@/lib/constants/profile'
+import { toast } from 'sonner'
 
 export function useProfile() {
   const { user: clerkUser, isLoaded } = useUser()
@@ -26,6 +27,25 @@ export function useProfile() {
   })
   const [activeSection, setActiveSection] = useState<ProfileSection>('overview')
 
+  // Fetch addresses
+  const fetchAddresses = useCallback(async () => {
+    if (!clerkUser) {
+      setAddresses([])
+      return
+    }
+
+    try {
+      const response = await fetch('/api/addresses')
+      const data = await response.json()
+
+      if (data.success) {
+        setAddresses(data.addresses || [])
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    }
+  }, [clerkUser])
+
   useEffect(() => {
     if (!isLoaded) {
       setIsLoading(true)
@@ -35,6 +55,7 @@ export function useProfile() {
     if (!clerkUser) {
       setUser(null)
       setAccountType('guest')
+      setAddresses([])
       setIsLoading(false)
       return
     }
@@ -59,7 +80,10 @@ export function useProfile() {
     setUser(profileUser)
     setAccountType(userType as AccountType)
     setIsLoading(false)
-  }, [clerkUser, isLoaded])
+
+    // Fetch addresses
+    fetchAddresses()
+  }, [clerkUser, isLoaded, fetchAddresses])
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!clerkUser) {
@@ -98,23 +122,111 @@ export function useProfile() {
   }
 
   const addAddress = async (address: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    // TODO: Implement address addition
-    console.log('Adding address:', address)
+    try {
+      const response = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(address),
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to add address')
+      }
+
+      // Refresh addresses
+      await fetchAddresses()
+      toast.success('Address added successfully')
+
+      // Trigger navbar refresh
+      window.dispatchEvent(new Event('addressUpdated'))
+    } catch (error) {
+      console.error('Error adding address:', error)
+      toast.error('Failed to add address')
+      throw error
+    }
   }
 
   const updateAddress = async (addressId: string, updates: Partial<Address>) => {
-    // TODO: Implement address update
-    console.log('Updating address:', addressId, updates)
+    try {
+      const response = await fetch(`/api/addresses/${addressId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update address')
+      }
+
+      // Refresh addresses
+      await fetchAddresses()
+      toast.success('Address updated successfully')
+
+      // Trigger navbar refresh
+      window.dispatchEvent(new Event('addressUpdated'))
+    } catch (error) {
+      console.error('Error updating address:', error)
+      toast.error('Failed to update address')
+      throw error
+    }
   }
 
   const deleteAddress = async (addressId: string) => {
-    // TODO: Implement address deletion
-    console.log('Deleting address:', addressId)
+    try {
+      const response = await fetch(`/api/addresses/${addressId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to delete address')
+      }
+
+      // Refresh addresses
+      await fetchAddresses()
+      toast.success('Address deleted successfully')
+
+      // Trigger navbar refresh
+      window.dispatchEvent(new Event('addressUpdated'))
+    } catch (error) {
+      console.error('Error deleting address:', error)
+      toast.error('Failed to delete address')
+      throw error
+    }
   }
 
   const setDefaultAddress = async (addressId: string) => {
-    // TODO: Implement default address setting
-    console.log('Setting default address:', addressId)
+    try {
+      const response = await fetch(`/api/addresses/${addressId}/set-default`, {
+        method: 'PATCH',
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to set default address')
+      }
+
+      // Refresh addresses
+      await fetchAddresses()
+      toast.success('Default address updated')
+
+      // Trigger navbar refresh
+      window.dispatchEvent(new Event('addressUpdated'))
+    } catch (error) {
+      console.error('Error setting default address:', error)
+      toast.error('Failed to set default address')
+      throw error
+    }
   }
 
   const updateNotificationPreferences = async (preferences: Partial<NotificationPreferences>) => {

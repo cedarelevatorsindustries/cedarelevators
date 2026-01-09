@@ -11,6 +11,7 @@ export interface ProductVariant {
     price: number
     inventory_quantity: number
     options: Record<string, string>
+    variant_title?: string
     calculated_price?: {
         calculated_amount: number
         currency_code?: string

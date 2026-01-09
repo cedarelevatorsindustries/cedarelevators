@@ -60,7 +60,7 @@ export function VariantsListView({ product, filters }: VariantsListViewProps) {
 
     if (filters.status && filters.status !== 'all') {
       if (filters.status === 'active' && variant.status !== 'active') return false
-      if (filters.status === 'inactive' && variant.status === 'active') return false
+      if (filters.status === 'draft' && variant.status === 'active') return false
     }
 
     if (filters.stock && filters.stock !== 'all') {

@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSignIn } from "@/lib/auth/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff, Check } from "lucide-react"
 import { logger } from "@/lib/services/logger"
 
 export default function ResetPasswordForm() {
   const { isLoaded, signIn, setActive } = useSignIn()
+  const searchParams = useSearchParams()
   const [code, setCode] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -15,6 +16,11 @@ export default function ResetPasswordForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  // Get email and mode from URL params
+  const email = searchParams.get('email') || ''
+  const mode = searchParams.get('mode') || 'reset' // 'set' or 'reset'
+  const isSettingPassword = mode === 'set'
 
   const requirements = [
     { label: "At least 8 characters", test: (pwd: string) => pwd.length >= 8 },
@@ -48,7 +54,7 @@ export default function ResetPasswordForm() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId })
-        router.push("/sign-in")
+        router.push("/")
       } else {
         logger.error('Password reset prompt failed', result)
       }
@@ -62,10 +68,12 @@ export default function ResetPasswordForm() {
     <div className="w-full">
       <div className="flex flex-col gap-2 mb-6">
         <h2 className="text-gray-900 text-3xl font-bold leading-tight tracking-tight">
-          Reset Your Password
+          {isSettingPassword ? 'Set Your Password' : 'Reset Your Password'}
         </h2>
         <p className="text-gray-600 text-sm font-normal leading-normal">
-          Enter the code from your email and your new password.
+          {isSettingPassword
+            ? `Enter the code sent to ${email} and create your password.`
+            : 'Enter the code from your email and your new password.'}
         </p>
       </div>
 
@@ -187,7 +195,7 @@ export default function ResetPasswordForm() {
           type="submit"
           className="w-full mt-2 flex items-center justify-center rounded-lg bg-[#2D5BFF] px-6 h-12 text-base font-medium text-white shadow-sm hover:bg-[#2D5BFF]/90 focus:outline-none focus:ring-2 focus:ring-[#2D5BFF] focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Reset Password
+          {isSettingPassword ? 'Set Password' : 'Reset Password'}
         </button>
       </form>
     </div>

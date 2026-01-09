@@ -97,8 +97,6 @@ export function hasRolePermission(userRole: AdminRole, targetRole: AdminRole): b
  */
 export async function getAdminProfile(userId: string): Promise<AdminProfile | null> {
     try {
-        console.log('[getAdminProfile] Fetching profile for user:', userId)
-
         // Use service role client to bypass RLS policies
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -127,11 +125,8 @@ export async function getAdminProfile(userId: string): Promise<AdminProfile | nu
         }
 
         if (!data) {
-            console.log('[getAdminProfile] No data returned')
             return null
         }
-
-        console.log('[getAdminProfile] Profile found:', data)
         return data as AdminProfile
     } catch (error) {
         console.error('[getAdminProfile] Exception:', error)

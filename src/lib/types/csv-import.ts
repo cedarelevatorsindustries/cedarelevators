@@ -182,6 +182,13 @@ export interface ImportResult {
     productsUpdated: number
     errors?: ImportError[]
     duration?: number
+    catalogStats?: {
+        applications: number
+        categories: number
+        subcategories: number
+        types: number
+        collections: number
+    }
 }
 
 export interface ImportError {
