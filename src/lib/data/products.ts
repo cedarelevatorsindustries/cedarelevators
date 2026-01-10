@@ -72,6 +72,127 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       }
     }
 
+    // Check if we need to perform full-text search
+    if (queryParams?.q) {
+      console.log('[listProducts] Performing full-text search for:', queryParams.q)
+
+      const { data: searchResults, error: searchError, count: searchCount } = await supabase.rpc('search_products', {
+        search_query: queryParams.q,
+        category_filter: queryParams.category_id?.[0] || null, // RPC currently supports single category filter, taking first if multiple
+        page_number: Math.floor(offset / limit) + 1,
+        page_size: limit
+      })
+
+      if (searchError) {
+        console.error("Error performing full-text search:", searchError)
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
+
+      // If no results from search
+      if (!searchResults || searchResults.length === 0) {
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
+
+      // Get full details for the searched products to ensure consistent data structure
+      // We need to fetch them to get product_categories relations which RPC doesn't return
+      const productIds = searchResults.map((p: any) => p.id)
+
+      const { data: fullProducts, error: fullProductsError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_categories(
+            category:categories(*)
+          )
+        `)
+        .in('id', productIds)
+
+      if (fullProductsError) {
+        console.error("Error fetching full product details for search results:", fullProductsError)
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
+
+      // Re-order fullProducts to match the rank order from searchResults
+      const productsMap = new Map(fullProducts.map((p: any) => [p.id, p]))
+      const orderedProducts = productIds
+        .map((id: string) => productsMap.get(id))
+        .filter(Boolean)
+        .map((p: any) => {
+          const parsedImages = typeof p.images === 'string' ? JSON.parse(p.images) : p.images
+          return {
+            ...p,
+            title: p.name,
+            handle: p.slug,
+            images: parsedImages,
+            thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+            categories: p.product_categories?.map((pc: any) => ({
+              ...pc.category,
+              name: pc.category?.title || pc.category?.name,
+              handle: pc.category?.handle || pc.category?.slug
+            })).filter(Boolean) || []
+          }
+        })
+
+      // Search RPC returns total count differently - we might need a separate count query or rely on what we have
+      // The current RPC implementation doesn't return total count easily without an extra query
+      // For now, we'll try to get an approximate count or implement a count RPC if needed. 
+      // Actually, the current searchRPC limits results, so we don't know true total.
+      // Let's rely on the number of results for now or do a separate count query.
+      // Since pagination is tricky with RPC + PostgREST integration without a dedicated count function,
+      // we'll assume there might be more if we got a full page.
+
+      // Better approach for count: Use a separate RPC or query for counting if needed, 
+      // but listProducts signature returns count.
+      // Let's try to get count by calling RPC with large limit or specific count RPC.
+      // For this iteration, we'll pass dynamic count if available or undefined.
+
+      // Ideally we should have a `search_products_count` RPC. 
+      // For now let's just use the current page length as count if we can't get total, 
+      // or effectively disable pagination for search if checking total is hard.
+      // Wait, the storeSearch action did: 
+      // const { count } = await supabase.from('products')... which was a separate query.
+
+      // Let's implement a quick separate count query matching the search criteria
+      // OR just update listProducts to return what we have.
+
+      // Get total count for pagination matching the RPC logic
+      const { count: totalCount } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .textSearch('search_vector', queryParams.q, { config: 'english', type: 'plain' })
+
+      return {
+        response: {
+          products: orderedProducts,
+          count: totalCount || searchCount || orderedProducts.length,
+          offset,
+          limit
+        }
+      }
+    }
+
     let query = supabase
       .from('products')
       // Fetch categories via product_categories junction table
@@ -86,11 +207,6 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
     // Apply category filter if we have product IDs
     if (productIds !== null) {
       query = query.in('id', productIds)
-    }
-
-    if (queryParams?.q) {
-      // Search in name field (products table uses 'name' not 'title')
-      query = query.ilike('name', `%${queryParams.q}%`)
     }
 
     query = query.range(offset, offset + limit - 1)

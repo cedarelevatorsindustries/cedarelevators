@@ -108,20 +108,7 @@ export default function ProfileDesktopTemplate() {
 
       case PROFILE_SECTIONS.APPROVALS:
         // Business Verification Section
-        return (
-          <BusinessVerificationSection
-            verificationStatus={user.verification_status as any || 'incomplete'}
-            rejectionReason={user.verification_rejected_reason}
-            onSubmit={async (data) => {
-              console.log('Submit verification:', data)
-              // TODO: Implement verification submission
-              // 1. Upload documents to Supabase Storage
-              // 2. Update user_profiles with verification data
-              // 3. Set verification_status to 'pending'
-              // 4. Send notification to admin
-            }}
-          />
-        )
+        return <BusinessVerificationSection />
 
       case PROFILE_SECTIONS.ADDRESSES:
         return (

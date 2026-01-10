@@ -1,4 +1,4 @@
-import { Customer } from '@/types/b2b/customer'
+import { Customer, CustomerType, VerificationStatus, CustomerFilters as B2BCustomerFilters } from '@/types/b2b/customer'
 
 // CustomerStats for dashboard/stats display
 export interface CustomerStats {
@@ -17,19 +17,11 @@ export interface CustomerWithStats extends Customer {
     lastOrderDate: string | null
 }
 
-export type CustomerType = 'lead' | 'customer' | 'business' | 'individual'
-export type VerificationStatus = 'incomplete' | 'pending' | 'approved' | 'rejected'
+// Re-export types from canonical source
+export type { CustomerType, VerificationStatus }
 
-export interface CustomerFilters {
-    status?: 'all' | 'active' | 'inactive'
-    account_type?: 'individual' | 'business' | 'all'
-    customer_type?: CustomerType | 'all'
-    verification_status?: VerificationStatus | 'all'
-    has_orders?: boolean
-    has_quotes?: boolean
-    search?: string
-    date_range?: 'all' | 'last_7_days' | 'last_30_days' | 'last_90_days'
-}
+// Re-export CustomerFilters from canonical source
+export type CustomerFilters = B2BCustomerFilters
 
 
 

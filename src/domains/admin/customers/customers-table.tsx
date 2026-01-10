@@ -237,8 +237,8 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
                           </DropdownMenuItem>
                         )}
 
-                        {/* View Invoices - for approved businesses */}
-                        {customer.verification_status === 'approved' && (
+                        {/* View Invoices - for verified businesses */}
+                        {customer.verification_status === 'verified' && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()

@@ -6,7 +6,9 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { CustomSelect } from '@/components/ui/custom-select'
 
-type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
+// Use internal status type for the component's state management
+// This maps to the canonical VerificationStatus but uses 'approved' instead of 'verified' for UI consistency
+type InternalVerificationStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
 
 interface BusinessVerificationSectionProps {
   className?: string
@@ -46,7 +48,7 @@ export default function BusinessVerificationSection({
 }: BusinessVerificationSectionProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [status, setStatus] = useState<VerificationStatus>('incomplete')
+  const [status, setStatus] = useState<InternalVerificationStatus>('incomplete')
   const [rejectionReason, setRejectionReason] = useState<string>('')
   const [verificationId, setVerificationId] = useState<string>('')
   const [documents, setDocuments] = useState<Document[]>([])
