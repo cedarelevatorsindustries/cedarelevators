@@ -23,6 +23,9 @@ export interface Collection {
     show_in_guest: boolean
     created_at: string
     updated_at: string
+    category?: {
+        name: string
+    }
 }
 
 export interface CollectionWithProducts extends Collection {

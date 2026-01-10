@@ -209,31 +209,34 @@ export default function CollectionsPage() {
                       <Layers className="h-6 w-6 text-gray-400" />
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    {/* Content - Clickable */}
+                    <Link
+                      href={`/admin/collections/${collection.id}`}
+                      className="flex-1 min-w-0 cursor-pointer group"
+                    >
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900 truncate">{collection.title}</h3>
+                        <h3 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">{collection.title}</h3>
                       </div>
                       {collection.description && (
                         <p className="text-sm text-gray-500 truncate">{collection.description}</p>
                       )}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                        <Badge variant="outline" className="text-xs capitalize bg-gray-50 border-gray-200">
-                          {collection.collection_type}
-                        </Badge>
-                        {collection.is_business_only && (
-                          <Badge variant="secondary" className="text-xs">
-                            Business Only
-                          </Badge>
-                        )}
-                        {collection.category_id && (
+                        {collection.collection_type === 'category_specific' ? (
                           <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
                             Category Specific
+                          </Badge>
+                        ) : collection.collection_type === 'business_specific' || collection.is_business_only ? (
+                          <Badge variant="outline" className="text-xs bg-orange-50 border-orange-200 text-orange-700">
+                            Business Specific
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-700">
+                            General
                           </Badge>
                         )}
                         <span>{collection.product_count || 0} products</span>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">

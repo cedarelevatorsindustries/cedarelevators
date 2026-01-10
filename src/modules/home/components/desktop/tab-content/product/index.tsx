@@ -50,7 +50,7 @@ export default function ProductsTab({
       displayLocation: [],
       layout: 'grid-4',
       icon: 'collection',
-      viewAllLink: `/collections/${dbCollection.slug}`,
+      viewAllLink: `/catalog?collection=${dbCollection.slug}`,
       products: (dbCollection.products || []).map((pc: any) => {
         const product = pc.product || pc
         return {

@@ -15,6 +15,7 @@ import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { EmptyState } from "@/components/ui/empty-state"
+import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 
 interface CatalogTemplateProps {
   products: Product[]
@@ -27,6 +28,7 @@ interface CatalogTemplateProps {
   }
   activeType?: any
   activeCollection?: any
+  collections?: any[]
   banners?: BannerWithSlides[]
   searchParams?: {
     type?: string
@@ -47,6 +49,7 @@ export default function CatalogTemplate({
   categories,
   activeCategory,
   activeApplication,
+  collections = [],
   banners = [],
   searchParams = {},
   app
@@ -100,6 +103,21 @@ export default function CatalogTemplate({
       }
     }
   }, [catalogType])
+
+  // Sync state with URL params
+  useEffect(() => {
+    const categoryParam = urlSearchParams?.get('category')
+    const subcategoryParam = urlSearchParams?.get('subcategory')
+
+    // Only update if changed to avoid unnecessary re-renders
+    if (categoryParam !== selectedCategory && (categoryParam || effectiveSearchParams.category)) {
+      setSelectedCategory(categoryParam || effectiveSearchParams.category || null)
+    }
+
+    if (subcategoryParam !== selectedSubcategory) {
+      setSelectedSubcategory(subcategoryParam || null)
+    }
+  }, [urlSearchParams, effectiveSearchParams.category])
 
   // Filter products by type
   const { primary: primaryProducts, fallback: fallbackProducts } = useMemo(() => {
@@ -296,6 +314,25 @@ export default function CatalogTemplate({
       {config.showBanner && !activeApplication && !currentCategory && catalogType === "browse-all" && banners.length > 0 && (
         <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
           <BannerCarousel banners={banners} />
+        </div>
+      )}
+
+      {/* Category Specific Collections */}
+      {catalogType === "category" && collections.length > 0 && (
+        <div className="max-w-[1400px] mx-auto px-8 pt-8">
+          {collections.map((collection) => (
+            /* Transform collection products if needed or assume page.tsx does it */
+            <DynamicCollectionSection
+              key={collection.id}
+              collection={{
+                ...collection,
+                products: collection.products.map((p: any) => ({
+                  ...p,
+                  price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                }))
+              }}
+            />
+          ))}
         </div>
       )}
 

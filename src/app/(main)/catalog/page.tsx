@@ -58,6 +58,7 @@ interface CatalogPageProps {
     type?: string
     category?: string
     application?: string
+    collection?: string
     search?: string
     view?: string
     tab?: string
@@ -133,6 +134,18 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
+  // If collection slug is provided, fetch products from that collection
+  let activeCollection: any = undefined
+  if (params.collection) {
+    const { getCollectionBySlug } = await import('@/lib/actions/collections')
+    const collectionResult = await getCollectionBySlug(params.collection)
+    if (collectionResult.success && collectionResult.collection) {
+      activeCollection = collectionResult.collection
+      // Note: We don't filter queryParams by collection
+      // The catalog will show ALL products, but highlight collection products
+    }
+  }
+
   // Fetch from Medusa
   const { response } = await listProducts({ queryParams })
   const products = response.products
@@ -160,6 +173,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           categories={categories}
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
+          activeCollection={activeCollection}
           searchParams={params}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
@@ -176,6 +190,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           elevatorTypes={elevatorTypes}
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
+          activeCollection={activeCollection}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={applicationSlug}

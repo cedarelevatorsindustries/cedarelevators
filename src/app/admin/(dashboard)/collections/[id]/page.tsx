@@ -12,6 +12,7 @@ import { useCollectionProducts, useAddProductToCollection, useRemoveProductFromC
 import { toast } from "sonner"
 import { useMemo } from "react"
 import { useProducts } from "@/hooks/queries/useProducts"
+import { useCategory } from "@/hooks/queries/useCategories"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -21,6 +22,10 @@ export default function CollectionDetailPage({ params }: PageProps) {
   const resolvedParams = use(params)
   const { data: collectionData, isLoading: isLoadingCollection } = useCollection(resolvedParams.id)
   const collection = collectionData?.collection
+
+  // Fetch linked category if exists
+  const { data: categoryData } = useCategory(collection?.category_id || '')
+  const linkedCategoryName = categoryData?.category?.name
 
   // Fetch products in this collection
   const { data: collectionProducts, isLoading: isLoadingProducts } = useCollectionProducts(resolvedParams.id)
@@ -115,11 +120,7 @@ export default function CollectionDetailPage({ params }: PageProps) {
               <Badge variant={collection.is_active ? "default" : "secondary"} className={collection.is_active ? "bg-green-100 text-green-800" : ""}>
                 {collection.is_active ? "Active" : "Inactive"}
               </Badge>
-              {collection.is_featured && (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300">
-                  Featured
-                </Badge>
-              )}
+
             </div>
             <p className="text-gray-600">
               Manage collection details and products
@@ -151,7 +152,7 @@ export default function CollectionDetailPage({ params }: PageProps) {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Slug</p>
-                  <p className="text-sm text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
+                  <p className="text-sm text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded inline-block">
                     {collection.slug}
                   </p>
                 </div>
@@ -163,56 +164,68 @@ export default function CollectionDetailPage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Type</p>
-                  <Badge variant="outline">{collection.type}</Badge>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Sort Order</p>
-                  <p className="text-sm text-gray-900">{collection.sort_order}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Created</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(collection.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-
-                {collection.updated_at && (
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Last Updated</p>
-                    <p className="text-sm text-gray-900">
-                      {new Date(collection.updated_at).toLocaleDateString()}
+                    <p className="text-sm font-medium text-gray-600 mb-1">Type</p>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="w-fit">
+                        {collection.collection_type === 'general' && 'General'}
+                        {collection.collection_type === 'category_specific' && 'Category Specific'}
+                        {collection.collection_type === 'business_specific' && 'Business Specific'}
+                      </Badge>
+                      {linkedCategoryName && (
+                        <span className="text-xs text-gray-500">
+                          linked to: {linkedCategoryName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {collection.is_business_only && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Access</p>
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+                        Business Only
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Sort Order</p>
+                    <p className="text-sm text-gray-900">{collection.display_order}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Show to Guest</p>
+                    <Badge variant={collection.show_in_guest ? "default" : "secondary"} className={collection.show_in_guest ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}>
+                      {collection.show_in_guest ? "Yes" : "No"}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-0.5">Created</p>
+                    <p className="text-xs text-gray-900">
+                      {new Date(collection.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                )}
+
+                  {collection.updated_at && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 mb-0.5">Last Updated</p>
+                      <p className="text-xs text-gray-900">
+                        {new Date(collection.updated_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
-            {collection.image_url && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5" />
-                    Collection Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-lg overflow-hidden border border-gray-200">
-                    <img
-                      src={collection.image_url}
-                      alt={collection.image_alt || collection.title}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                  {collection.image_alt && (
-                    <p className="text-xs text-gray-500 mt-2">Alt: {collection.image_alt}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+
 
             {(collection.meta_title || collection.meta_description) && (
               <Card>

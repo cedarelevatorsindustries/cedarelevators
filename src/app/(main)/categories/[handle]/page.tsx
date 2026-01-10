@@ -4,6 +4,7 @@ import { getCategory, listCategories } from "@/lib/data/categories"
 import { listProducts } from "@/lib/data/products"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
+import { getCollectionsWithProductsByDisplayContext } from "@/lib/actions/collections-display-context"
 
 interface CategoryPageProps {
   params: Promise<{
@@ -63,9 +64,15 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     queryParams.q = searchParamsResolved.search
   }
 
-  // Fetch products in this category
-  const { response } = await listProducts({ queryParams })
-  const products = response.products
+  // Fetch category-specific collections
+  const { collections: categoryCollections = [] } = await getCollectionsWithProductsByDisplayContext("categories", undefined, false, category.id)
+
+  const [products, banners] = await Promise.all([
+    listProducts({
+      queryParams
+    }).then(res => res.response.products), // Extract products array
+    Promise.resolve([]) // Banners fetching pending
+  ])
 
   // Debug logging
   console.log('Category Page Debug:', {
@@ -97,21 +104,23 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   return (
     <>
       {/* Desktop View */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <CatalogTemplate
           products={products}
-          categories={categories}
+          categories={children}
           activeCategory={activeCategory}
-          searchParams={catalogSearchParams}
+          banners={banners}
+          searchParams={searchParamsResolved}
+          collections={categoryCollections}
         />
       </div>
-
-      {/* Mobile View */}
-      <div className="block md:hidden">
+      <div className="lg:hidden">
         <MobileCatalogTemplate
           products={products}
-          categories={categories}
+          categories={children}
           activeCategory={activeCategory}
+          banners={banners}
+          collections={categoryCollections}
         />
       </div>
     </>

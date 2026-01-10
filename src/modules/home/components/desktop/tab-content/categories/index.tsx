@@ -28,7 +28,7 @@ export default function CategoriesTab({
     displayLocation: [],
     layout: 'grid-4',
     icon: 'trending',
-    viewAllLink: `/collections/${dbCollection.slug}`,
+    viewAllLink: `/catalog?collection=${dbCollection.slug}`,
     products: (dbCollection.products || []).map((pc: any) => {
       const product = pc.product
       return {

@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createClerkSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import type {
     Collection,
     CollectionWithProducts,
@@ -73,13 +73,11 @@ export async function getCollections(filters?: CollectionFilters) {
             })
         )
 
+        const globalStats = await getCollectionStats()
+
         return {
             collections: collectionsWithCounts,
-            stats: {
-                total: count || 0,
-                active: collectionsWithCounts.filter(c => c.is_active).length,
-                total_products: 0 // Simplification
-            },
+            stats: globalStats,
             success: true,
             pagination: {
                 page,
@@ -512,7 +510,7 @@ export async function uploadCollectionImage(file: File) {
 
 export async function getCollectionStats(): Promise<CollectionStats> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = await createAdminClient()
 
         const { count: total } = await supabase
             .from('collections')

@@ -6,14 +6,16 @@ import type { ElevatorType } from "@/lib/data/elevator-types"
 import { Package } from "lucide-react"
 import ElevatorTypesMobile from "@/modules/home/components/mobile/sections/elevator-types-mobile"
 import QuickCommerceSubcategoryTemplate from "./subcategory-template"
+import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 
 interface CategoriesTabProps {
   categories: ProductCategory[]
   products: Product[]
   elevatorTypes?: ElevatorType[]
+  collections?: any[]
 }
 
-export default function CategoriesTabTemplate({ categories, products, elevatorTypes = [] }: CategoriesTabProps) {
+export default function CategoriesTabTemplate({ categories, products, elevatorTypes = [], collections = [] }: CategoriesTabProps) {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null)
 
   // Handle browser back button
@@ -40,6 +42,7 @@ export default function CategoriesTabTemplate({ categories, products, elevatorTy
         category={selectedCategory}
         products={products}
         allCategories={categories}
+        collections={collections}
         onBack={() => setSelectedCategory(null)}
       />
     )
@@ -93,11 +96,24 @@ export default function CategoriesTabTemplate({ categories, products, elevatorTy
         </div>
       </div>
 
-      {/* 2. Shop by Elevator Type */}
+      {/* 2. Collections from database - Next to categories */}
+      {collections.map((collection) => (
+        <DynamicCollectionSection
+          key={collection.id}
+          collection={{
+            ...collection,
+            products: collection.products.map((p: any) => ({
+              ...p,
+              price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+            }))
+          }}
+        />
+      ))}
+
+      {/* 3. Shop by Elevator Type */}
       {elevatorTypes.length > 0 && (
         <ElevatorTypesMobile elevatorTypes={elevatorTypes} />
       )}
     </div>
   )
 }
-

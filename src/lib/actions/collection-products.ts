@@ -19,7 +19,7 @@ export async function addProductToCollection(data: CreateCollectionProductData) 
 
         // Check if already in collection
         const { data: existing } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .select('id')
             .eq('collection_id', data.collection_id)
             .eq('product_id', data.product_id)
@@ -34,7 +34,7 @@ export async function addProductToCollection(data: CreateCollectionProductData) 
 
         // Get current max position
         const { data: maxPos } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .select('position')
             .eq('collection_id', data.collection_id)
             .order('position', { ascending: false })
@@ -45,7 +45,7 @@ export async function addProductToCollection(data: CreateCollectionProductData) 
 
         // Add product
         const { data: collectionProduct, error } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .insert({
                 collection_id: data.collection_id,
                 product_id: data.product_id,
@@ -78,7 +78,7 @@ export async function removeProductFromCollection(collectionProductId: string) {
         const supabase = await createServerSupabase()
 
         const { error } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .delete()
             .eq('id', collectionProductId)
 
@@ -102,7 +102,7 @@ export async function getCollectionProducts(collectionId: string) {
         const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .select(`
         id,
         collection_id,
@@ -113,7 +113,7 @@ export async function getCollectionProducts(collectionId: string) {
           id,
           name,
           slug,
-          thumbnail,
+          thumbnail_url,
           price,
           status
         )
@@ -148,7 +148,7 @@ export async function updateCollectionProductPosition(
         const supabase = await createServerSupabase()
 
         const { error } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .update({ position: data.position })
             .eq('id', collectionProductId)
 
@@ -174,7 +174,7 @@ export async function reorderCollectionProducts(data: ReorderCollectionProductsD
         // Update each product's position
         const updates = data.product_orders.map(({ product_id, position }) =>
             supabase
-                .from('collection_products')
+                .from('product_collections')
                 .update({ position })
                 .eq('collection_id', data.collection_id)
                 .eq('product_id', product_id)
@@ -200,7 +200,7 @@ export async function getProductCollections(productId: string) {
         const supabase = await createServerSupabase()
 
         const { data, error } = await supabase
-            .from('collection_products')
+            .from('product_collections')
             .select(`
         id,
         collection_id,

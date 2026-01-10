@@ -24,7 +24,7 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
     displayLocation: [],
     layout: 'grid-4',
     icon: 'business',
-    viewAllLink: `/collections/${dbCollection.slug}`,
+    viewAllLink: `/catalog?collection=${dbCollection.slug}`,
     products: (dbCollection.products || []).map((pc: any) => {
       const product = pc.product
       return {
@@ -57,11 +57,6 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
       {/* 2. Action Needed Section */}
       <ActionNeededV2 actions={actionItems} />
 
-      {/* 3. Exclusive Business Collections */}
-      {transformedCollections.map((collection) => (
-        <DynamicCollectionSection key={collection.id} collection={collection} />
-      ))}
-
       {/* 4. Action Cards */}
       <ActionCardsGrid />
 
@@ -70,6 +65,11 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
         activeQuotes={stats.activeQuotes}
         activeOrders={stats.activeOrders}
       />
+
+      {/* 3. Exclusive Business Collections - Moved to bottom */}
+      {transformedCollections.map((collection) => (
+        <DynamicCollectionSection key={collection.id} collection={collection} />
+      ))}
     </div>
   )
 }

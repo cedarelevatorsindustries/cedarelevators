@@ -25,6 +25,7 @@ interface MobileCatalogTemplateProps {
   }
   activeType?: any
   activeCollection?: any
+  collections?: any[]
   banners?: BannerWithSlides[]
   tab?: string
   app?: string
@@ -37,6 +38,7 @@ export default function MobileCatalogTemplate({
   elevatorTypes = [],
   activeCategory,
   activeApplication,
+  collections = [],
   banners = [],
   tab,
   app,
@@ -150,6 +152,7 @@ export default function MobileCatalogTemplate({
         category={activeCategory}
         products={products}
         allCategories={categories}
+        collections={collections}
         onBack={() => router.push('/')}
       />
     )
@@ -172,6 +175,7 @@ export default function MobileCatalogTemplate({
         category={appAsCategory}
         products={products}
         allCategories={categories}
+        collections={[]} // Applications don't have displaying collections logic yet
         onBack={() => router.push('/')}
       />
     )
@@ -204,6 +208,7 @@ export default function MobileCatalogTemplate({
               categories={categories}
               products={products}
               elevatorTypes={elevatorTypes}
+              collections={collections}
             />
           )}
         </>

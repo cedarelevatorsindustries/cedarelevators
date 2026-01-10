@@ -12,35 +12,59 @@ export async function getMegaMenuData() {
         }
 
         // 1. Fetch active categories from the categories table
-        // Note: categories table doesn't have sort_order column
         const { data: categories, error: catError } = await supabase
             .from('categories')
             .select('*')
             .eq('is_active', true)
-            .order('title', { ascending: true }) // Order by title instead
+            .order('title', { ascending: true })
 
-        if (catError) throw catError
+        console.log('[getMegaMenuData] Categories query:', {
+            count: categories?.length || 0,
+            error: catError?.message,
+            categories: categories?.map(c => ({ id: c.id, title: c.title, slug: c.slug }))
+        })
+
+        if (catError) {
+            console.error('[getMegaMenuData] Category fetch error:', catError)
+            throw catError
+        }
 
         // 2. For each category, fetch its products (limit 5 per category)
         const categoriesWithProducts = await Promise.all(
             (categories || []).map(async (category) => {
-                // Fetch products for this category
-                const { data: products } = await supabase
-                    .from('products')
-                    .select('id, name, slug, thumbnail_url, price, short_description, description, sku')
+                // Fetch products for this category via junction table
+                const { data: productLinks } = await supabase
+                    .from('product_categories')
+                    .select(`
+                        product:products (
+                            id,
+                            name,
+                            slug,
+                            thumbnail_url,
+                            price,
+                            short_description,
+                            description,
+                            sku,
+                            status
+                        )
+                    `)
                     .eq('category_id', category.id)
-                    .eq('status', 'active')
                     .limit(5)
+
+                // Extract and filter active products
+                const products = (productLinks || [])
+                    .map(link => link.product)
+                    .filter((p: any) => p && p.status === 'active')
 
                 return {
                     id: category.id,
-                    name: category.name,
+                    name: category.title, // Map 'title' to 'name' for display
                     handle: category.slug,
                     description: category.description,
                     metadata: {
                         image: category.image_url
                     },
-                    products: (products || []).map(p => ({
+                    products: (products || []).map((p: any) => ({
                         id: p.id,
                         title: p.name, // Map 'name' to 'title'
                         handle: p.slug, // Map 'slug' to 'handle'

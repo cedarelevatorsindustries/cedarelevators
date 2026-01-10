@@ -22,6 +22,7 @@ export const revalidate = 3600 // 1 hour
 export default async function HomePage() {
   // Get user type from Clerk
   const userType = await getUserType()
+  const isGuest = userType === "guest"
 
   // Fetch all data in parallel for better performance
   const [
@@ -32,6 +33,7 @@ export default async function HomePage() {
     { collections: rawCollections },
     { collections: rawCategoriesCollections },
     { collections: rawBusinessHubCollections },
+    { collections: rawGuestCollections },
   ] = await Promise.all([
     listProducts({ queryParams: { limit: 20 } }),
     listCategories({ parent_id: null, include_descendants_tree: true }),
@@ -40,12 +42,31 @@ export default async function HomePage() {
     getCollectionsWithProductsByDisplayContext("homepage"),
     getCollectionsWithProductsByDisplayContext("categories"),
     getCollectionsWithProductsByDisplayContext("business_hub"),
+    // Fetch guest-safe collections (show_in_guest = true)
+    getCollectionsWithProductsByDisplayContext("homepage", undefined, true),
   ])
 
   const products = response.products
   const collections = JSON.parse(JSON.stringify(rawCollections))
   const categoriesCollections = JSON.parse(JSON.stringify(rawCategoriesCollections))
   const businessHubCollections = JSON.parse(JSON.stringify(rawBusinessHubCollections))
+
+  // Transform guest collections to flatten nested product structure
+  const guestCollections = (rawGuestCollections || []).map((collection: any) => ({
+    ...collection,
+    products: (collection.products || []).map((pc: any) => {
+      const product = pc.product || pc
+      return {
+        id: product.id,
+        title: product.name,
+        name: product.name,
+        slug: product.slug,
+        handle: product.slug,
+        thumbnail: product.thumbnail_url || product.thumbnail,
+        price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
+      }
+    })
+  }))
 
   // Fetch Business Hub data for business users
   let businessHubData = null
@@ -79,7 +100,7 @@ export default async function HomePage() {
     .map((p: any) => p.name)
 
   // For logged-in users, show the dashboard-style layout
-  if (userType !== "guest") {
+  if (!isGuest) {
     return (
       <>
         {/* Desktop View - Website-like UI */}
@@ -113,7 +134,7 @@ export default async function HomePage() {
     )
   }
 
-  // For guest users, show the marketing-focused layout
+  // For guest users, show the marketing-focused layout with guest-safe collections
   return (
     <>
       {/* Desktop View - Website-like UI */}
@@ -124,6 +145,7 @@ export default async function HomePage() {
           testimonials={serializedTestimonials}
           applications={serializedApplications}
           elevatorTypes={serializedElevatorTypes}
+          collections={guestCollections}
         />
       </div>
 
@@ -135,6 +157,7 @@ export default async function HomePage() {
           applications={serializedApplications}
           elevatorTypes={serializedElevatorTypes}
           testimonials={serializedTestimonials}
+          collections={guestCollections}
         />
       </div>
     </>

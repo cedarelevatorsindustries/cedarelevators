@@ -140,7 +140,7 @@ export function CatalogBanner({
                                                 href={
                                                     type === "application"
                                                         ? `/catalog?application=${slug}&category=${category.slug || category.handle || category.id}`
-                                                        : `/catalog?category=${category.slug || category.handle || category.id}`
+                                                        : `/categories/${slug}?subcategory=${category.slug || category.handle || category.id}`
                                                 }
                                                 className="flex flex-col items-center gap-2 group min-w-[100px]"
                                             >

@@ -14,6 +14,9 @@ interface SearchSuggestions {
         sku: string
         slug: string
         thumbnail?: string
+        price?: number
+        category?: string
+        tags?: string[]
     }>
     categories: Array<{
         id: string
@@ -56,10 +59,25 @@ export function StoreSearchBar() {
     const fetchSuggestions = async (q: string) => {
         setIsLoading(true)
         try {
-            const res = await fetch(`/api/store/search/suggestions?q=${encodeURIComponent(q)}`)
+            // Use new search API with PostgreSQL full-text search
+            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`)
             const data = await res.json()
-            if (data.success) {
-                setSuggestions(data.suggestions)
+
+            if (data.success && data.results) {
+                // Transform results to match expected format
+                setSuggestions({
+                    products: data.results.map((result: any) => ({
+                        id: result.id,
+                        name: result.name,
+                        sku: result.sku || '',
+                        slug: result.slug,
+                        thumbnail: result.thumbnail_url,
+                        price: result.price,
+                        category: result.category_name,
+                        tags: result.tags || []
+                    })),
+                    categories: [] // Categories are not included in product search
+                })
                 setShowSuggestions(true)
             }
         } catch (error) {
@@ -136,8 +154,29 @@ export function StoreSearchBar() {
                                         )}
                                         <div className="flex-1 min-w-0">
                                             <div className="font-medium text-gray-900 truncate">{product.name}</div>
-                                            <div className="text-xs text-gray-500 font-mono">{product.sku}</div>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                {product.sku && (
+                                                    <span className="text-xs text-gray-500 font-mono">{product.sku}</span>
+                                                )}
+                                                {product.category && (
+                                                    <span className="text-xs text-gray-400">• {product.category}</span>
+                                                )}
+                                            </div>
+                                            {product.tags && product.tags.length > 0 && (
+                                                <div className="flex gap-1 mt-1">
+                                                    {product.tags.slice(0, 3).map((tag, idx) => (
+                                                        <span key={idx} className="text-[10px] bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
+                                        {product.price && (
+                                            <div className="text-sm font-semibold text-gray-900">
+                                                ₹{product.price.toLocaleString()}
+                                            </div>
+                                        )}
                                     </div>
                                 </Link>
                             ))}

@@ -12,7 +12,9 @@ export type DisplayContext = 'homepage' | 'categories' | 'business_hub'
  * - business_hub: Returns business-specific collections
  */
 export async function getCollectionsByDisplayContext(
-    context: DisplayContext
+    context: DisplayContext,
+    forGuest: boolean = false,
+    categoryId?: string
 ): Promise<{ success: boolean; collections: Collection[]; error?: string }> {
     try {
         const supabase = createServerSupabaseClient()
@@ -27,19 +29,40 @@ export async function getCollectionsByDisplayContext(
             .eq('is_active', true)
             .order('display_order', { ascending: true })
 
+        // Filter by show_in_guest for guest users
+        if (forGuest) {
+            query = query.eq('show_in_guest', true)
+        }
+
         // Apply context-specific filters using appropriate collection_type
         if (context === 'homepage') {
-            // Homepage: general collections
+            // Homepage: general collections (exclude category-specific and business-specific)
             query = query.eq('collection_type', 'general')
         } else if (context === 'categories') {
-            // Categories tab: category_specific collections
-            query = query.eq('collection_type', 'category_specific')
+            // Categories context logic
+            if (categoryId) {
+                // If specific category page: Show ANY collection linked to this category
+                // Explicit matching overrides collection_type
+                query = query.eq('category_id', categoryId)
+            } else {
+                // Homepage Categories Tab: Show collections marked as 'category_specific'
+                query = query.eq('collection_type', 'category_specific')
+            }
         } else if (context === 'business_hub') {
             // Business Hub: business_specific collections
             query = query.eq('collection_type', 'business_specific')
         }
 
         const { data, error } = await query
+
+        console.log('[getCollectionsByDisplayContext] Query result:', {
+            context,
+            forGuest,
+            categoryId,
+            dataCount: data?.length || 0,
+            error: error?.message,
+            firstCollection: data?.[0]
+        })
 
         if (error) {
             console.error(`Error fetching collections for ${context}:`, error)
@@ -58,7 +81,9 @@ export async function getCollectionsByDisplayContext(
  */
 export async function getCollectionsWithProductsByDisplayContext(
     context: DisplayContext,
-    limit?: number
+    limit?: number,
+    forGuest: boolean = false,
+    categoryId?: string
 ): Promise<{ success: boolean; collections: CollectionWithProducts[]; error?: string }> {
     try {
         const supabase = createServerSupabaseClient()
@@ -67,8 +92,8 @@ export async function getCollectionsWithProductsByDisplayContext(
             return { success: false, collections: [], error: 'Failed to create Supabase client' }
         }
 
-        // First get collections by context
-        const { success, collections, error } = await getCollectionsByDisplayContext(context)
+        // First get collections by context (pass forGuest and categoryId filters)
+        const { success, collections, error } = await getCollectionsByDisplayContext(context, forGuest, categoryId)
 
         if (!success || !collections) {
             return { success: false, collections: [], error }
@@ -82,7 +107,7 @@ export async function getCollectionsWithProductsByDisplayContext(
         // Fetch products for each collection
         const collectionsWithProducts = await Promise.all(
             limitedCollections.map(async (collection) => {
-                const { data: collectionProducts } = await supabase
+                const { data: collectionProducts, error: productsError } = await supabase
                     .from('product_collections')
                     .select(`
                         id,
@@ -94,7 +119,7 @@ export async function getCollectionsWithProductsByDisplayContext(
                             id,
                             name,
                             slug,
-                            thumbnail,
+                            thumbnail_url,
                             price,
                             status
                         )
@@ -102,6 +127,10 @@ export async function getCollectionsWithProductsByDisplayContext(
                     .eq('collection_id', collection.id)
                     .order('position', { ascending: true })
                     .limit(20) // Limit products per collection
+
+                if (productsError) {
+                    console.error(`Error fetching products for collection ${collection.id}:`, productsError)
+                }
 
                 // Map the response to match ProductInCollection type
                 const products = (collectionProducts || []).map((cp: any) => ({
@@ -120,6 +149,14 @@ export async function getCollectionsWithProductsByDisplayContext(
                 } as unknown as CollectionWithProducts
             })
         )
+
+        console.log('[getCollectionsWithProductsByDisplayContext] Final result:', {
+            context,
+            forGuest,
+            categoryId,
+            collectionsCount: collectionsWithProducts.length,
+            firstCollectionProductCount: collectionsWithProducts[0]?.products?.length || 0
+        })
 
         return { success: true, collections: collectionsWithProducts }
     } catch (error: any) {

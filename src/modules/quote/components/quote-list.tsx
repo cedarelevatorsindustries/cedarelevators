@@ -6,14 +6,16 @@ import { format } from 'date-fns';
 import { Quote, UserType } from '../types';
 import { QuoteStatusBadge } from './quote-status-badge'; // We need to create this
 import Image from 'next/image';
+import DynamicCollectionSection from '@/components/common/DynamicCollectionSection';
 
 interface QuoteListProps {
     userType: UserType | 'verified';
     quotes: Quote[];
     isLoading?: boolean;
+    collections?: any[];
 }
 
-export function QuoteList({ userType, quotes, isLoading }: QuoteListProps) {
+export function QuoteList({ userType, quotes, isLoading, collections = [] }: QuoteListProps) {
     const isVerified = userType === 'verified' || (userType === 'business' /* && check status */);
     // Simplified prop for now, assuming parent passes refined userType
 
@@ -23,26 +25,51 @@ export function QuoteList({ userType, quotes, isLoading }: QuoteListProps) {
 
     if (quotes.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 px-4 rounded-lg bg-white">
-                <div className="relative w-64 h-64 mb-6">
-                    <Image
-                        src="/empty-states/empty-quotes.png"
-                        alt="No quotes found"
-                        fill
-                        className="object-contain"
-                        priority
-                    />
+            <div className="space-y-8">
+                <div className="flex flex-col items-center justify-center py-12 px-4 rounded-lg bg-white">
+                    <div className="relative w-64 h-64 mb-6">
+                        <Image
+                            src="/empty-states/empty-quotes.png"
+                            alt="No quotes found"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No quotes requested yet</h3>
+                    <p className="text-gray-500 mb-8 text-center max-w-sm">
+                        It looks like you haven't requested any quotes. Browse our products and request a quote to get started.
+                    </p>
+                    <Link
+                        href="/quotes/new"
+                        className="bg-cedar-orange text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-none"
+                    >
+                        Request a New Quote
+                    </Link>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No quotes requested yet</h3>
-                <p className="text-gray-500 mb-8 text-center max-w-sm">
-                    It looks like you haven't requested any quotes. Browse our products and request a quote to get started.
-                </p>
-                <Link
-                    href="/quotes/new"
-                    className="bg-cedar-orange text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-none"
-                >
-                    Request a New Quote
-                </Link>
+
+                {/* Business Collections (Empty State) */}
+                {collections.length > 0 && (
+                    <div className="pt-8 border-t border-gray-100">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
+                        <div className="space-y-8">
+                            {collections.map((collection) => (
+                                <DynamicCollectionSection
+                                    key={collection.id}
+                                    collection={{
+                                        ...collection,
+                                        isActive: true, // Force active for display
+                                        products: collection.products.map((p: any) => ({
+                                            ...p,
+                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                                        }))
+                                    }}
+                                    variant="mobile" /* Optimizing for mobile view as requested */
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -112,7 +139,33 @@ export function QuoteList({ userType, quotes, isLoading }: QuoteListProps) {
                     </Link>
                 ))}
             </div>
-        </div>
+
+
+            {/* Business Collections (With Content) */}
+            {
+                collections.length > 0 && (
+                    <div className="pt-8 border-t border-gray-100">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
+                        <div className="space-y-8">
+                            {collections.map((collection) => (
+                                <DynamicCollectionSection
+                                    key={collection.id}
+                                    collection={{
+                                        ...collection,
+                                        isActive: true, // Force active for display
+                                        products: collection.products.map((p: any) => ({
+                                            ...p,
+                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                                        }))
+                                    }}
+                                    variant="mobile" /* Optimizing for mobile view as requested */
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }
 

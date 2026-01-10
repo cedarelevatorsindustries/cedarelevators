@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation"
 import ProductCard from "@/components/ui/product-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { FilterBottomSheet } from "@/modules/catalog/components/filters"
+import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 
 interface SubcategoryTemplateProps {
   category: ProductCategory
   products: Product[]
   allCategories: ProductCategory[]
+  collections?: any[]
   onBack?: () => void
 }
 
@@ -19,6 +21,7 @@ export default function SubcategoryTemplate({
   category,
   products,
   allCategories,
+  collections = [],
   onBack
 }: SubcategoryTemplateProps): ReactElement {
   const router = useRouter()
@@ -204,6 +207,25 @@ export default function SubcategoryTemplate({
 
           {/* Products Grid - Scrollable */}
           <div className="flex-1 overflow-y-auto">
+            {/* Render collections if available */}
+            {collections.length > 0 && (
+              <div className="p-3 pb-0 space-y-4">
+                {collections.map((collection) => (
+                  <DynamicCollectionSection
+                    key={collection.id}
+                    collection={{
+                      ...collection,
+                      products: collection.products.map((p: any) => ({
+                        ...p,
+                        price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                      }))
+                    }}
+                  />
+                ))}
+                <div className="border-b border-gray-100 my-4" />
+              </div>
+            )}
+
             <div className="p-3">
               {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
