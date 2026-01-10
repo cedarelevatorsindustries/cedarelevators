@@ -13,11 +13,11 @@ export default function FooterLite() {
     async function fetchSettings() {
       try {
         const { data } = await getStoreSettings()
-        if (data?.contact_phone) {
-          setContactPhone(data.contact_phone)
+        if (data?.support_phone) {
+          setContactPhone(data.support_phone)
         }
-        if (data?.contact_email) {
-          setContactEmail(data.contact_email)
+        if (data?.support_email) {
+          setContactEmail(data.support_email)
         }
       } catch (error) {
         console.error("Failed to fetch store settings for mobile footer", error)

@@ -2,6 +2,7 @@
 
 import { createClerkSupabaseClient } from "@/lib/supabase/server"
 import { Order } from "@/lib/types/domain"
+import { OrderWithDetails } from "@/lib/types/orders"
 
 
 interface OrderSummary {
@@ -63,3 +64,26 @@ export async function getOrderSummary(customerId: string): Promise<OrderSummary>
   }
 }
 
+export async function getOrderById(orderId: string): Promise<OrderWithDetails | null> {
+  try {
+    const supabase = await createClerkSupabaseClient()
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (*)
+      `)
+      .eq('id', orderId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching order by ID:', error)
+      return null
+    }
+
+    return data as OrderWithDetails
+  } catch (error) {
+    console.error('Error fetching order by ID:', error)
+    return null
+  }
+}

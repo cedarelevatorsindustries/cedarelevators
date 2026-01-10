@@ -42,6 +42,16 @@ export async function searchProducts(
 
         const supabase = createServerSupabaseClient()
 
+        if (!supabase) {
+            console.error('[searchProducts] Failed to create Supabase client')
+            return {
+                success: false,
+                results: [],
+                total: 0,
+                error: 'Failed to create database client'
+            }
+        }
+
         // Sanitize query for PostgreSQL full-text search
         // Replace spaces with & for AND operation, escape special characters
         const sanitizedQuery = query
@@ -109,6 +119,17 @@ async function fallbackSearch(
 ): Promise<SearchResponse> {
     try {
         const supabase = createServerSupabaseClient()
+
+        if (!supabase) {
+            console.error('[fallbackSearch] Failed to create Supabase client')
+            return {
+                success: false,
+                results: [],
+                total: 0,
+                error: 'Failed to create database client'
+            }
+        }
+
         const searchPattern = `%${query}%`
 
         const { data: products, error } = await supabase

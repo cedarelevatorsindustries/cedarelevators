@@ -33,57 +33,57 @@ function SSOCallbackContent() {
 
     // Wait for user to be loaded after OAuth completion
     if (user) {
-      setIsProcessing(true)
-      console.log("User loaded in SSO callback:", user.id)
-      console.log("Created at:", user.createdAt)
-      console.log("Last sign in at:", user.lastSignInAt)
-      console.log("User metadata:", user.unsafeMetadata, user.publicMetadata)
+      const processUser = async () => {
+        setIsProcessing(true)
+        console.log("User loaded in SSO callback:", user.id)
+        console.log("Created at:", user.createdAt)
+        console.log("Last sign in at:", user.lastSignInAt)
+        console.log("User metadata:", user.unsafeMetadata, user.publicMetadata)
 
-      // Check if user has account type already set
-      const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
+        // Check if user has account type already set
+        const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
 
-      if (accountType) {
-        // Existing user with account type - check if business and redirect accordingly
-        console.log("Existing user with account type:", accountType, "- checking verification status")
+        if (accountType) {
+          // Existing user with account type - check if business and redirect accordingly
+          console.log("Existing user with account type:", accountType, "- checking verification status")
 
-        // Check business verification status
-        try {
-          const response = await fetch('/api/auth/user-profile')
-          if (response.ok) {
-            const { activeProfile, isVerified } = await response.json()
+          // Check business verification status
+          try {
+            const response = await fetch('/api/auth/user-profile')
+            if (response.ok) {
+              const { activeProfile, isVerified } = await response.json()
 
-            // If business user and not verified, redirect to profile verification page
-            if (activeProfile?.profile_type === 'business' && !isVerified) {
-              console.log("Business user not verified - redirecting to profile")
-              router.push('/profile/business')
-              return
+              // If business user and not verified, redirect to profile verification page
+              if (activeProfile?.profile_type === 'business' && !isVerified) {
+                console.log("Business user not verified - redirecting to profile")
+                router.push('/profile/business')
+                return
+              }
             }
+          } catch (error) {
+            console.error('Error checking user profile:', error)
           }
-        } catch (error) {
-          console.error('Error checking user profile:', error)
+
+          // Default redirect to homepage
+          router.push("/")
+          return
         }
 
-        // Default redirect to homepage
-        router.push("/")
-        return
-      }
+        // Check for account type from URL params first (most reliable), then sessionStorage (fallback)
+        const accountTypeFromUrl = searchParams.get('accountType')
+        const pendingAccountType = accountTypeFromUrl || (typeof window !== 'undefined' ? sessionStorage.getItem('pendingAccountType') : null)
 
-      // Check for account type from URL params first (most reliable), then sessionStorage (fallback)
-      const accountTypeFromUrl = searchParams.get('accountType')
-      const pendingAccountType = accountTypeFromUrl || (typeof window !== 'undefined' ? sessionStorage.getItem('pendingAccountType') : null)
+        console.log("Account type from URL:", accountTypeFromUrl)
+        console.log("Final pending account type:", pendingAccountType)
 
-      console.log("Account type from URL:", accountTypeFromUrl)
-      console.log("Final pending account type:", pendingAccountType)
+        if (pendingAccountType) {
+          console.log("Pending account type found:", pendingAccountType)
+          // Clear the pending account type immediately
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('pendingAccountType')
+          }
 
-      if (pendingAccountType) {
-        console.log("Pending account type found:", pendingAccountType)
-        // Clear the pending account type immediately
-        if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('pendingAccountType')
-        }
-
-        // Set the account type via API
-        const setAccountType = async () => {
+          // Set the account type via API
           try {
             const response = await fetch("/api/auth/set-account-type", {
               method: "POST",
@@ -106,24 +106,24 @@ function SSOCallbackContent() {
             // Even on error, redirect to choose-type instead of staying stuck
             router.push("/choose-type")
           }
+          return
         }
 
-        setAccountType()
-        return
+        // Check if this is a brand new user (first time signing up)
+        const isNewUser = user.createdAt?.getTime() === user.lastSignInAt?.getTime()
+
+        if (isNewUser) {
+          // New user: First sign-up, redirect to choose-type page
+          console.log("New user detected - redirecting to choose-type")
+          router.push("/choose-type")
+        } else {
+          // Existing user but no account type set - redirect to choose-type
+          console.log("Existing user without account type - redirecting to choose-type")
+          router.push("/choose-type")
+        }
       }
 
-      // Check if this is a brand new user (first time signing up)
-      const isNewUser = user.createdAt?.getTime() === user.lastSignInAt?.getTime()
-
-      if (isNewUser) {
-        // New user: First sign-up, redirect to choose-type page
-        console.log("New user detected - redirecting to choose-type")
-        router.push("/choose-type")
-      } else {
-        // Existing user but no account type set - redirect to choose-type
-        console.log("Existing user without account type - redirecting to choose-type")
-        router.push("/choose-type")
-      }
+      processUser()
     }
   }, [user, isLoaded, router, isProcessing, callbackComplete, searchParams])
 

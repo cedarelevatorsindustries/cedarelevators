@@ -42,7 +42,7 @@ export async function FeaturedProductsSection({
             }
         }),
         isActive: dbCollection.is_active,
-        sortOrder: dbCollection.sort_order,
+        sortOrder: 0, // Default sort order
         showViewAll: true,
         ...(isMobile ? {} : { metadata: { priority: 'high' } })
     } : null
