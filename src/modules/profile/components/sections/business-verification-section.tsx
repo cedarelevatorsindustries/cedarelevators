@@ -367,7 +367,7 @@ export default function BusinessVerificationSection({
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
               >
-                {isSubmitting ? 'Saving...' : status === 'rejected' ? 'Resubmit' : 'Save Information'}
+                {isSubmitting ? 'Submitting...' : status === 'rejected' ? 'Resubmit Verification' : 'Verify Business'}
               </button>
             </div>
           </form>
