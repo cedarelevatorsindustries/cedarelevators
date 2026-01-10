@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server'
 import type { CategoryFormData } from '@/lib/types/categories'
 
 // =============================================
@@ -18,6 +18,28 @@ function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
 // =============================================
 // GET SUBCATEGORIES BY PARENT ID
 // =============================================
+
+// =============================================
+// GET ALL SUBCATEGORIES
+// =============================================
+
+export async function getAllSubcategories() {
+    try {
+        const supabase = createAdminClient()
+
+        const { data, error } = await supabase
+            .from('subcategories')
+            .select('*')
+            .order('title', { ascending: true })
+
+        if (error) throw error
+
+        return { subcategories: data, success: true }
+    } catch (error) {
+        console.error('Error fetching all subcategories:', error)
+        return { subcategories: [], error: 'Failed to fetch subcategories', success: false }
+    }
+}
 
 export async function getSubcategoriesByParentId(parentId: string) {
     try {
@@ -58,8 +80,11 @@ export async function getSubcategoriesByParentId(parentId: string) {
                 return {
                     ...sub,
                     name: sub.title,
+                    slug: sub.handle || sub.slug,
+                    thumbnail: sub.thumbnail_image || sub.thumbnail,
                     parent_id: parentId,
-                    product_count: count || 0
+                    product_count: count || 0,
+                    status: sub.status || 'active'
                 }
             })
         )
@@ -113,7 +138,7 @@ export async function getSubcategoryById(id: string) {
 
 export async function createSubcategory(formData: CategoryFormData) {
     try {
-        const supabase = ensureSupabase(createServerSupabaseClient())
+        const supabase = createAdminClient()
 
         if (!formData.parent_id) {
             throw new Error('parent_id is required for creating a subcategory')
@@ -152,15 +177,17 @@ export async function createSubcategory(formData: CategoryFormData) {
             .from('category_subcategories')
             .insert({
                 category_id: formData.parent_id,
-                subcategory_id: data.id
+                subcategory_id: data.id,
+                sort_order: 0
             })
 
         if (junctionError) {
             console.error('Error creating subcategory relationship:', junctionError)
-            // Don't throw here, the subcategory was created successfully
-        } else {
-            console.log('[createSubcategory] Successfully created subcategory relationship')
+            // Throw error since junction entry is critical
+            throw new Error(`Failed to link subcategory: ${junctionError.message}`)
         }
+
+        console.log('[createSubcategory] Successfully created subcategory relationship')
 
         revalidatePath('/admin/categories')
         revalidatePath('/')

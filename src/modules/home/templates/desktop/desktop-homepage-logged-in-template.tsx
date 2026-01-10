@@ -7,10 +7,25 @@ import type { Application } from "@/lib/data/applications"
 import type { ElevatorType } from "@/lib/data/elevator-types"
 import HeroLite from "../../components/common/hero-lite"
 import { WelcomeSection } from "../../components/common/welcome-section"
-import ProductsTab from "../../components/desktop/tab-content/product"
-import CategoriesTab from "../../components/desktop/tab-content/categories"
-import BusinessHubTab from "../../components/desktop/tab-content/business-hub"
-import { ApplicationsSection } from "@/components/store/applications-section"
+import dynamic from "next/dynamic"
+
+// Lazy load below-the-fold components
+const ProductsTab = dynamic(() => import("../../components/desktop/tab-content/product"), {
+  loading: () => <div className="h-[500px] w-full animate-pulse bg-gray-50/50 rounded-lg" />,
+  ssr: true
+})
+const CategoriesTab = dynamic(() => import("../../components/desktop/tab-content/categories"), {
+  loading: () => <div className="h-[500px] w-full animate-pulse bg-gray-50/50 rounded-lg" />,
+  ssr: true
+})
+const BusinessHubTab = dynamic(() => import("../../components/desktop/tab-content/business-hub"), {
+  loading: () => <div className="h-[500px] w-full animate-pulse bg-gray-50/50 rounded-lg" />,
+  ssr: false // Business hub is client-heavy
+})
+const ApplicationsSection = dynamic(() => import("@/components/store/applications-section").then(mod => mod.ApplicationsSection), {
+  loading: () => <div className="h-24 w-full animate-pulse bg-gray-100 rounded-lg mb-8" />,
+  ssr: true
+})
 
 interface DesktopHomepageLoggedInProps {
   products: Product[]

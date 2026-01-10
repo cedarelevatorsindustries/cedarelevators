@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useTransition } from "react"
 import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
+import { useUserPricing } from "@/lib/hooks/useUserPricing"
 import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare, Package } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -56,12 +57,11 @@ export default function MobileProductDetailPage({
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
   const [fullScreenImageIndex, setFullScreenImageIndex] = useState(0)
 
-  // User type and pricing logic
-  const isGuest = !user
-  const accountType = user?.unsafeMetadata?.accountType as string | undefined
-  const isBusiness = accountType === "business"
-  const isVerified = user?.unsafeMetadata?.is_verified === true
-  const showPrice = isBusiness && isVerified
+  // User type and pricing logic - Use hook for correct pricing visibility
+  const { userType, isVerified, canSeePrices } = useUserPricing()
+  const isGuest = userType === 'guest'
+  const isBusiness = userType === 'business'
+  const showPrice = canSeePrices
 
   const price = (product as any).price || product.price?.amount || 0
   const originalPrice = (product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null
@@ -601,7 +601,7 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
                   >
                     Login
                   </Link>
-                ) : accountType === "individual" ? (
+                ) : userType === "individual" ? (
                   <Link
                     href="/profile/account"
                     className="px-4 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"

@@ -12,6 +12,10 @@ import type { Collection, CollectionWithProducts } from "@/lib/types/collections
 // GET HOMEPAGE COLLECTIONS (General only, 5 products)
 // =============================================
 
+// =============================================
+// GET HOMEPAGE COLLECTIONS (General only, 5 products)
+// =============================================
+
 export async function getHomepageCollections(limit = 5) {
     try {
         const supabase = await createClerkSupabaseClient()

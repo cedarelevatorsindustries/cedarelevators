@@ -257,9 +257,12 @@ export default function ProductCard({
           )}
 
           {/* Badge - Inside Image Overlay (Top Left) */}
-          <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm z-10">
-            {badge === "top-application" ? "Top Application" : categoryType}
-          </div>
+          {/* Badge - Inside Image Overlay (Top Left) */}
+          {badge && (
+            <div className={`absolute top-2 left-2 ${badge === 'top-application' ? 'bg-blue-600' : 'bg-red-500'} text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm z-10`}>
+              {badge === "top-application" ? "Top Application" : badgeConfig?.text || badge}
+            </div>
+          )}
 
           {/* Wishlist - Top Right */}
           <button

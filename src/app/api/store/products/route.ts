@@ -25,6 +25,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { FilterService, parseFilterParams } from '@/lib/services/filterService'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+// Search params make this route dynamic
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
@@ -64,4 +65,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

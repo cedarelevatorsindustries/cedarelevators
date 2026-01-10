@@ -16,39 +16,35 @@ export const metadata: Metadata = {
   description: "India's leading B2B marketplace for premium elevator components. ISO certified quality, pan-India delivery, and 2-year warranty on all products.",
 }
 
+// Enable Incremental Static Regeneration with 1-hour revalidation
+export const revalidate = 3600 // 1 hour
+
 export default async function HomePage() {
   // Get user type from Clerk
   const userType = await getUserType()
 
-  // Fetch products from Medusa backend
-  const { response } = await listProducts({
-    queryParams: { limit: 20 }
-  })
+  // Fetch all data in parallel for better performance
+  const [
+    { response },
+    categories,
+    applications,
+    elevatorTypes,
+    { collections: rawCollections },
+    { collections: rawCategoriesCollections },
+    { collections: rawBusinessHubCollections },
+  ] = await Promise.all([
+    listProducts({ queryParams: { limit: 20 } }),
+    listCategories({ parent_id: null, include_descendants_tree: true }),
+    listApplications(),
+    listElevatorTypes(),
+    getCollectionsWithProductsByDisplayContext("homepage"),
+    getCollectionsWithProductsByDisplayContext("categories"),
+    getCollectionsWithProductsByDisplayContext("business_hub"),
+  ])
 
   const products = response.products
-
-  // Fetch categories
-  const categories = await listCategories({
-    parent_id: null,
-    include_descendants_tree: true
-  })
-
-  // Fetch applications
-  const applications = await listApplications()
-
-  // Fetch elevator types
-  const elevatorTypes = await listElevatorTypes()
-
-  // Fetch normal collections WITH PRODUCTS for homepage (ProductsTab)
-  const { collections: rawCollections } = await getCollectionsWithProductsByDisplayContext("homepage")
   const collections = JSON.parse(JSON.stringify(rawCollections))
-
-  // Fetch special collections WITH PRODUCTS for Categories Tab
-  const { collections: rawCategoriesCollections } = await getCollectionsWithProductsByDisplayContext("categories")
   const categoriesCollections = JSON.parse(JSON.stringify(rawCategoriesCollections))
-
-  // Fetch special collections WITH PRODUCTS for Business Hub
-  const { collections: rawBusinessHubCollections } = await getCollectionsWithProductsByDisplayContext("business_hub")
   const businessHubCollections = JSON.parse(JSON.stringify(rawBusinessHubCollections))
 
   // Fetch Business Hub data for business users
@@ -144,4 +140,3 @@ export default async function HomePage() {
     </>
   )
 }
-

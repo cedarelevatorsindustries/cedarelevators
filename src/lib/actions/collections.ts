@@ -26,20 +26,12 @@ export async function getCollections(filters?: CollectionFilters) {
         let query = supabase
             .from('collections')
             .select('*', { count: 'exact' })
-            .order('sort_order', { ascending: true })
+            .order('display_order', { ascending: true })
             .order('title', { ascending: true })
 
         // Apply filters
-        if (filters?.type) {
-            query = query.eq('type', filters.type)
-        }
-
         if (filters?.is_active !== undefined) {
             query = query.eq('is_active', filters.is_active)
-        }
-
-        if (filters?.is_featured !== undefined) {
-            query = query.eq('is_featured', filters.is_featured)
         }
 
         // Context filters
@@ -81,11 +73,13 @@ export async function getCollections(filters?: CollectionFilters) {
             })
         )
 
-        const stats = await getCollectionStats()
-
         return {
             collections: collectionsWithCounts,
-            stats,
+            stats: {
+                total: count || 0,
+                active: collectionsWithCounts.filter(c => c.is_active).length,
+                total_products: 0 // Simplification
+            },
             success: true,
             pagination: {
                 page,
@@ -208,42 +202,12 @@ export async function createCollection(formData: CollectionFormData) {
     try {
         const supabase = await createClerkSupabaseClient()
 
-        // Validate display_type and special_locations
-        const displayType = formData.display_type || 'normal'
-        const specialLocations = formData.special_locations || []
-
-        // Validation: special collections must have at least one location
-        if (displayType === 'special' && specialLocations.length === 0) {
-            return {
-                collection: null,
-                error: 'Special collections must have at least one location selected',
-                success: false
-            }
-        }
-
-        // Validation: normal collections cannot have special locations
-        if (displayType === 'normal' && specialLocations.length > 0) {
-            return {
-                collection: null,
-                error: 'Normal collections cannot have special locations',
-                success: false
-            }
-        }
-
         const { data, error } = await supabase
             .from('collections')
             .insert({
                 title: formData.title,
                 slug: formData.slug,
                 description: formData.description,
-                image_url: formData.image_url, // DEPRECATED: Use thumbnail_image instead
-                thumbnail_image: formData.thumbnail_image,
-                banner_image: formData.banner_image,
-                image_alt: formData.image_alt,
-                type: formData.type || 'manual',
-                is_active: formData.is_active !== false,
-                is_featured: formData.is_featured || false,
-                sort_order: formData.sort_order || 0,
                 meta_title: formData.meta_title,
                 meta_description: formData.meta_description,
                 // Context fields
@@ -251,9 +215,11 @@ export async function createCollection(formData: CollectionFormData) {
                 category_id: formData.category_id || null,
                 is_business_only: formData.is_business_only || false,
                 display_order: formData.display_order || 0,
-                // Display type system
-                display_type: displayType,
-                special_locations: specialLocations
+                // Validated new field
+                show_in_guest: formData.show_in_guest ?? true,
+                // STATUS logic: active -> is_active=true, draft/archived -> is_active=false
+                status: formData.status || 'draft',
+                is_active: formData.status === 'active'
             })
             .select()
             .single()
@@ -294,14 +260,7 @@ export async function updateCollection(id: string, formData: Partial<CollectionF
         if (formData.title !== undefined) updateData.title = formData.title
         if (formData.slug !== undefined) updateData.slug = formData.slug
         if (formData.description !== undefined) updateData.description = formData.description
-        if (formData.image_url !== undefined) updateData.image_url = formData.image_url // DEPRECATED
-        if (formData.thumbnail_image !== undefined) updateData.thumbnail_image = formData.thumbnail_image
-        if (formData.banner_image !== undefined) updateData.banner_image = formData.banner_image
-        if (formData.image_alt !== undefined) updateData.image_alt = formData.image_alt
-        if (formData.type !== undefined) updateData.type = formData.type
         if (formData.is_active !== undefined) updateData.is_active = formData.is_active
-        if (formData.is_featured !== undefined) updateData.is_featured = formData.is_featured
-        if (formData.sort_order !== undefined) updateData.sort_order = formData.sort_order
         if (formData.meta_title !== undefined) updateData.meta_title = formData.meta_title
         if (formData.meta_description !== undefined) updateData.meta_description = formData.meta_description
         // Context fields
@@ -309,29 +268,17 @@ export async function updateCollection(id: string, formData: Partial<CollectionF
         if (formData.category_id !== undefined) updateData.category_id = formData.category_id
         if (formData.is_business_only !== undefined) updateData.is_business_only = formData.is_business_only
         if (formData.display_order !== undefined) updateData.display_order = formData.display_order
-
-        // Display type system fields
-        if (formData.display_type !== undefined) {
-            updateData.display_type = formData.display_type
-
-            // Validate: if changing to special, must have locations
-            if (formData.display_type === 'special') {
-                const specialLocations = formData.special_locations || []
-                if (specialLocations.length === 0) {
-                    return {
-                        collection: null,
-                        error: 'Special collections must have at least one location selected',
-                        success: false
-                    }
-                }
-                updateData.special_locations = specialLocations
-            } else {
-                // If changing to normal, clear special_locations
-                updateData.special_locations = []
-            }
-        } else if (formData.special_locations !== undefined) {
-            // If only updating special_locations, validate against current display_type
-            updateData.special_locations = formData.special_locations
+        // New Field
+        if (formData.show_in_guest !== undefined) updateData.show_in_guest = formData.show_in_guest
+        // Status & Active sync
+        if (formData.status !== undefined) {
+            updateData.status = formData.status
+            updateData.is_active = formData.status === 'active'
+        } else if (formData.is_active !== undefined) {
+            // Backward compatibility: if only is_active is passed
+            updateData.is_active = formData.is_active
+            // Don't overwrite status if not provided, or infer? 
+            // Better to prefer status if available.
         }
 
         const { data, error } = await supabase
@@ -576,11 +523,6 @@ export async function getCollectionStats(): Promise<CollectionStats> {
             .select('*', { count: 'exact', head: true })
             .eq('is_active', true)
 
-        const { count: featured } = await supabase
-            .from('collections')
-            .select('*', { count: 'exact', head: true })
-            .eq('is_featured', true)
-
         const { count: totalProducts } = await supabase
             .from('product_collections')
             .select('*', { count: 'exact', head: true })
@@ -588,7 +530,6 @@ export async function getCollectionStats(): Promise<CollectionStats> {
         return {
             total: total || 0,
             active: active || 0,
-            featured: featured || 0,
             total_products: totalProducts || 0
         }
     } catch (error) {
@@ -596,7 +537,6 @@ export async function getCollectionStats(): Promise<CollectionStats> {
         return {
             total: 0,
             active: 0,
-            featured: 0,
             total_products: 0
         }
     }
@@ -606,103 +546,6 @@ export async function getCollectionStats(): Promise<CollectionStats> {
 // GET COLLECTIONS FOR DISPLAY LOCATION
 // =============================================
 
-export async function getCollectionsForDisplay(location: string) {
-    try {
-        const supabase = await createClerkSupabaseClient()
+// REMOVED getCollectionsForDisplay - Use getCollections with appropriate context filters instead
 
-        // Get collections filtered by display_location
-        const { data: collections, error } = await supabase
-            .from('collections')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order', { ascending: true })
-            .order('title', { ascending: true })
-
-        if (error) throw error
-
-        // Filter collections that include this location in their display_location array
-        const filteredCollections = (collections || []).filter(collection => {
-            const displayLocations = collection.display_location as string[] || []
-            return displayLocations.includes(location)
-        })
-
-        // Get products for each collection
-        const collectionsWithProducts = await Promise.all(
-            filteredCollections.map(async (collection) => {
-                const { data: productCollections } = await supabase
-                    .from('product_collections')
-                    .select(`
-                        id,
-                        product_id,
-                        collection_id,
-                        position,
-                        products (
-                            id,
-                            name,
-                            slug,
-                            thumbnail,
-                            price,
-                            status,
-                            description,
-                            created_at,
-                            handle,
-                            variants,
-                            metadata,
-                            categories
-                        )
-                    `)
-                    .eq('collection_id', collection.id)
-                    .order('position', { ascending: true })
-
-                // Transform to match expected Product format
-                const products = (productCollections || []).map(pc => {
-                    const product = pc.products as any
-                    return {
-                        id: product.id,
-                        title: product.name,
-                        name: product.name,
-                        slug: product.slug,
-                        handle: product.handle || product.slug,
-                        thumbnail: product.thumbnail,
-                        price: product.price ? {
-                            amount: product.price,
-                            currency_code: 'INR'
-                        } : undefined,
-                        variants: product.variants || [],
-                        description: product.description,
-                        metadata: product.metadata,
-                        categories: product.categories,
-                        created_at: product.created_at
-                    }
-                })
-
-                return {
-                    id: collection.id,
-                    title: collection.title,
-                    description: collection.description,
-                    slug: collection.slug,
-                    displayLocation: collection.display_location || [],
-                    layout: collection.layout || 'grid-5',
-                    icon: collection.icon || 'none',
-                    viewAllLink: collection.view_all_link || `/catalog?collection=${collection.slug}`,
-                    products: products,
-                    isActive: collection.is_active,
-                    sortOrder: collection.sort_order,
-                    showViewAll: collection.show_view_all !== false,
-                    emptyStateMessage: collection.empty_state_message,
-                    metadata: {
-                        thumbnail_image: collection.thumbnail_image,
-                        banner_image: collection.banner_image,
-                        is_featured: collection.is_featured
-                    }
-                }
-            })
-        )
-
-        return { collections: collectionsWithProducts, success: true }
-    } catch (error) {
-        console.error('Error fetching collections for display:', error)
-        return { collections: [], error: 'Failed to fetch collections', success: false }
-    }
-}
 

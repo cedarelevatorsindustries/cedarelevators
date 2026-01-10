@@ -75,10 +75,7 @@ export default function AccountOverviewWrapper() {
         onNavigate={handleNavigate}
       />
 
-      {/* Business Verification Card */}
-      {accountType === 'business' && user.business && (
-        <BusinessVerificationCard business={user.business} />
-      )}
+
     </div>
   )
 }

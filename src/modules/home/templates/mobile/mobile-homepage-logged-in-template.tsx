@@ -4,11 +4,19 @@ import { Product, ProductCategory, Order } from "@/lib/types/domain"
 import {
   HeroLiteMobile
 } from "../../components/mobile"
+import dynamic from "next/dynamic"
 
-import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
+const DynamicCollectionSection = dynamic(() => import("@/components/common/DynamicCollectionSection"), {
+  loading: () => <div className="h-64 w-full animate-pulse bg-gray-50/50 rounded-lg" />,
+  ssr: true
+})
 
 import type { Application } from "@/lib/data/applications"
-import { ApplicationsSection } from "@/components/store/applications-section"
+
+const ApplicationsSection = dynamic(() => import("@/components/store/applications-section").then(mod => mod.ApplicationsSection), {
+  loading: () => <div className="h-24 w-full animate-pulse bg-gray-100 rounded-lg mb-8" />,
+  ssr: true
+})
 
 interface MobileHomepageLoggedInProps {
   products: Product[]

@@ -12,13 +12,12 @@ interface FilterSidebarProps {
 
 export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
   const [expandedSections, setExpandedSections] = useState({
+    sort: true,
     category: true,
-    price: true,
     availability: true,
     grade: false,
     dimensions: false,
     finish: false,
-    rating: false,
     offers: false,
   })
 
@@ -85,6 +84,49 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
         )}
 
         <div className="space-y-6">
+          {/* Sort Filter */}
+          <div>
+            <button
+              onClick={() => toggleSection("sort")}
+              className="flex items-center justify-between w-full mb-4"
+            >
+              <h4 className="font-semibold text-gray-900">Sort By</h4>
+              {expandedSections.sort ? (
+                <ChevronUp className="w-5 h-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-500" />
+              )}
+            </button>
+            {expandedSections.sort && (
+              <div className="space-y-3">
+                {[
+                  { value: "default", label: "Recommended" },
+                  { value: "price_asc", label: "Price: Low to High" },
+                  { value: "price_desc", label: "Price: High to Low" },
+                  { value: "newest", label: "Newest First" },
+                  { value: "popularity", label: "Most Popular" },
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex items-center cursor-pointer group"
+                  >
+                    <input
+                      type="radio"
+                      name="sort"
+                      value={option.value}
+                      className="w-4 h-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <hr className="border-gray-200" />
+
           {/* Category Filter */}
           <div>
             <button
@@ -123,45 +165,6 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
                     </span>
                   </label>
                 ))}
-              </div>
-            )}
-          </div>
-
-          <hr className="border-gray-200" />
-
-          {/* Price Range Filter */}
-          <div>
-            <button
-              onClick={() => toggleSection("price")}
-              className="flex items-center justify-between w-full mb-4"
-            >
-              <h4 className="font-semibold text-gray-900">Price Range</h4>
-              {expandedSections.price ? (
-                <ChevronUp className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {expandedSections.price && (
-              <div>
-                <div className="relative h-2 bg-gray-200 rounded-full mb-4">
-                  <div
-                    className="absolute h-2 bg-orange-600 rounded-full"
-                    style={{ left: "20%", width: "50%" }}
-                  />
-                  <div
-                    className="absolute -top-1.5 w-5 h-5 bg-white border-2 border-orange-600 rounded-full shadow cursor-pointer"
-                    style={{ left: "20%" }}
-                  />
-                  <div
-                    className="absolute -top-1.5 w-5 h-5 bg-white border-2 border-orange-600 rounded-full shadow cursor-pointer"
-                    style={{ left: "70%" }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>₹{priceRange.min.toLocaleString("en-IN")}</span>
-                  <span>₹{priceRange.max.toLocaleString("en-IN")}+</span>
-                </div>
               </div>
             )}
           </div>
@@ -244,49 +247,6 @@ export default function FilterSidebar({ onFilterChange }: FilterSidebarProps) {
                     <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900">
                       {grade.name}
                       <span className="text-gray-500 ml-1">({grade.count})</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <hr className="border-gray-200" />
-
-          {/* Rating Filter */}
-          <div>
-            <button
-              onClick={() => toggleSection("rating")}
-              className="flex items-center justify-between w-full mb-4"
-            >
-              <h4 className="font-semibold text-gray-900">Rating</h4>
-              {expandedSections.rating ? (
-                <ChevronUp className="w-5 h-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {expandedSections.rating && (
-              <div className="space-y-3">
-                {[
-                  { stars: 5, count: 234 },
-                  { stars: 4, count: 456 },
-                  { stars: 3, count: 512 },
-                ].map((rating) => (
-                  <label
-                    key={rating.stars}
-                    className="flex items-center cursor-pointer group"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedFilters.includes(`${rating.stars} Stars`)}
-                      onChange={() => handleFilterToggle(`${rating.stars} Stars`)}
-                      className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                    />
-                    <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 flex items-center">
-                      {"★".repeat(rating.stars)}
-                      {"☆".repeat(5 - rating.stars)} & up
-                      <span className="text-gray-500 ml-1">({rating.count})</span>
                     </span>
                   </label>
                 ))}

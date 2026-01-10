@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 
 export default function VerificationStatusCard() {
   // TODO: Fetch from user profile or Medusa metadata
@@ -78,9 +79,12 @@ export default function VerificationStatusCard() {
 
           {/* Action Button - Only show if not verified */}
           {!isVerified && (
-            <button className={`${config.buttonBg} ${config.buttonText} px-6 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm text-sm`}>
+            <Link
+              href="/profile/business/verification"
+              className={`${config.buttonBg} ${config.buttonText} px-6 py-2 rounded-lg font-semibold transition-colors backdrop-blur-sm text-sm inline-block`}
+            >
               Complete Verification
-            </button>
+            </Link>
           )}
         </div>
       </div>

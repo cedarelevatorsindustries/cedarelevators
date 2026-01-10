@@ -7,9 +7,9 @@ export type DisplayContext = 'homepage' | 'categories' | 'business_hub'
 
 /**
  * Get collections by display context
- * - homepage: Returns normal collections
- * - categories: Returns special collections with 'categories' in special_locations
- * - business_hub: Returns special collections with 'business_hub' in special_locations
+ * - homepage: Returns general collections
+ * - categories: Returns category-specific collections
+ * - business_hub: Returns business-specific collections
  */
 export async function getCollectionsByDisplayContext(
     context: DisplayContext
@@ -25,22 +25,18 @@ export async function getCollectionsByDisplayContext(
             .from('collections')
             .select('*')
             .eq('is_active', true)
-            .order('sort_order', { ascending: true })
+            .order('display_order', { ascending: true })
 
-        // Apply context-specific filters
+        // Apply context-specific filters using appropriate collection_type
         if (context === 'homepage') {
-            // Homepage: only normal collections
-            query = query.eq('display_type', 'normal')
+            // Homepage: general collections
+            query = query.eq('collection_type', 'general')
         } else if (context === 'categories') {
-            // Categories tab: special collections with 'categories' in special_locations
-            query = query
-                .eq('display_type', 'special')
-                .contains('special_locations', ['categories'])
+            // Categories tab: category_specific collections
+            query = query.eq('collection_type', 'category_specific')
         } else if (context === 'business_hub') {
-            // Business Hub: special collections with 'business_hub' in special_locations
-            query = query
-                .eq('display_type', 'special')
-                .contains('special_locations', ['business_hub'])
+            // Business Hub: business_specific collections
+            query = query.eq('collection_type', 'business_specific')
         }
 
         const { data, error } = await query
@@ -78,14 +74,16 @@ export async function getCollectionsWithProductsByDisplayContext(
             return { success: false, collections: [], error }
         }
 
-        // Apply limit if specified
+        // Apply limit if specified (limit the number of collections?)
+        // The limit param name is ambiguous here, typically means products per collection, but slicing logic suggested collections.
+        // Given usage in page.tsx was implicit, let's assume it filters collections if any.
         const limitedCollections = limit ? collections.slice(0, limit) : collections
 
         // Fetch products for each collection
         const collectionsWithProducts = await Promise.all(
             limitedCollections.map(async (collection) => {
                 const { data: collectionProducts } = await supabase
-                    .from('collection_products')
+                    .from('product_collections')
                     .select(`
                         id,
                         product_id,
@@ -96,7 +94,7 @@ export async function getCollectionsWithProductsByDisplayContext(
                             id,
                             name,
                             slug,
-                            thumbnail_url,
+                            thumbnail,
                             price,
                             status
                         )

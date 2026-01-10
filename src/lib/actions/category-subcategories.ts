@@ -1,6 +1,7 @@
 "use server"
 
-import { createServerSupabase } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
+import { createServerSupabase, createAdminClient } from "@/lib/supabase/server"
 
 interface CategorySubcategory {
     id: string
@@ -33,7 +34,7 @@ interface CreateCategorySubcategoryData {
  */
 export async function linkSubcategoryToCategory(data: CreateCategorySubcategoryData) {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         // Check if link already exists
         const { data: existing } = await supabase
@@ -239,6 +240,53 @@ export async function reorderCategorySubcategories(
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to reorder subcategories'
+        }
+    }
+}
+
+/**
+ * Move a subcategory from one category to another
+ * Updates the junction table to change the parent category
+ * Uses database function for atomic operation
+ */
+export async function moveSubcategoryToCategory(
+    subcategoryId: string,
+    fromCategoryId: string,
+    toCategoryId: string
+) {
+    try {
+        const supabase = await createServerSupabase()
+
+        // Use the database function for atomic operation
+        const { data, error } = await supabase
+            .rpc('move_subcategory', {
+                p_subcategory_id: subcategoryId,
+                p_from_category_id: fromCategoryId,
+                p_to_category_id: toCategoryId
+            })
+
+        if (error) throw error
+
+        // Parse the JSON result from the function
+        const result = data as { success: boolean; error?: string; message?: string }
+
+        if (!result.success) {
+            return {
+                success: false,
+                error: result.error || 'Failed to move subcategory'
+            }
+        }
+
+        // Revalidate relevant paths
+        revalidatePath('/admin/categories')
+        revalidatePath('/')
+
+        return { success: true }
+    } catch (error) {
+        console.error('Error moving subcategory:', error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to move subcategory'
         }
     }
 }

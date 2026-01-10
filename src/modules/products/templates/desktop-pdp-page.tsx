@@ -2,6 +2,7 @@
 
 import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
+import { useUserPricing } from "@/lib/hooks/useUserPricing"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -50,12 +51,11 @@ export default function ProductDetailPage({
   const [isFavorite, setIsFavorite] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  // User type and pricing logic
-  const isGuest = !user
-  const accountType = user?.unsafeMetadata?.accountType as string | undefined
-  const isBusiness = accountType === "business"
-  const isVerified = user?.unsafeMetadata?.is_verified === true
-  const showPrice = isBusiness && isVerified
+  // User type and pricing logic - Use hook for correct pricing visibility
+  const { userType, isVerified, canSeePrices } = useUserPricing()
+  const isGuest = userType === 'guest'
+  const isBusiness = userType === 'business'
+  const showPrice = canSeePrices
 
   const price = (product as any).price || product.price?.amount || 0
   const originalPrice = (product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null

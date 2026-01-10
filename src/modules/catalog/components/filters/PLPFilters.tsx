@@ -2,8 +2,7 @@
 
 import { FilterGroup } from "./FilterGroup"
 import { StockFilter } from "./StockFilter"
-import { PriceRangeSlider } from "./PriceRangeSlider"
-import { RatingFilter } from "./RatingFilter"
+import { SortFilter } from "./SortFilter"
 import { VariantOptionFilter } from "./VariantOptionFilter"
 import type { PLPFilters, AvailablePLPOptions } from "@/lib/types/filters"
 
@@ -25,16 +24,11 @@ export function PLPFiltersComponent({
         })
     }
 
-    const handlePriceChange = (min: number, max: number) => {
-        const isDefault = min === availableOptions.priceRange.min && max === availableOptions.priceRange.max
+    const handleSortChange = (value: string) => {
         onChange({
             ...filters,
-            priceRange: isDefault ? undefined : { min, max }
+            sort: value === 'default' ? undefined : value as PLPFilters['sort']
         })
-    }
-
-    const handleRatingChange = (rating: number | undefined) => {
-        onChange({ ...filters, minRating: rating })
     }
 
     const handleVariantOptionChange = (optionName: string, selected: string[]) => {
@@ -52,6 +46,14 @@ export function PLPFiltersComponent({
 
     return (
         <div className="space-y-4">
+            {/* Sort */}
+            <FilterGroup title="Sort By" defaultExpanded>
+                <SortFilter
+                    value={filters.sort || 'default'}
+                    onChange={handleSortChange}
+                />
+            </FilterGroup>
+
             {/* Availability */}
             <FilterGroup title="Availability" defaultExpanded>
                 <StockFilter
@@ -62,27 +64,6 @@ export function PLPFiltersComponent({
                     onChange={handleAvailabilityChange}
                 />
             </FilterGroup>
-
-            {/* Price Range */}
-            <FilterGroup title="Price" defaultExpanded>
-                <PriceRangeSlider
-                    min={availableOptions.priceRange.min}
-                    max={availableOptions.priceRange.max}
-                    currentMin={filters.priceRange?.min}
-                    currentMax={filters.priceRange?.max}
-                    onChange={handlePriceChange}
-                />
-            </FilterGroup>
-
-            {/* Rating */}
-            {availableOptions.ratings.length > 0 && (
-                <FilterGroup title="Customer Rating">
-                    <RatingFilter
-                        selectedRating={filters.minRating}
-                        onChange={handleRatingChange}
-                    />
-                </FilterGroup>
-            )}
 
             {/* Dynamic Variant Options */}
             {Object.entries(availableOptions.variantOptions).map(([optionName, values]) => (

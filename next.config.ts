@@ -28,26 +28,28 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 31536000, // 1 year cache for images
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
   },
   // Externalize large native packages to reduce serverless function size
   serverExternalPackages: [
     'sharp',
   ],
-  // Exclude unnecessary files from serverless function traces
-  // This targets all API routes and pages to exclude large native binaries
-  // outputFileTracingExcludes: {
-  //   '/**': [
-  //     'node_modules/@next/swc-linux-x64-gnu/**',
-  //     'node_modules/@next/swc-linux-x64-musl/**',
-  //     'node_modules/lightningcss-linux-x64-gnu/**',
-  //     'node_modules/lightningcss-linux-x64-musl/**',
-  //     'node_modules/@tailwindcss/oxide-linux-x64-gnu/**',
-  //     'node_modules/@tailwindcss/oxide-linux-x64-musl/**',
-  //     'node_modules/@unrs/**',
-  //   ],
-  // },
+  // Exclude unnecessary files from serverless function traces to reduce cold start time
+  outputFileTracingExcludes: {
+    '/**': [
+      'node_modules/@next/swc-linux-x64-gnu/**',
+      'node_modules/@next/swc-linux-x64-musl/**',
+      'node_modules/lightningcss-linux-x64-gnu/**',
+      'node_modules/lightningcss-linux-x64-musl/**',
+      'node_modules/@tailwindcss/oxide-linux-x64-gnu/**',
+      'node_modules/@tailwindcss/oxide-linux-x64-musl/**',
+      'node_modules/@unrs/**',
+    ],
+  },
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
@@ -56,7 +58,17 @@ const nextConfig: NextConfig = {
   turbopack: {},
   // Experimental features
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-select',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-tabs',
+      'date-fns',
+      '@tanstack/react-query',
+    ],
     serverActions: {
       bodySizeLimit: '50mb',
     },
@@ -74,5 +86,3 @@ const nextConfig: NextConfig = {
 };
 
 export default withBundleAnalyzer(nextConfig);
-
-

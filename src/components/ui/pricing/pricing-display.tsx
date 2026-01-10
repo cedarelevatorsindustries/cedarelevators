@@ -195,7 +195,7 @@ export function PricingDisplay({
                 Verify your business identity to unlock volume discounts and bulk ordering.
               </p>
               <LocalizedClientLink
-                href="/profile/verification"
+                href="/profile/business/verification"
                 className="text-sm font-medium text-orange-700 hover:text-orange-800 underline"
               >
                 Complete Verification &rarr;

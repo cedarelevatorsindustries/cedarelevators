@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertCircle, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 export const VerificationBanner = ({
     isVerified = false,
@@ -26,9 +27,12 @@ export const VerificationBanner = ({
                         : "Upload GST & PAN to unlock wholesale prices & credit limit."}
                 </p>
                 {!isPending && (
-                    <button className="flex items-center gap-2 text-sm font-bold text-blue-700 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm hover:bg-blue-50 transition-colors">
+                    <Link
+                        href="/profile/business/verification"
+                        className="flex items-center gap-2 text-sm font-bold text-blue-700 bg-white px-4 py-2 rounded-lg border border-blue-200 shadow-sm hover:bg-blue-50 transition-colors"
+                    >
                         Verify Now <ArrowRight className="w-4 h-4" />
-                    </button>
+                    </Link>
                 )}
             </div>
         </div>

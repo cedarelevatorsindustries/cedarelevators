@@ -41,7 +41,7 @@ export function PriceActionCard({
         }
     }
 
-    // Guest & Individual States (No Price)
+    // Guest, Individual & Business Unverified States (No Price)
     if (!permissions.canViewPrice) {
         return (
             <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}>
@@ -54,7 +54,7 @@ export function PriceActionCard({
                                 <Lock className="w-5 h-5" />
                             </div>
                             <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">
-                                {userState === 'guest' ? 'Member Only' : 'Business Only'}
+                                {userState === 'guest' ? 'Member Only' : userState === 'individual' ? 'Business Only' : 'Verification Required'}
                             </span>
                         </div>
 
@@ -105,69 +105,6 @@ export function PriceActionCard({
                             </p>
                         </div>
                     )}
-                </div>
-            </div>
-        )
-    }
-
-    // Business Unverified State (Show Price, No Buy)
-    if (userState === 'business_unverified') {
-        return (
-            <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}>
-                <div className="p-6">
-                    {/* Pricing Section */}
-                    <div className="flex flex-col mb-6">
-                        <div className="flex items-baseline gap-3 flex-wrap">
-                            <h1 className="text-gray-900 text-3xl font-bold tracking-tight">
-                                {formatPrice(price)}
-                            </h1>
-                            {mrp && mrp > (price || 0) && (
-                                <>
-                                    <p className="text-gray-500 text-lg line-through">
-                                        MRP {formatPrice(mrp)}
-                                    </p>
-                                    {discount > 0 && (
-                                        <span className="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded-full">
-                                            -{discount}%
-                                        </span>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                        <p className="text-gray-500 text-sm mt-1">(Exclusive of taxes)</p>
-                    </div>
-
-                    {/* Warning Banner */}
-                    <div className="bg-orange-50 rounded-lg p-3 mb-6 flex items-start gap-3 border border-orange-200">
-                        <ShieldCheck className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="text-gray-900 text-sm font-medium leading-tight">
-                                {permissions.statusMessage}
-                            </p>
-                            <p className="text-gray-600 text-xs mt-0.5">
-                                {permissions.microCopy}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3`}>
-                        <Link
-                            href={primaryUrl || '/profile?tab=business'}
-                            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
-                        >
-                            <ShieldCheck className="w-5 h-5" />
-                            {permissions.primaryCTA}
-                        </Link>
-
-                        <button
-                            onClick={onRequestQuote}
-                            className="flex-1 bg-transparent hover:bg-orange-50 border border-gray-300 text-gray-800 font-medium py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        >
-                            <FileText className="w-5 h-5" />
-                            {permissions.secondaryCTA}
-                        </button>
-                    </div>
                 </div>
             </div>
         )

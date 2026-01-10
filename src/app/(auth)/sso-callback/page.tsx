@@ -43,8 +43,27 @@ function SSOCallbackContent() {
       const accountType = user.unsafeMetadata?.accountType || user.publicMetadata?.accountType
 
       if (accountType) {
-        // Existing user with account type - redirect to homepage
-        console.log("Existing user with account type:", accountType, "- redirecting to homepage")
+        // Existing user with account type - check if business and redirect accordingly
+        console.log("Existing user with account type:", accountType, "- checking verification status")
+
+        // Check business verification status
+        try {
+          const response = await fetch('/api/auth/user-profile')
+          if (response.ok) {
+            const { activeProfile, isVerified } = await response.json()
+
+            // If business user and not verified, redirect to profile verification page
+            if (activeProfile?.profile_type === 'business' && !isVerified) {
+              console.log("Business user not verified - redirecting to profile")
+              router.push('/profile/business')
+              return
+            }
+          }
+        } catch (error) {
+          console.error('Error checking user profile:', error)
+        }
+
+        // Default redirect to homepage
         router.push("/")
         return
       }

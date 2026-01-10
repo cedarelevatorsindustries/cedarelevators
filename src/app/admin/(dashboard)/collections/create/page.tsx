@@ -33,6 +33,8 @@ export default function CreateCollectionPage() {
     category_id: undefined,
     display_order: 0,
     show_in_guest: true, // New field for guest user visibility
+    is_business_only: false,
+    status: 'draft',
   })
 
   const [categories, setCategories] = useState<any[]>([])
@@ -168,7 +170,9 @@ export default function CreateCollectionPage() {
                       ...formData,
                       collection_type: value as CollectionContextType,
                       // Reset category_id if not category_specific
-                      category_id: value === 'category_specific' ? formData.category_id : undefined
+                      category_id: value === 'category_specific' ? formData.category_id : undefined,
+                      // Set business flag
+                      is_business_only: value === 'business_specific'
                     })
                   }}
                 >
@@ -252,20 +256,24 @@ export default function CreateCollectionPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="is_active">Active Status</Label>
-                  <p className="text-xs text-gray-500">
-                    Publish this collection to make it visible
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                />
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Controls visibility of the collection
+                </p>
               </div>
             </CardContent>
           </Card>

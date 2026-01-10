@@ -1,24 +1,84 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { use, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Loader2, Package, Eye, Image as ImageIcon } from "lucide-react"
+import { SearchableMultiSelect } from "@/components/ui/searchable-multi-select"
+import { ArrowLeft, Edit, Loader2, Package, Eye, Image as ImageIcon, X } from "lucide-react"
 import Link from "next/link"
 import { useCollection } from "@/hooks/queries/useCollections"
+import { useCollectionProducts, useAddProductToCollection, useRemoveProductFromCollection } from "@/hooks/queries/useCollectionProducts"
+import { toast } from "sonner"
 import { useMemo } from "react"
+import { useProducts } from "@/hooks/queries/useProducts"
 
-export default function CollectionDetailPage({ params }: { params: { id: string } }) {
-  const { data: collectionData, isLoading: isLoadingCollection } = useCollection(params.id)
+interface PageProps {
+  params: Promise<{ id: string }>
+}
 
+export default function CollectionDetailPage({ params }: PageProps) {
+  const resolvedParams = use(params)
+  const { data: collectionData, isLoading: isLoadingCollection } = useCollection(resolvedParams.id)
   const collection = collectionData?.collection
 
-  // Get products that have assigned themselves to this collection
-  const assignedProducts = useMemo(() => {
-    if (!collection || !collection.products) return []
-    return collection.products
-  }, [collection])
+  // Fetch products in this collection
+  const { data: collectionProducts, isLoading: isLoadingProducts } = useCollectionProducts(resolvedParams.id)
+
+  // Fetch all products for the dropdown
+  const { data: allProductsData } = useProducts()
+  const allProducts = allProductsData?.products || []
+
+  // Mutations
+  const addProductMutation = useAddProductToCollection()
+  const removeProductMutation = useRemoveProductFromCollection()
+
+  // Get linked product IDs
+  const linkedProductIds = useMemo(() => {
+    return collectionProducts?.map((cp: any) => cp.product_id) || []
+  }, [collectionProducts])
+
+  // Handle product selection change
+  const handleProductChange = async (selectedIds: string[]) => {
+    if (!collection?.id) return
+
+    const addedIds = selectedIds.filter(id => !linkedProductIds.includes(id))
+    const removedIds = linkedProductIds.filter(id => !selectedIds.includes(id))
+
+    try {
+      // Add new products
+      for (const productId of addedIds) {
+        await addProductMutation.mutateAsync({
+          collection_id: collection.id,
+          product_id: productId
+        })
+      }
+
+      // Remove unselected products
+      for (const productId of removedIds) {
+        const link = collectionProducts?.find((cp: any) => cp.product_id === productId)
+        if (link) {
+          await removeProductMutation.mutateAsync(link.id)
+        }
+      }
+
+      if (addedIds.length > 0 || removedIds.length > 0) {
+        toast.success('Products updated successfully')
+      }
+    } catch (error) {
+      toast.error('Failed to update products')
+    }
+  }
+
+  // Handle individual product removal
+  const handleRemoveProduct = async (linkId: string) => {
+    try {
+      await removeProductMutation.mutateAsync(linkId)
+      toast.success('Product removed successfully')
+    } catch (error) {
+      toast.error('Failed to remove product')
+    }
+  }
 
   if (isLoadingCollection) {
     return (
@@ -62,7 +122,7 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
               )}
             </div>
             <p className="text-gray-600">
-              Collection details and assigned products
+              Manage collection details and products
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -73,7 +133,7 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
               </Link>
             </Button>
             <Button className="bg-orange-600 hover:bg-orange-700 text-white" asChild>
-              <Link href={`/admin/collections/${params.id}/edit`}>
+              <Link href={`/admin/collections/${resolvedParams.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Collection
               </Link>
@@ -82,7 +142,7 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Collection Details */}
+          {/* Collection Details - Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
@@ -141,8 +201,8 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
                 </CardHeader>
                 <CardContent>
                   <div className="rounded-lg overflow-hidden border border-gray-200">
-                    <img 
-                      src={collection.image_url} 
+                    <img
+                      src={collection.image_url}
                       alt={collection.image_alt || collection.title}
                       className="w-full h-auto"
                     />
@@ -177,126 +237,99 @@ export default function CollectionDetailPage({ params }: { params: { id: string 
             )}
           </div>
 
-          {/* Assigned Products */}
+          {/* Products - Main Content */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      Assigned Products
-                      <Badge variant="secondary" className="ml-2">
-                        {assignedProducts.length}
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      Products that have assigned themselves to this collection
-                    </CardDescription>
-                  </div>
+                <div>
+                  <CardTitle>Products</CardTitle>
+                  <CardDescription>Add and manage products in this collection</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent>
-                {isLoadingCollection ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-orange-600" />
+              <CardContent className="space-y-4">
+                {/* SearchableMultiSelect for adding products */}
+                <SearchableMultiSelect
+                  items={allProducts.map((product: any) => ({
+                    id: product.id,
+                    name: product.name
+                  }))}
+                  selectedIds={linkedProductIds}
+                  onSelectionChange={handleProductChange}
+                  placeholder="Search and select products..."
+                  emptyMessage="No products found"
+                  hideSelectedBadges={true}
+                />
+
+                {/* Display linked products */}
+                {isLoadingProducts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
                   </div>
-                ) : assignedProducts.length === 0 ? (
-                  <div className="text-center py-12 space-y-3">
-                    <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Package className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-gray-600 font-medium">No products assigned yet</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Products will appear here when they assign themselves to this collection in their Organization tab.
-                      </p>
-                    </div>
-                    <Button variant="outline" asChild className="mt-4">
-                      <Link href="/admin/products/create">
-                        Create Product
-                      </Link>
-                    </Button>
+                ) : collectionProducts && collectionProducts.length > 0 ? (
+                  <div className="space-y-3 mt-4">
+                    {collectionProducts.map((cp: any) => {
+                      const product = cp.product
+                      if (!product) return null
+
+                      return (
+                        <div
+                          key={cp.id}
+                          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all bg-white group"
+                        >
+                          <Link
+                            href={`/admin/products/${product.id}`}
+                            className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                          >
+                            {product.thumbnail_url || product.thumbnail ? (
+                              <img
+                                src={product.thumbnail_url || product.thumbnail}
+                                alt={product.name}
+                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-200 group-hover:border-orange-300 transition-colors"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Package className="h-6 w-6 text-gray-400" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                                {product.name}
+                              </h4>
+                              <p className="text-xs text-gray-500 truncate">{product.slug}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {product.price && (
+                                <span className="text-sm font-semibold text-gray-900">
+                                  ₹{product.price.toLocaleString('en-IN')}
+                                </span>
+                              )}
+                              <Badge
+                                variant="outline"
+                                className={product.status === 'active'
+                                  ? "bg-green-50 text-green-700 border-green-200"
+                                  : "bg-gray-50 text-gray-700 border-gray-200"}
+                              >
+                                {product.status}
+                              </Badge>
+                            </div>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                            onClick={() => handleRemoveProduct(cp.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )
+                    })}
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {/* Info Banner */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-start gap-3">
-                        <svg className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-sm text-blue-900">
-                          <p className="font-medium">Read-Only View</p>
-                          <p className="text-blue-700 mt-1">
-                            You cannot add/remove products here. Products manage their own collection assignments in the Product form's Organization tab.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Products List */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {assignedProducts.map((productCollection: any) => {
-                        const product = productCollection.product
-                        if (!product) return null
-                        
-                        return (
-                          <Card key={product.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4">
-                              <div className="flex gap-4">
-                                {/* Product Image */}
-                                <div className="h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                  {product.thumbnail ? (
-                                    <img 
-                                      src={product.thumbnail} 
-                                      alt={product.name}
-                                      className="h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-full w-full flex items-center justify-center">
-                                      <Package className="h-8 w-8 text-gray-400" />
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Product Info */}
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-gray-900 truncate">
-                                    {product.name}
-                                  </h4>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    {product.slug || 'No slug'}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-2">
-                                    {product.price && (
-                                      <span className="text-sm font-semibold text-orange-600">
-                                        ${product.price.toFixed(2)}
-                                      </span>
-                                    )}
-                                    <Badge 
-                                      variant={product.status === 'active' ? 'default' : 'secondary'}
-                                      className={`text-xs ${product.status === 'active' ? 'bg-green-100 text-green-800' : ''}`}
-                                    >
-                                      {product.status}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-start">
-                                  <Button variant="ghost" size="sm" asChild>
-                                    <Link href={`/admin/products/${product.id}`}>
-                                      <Eye className="h-4 w-4" />
-                                    </Link>
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
-                    </div>
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No products in this collection yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Use the dropdown above to add products</p>
                   </div>
                 )}
               </CardContent>

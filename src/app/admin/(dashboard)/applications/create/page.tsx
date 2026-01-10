@@ -49,7 +49,7 @@ export default function CreateApplicationPage() {
     image_alt: "",
     badge_text: "",
     badge_color: "#f97316",
-    card_position: "image-top",
+    card_position: 0,
     default_sort: "newest",
     sort_order: 0,
     is_active: true,
@@ -73,7 +73,7 @@ export default function CreateApplicationPage() {
         image_alt: app.metadata?.image_alt || app.image_alt || "",
         badge_text: app.metadata?.badge_text || app.badge_text || "",
         badge_color: app.metadata?.badge_color || app.badge_color || "#f97316",
-        card_position: app.card_position || "image-top",
+        card_position: (app.card_position as any) || 0,
         default_sort: app.default_sort || "newest",
         sort_order: app.metadata?.sort_order || app.sort_order || 0,
         is_active: app.is_active ?? true,
@@ -398,6 +398,30 @@ export default function CreateApplicationPage() {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Card Position */}
+                    <Card className="border-gray-200 shadow-sm">
+                      <CardHeader className="bg-white border-b border-gray-200">
+                        <CardTitle className="text-base">Display Order</CardTitle>
+                        <CardDescription>Position of this application in the grid</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="card-position">Card Position</Label>
+                          <Input
+                            id="card-position"
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 1"
+                            value={formData.card_position || ''}
+                            onChange={(e) => setFormData({ ...formData, card_position: parseInt(e.target.value) || 0 })}
+                          />
+                          <p className="text-xs text-gray-500">
+                            Enter a number to set the display order (1, 2, 3...). Leave empty for default ordering.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </CardContent>
                 </Card>
               </div>
@@ -607,6 +631,12 @@ export default function CreateApplicationPage() {
                         <span className="text-sm text-gray-600">Assets</span>
                         <span className="text-sm font-medium">
                           {formData.thumbnail_image ? 'Thumbnail Set' : 'No Thumbnail'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                        <span className="text-sm text-gray-600">Card Position</span>
+                        <span className="text-sm font-medium">
+                          {formData.card_position || 'Default'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">

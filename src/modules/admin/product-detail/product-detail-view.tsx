@@ -456,6 +456,130 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
               </CardContent>
             </Card>
           )}
+
+          {/* Classification Section - Moved from sidebar */}
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="bg-gray-50/100 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+                    <FolderTree className="w-4 h-4 text-[#ff3705]" />
+                  </div>
+                  <CardTitle className="text-base font-semibold">
+                    Product Classifications
+                  </CardTitle>
+                </div>
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/admin/products/${product.id}/edit?tab=classification`}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Classifications
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Applications */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Applications</label>
+                  {product.applications && product.applications.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {product.applications.map((app: any) => (
+                        <Badge key={app.id} variant="secondary" className="bg-orange-100 text-orange-900 border-orange-300">
+                          {app.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No applications assigned</p>
+                  )}
+                </div>
+
+                {/* Categories */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Categories</label>
+                  {product.categories && product.categories.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {product.categories.map((cat: any) => (
+                        <Badge key={cat.id} variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300">
+                          {cat.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No categories assigned</p>
+                  )}
+                </div>
+
+                {/* Subcategories */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Subcategories</label>
+                  {product.subcategories && product.subcategories.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {product.subcategories.map((sub: any) => (
+                        <Badge key={sub.id} variant="secondary" className="bg-purple-100 text-purple-900 border-purple-300">
+                          {sub.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No subcategories assigned</p>
+                  )}
+                </div>
+
+                {/* Elevator Types */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Elevator Types</label>
+                  {product.elevator_types && product.elevator_types.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {product.elevator_types.map((type: any) => (
+                        <Badge key={type.id} variant="secondary" className="bg-green-100 text-green-900 border-green-300">
+                          {type.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No elevator types assigned</p>
+                  )}
+                </div>
+
+                {/* Collections */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Collections</label>
+                  {product.collections && product.collections.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {product.collections.map((col: any) => (
+                        <Badge key={col.id} variant="secondary" className="bg-pink-100 text-pink-900 border-pink-300">
+                          {col.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">No collections assigned</p>
+                  )}
+                </div>
+              </div>
+
+              {/* No Classifications Message */}
+              {(!product.applications || product.applications.length === 0) &&
+                (!product.categories || product.categories.length === 0) &&
+                (!product.subcategories || product.subcategories.length === 0) &&
+                (!product.elevator_types || product.elevator_types.length === 0) &&
+                (!product.collections || product.collections.length === 0) && (
+                  <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                    <FolderTree className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 font-medium mb-2">No classifications assigned</p>
+                    <p className="text-xs text-gray-500 mb-4">Add classifications to help customers find this product</p>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/products/${product.id}/edit`}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Add Classifications
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar */}
@@ -504,102 +628,7 @@ export function ProductDetailView({ product, variants = [] }: ProductDetailViewP
             </CardContent>
           </Card>
 
-          {/* Classification - Display catalog placement */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FolderTree className="w-5 h-5 mr-2" />
-                Classification
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Applications */}
-              {product.application_ids && product.application_ids.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Applications</label>
-                  <div className="mt-1">
-                    <Badge variant="secondary" className="bg-orange-100 text-orange-900 border-orange-300">
-                      {product.application_ids.length} selected
-                    </Badge>
-                  </div>
-                </div>
-              )}
-
-              {/* Categories */}
-              {product.category_ids && product.category_ids.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Categories</label>
-                  <div className="mt-1">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300">
-                      {product.category_ids.length} selected
-                    </Badge>
-                  </div>
-                </div>
-              )}
-
-              {/* Subcategories */}
-              {product.subcategory_ids && product.subcategory_ids.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Subcategories</label>
-                  <div className="mt-1">
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-900 border-purple-300">
-                      {product.subcategory_ids.length} selected
-                    </Badge>
-                  </div>
-                </div>
-              )}
-
-              {/* Elevator Types */}
-              {product.elevator_type_ids && product.elevator_type_ids.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Elevator Types</label>
-                  <div className="mt-1">
-                    <Badge variant="secondary" className="bg-green-100 text-green-900 border-green-300">
-                      {product.elevator_type_ids.length} selected
-                    </Badge>
-                  </div>
-                </div>
-              )}
-
-              {/* Collections */}
-              {product.collection_ids && product.collection_ids.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Collections</label>
-                  <div className="mt-1">
-                    <Badge variant="secondary" className="bg-pink-100 text-pink-900 border-pink-300">
-                      {product.collection_ids.length} selected
-                    </Badge>
-                  </div>
-                </div>
-              )}
-
-              {/* No Classification Message */}
-              {(!product.application_ids || product.application_ids.length === 0) &&
-                (!product.category_ids || product.category_ids.length === 0) &&
-                (!product.subcategory_ids || product.subcategory_ids.length === 0) &&
-                (!product.elevator_type_ids || product.elevator_type_ids.length === 0) &&
-                (!product.collection_ids || product.collection_ids.length === 0) && (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-gray-500">No classifications assigned</p>
-                    <Button variant="outline" size="sm" className="mt-2" asChild>
-                      <Link href={`/admin/products/${product.id}/edit`}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Add Classifications
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-
-              <Separator />
-
-              <Button variant="outline" className="w-full" asChild>
-                <Link href={`/admin/products/${product.id}/edit`}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Classifications
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Classification section removed from sidebar - now in main content */}
 
           {/* Product Images - FRONTEND: Display images carousel */}
           <Card>

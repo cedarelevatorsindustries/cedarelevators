@@ -23,7 +23,7 @@ export async function GET() {
         *,
         documents:business_verification_documents(*)
       `)
-            .eq('clerk_user_id', userId)
+            .eq('user_id', userId)
             .single()
 
         if (error && error.code !== 'PGRST116') {
@@ -62,31 +62,17 @@ export async function POST(request: NextRequest) {
         const { data: existing } = await supabase
             .from('business_verifications')
             .select('id, status')
-            .eq('clerk_user_id', userId)
+            .eq('user_id', userId)
             .single()
 
-        // Prepare verification data
+        // Prepare verification data - SIMPLIFIED SCHEMA
         const verificationData = {
-            clerk_user_id: userId,
+            user_id: userId,
             legal_business_name: body.legal_business_name,
-            business_type: body.business_type,
-            registration_number: body.registration_number,
-            year_established: body.year_established || null,
-            registered_address_line1: body.registered_address_line1,
-            registered_address_line2: body.registered_address_line2 || null,
-            city: body.city,
-            state: body.state,
-            country: body.country || 'India',
-            postal_code: body.postal_code,
-            same_as_billing: body.same_as_billing || false,
             contact_person_name: body.contact_person_name,
-            contact_person_email: body.contact_person_email,
             contact_person_phone: body.contact_person_phone,
-            contact_person_designation: body.contact_person_designation,
             gstin: body.gstin || null,
-            pan_number: body.pan_number || null,
             status: 'pending',
-            submitted_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         }
 

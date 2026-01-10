@@ -4,6 +4,13 @@ import { useState } from 'react'
 import { Edit2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface CompanyProfile {
   company_name: string
@@ -183,32 +190,41 @@ export default function CompanyInfoSection({
               <label className="text-sm font-medium text-gray-900" htmlFor="industry">
                 Industry / Type
               </label>
-              <select
-                className="w-full rounded-lg text-gray-900 focus:outline-0 focus:ring-2 focus:ring-[#F97316]/50 border border-gray-300 bg-white focus:border-[#F97316] h-12 px-4 text-base font-normal leading-normal"
-                id="industry"
+              <Select
                 value={formData.industry}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                onValueChange={(value) => setFormData({ ...formData, industry: value })}
               >
-                <option>Manufacturing</option>
-                <option>Construction</option>
-                <option>Real Estate</option>
-              </select>
+                <SelectTrigger className="w-full h-12 px-4 bg-white border-gray-300 focus:ring-[#F97316]/50 focus:ring-2 focus:border-[#F97316]">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="Construction">Construction</SelectItem>
+                  <SelectItem value="Real Estate">Real Estate</SelectItem>
+                  <SelectItem value="Retail">Retail</SelectItem>
+                  <SelectItem value="Technology">Technology</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-gray-900" htmlFor="companySize">
                 Company Size
               </label>
-              <select
-                className="w-full rounded-lg text-gray-900 focus:outline-0 focus:ring-2 focus:ring-[#F97316]/50 border border-gray-300 bg-white focus:border-[#F97316] h-12 px-4 text-base font-normal leading-normal"
-                id="companySize"
+              <Select
                 value={formData.company_size}
-                onChange={(e) => setFormData({ ...formData, company_size: e.target.value })}
+                onValueChange={(value) => setFormData({ ...formData, company_size: value })}
               >
-                <option>1-50 employees</option>
-                <option>51-200 employees</option>
-                <option>201-1000 employees</option>
-                <option>1000+ employees</option>
-              </select>
+                <SelectTrigger className="w-full h-12 px-4 bg-white border-gray-300 focus:ring-[#F97316]/50 focus:ring-2 focus:border-[#F97316]">
+                  <SelectValue placeholder="Select company size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1-50 employees">1-50 employees</SelectItem>
+                  <SelectItem value="51-200 employees">51-200 employees</SelectItem>
+                  <SelectItem value="201-1000 employees">201-1000 employees</SelectItem>
+                  <SelectItem value="1000+ employees">1000+ employees</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </section>

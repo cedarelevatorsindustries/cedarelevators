@@ -35,8 +35,9 @@ export async function getApplications(filters?: ApplicationFilters) {
     // Get applications from applications table
     let query = supabase
       .from('applications')
-      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description', { count: 'exact' })
+      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description, card_position:product_card_position', { count: 'exact' })
       // Filter by type in metadata instead since type column doesn't exist
+      .order('product_card_position', { ascending: true })
       .order('title', { ascending: true })
 
     // Apply filters
@@ -132,7 +133,7 @@ export async function getApplicationById(id: string) {
 
     const { data, error } = await supabase
       .from('applications')
-      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description')
+      .select('*, slug:handle, thumbnail_image:thumbnail, banner_image:banner_url, meta_title:seo_meta_title, meta_description:seo_meta_description, card_position:product_card_position')
       .eq('id', id)
       .single()
 
@@ -195,6 +196,7 @@ export async function createApplication(formData: ApplicationFormData) {
         status: formData.status || 'active',
         seo_meta_title: formData.meta_title,
         seo_meta_description: formData.meta_description,
+        product_card_position: formData.card_position || 0,
         metadata: {
           image_alt: formData.image_alt,
           icon: formData.icon,
@@ -240,6 +242,7 @@ export async function updateApplication(id: string, formData: Partial<Applicatio
     if (formData.status !== undefined) updatePayload.status = formData.status
     if (formData.meta_title !== undefined) updatePayload.seo_meta_title = formData.meta_title
     if (formData.meta_description !== undefined) updatePayload.seo_meta_description = formData.meta_description
+    if (formData.card_position !== undefined) updatePayload.product_card_position = formData.card_position
 
     // Handle metadata updates - need to merge or overwrite? 
     // Usually overwrite or we need to fetch existing first. 

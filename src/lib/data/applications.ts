@@ -10,6 +10,7 @@ export interface Application {
   banner_image?: string
   image_alt?: string
   icon?: string
+  card_position?: number
   sort_order: number
   is_active: boolean
   status: string
@@ -28,7 +29,9 @@ export async function listApplications(): Promise<Application[]> {
       .from('applications')
       .select('*')
       .eq('status', 'active')
-      .order('id', { ascending: true })
+      .eq('status', 'active')
+    // Remove DB sort to handle nulls in JS
+    // .order('product_card_position', { ascending: true })
 
     if (error) {
       console.error("Error fetching applications:", error)
@@ -46,6 +49,7 @@ export async function listApplications(): Promise<Application[]> {
       banner_image: app.banner_url,
       image_alt: app.title,
       icon: app.title?.toLowerCase(), // Use title as icon key
+      card_position: app.product_card_position || 0,
       sort_order: 0,
       is_active: app.status === 'active',
       status: app.status,
@@ -53,7 +57,39 @@ export async function listApplications(): Promise<Application[]> {
       updated_at: app.updated_at
     }))
 
-    return applications
+    // Absolute positioning with gap filling
+    // Ensure all positions are numbers
+    const positioned = applications.filter((app: any) => Number(app.card_position || 0) > 0)
+    const unpositioned = applications.filter((app: any) => !app.card_position || Number(app.card_position) === 0)
+
+    // Sort unpositioned items alphabetically
+    unpositioned.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''))
+
+    const result: Application[] = []
+    const maxPosition = positioned.length > 0 ? Math.max(...positioned.map((app: any) => Number(app.card_position))) : 0
+    let unpositionedIndex = 0
+
+    // Iterate through positions 1 to maxPosition
+    for (let i = 1; i <= maxPosition; i++) {
+      const itemAtPosition = positioned.find((app: any) => Number(app.card_position) === i)
+
+      if (itemAtPosition) {
+        result.push(itemAtPosition)
+      } else {
+        // Fill gap with unpositioned item
+        if (unpositionedIndex < unpositioned.length) {
+          result.push(unpositioned[unpositionedIndex])
+          unpositionedIndex++
+        }
+      }
+    }
+
+    // Append remaining unpositioned items
+    if (unpositionedIndex < unpositioned.length) {
+      result.push(...unpositioned.slice(unpositionedIndex))
+    }
+
+    return result
   } catch (error) {
     console.error("Error fetching applications from Supabase:", error)
     return []

@@ -33,9 +33,10 @@ export function getUserPricingState(user: EnhancedUser | null | undefined): User
 
 /**
  * Check if user can view prices
+ * ONLY verified business users can see prices
  */
 export function canViewPrice(state: UserPricingState): boolean {
-    return state === 'business_unverified' || state === 'business_verified'
+    return state === 'business_verified'
 }
 
 /**
@@ -76,14 +77,14 @@ export function getPricingPermissions(state: UserPricingState): PricingPermissio
 
         case 'business_unverified':
             return {
-                canViewPrice: true,
+                canViewPrice: false,
                 canBuy: false,
                 canRequestQuote: true,
                 showBulkPricing: false,
-                primaryCTA: 'Verify Business to Buy',
-                secondaryCTA: 'Request Bulk Quote',
-                statusMessage: 'Verification required',
-                microCopy: 'Verification required to place orders and access checkout'
+                primaryCTA: 'Verify Business to See Prices',
+                secondaryCTA: 'Request Quote',
+                statusMessage: 'Verification required to see pricing',
+                microCopy: 'Complete business verification to view prices and place orders'
             }
 
         case 'business_verified':
@@ -124,9 +125,9 @@ export function getPrimaryCTAUrl(state: UserPricingState): string | null {
         case 'guest':
             return '/sign-in'
         case 'individual':
-            return '/profile?tab=business'
+            return '/profile/business/verification'
         case 'business_unverified':
-            return '/profile?tab=business'
+            return '/profile/business/verification'
         default:
             return null // Action handled by onClick
     }

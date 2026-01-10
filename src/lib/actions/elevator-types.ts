@@ -19,11 +19,11 @@ export async function getElevatorTypes() {
 
     if (error) throw error
 
-    // Enhance with product counts
+    // Enhance with product counts from junction table
     const elevatorTypesWithStats: ElevatorTypeWithStats[] = await Promise.all(
       (data || []).map(async (type) => {
         const { count } = await supabase
-          .from('products')
+          .from('product_elevator_types')
           .select('*', { count: 'exact', head: true })
           .eq('elevator_type_id', type.id)
 
@@ -57,9 +57,9 @@ export async function getElevatorTypeById(id: string) {
 
     if (error) throw error
 
-    // Get product count
+    // Get product count from junction table
     const { count: productCount } = await supabase
-      .from('products')
+      .from('product_elevator_types')
       .select('*', { count: 'exact', head: true })
       .eq('elevator_type_id', id)
 
@@ -91,9 +91,9 @@ export async function getElevatorTypeBySlug(slug: string) {
 
     if (error) throw error
 
-    // Get product count
+    // Get product count from junction table
     const { count: productCount } = await supabase
-      .from('products')
+      .from('product_elevator_types')
       .select('*', { count: 'exact', head: true })
       .eq('elevator_type_id', data.id)
 
@@ -211,9 +211,9 @@ export async function deleteElevatorType(id: string) {
   try {
     const supabase = createAdminClient()
 
-    // Check if there are products associated with this elevator type
+    // Check if there are products associated with this elevator type via junction table
     const { count } = await supabase
-      .from('products')
+      .from('product_elevator_types')
       .select('*', { count: 'exact', head: true })
       .eq('elevator_type_id', id)
 

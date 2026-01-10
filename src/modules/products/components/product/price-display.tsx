@@ -37,7 +37,11 @@ export default function PriceDisplay({
     lg: "text-4xl"
   }
 
-  if (showPrice && price) {
+  // CRITICAL: Double-check verification status
+  // Even if showPrice is true, NEVER show prices to unverified business users
+  const shouldShowActualPrice = showPrice && price && (isVerified || !isBusiness)
+
+  if (shouldShowActualPrice) {
     // Verified Business - Show Actual Price
     return (
       <div className="space-y-2">

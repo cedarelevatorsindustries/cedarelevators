@@ -13,10 +13,12 @@ import {
 import {
   getSubcategoriesByParentId,
   getSubcategoryById,
+  getAllSubcategories,
   createSubcategory,
   updateSubcategory,
   deleteSubcategory
 } from '@/lib/actions/subcategories'
+import { linkSubcategoryToCategory } from '@/lib/actions/category-subcategories'
 import type { CategoryFilters, CategoryFormData } from '@/lib/types/categories'
 
 // Query keys factory
@@ -72,6 +74,13 @@ export function useSubcategory(id: string) {
   })
 }
 
+export function useAllSubcategories() {
+  return useQuery({
+    queryKey: [...categoryKeys.all, 'subcategories', 'list'] as const,
+    queryFn: () => getAllSubcategories(),
+  })
+}
+
 export function useCategoryStats() {
   return useQuery({
     queryKey: categoryKeys.stats(),
@@ -92,6 +101,8 @@ export function useCreateCategory() {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
         queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
+        // Invalidate all subcategories queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategories'] })
         // Check if isSubcategory property exists in the result (it is returned by createCategory)
         const isSub = (result as any).isSubcategory
         toast.success(`${isSub ? 'Subcategory' : 'Category'} created successfully`)
@@ -116,6 +127,7 @@ export function useUpdateCategory() {
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
         queryClient.invalidateQueries({ queryKey: categoryKeys.detail(variables.id) })
         queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategories'] })
         toast.success('Category updated successfully')
       } else {
         toast.error(result.error || 'Failed to update category')
@@ -137,6 +149,7 @@ export function useUpdateSubcategory() {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
         queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategory', variables.id] })
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategories'] })
         queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
         toast.success('Subcategory updated successfully')
       } else {
@@ -158,6 +171,7 @@ export function useDeleteCategory() {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
         queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategories'] })
         toast.success('Category deleted successfully')
       } else {
         toast.error(result.error || 'Failed to delete category')
@@ -174,6 +188,28 @@ export function useUploadCategoryImage() {
     mutationFn: (file: File) => uploadCategoryImage(file),
     onError: () => {
       toast.error('Failed to upload image')
+    },
+  })
+}
+
+export function useLinkSubcategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { category_id: string; subcategory_id: string; sort_order?: number }) =>
+      linkSubcategoryToCategory(data),
+    onSuccess: (result: any) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: categoryKeys.lists() })
+        queryClient.invalidateQueries({ queryKey: categoryKeys.stats() })
+        queryClient.invalidateQueries({ queryKey: [...categoryKeys.all, 'subcategories'] })
+        toast.success('Subcategory linked successfully')
+      } else {
+        toast.error(result.error || 'Failed to link subcategory')
+      }
+    },
+    onError: () => {
+      toast.error('Failed to link subcategory')
     },
   })
 }

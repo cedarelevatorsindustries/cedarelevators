@@ -1,22 +1,48 @@
 "use client"
 
 import { Mail, Phone } from "lucide-react"
+import { useEffect, useState } from "react"
+import { getStoreSettings } from "@/lib/services/settings"
 
 export default function FooterLite() {
+  const [contactPhone, setContactPhone] = useState<string>("7299012340") // Fallback
+  const [contactEmail, setContactEmail] = useState<string>("contact@cedarelevator.com") // Fallback
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const { data } = await getStoreSettings()
+        if (data?.contact_phone) {
+          setContactPhone(data.contact_phone)
+        }
+        if (data?.contact_email) {
+          setContactEmail(data.contact_email)
+        }
+      } catch (error) {
+        console.error("Failed to fetch store settings for mobile footer", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSettings()
+  }, [])
+
   return (
     <footer className="md:hidden bg-blue-50 text-gray-800 pb-20">
       {/* Contact Info - Both on Left Side */}
       <div className="px-4 py-3 flex items-center gap-4 text-xs">
         <div className="flex items-center gap-1.5">
           <Phone className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-          <a href="tel:+917299012340" className="text-gray-700 hover:text-blue-600">
-            7299012340
+          <a href={`tel:+91${contactPhone.replace(/\D/g, '')}`} className="text-gray-700 hover:text-blue-600">
+            {contactPhone}
           </a>
         </div>
         <div className="flex items-center gap-1.5">
           <Mail className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-          <a href="mailto:contact@cedarelevator.com" className="text-gray-700 hover:text-blue-600">
-            contact@cedarelevator.com
+          <a href={`mailto:${contactEmail}`} className="text-gray-700 hover:text-blue-600">
+            {contactEmail}
           </a>
         </div>
       </div>

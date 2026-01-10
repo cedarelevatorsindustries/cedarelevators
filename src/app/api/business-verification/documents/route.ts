@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
         // Verify ownership of verification
         const { data: verification, error: verifyError } = await supabase
             .from('business_verifications')
-            .select('id, clerk_user_id, status')
+            .select('id, user_id, status')
             .eq('id', verificationId)
-            .eq('clerk_user_id', userId)
+            .eq('user_id', userId)
             .single()
 
         if (verifyError || !verification) {
@@ -91,15 +91,14 @@ export async function POST(request: NextRequest) {
             .from('business-documents')
             .getPublicUrl(fileName)
 
-        // Save document record
+        // Save document record - SIMPLIFIED SCHEMA (no file_size)
         const { error: dbError } = await supabase
             .from('business_verification_documents')
             .insert({
                 verification_id: verificationId,
                 document_type: documentType,
                 document_url: publicUrl,
-                file_name: file.name,
-                file_size: file.size
+                file_name: file.name
             })
 
         if (dbError) {
@@ -151,7 +150,7 @@ export async function DELETE(request: NextRequest) {
             .from('business_verification_documents')
             .select(`
         *,
-        verification:business_verifications!inner(clerk_user_id, status)
+        verification:business_verifications!inner(user_id, status)
       `)
             .eq('id', documentId)
             .single()
@@ -164,7 +163,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Verify ownership
-        if (document.verification.clerk_user_id !== userId) {
+        if (document.verification.user_id !== userId) {
             return NextResponse.json(
                 { success: false, error: 'Unauthorized' },
                 { status: 403 }

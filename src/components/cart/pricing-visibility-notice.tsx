@@ -14,9 +14,9 @@ interface PricingVisibilityNoticeProps {
   variant?: 'inline' | 'banner'
 }
 
-export function PricingVisibilityNotice({ 
-  userType, 
-  variant = 'inline' 
+export function PricingVisibilityNotice({
+  userType,
+  variant = 'inline'
 }: PricingVisibilityNoticeProps) {
   if (userType === 'individual' || userType === 'business_verified') {
     return null // These user types can see prices
@@ -24,7 +24,7 @@ export function PricingVisibilityNotice({
 
   if (variant === 'banner') {
     return (
-      <div 
+      <div
         className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6"
         data-testid="pricing-notice-banner"
       >
@@ -45,7 +45,7 @@ export function PricingVisibilityNotice({
               ) : (
                 <>
                   Complete business verification to unlock pricing and checkout.{' '}
-                  <Link href="/profile/verification" className="underline font-medium">
+                  <Link href="/profile/business/verification" className="underline font-medium">
                     Verify now
                   </Link>
                 </>
@@ -59,7 +59,7 @@ export function PricingVisibilityNotice({
 
   // Inline variant
   return (
-    <div 
+    <div
       className="inline-flex items-center gap-2 text-sm text-gray-600 bg-gray-100 px-3 py-1.5 rounded-md"
       data-testid="pricing-notice-inline"
     >
@@ -74,7 +74,7 @@ export function PricingVisibilityNotice({
           </>
         ) : (
           <>
-            <Link href="/profile/verification" className="text-orange-600 hover:underline font-medium">
+            <Link href="/profile/business/verification" className="text-orange-600 hover:underline font-medium">
               Verify your business
             </Link>{' '}
             to view pricing

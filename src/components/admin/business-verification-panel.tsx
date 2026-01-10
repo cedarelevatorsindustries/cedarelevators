@@ -12,15 +12,13 @@ interface BusinessVerificationPanelProps {
         id: string
         name: string
         gst_number?: string | null
-        pan_number?: string | null
         verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
         verification_requested_at?: string | null
         verified_at?: string | null
         verification_notes?: string | null
         verification_documents?: any
-        company_address?: string | null
-        contact_person?: string | null
-        contact_phone?: string | null
+        contact_person?: string | null // Owner Name
+        contact_phone?: string | null // Business Phone
     }
     onUpdate?: () => void
 }
@@ -127,30 +125,22 @@ export function BusinessVerificationPanel({ business, onUpdate }: BusinessVerifi
                             <p className="text-sm text-gray-900 mt-1">{business.name}</p>
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-gray-700">GST Number</label>
-                            <p className="text-sm text-gray-900 mt-1">{business.gst_number || 'Not provided'}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">PAN Number</label>
-                            <p className="text-sm text-gray-900 mt-1">{business.pan_number || 'Not provided'}</p>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">Contact Person</label>
+                            <label className="text-sm font-medium text-gray-700">Owner Name</label>
                             <p className="text-sm text-gray-900 mt-1">{business.contact_person || 'Not provided'}</p>
                         </div>
-                        <div className="col-span-2">
-                            <label className="text-sm font-medium text-gray-700">Company Address</label>
-                            <p className="text-sm text-gray-900 mt-1">{business.company_address || 'Not provided'}</p>
+                        <div>
+                            <label className="text-sm font-medium text-gray-700">Business Phone</label>
+                            <p className="text-sm text-gray-900 mt-1">{business.contact_phone || 'Not provided'}</p>
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-gray-700">Contact Phone</label>
-                            <p className="text-sm text-gray-900 mt-1">{business.contact_phone || 'Not provided'}</p>
+                            <label className="text-sm font-medium text-gray-700">GST Number</label>
+                            <p className="text-sm text-gray-900 mt-1">{business.gst_number || 'Not provided'}</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Documents */}
+            {/* Documents - Simplified for Visiting Card */}
             {business.verification_documents && (
                 <Card>
                     <CardHeader>
@@ -158,41 +148,39 @@ export function BusinessVerificationPanel({ business, onUpdate }: BusinessVerifi
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            {business.verification_documents.gst_certificate && (
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm font-medium">GST Certificate</span>
+                            {/* Check for visiting card first, or fallback to any document for legacy */}
+                            {Array.isArray(business.verification_documents) ? (
+                                business.verification_documents.map((doc: any, index: number) => (
+                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-gray-600" />
+                                            <span className="text-sm font-medium">
+                                                {doc.document_type === 'visiting_card' ? 'Visiting Card' : doc.file_name}
+                                            </span>
+                                        </div>
+                                        <a href={doc.document_url} target="_blank" rel="noopener noreferrer">
+                                            <Button size="sm" variant="outline">
+                                                <Download className="w-4 h-4 mr-1" />
+                                                View
+                                            </Button>
+                                        </a>
                                     </div>
-                                    <Button size="sm" variant="outline">
-                                        <Download className="w-4 h-4 mr-1" />
-                                        Download
-                                    </Button>
-                                </div>
-                            )}
-                            {business.verification_documents.company_registration && (
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm font-medium">Company Registration</span>
+                                ))
+                            ) : (
+                                // Fallback for legacy object structure if needed
+                                business.verification_documents.visiting_card || business.verification_documents.gst_certificate ? (
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-gray-600" />
+                                            <span className="text-sm font-medium">Document</span>
+                                        </div>
+                                        <Button size="sm" variant="outline" disabled>
+                                            View Only
+                                        </Button>
                                     </div>
-                                    <Button size="sm" variant="outline">
-                                        <Download className="w-4 h-4 mr-1" />
-                                        Download
-                                    </Button>
-                                </div>
-                            )}
-                            {business.verification_documents.pan_card && (
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm font-medium">PAN Card</span>
-                                    </div>
-                                    <Button size="sm" variant="outline">
-                                        <Download className="w-4 h-4 mr-1" />
-                                        Download
-                                    </Button>
-                                </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500">No documents uploaded</p>
+                                )
                             )}
                         </div>
                     </CardContent>

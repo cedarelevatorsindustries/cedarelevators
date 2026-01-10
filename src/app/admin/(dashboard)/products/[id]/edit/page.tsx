@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { ProductEditForm } from '@/modules/admin/product-edit/product-edit-form'
-import { getProduct, getProductVariants, getProductElevatorTypes, getProductCollections } from '@/lib/actions/products'
+import { getProductWithVariants, getProductVariants, getProductElevatorTypes, getProductCollections } from '@/lib/actions/products'
 import { getApplications, getCollections, getElevatorTypes } from '@/lib/actions/catalog'
 
 interface ProductEditPageProps {
@@ -14,24 +14,18 @@ export default async function ProductEditPage({ params }: ProductEditPageProps) 
 
   // Fetch all required data in parallel
   const [
-    productResult,
-    variants,
-    productElevatorTypeIds,
-    productCollectionIds,
+    productData,
     applicationsResult,
     collectionsResult,
     elevatorTypesResult
   ] = await Promise.all([
-    getProduct(id),
-    getProductVariants(id),
-    getProductElevatorTypes(id),
-    getProductCollections(id),
+    getProductWithVariants(id),
     getApplications(),
     getCollections(),
     getElevatorTypes(),
   ])
 
-  if (!productResult) {
+  if (!productData) {
     notFound()
   }
 
@@ -39,11 +33,21 @@ export default async function ProductEditPage({ params }: ProductEditPageProps) 
     throw new Error('Failed to load form data')
   }
 
+  // Extract classification IDs from the fetched data
+  const application_ids = productData.applications?.map((app: any) => app.id) || []
+  const category_ids = productData.categories?.map((cat: any) => cat.id) || []
+  const subcategory_ids = productData.subcategories?.map((sub: any) => sub.id) || []
+  const elevator_type_ids = productData.elevator_types?.map((type: any) => type.id) || []
+  const collection_ids = productData.collections?.map((col: any) => col.id) || []
+
   // Merge the association IDs into the product object
   const product = {
-    ...productResult,
-    elevator_type_ids: productElevatorTypeIds,
-    collection_ids: productCollectionIds
+    ...productData,
+    application_ids,
+    category_ids,
+    subcategory_ids,
+    elevator_type_ids,
+    collection_ids
   }
 
   return (
@@ -54,7 +58,7 @@ export default async function ProductEditPage({ params }: ProductEditPageProps) 
           applications={applicationsResult.data || []}
           collections={collectionsResult.data || []}
           elevatorTypes={elevatorTypesResult.data || []}
-          variants={variants}
+          variants={productData.product_variants || []}
         />
       </Suspense>
     </div>

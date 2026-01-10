@@ -42,7 +42,7 @@ export default function ActionAlerts() {
       message: "Your business verification is under review. We'll notify you once approved.",
       action: {
         label: "View Status",
-        href: "/profile/business"
+        href: "/profile/business/verification"
       },
       color: "text-orange-600",
       bgColor: "bg-orange-50"

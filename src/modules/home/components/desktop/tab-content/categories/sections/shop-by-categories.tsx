@@ -79,10 +79,7 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
     return null
   }
 
-  // Split categories into two rows for the layout
-  const midPoint = Math.ceil(categories.length / 2)
-  const firstRow = categories.slice(0, midPoint)
-  const secondRow = categories.slice(midPoint)
+
 
   return (
     <section>
@@ -112,62 +109,30 @@ export default function ShopByCategories({ categories }: ShopByCategoriesProps) 
         className="flex overflow-x-auto overflow-y-hidden [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="flex flex-col gap-6 pb-2 min-w-full">
-          {/* First Row */}
-          <div className="flex gap-6">
-            {firstRow.map((category) => {
-              const IconComponent = getIconComponent(category.icon)
-              const thumbnailSrc = category.thumbnail || category.thumbnail_image || category.image_url
-              return (
-                <LocalizedClientLink
-                  key={category.id}
-                  href={`/catalog?category=${category.slug}`}
-                  className="flex flex-col gap-3 items-center min-w-[140px] group"
-                >
-                  <div className="w-28 h-28 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm overflow-hidden">
-                    {/* Use thumbnail_image from database, fallback to icon */}
-                    {thumbnailSrc ? (
-                      <img src={thumbnailSrc} alt={category.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-gray-900 text-center line-clamp-2 w-[120px]">
-                    {category.name}
-                  </p>
-                </LocalizedClientLink>
-              )
-            })}
-          </div>
-
-          {/* Second Row */}
-          {secondRow.length > 0 && (
-            <div className="flex gap-6">
-              {secondRow.map((category) => {
-                const IconComponent = getIconComponent(category.icon)
-                const thumbnailSrc = category.thumbnail || category.thumbnail_image || category.image_url
-                return (
-                  <LocalizedClientLink
-                    key={category.id}
-                    href={`/catalog?category=${category.slug}`}
-                    className="flex flex-col gap-3 items-center min-w-[140px] group"
-                  >
-                    <div className="w-28 h-28 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm overflow-hidden">
-                      {/* Use thumbnail_image from database, fallback to icon */}
-                      {thumbnailSrc ? (
-                        <img src={thumbnailSrc} alt={category.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
-                      )}
-                    </div>
-                    <p className="text-sm font-medium text-gray-900 text-center line-clamp-2 w-[120px]">
-                      {category.name}
-                    </p>
-                  </LocalizedClientLink>
-                )
-              })}
-            </div>
-          )}
+        <div className="flex gap-6 pb-2 min-w-full">
+          {categories.map((category) => {
+            const IconComponent = getIconComponent(category.icon)
+            const thumbnailSrc = category.thumbnail || category.thumbnail_image || category.image_url
+            return (
+              <LocalizedClientLink
+                key={category.id}
+                href={`/catalog?category=${category.slug}`}
+                className="flex flex-col gap-3 items-center min-w-[140px] group"
+              >
+                <div className="w-28 h-28 rounded-xl bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer shadow-sm overflow-hidden">
+                  {/* Use thumbnail_image from database, fallback to icon */}
+                  {thumbnailSrc ? (
+                    <img src={thumbnailSrc} alt={category.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <IconComponent className="w-12 h-12 text-blue-500" strokeWidth={1.5} />
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 text-center line-clamp-2 w-[120px]">
+                  {category.name}
+                </p>
+              </LocalizedClientLink>
+            )
+          })}
         </div>
       </div>
     </section>

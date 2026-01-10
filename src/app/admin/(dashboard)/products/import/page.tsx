@@ -813,17 +813,17 @@ export default function ProductImportPage() {
               )}
 
               {(importResults.failed ?? 0) > 0 && (
-                <Card className="border-yellow-200 bg-yellow-50">
+                <Card className="border-red-200 bg-red-50">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <AlertTriangle className="w-6 h-6 text-yellow-600" />
+                      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <AlertTriangle className="w-6 h-6 text-red-600" />
                       </div>
                       <div>
-                        <p className="text-sm text-yellow-700">Saved as Draft</p>
-                        <p className="text-2xl font-bold text-yellow-900">{importResults.failed ?? 0}</p>
-                        <p className="text-xs text-yellow-600">Due to missing catalog references or invalid data</p>
-                        <Button variant="link" className="text-yellow-700 p-0 h-auto text-xs mt-1">
+                        <p className="text-sm text-red-700">Import Failed</p>
+                        <p className="text-2xl font-bold text-red-900">{importResults.failed ?? 0}</p>
+                        <p className="text-xs text-red-600">Due to missing catalog references or invalid data</p>
+                        <Button variant="link" className="text-red-700 p-0 h-auto text-xs mt-1">
                           Review Drafts →
                         </Button>
                       </div>
@@ -831,69 +831,33 @@ export default function ProductImportPage() {
                   </CardContent>
                 </Card>
               )}
-            </div>
 
-            {/* Catalog Assignments Summary */}
-            {importResults.catalogStats && (
-              <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-purple-900 flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-purple-600" />
-                    </div>
-                    Catalog Assignments
-                  </CardTitle>
-                  <CardDescription className="text-purple-700">
-                    Products linked to catalog entities
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-5 gap-4">
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.applications}</p>
-                      <p className="text-xs text-purple-600 font-medium">Applications</p>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.categories}</p>
-                      <p className="text-xs text-purple-600 font-medium">Categories</p>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.subcategories}</p>
-                      <p className="text-xs text-purple-600 font-medium">Subcategories</p>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.types}</p>
-                      <p className="text-xs text-purple-600 font-medium">Elevator Types</p>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-purple-100">
-                      <p className="text-2xl font-bold text-purple-900">{importResults.catalogStats.collections}</p>
-                      <p className="text-xs text-purple-600 font-medium">Collections</p>
-                    </div>
+              {/* What You Can Do Next - Moved here */}
+              <Card className="flex flex-col justify-center">
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <Link href="/admin/products" className="w-full block">
+                      <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                        <FileText className="mr-2 h-4 w-4" />
+                        View All Products
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setCurrentStep('upload')
+                        setPreviewData(null)
+                        setImportResults(null)
+                      }}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Import Another CSV
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            )}
-
-            {/* What You Can Do Next */}
-            <Card>
-              <CardHeader>
-                <CardTitle>WHAT YOU CAN DO NEXT</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <Link href="/admin/products">
-                    <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                      <FileText className="mr-2 h-4 w-4" />
-                      View All Products
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Import Another CSV
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
 
             {/* Help Text */}
             <p className="text-center text-sm text-gray-500">

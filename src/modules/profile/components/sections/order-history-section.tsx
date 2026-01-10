@@ -111,81 +111,61 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
         </p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <p className="text-sm text-blue-600 font-medium">Total Orders</p>
-          <p className="text-3xl font-bold text-blue-900 mt-1">{summary.totalOrders}</p>
-          <p className="text-xs text-blue-600 mt-1">All time</p>
-        </div>
-
-        <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-          <p className="text-sm text-green-600 font-medium">Delivered</p>
-          <p className="text-3xl font-bold text-green-900 mt-1">{summary.delivered}</p>
-          <p className="text-xs text-green-600 mt-1">Completed</p>
-        </div>
-
-        <div className="bg-orange-50 rounded-lg p-4 border border-orange-100">
-          <p className="text-sm text-orange-600 font-medium">In Transit</p>
-          <p className="text-3xl font-bold text-orange-900 mt-1">{summary.inTransit}</p>
-          <p className="text-xs text-orange-600 mt-1">Active</p>
-        </div>
-
-        <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <p className="text-sm text-purple-600 font-medium">Total Spent</p>
-          <p className="text-2xl font-bold text-purple-900 mt-1">
-            {convertToLocale(summary.totalSpent, 'INR')}
-          </p>
-          <p className="text-xs text-purple-600 mt-1">All time</p>
-        </div>
+      {/* Status Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto scrollbar-hide" aria-label="Tabs">
+          {[
+            { id: 'all', label: 'All Orders' },
+            { id: 'processing', label: 'Processing' },
+            { id: 'shipped', label: 'Shipped' },
+            { id: 'delivered', label: 'Delivered' },
+            { id: 'cancelled', label: 'Cancelled' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id as any)}
+              className={`
+                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                ${statusFilter === tab.id
+                  ? 'border-[#F97316] text-[#F97316]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Filters */}
-      <div className="space-y-4">
-        {/* Quick Filters */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'all'
-              ? 'bg-[#F97316] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            All Orders
-          </button>
-          <button
-            onClick={() => setStatusFilter('delivered')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'delivered'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            Delivered
-          </button>
-          <button
-            onClick={() => setStatusFilter('shipped')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'shipped'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            In Transit
-          </button>
-          <button
-            onClick={() => setStatusFilter('cancelled')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === 'cancelled'
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            Cancelled
-          </button>
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        {/* Search Bar */}
+        <div className="relative w-full md:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by Order ID, Product name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-[#F97316] focus:border-transparent text-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
 
-          {/* Date Filter */}
+        {/* Date Filter */}
+        <div className="w-full md:w-auto">
           <select
             value={dateFilter || ''}
             onChange={(e) => setDateFilter(e.target.value ? parseInt(e.target.value) : null)}
-            className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border-none focus:ring-2 focus:ring-[#F97316]"
+            className="w-full md:w-auto px-4 py-2.5 rounded-lg text-sm font-medium bg-white border border-gray-300 text-gray-700 focus:ring-2 focus:ring-[#F97316] outline-none"
           >
             <option value="">All Time</option>
             <option value="30">Last 30 days</option>
@@ -195,25 +175,7 @@ export default function OrderHistorySection({ orders, accountType }: OrderHistor
           </select>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search by Order ID, Product name, Invoice no."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-[#F97316] focus:border-transparent"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={20} />
-            </button>
-          )}
-        </div>
+
 
         {/* B2B Actions */}
         {isBusinessUser && selectedOrders.size > 0 && (

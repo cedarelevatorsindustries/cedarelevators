@@ -4,11 +4,31 @@ import { use, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, Calendar, Link as LinkIcon, Image as ImageIcon, ChevronRight, ChevronDown } from "lucide-react"
+import { ArrowLeft, Edit, Loader2, FolderTree, Package, Plus, Calendar, Link as LinkIcon, Image as ImageIcon, ChevronRight, ChevronDown, Trash2, ArrowRightLeft } from "lucide-react"
 import Link from "next/link"
 import { useCategory, useCategoryBySlug, useCategories, useSubcategories } from "@/hooks/queries/useCategories"
 import { useProductsByCategory } from "@/hooks/queries/useProductsByCategory"
 import { format } from "date-fns"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { toast } from "sonner"
+import { deleteSubcategory } from "@/lib/actions/subcategories"
+import { moveSubcategoryToCategory } from "@/lib/actions/category-subcategories"
+import { useRouter } from "next/navigation"
+
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -39,6 +59,19 @@ export default function CategoryDetailPage({ params }: PageProps) {
   // State for expandable subcategory sections
   const [expandedSubcategories, setExpandedSubcategories] = useState<Set<string>>(new Set())
 
+  // State for delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [subcategoryToDelete, setSubcategoryToDelete] = useState<any>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // State for move dialog
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false)
+  const [subcategoryToMove, setSubcategoryToMove] = useState<any>(null)
+  const [targetCategoryId, setTargetCategoryId] = useState<string>("")
+  const [isMoving, setIsMoving] = useState(false)
+
+  const router = useRouter()
+
   const toggleSubcategory = (subcategoryId: string) => {
     setExpandedSubcategories(prev => {
       const newSet = new Set(prev)
@@ -50,6 +83,58 @@ export default function CategoryDetailPage({ params }: PageProps) {
       return newSet
     })
   }
+
+  // Handle delete subcategory
+  const handleDeleteSubcategory = async () => {
+    if (!subcategoryToDelete) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteSubcategory(subcategoryToDelete.id)
+
+      if (result.success) {
+        toast.success("Subcategory deleted successfully")
+        setDeleteDialogOpen(false)
+        setSubcategoryToDelete(null)
+        router.refresh()
+      } else {
+        toast.error(result.error || "Failed to delete subcategory")
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Handle move subcategory
+  const handleMoveSubcategory = async () => {
+    if (!subcategoryToMove || !targetCategoryId || !category) return
+
+    setIsMoving(true)
+    try {
+      const result = await moveSubcategoryToCategory(
+        subcategoryToMove.id,
+        category.id,
+        targetCategoryId
+      )
+
+      if (result.success) {
+        toast.success("Subcategory moved successfully")
+        setMoveDialogOpen(false)
+        setSubcategoryToMove(null)
+        setTargetCategoryId("")
+        router.refresh()
+      } else {
+        toast.error(result.error || "Failed to move subcategory")
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred")
+    } finally {
+      setIsMoving(false)
+    }
+  }
+
 
   // Fetch all categories for parent lookup
   const { data: categoriesData } = useCategories()
@@ -310,6 +395,30 @@ export default function CategoryDetailPage({ params }: PageProps) {
                           >
                             {subcat.status || 'draft'}
                           </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setSubcategoryToMove(subcat)
+                              setMoveDialogOpen(true)
+                            }}
+                          >
+                            <ArrowRightLeft className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setSubcategoryToDelete(subcat)
+                              setDeleteDialogOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
                             <Link href={`/admin/categories/create?id=${subcat.id}&parent=${category?.id}`}>
                               <Edit className="h-4 w-4 text-gray-600" />
@@ -568,6 +677,98 @@ export default function CategoryDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Subcategory</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{subcategoryToDelete?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSubcategory}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Subcategory Dialog */}
+      <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Move Subcategory</DialogTitle>
+            <DialogDescription>
+              Move "{subcategoryToMove?.name}" to another category
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Select Target Category
+            </label>
+            <Select value={targetCategoryId} onValueChange={setTargetCategoryId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoriesData?.categories
+                  ?.filter((cat) => cat.id !== category?.id)
+                  .map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMoveDialogOpen(false)
+                setTargetCategoryId("")
+              }}
+              disabled={isMoving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleMoveSubcategory}
+              disabled={isMoving || !targetCategoryId}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isMoving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Moving...
+                </>
+              ) : (
+                "Move"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

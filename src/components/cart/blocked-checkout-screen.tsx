@@ -62,7 +62,7 @@ export function BlockedCheckoutScreen({ userType, reason, itemCount = 0 }: Block
       message: 'Your business account must be verified before placing orders. Verification typically takes 1-2 business days.',
       primaryAction: {
         text: 'Complete Verification',
-        href: '/profile/verification'
+        href: '/profile/business/verification'
       },
       secondaryAction: {
         text: 'Request Quote Instead',
@@ -127,9 +127,9 @@ export function BlockedCheckoutScreen({ userType, reason, itemCount = 0 }: Block
               {config.secondaryAction.text}
             </Button>
           </Link>
-          <Button 
-            size="sm" 
-            variant="ghost" 
+          <Button
+            size="sm"
+            variant="ghost"
             className="w-full"
             onClick={() => router.back()}
           >

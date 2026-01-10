@@ -146,7 +146,7 @@ export function CartSummary({ summary, userType, onCheckout, onRequestQuote }: C
         {userType === 'business_unverified' && (
           <div className="bg-blue-50 text-blue-700 text-sm p-3 rounded-lg">
             <Lock className="w-4 h-4 inline mr-1" />
-            <Link href="/profile/verification" className="font-medium hover:underline">
+            <Link href="/profile/business/verification" className="font-medium hover:underline">
               Verify your business
             </Link>{' '}
             to unlock checkout

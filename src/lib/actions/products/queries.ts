@@ -81,7 +81,7 @@ export async function getProduct(id: string) {
 }
 
 /**
- * Fetch product with variants
+ * Fetch product with variants and classifications
  */
 export async function getProductWithVariants(id: string) {
     const supabase = await createServerSupabase()
@@ -103,6 +103,26 @@ export async function getProductWithVariants(id: string) {
                 options,
                 created_at,
                 updated_at
+            ),
+            product_applications (
+                application_id,
+                applications (id, title, handle)
+            ),
+            product_categories (
+                category_id,
+                categories (id, title, slug)
+            ),
+            product_subcategories (
+                subcategory_id,
+                subcategories:subcategory_id (id, title, slug)
+            ),
+            product_elevator_types (
+                elevator_type_id,
+                elevator_types (id, title, slug)
+            ),
+            product_collections (
+                collection_id,
+                collections (id, title, slug)
             )
         `)
         .eq('id', id)
@@ -113,7 +133,17 @@ export async function getProductWithVariants(id: string) {
         return null
     }
 
-    return data
+    // Transform the data to include classification arrays
+    const transformedData = {
+        ...data,
+        applications: data.product_applications?.map((pa: any) => pa.applications).filter(Boolean) || [],
+        categories: data.product_categories?.map((pc: any) => pc.categories).filter(Boolean) || [],
+        subcategories: data.product_subcategories?.map((ps: any) => ps.subcategories).filter(Boolean) || [],
+        elevator_types: data.product_elevator_types?.map((pet: any) => pet.elevator_types).filter(Boolean) || [],
+        collections: data.product_collections?.map((pc: any) => pc.collections).filter(Boolean) || []
+    }
+
+    return transformedData
 }
 
 /**

@@ -55,7 +55,7 @@ export interface ApplicationFormData {
   icon?: string
   badge_text?: string
   badge_color?: string
-  card_position?: 'image-top' | 'image-left' | 'compact'
+  card_position?: number
   default_sort?: 'newest' | 'popular' | 'manual' | 'price-low' | 'price-high'
   sort_order: number
   is_active: boolean

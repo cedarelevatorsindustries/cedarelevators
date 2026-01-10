@@ -11,10 +11,11 @@ import { Badge } from "@/components/ui/badge"
 import { Save, ArrowRight, ArrowLeft, FileText, Image, Search, CheckCircle2, AlertCircle, ClipboardCheck, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
-import { useCreateCategory, useUpdateCategory, useUpdateSubcategory, useUploadCategoryImage, useCategory, useSubcategory, useCategories } from "@/hooks/queries/useCategories"
+import { useCreateCategory, useUpdateCategory, useUpdateSubcategory, useUploadCategoryImage, useCategory, useSubcategory, useCategories, useAllSubcategories, useLinkSubcategory } from "@/hooks/queries/useCategories"
 import type { CategoryFormData, CategoryStatus } from "@/lib/types/categories"
 import { CategoryPreview } from "./category-preview"
 import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
@@ -39,12 +40,16 @@ export default function CreateCategoryPage() {
   const isLoadingExisting = isSubcategory ? isLoadingSubcategory : isLoadingCategory
 
   const { data: categoriesData } = useCategories()
+  const { data: allSubcategoriesData } = useAllSubcategories()
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
   const updateSubcategoryMutation = useUpdateSubcategory()
+  const linkMutation = useLinkSubcategory()
   const uploadMutation = useUploadCategoryImage()
 
   const [activeTab, setActiveTab] = useState("basic")
+  const [creationMode, setCreationMode] = useState<"new" | "existing">("new")
+  const [selectedExistingId, setSelectedExistingId] = useState<string>("")
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [bannerFile, setBannerFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -113,14 +118,50 @@ export default function CreateCategoryPage() {
     toast.success("SEO fields auto-generated!")
   }
 
+  const handleExistingSelect = (id: string) => {
+    setSelectedExistingId(id)
+    // Pre-fill form data for preview/context if needed
+    const selected = allSubcategoriesData?.subcategories?.find(s => s.id === id)
+    if (selected) {
+      setFormData({
+        ...formData,
+        name: selected.title,
+        slug: selected.handle,
+        description: selected.description || "",
+        thumbnail_image: selected.thumbnail || ""
+      })
+    }
+  }
+
   const handleSubmit = async (isDraft = false) => {
     try {
-      if (!formData.name || !formData.slug) {
+      if (isSubcategory && creationMode === 'existing' && !selectedExistingId) {
+        toast.error('Please select an existing subcategory')
+        return
+      }
+
+      if (creationMode === 'new' && (!formData.name || !formData.slug)) {
         toast.error('Please fill in required fields')
         return
       }
 
       setIsUploading(true)
+
+      // Handle "Link Existing" flow for subcategories
+      if (isSubcategory && creationMode === 'existing' && parentId) {
+        console.log('[Form] Linking existing subcategory:', selectedExistingId, 'to parent:', parentId)
+        const result = await linkMutation.mutateAsync({
+          category_id: parentId,
+          subcategory_id: selectedExistingId
+        })
+
+        if (result.success) {
+          router.push('/admin/categories')
+        }
+        return
+      }
+
+      // Handle "Create New" flow
       let thumbnailUrl = formData.thumbnail_image
       let bannerUrl = formData.banner_url
 
@@ -168,7 +209,7 @@ export default function CreateCategoryPage() {
     }
   }
 
-  const isLoading = createMutation.isPending || updateMutation.isPending || updateSubcategoryMutation.isPending || isUploading
+  const isLoading = createMutation.isPending || updateMutation.isPending || updateSubcategoryMutation.isPending || linkMutation.isPending || isUploading
 
   if (isEditMode && isLoadingExisting) {
     return (
@@ -202,8 +243,13 @@ export default function CreateCategoryPage() {
   }
 
   const canPublish = () => {
+    if (isSubcategory && creationMode === 'existing') {
+      return !!selectedExistingId
+    }
     return formData.name && formData.slug
   }
+
+  const isExistingMode = isSubcategory && creationMode === 'existing'
 
   return (
     <div className="w-full max-w-full overflow-x-hidden p-6 bg-gray-50 min-h-screen">
@@ -247,42 +293,46 @@ export default function CreateCategoryPage() {
           </div>
         </div>
 
-        {/* Progress indicator */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
-              Step {currentTabIndex + 1} of {tabs.length}
-            </span>
-            <Badge variant={canPublish() ? "default" : "secondary"}>
-              {canPublish() ? "Ready to publish" : "Fill required fields"}
-            </Badge>
+        {/* Progress indicator - Hide in existing mode */}
+        {!isExistingMode && (
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                Step {currentTabIndex + 1} of {tabs.length}
+              </span>
+              <Badge variant={canPublish() ? "default" : "secondary"}>
+                {canPublish() ? "Ready to publish" : "Fill required fields"}
+              </Badge>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentTabIndex + 1) / tabs.length) * 100}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentTabIndex + 1) / tabs.length) * 100}%` }}
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Tabs Navigation */}
-        <div className="bg-white rounded-lg border border-gray-200 p-2">
-          <div className="flex w-full gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
-                  ? "bg-orange-100 text-orange-900 border border-orange-200"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                  }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
+        {/* Tabs Navigation - Hide in existing mode */}
+        {!isExistingMode && (
+          <div className="bg-white rounded-lg border border-gray-200 p-2">
+            <div className="flex w-full gap-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
+                    ? "bg-orange-100 text-orange-900 border border-orange-200"
+                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                    }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Main Content */}
         <div className={activeTab === 'review' ? "max-w-3xl mx-auto w-full space-y-8" : "grid gap-6 lg:gap-8 lg:grid-cols-4 w-full"}>
@@ -307,74 +357,137 @@ export default function CreateCategoryPage() {
                     <CardDescription>Basic details about this category</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-6">
+                    {/* Creation Mode Toggle - ONLY for Creating New Subcategory (not editing) */}
+                    {isSubcategory && !isEditMode && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                        <Label className="mb-3 block text-base">How do you want to add this subcategory?</Label>
+                        <Tabs value={creationMode} onValueChange={(v) => setCreationMode(v as any)} className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 p-1 bg-gray-100 rounded-lg">
+                            <TabsTrigger
+                              value="new"
+                              className="rounded-md data-[state=active]:!bg-orange-600 data-[state=active]:!text-white data-[state=inactive]:text-gray-600"
+                            >
+                              Create New Subcategory
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="existing"
+                              className="rounded-md data-[state=active]:!bg-orange-600 data-[state=active]:!text-white data-[state=inactive]:text-gray-600"
+                            >
+                              Select Existing Subcategory
+                            </TabsTrigger>
+                          </TabsList>
 
+                          <TabsContent value="existing" className="mt-4 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="space-y-3">
+                              <Label>Select from existing subcategories</Label>
+                              <Select value={selectedExistingId} onValueChange={handleExistingSelect}>
+                                <SelectTrigger className="w-full bg-white">
+                                  <SelectValue placeholder="Search or select a subcategory..." />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[300px]">
+                                  {allSubcategoriesData?.subcategories && allSubcategoriesData.subcategories.length > 0 ? (
+                                    allSubcategoriesData.subcategories.map((sub) => (
+                                      <SelectItem key={sub.id} value={sub.id}>
+                                        <div className="flex items-center justify-between w-full">
+                                          <span>{sub.title}</span>
+                                          {sub.parent_count && (
+                                            <span className="text-xs text-gray-400 ml-2">
+                                              (in {sub.parent_count} categories)
+                                            </span>
+                                          )}
+                                        </div>
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <div className="p-2 text-sm text-gray-500 text-center">No existing subcategories found</div>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <p className="text-sm text-gray-500">
+                                Use this if the subcategory is shared across multiple parent categories (e.g., "Safety Devices").
+                              </p>
+                            </div>
+                          </TabsContent>
 
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="flex items-center gap-2">
-                          Name <span className="text-red-500">*</span>
-                          {formData.name && (
-                            formData.name.length >= 3 ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-orange-500" />
-                            )
-                          )}
-                        </Label>
-                        <Input
-                          id="name"
-                          placeholder="e.g., Motors, Controllers"
-                          value={formData.name}
-                          onChange={(e) => handleNameChange(e.target.value)}
-                        />
-                        <p className="text-xs text-gray-500">
-                          {formData.name.length > 0 ? `${formData.name.length} characters` : 'Minimum 3 characters required'}
-                        </p>
+                          <TabsContent value="new" className="mt-2 text-sm text-gray-500">
+                            Fill out the details below to create a brand new subcategory specific to this category.
+                          </TabsContent>
+                        </Tabs>
                       </div>
+                    )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="slug">URL Slug <span className="text-red-500">*</span></Label>
-                        <Input
-                          id="slug"
-                          placeholder="auto-generated"
-                          value={formData.slug}
-                          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                        />
-                        <p className="text-xs text-gray-500">
-                          URL: /catalog/categories/{formData.slug || "your-slug"}
-                        </p>
-                      </div>
-                    </div>
+                    {/* Hide form fields if in 'existing' mode */}
+                    {(creationMode === "new" || isEditMode) && (
+                      <>
+                        <div className="grid gap-6 sm:grid-cols-2">
 
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Brief description of this category..."
-                        value={formData.description || ''}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        rows={4}
-                      />
-                      <p className="text-xs text-gray-500">
-                        {formData.description?.length || 0} characters • Keep it concise and informative
-                      </p>
-                    </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="name" className="flex items-center gap-2">
+                              Name <span className="text-red-500">*</span>
+                              {formData.name && (
+                                formData.name.length >= 3 ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 text-orange-500" />
+                                )
+                              )}
+                            </Label>
+                            <Input
+                              id="name"
+                              placeholder="e.g., Motors, Controllers"
+                              value={formData.name}
+                              onChange={(e) => handleNameChange(e.target.value)}
+                            />
+                            <p className="text-xs text-gray-500">
+                              {formData.name.length > 0 ? `${formData.name.length} characters` : 'Minimum 3 characters required'}
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="slug">URL Slug <span className="text-red-500">*</span></Label>
+                            <Input
+                              id="slug"
+                              placeholder="auto-generated"
+                              value={formData.slug}
+                              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                            />
+                            <p className="text-xs text-gray-500">
+                              URL: /catalog/categories/{formData.slug || "your-slug"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="description">Description</Label>
+                          <Textarea
+                            id="description"
+                            placeholder="Brief description of this category..."
+                            value={formData.description || ''}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            rows={4}
+                          />
+                          <p className="text-xs text-gray-500">
+                            {formData.description?.length || 0} characters • Keep it concise and informative
+                          </p>
+                        </div>
 
 
-                    <div className="space-y-2">
-                      <Label htmlFor="card_position">Display Order</Label>
-                      <Input
-                        id="card_position"
-                        type="number"
-                        min="1"
-                        placeholder={`Default: ${(categoriesData?.categories?.length || 0) + 1}`}
-                        value={formData.categories_card_position || ''}
-                        onChange={(e) => setFormData({ ...formData, categories_card_position: e.target.value })}
-                      />
-                      <p className="text-xs text-gray-500">
-                        Enter a number to set the display order (1, 2, 3...). Leave empty to add at the end.
-                      </p>
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="card_position">Display Order</Label>
+                          <Input
+                            id="card_position"
+                            type="number"
+                            min="1"
+                            placeholder={`Default: ${(categoriesData?.categories?.length || 0) + 1}`}
+                            value={formData.categories_card_position || ''}
+                            onChange={(e) => setFormData({ ...formData, categories_card_position: e.target.value })}
+                          />
+                          <p className="text-xs text-gray-500">
+                            Enter a number to set the display order (1, 2, 3...). Leave empty to add at the end.
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -675,17 +788,20 @@ export default function CreateCategoryPage() {
 
         {/* Navigation Buttons */}
         <div className="flex justify-between items-center pt-4">
-          <Button
-            variant="outline"
-            onClick={goToPreviousTab}
-            disabled={!canGoPrevious}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
+          {/* Hide Previous button in existing mode */}
+          {!isExistingMode ? (
+            <Button
+              variant="outline"
+              onClick={goToPreviousTab}
+              disabled={!canGoPrevious}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous
+            </Button>
+          ) : <div></div>}
 
-          {canGoNext ? (
+          {canGoNext && !isExistingMode ? (
             <Button
               onClick={goToNextTab}
               className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
@@ -700,11 +816,11 @@ export default function CreateCategoryPage() {
               className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Save className="h-4 w-4" />
-              {isLoading ? "Publishing..." : "Publish Category"}
+              {isLoading ? "Publishing..." : (isExistingMode ? "Link Subcategory" : "Publish Category")}
             </Button>
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }

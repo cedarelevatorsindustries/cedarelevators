@@ -35,6 +35,24 @@ export default function LoginForm() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId })
+
+        // Check if user has business profile and redirect accordingly
+        try {
+          const response = await fetch('/api/auth/user-profile')
+          if (response.ok) {
+            const { userType, isVerified, activeProfile } = await response.json()
+
+            // If business user and not verified, redirect to profile verification page
+            if (activeProfile?.profile_type === 'business' && !isVerified) {
+              router.push('/profile/business')
+              return
+            }
+          }
+        } catch (error) {
+          console.error('Error checking user profile:', error)
+        }
+
+        // Default redirect to homepage
         router.push("/")
       } else if (result.status === "needs_first_factor") {
         // Email verification required

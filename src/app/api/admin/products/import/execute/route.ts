@@ -161,6 +161,29 @@ async function importProductGroup(
     specifications: sanitizeAttributes(group.attributes)
   }
 
+  // Check if product exists by slug to determine if this is an update
+  const { data: existingProduct } = await supabase
+    .from('products')
+    .select('id')
+    .eq('slug', group.slug)
+    .single()
+
+  const isUpdate = existingProduct !== null
+  const existingProductId = existingProduct?.id
+
+  // If updating, delete existing junction table entries BEFORE upsert to prevent duplicates
+  if (isUpdate && existingProductId) {
+    await Promise.all([
+      supabase.from('product_applications').delete().eq('product_id', existingProductId),
+      supabase.from('product_categories').delete().eq('product_id', existingProductId),
+      supabase.from('product_subcategories').delete().eq('product_id', existingProductId),
+      supabase.from('product_elevator_types').delete().eq('product_id', existingProductId),
+      supabase.from('product_collections').delete().eq('product_id', existingProductId),
+      // Also delete existing variants
+      supabase.from('product_variants').delete().eq('product_id', existingProductId)
+    ])
+  }
+
   // Insert or update product (upsert based on slug)
   const { data: product, error: productError } = await supabase
     .from('products')
@@ -175,14 +198,6 @@ async function importProductGroup(
     throw new Error(`Failed to create/update product: ${productError.message}`)
   }
 
-  // Check if this was an update or insert
-  const isUpdate = await supabase
-    .from('products')
-    .select('id')
-    .eq('slug', group.slug)
-    .single()
-    .then((res: any) => res.data !== null)
-
   if (isUpdate) {
     result.productsUpdated++
   } else {
@@ -191,20 +206,8 @@ async function importProductGroup(
 
   const productId = product.id
 
-  // Delete existing junction table entries before creating new ones
-  await Promise.all([
-    supabase.from('product_applications').delete().eq('product_id', productId),
-    supabase.from('product_categories').delete().eq('product_id', productId),
-    supabase.from('product_subcategories').delete().eq('product_id', productId),
-    supabase.from('product_elevator_types').delete().eq('product_id', productId),
-    supabase.from('product_collections').delete().eq('product_id', productId)
-  ])
-
   // Create junction table entries for classifications
   await createJunctionTableEntries(supabase, productId, group, result)
-
-  // Delete existing variants before creating new ones (for updates)
-  await supabase.from('product_variants').delete().eq('product_id', productId)
 
   // Create variants
   for (const variant of group.variants) {

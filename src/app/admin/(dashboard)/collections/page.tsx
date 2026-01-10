@@ -32,7 +32,7 @@ export default function CollectionsPage() {
   const toggleMutation = useToggleCollectionStatus()
 
   const collections = data?.collections || []
-  const stats = data?.stats || { total: 0, active: 0, featured: 0, total_products: 0 }
+  const stats = data?.stats || { total: 0, active: 0, total_products: 0 }
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 1 }
 
   // Reset to page 1 when filters change
@@ -81,7 +81,7 @@ export default function CollectionsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Total Collections</CardTitle>
@@ -104,16 +104,7 @@ export default function CollectionsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Featured</CardTitle>
-              <Star className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stats.featured}</div>
-              <p className="text-xs text-gray-500 mt-1">Featured collections</p>
-            </CardContent>
-          </Card>
+
 
           <Card className="bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -213,44 +204,32 @@ export default function CollectionsPage() {
                     key={collection.id}
                     className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
                   >
-                    {/* Image */}
-                    {collection.image_url ? (
-                      <img src={collection.image_url} alt={collection.title} className="w-20 h-14 rounded object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-20 h-14 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                        <Layers className="h-6 w-6 text-gray-400" />
-                      </div>
-                    )}
+                    {/* Icon */}
+                    <div className="w-20 h-14 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                      <Layers className="h-6 w-6 text-gray-400" />
+                    </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium text-gray-900 truncate">{collection.title}</h3>
-                        {collection.is_featured && (
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
-                        )}
                       </div>
                       {collection.description && (
                         <p className="text-sm text-gray-500 truncate">{collection.description}</p>
                       )}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                         <Badge variant="outline" className="text-xs capitalize bg-gray-50 border-gray-200">
-                          {collection.type}
+                          {collection.collection_type}
                         </Badge>
-                        <Badge
-                          variant={collection.display_type === 'normal' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {collection.display_type === 'normal' ? 'Normal' : 'Special'}
-                        </Badge>
-                        {collection.display_type === 'special' && collection.special_locations && collection.special_locations.length > 0 && (
-                          <div className="flex gap-1">
-                            {collection.special_locations.map((location: string) => (
-                              <Badge key={location} variant="outline" className="text-xs bg-orange-50 border-orange-200 text-orange-700">
-                                {location === 'categories' ? 'Categories' : 'Business Hub'}
-                              </Badge>
-                            ))}
-                          </div>
+                        {collection.is_business_only && (
+                          <Badge variant="secondary" className="text-xs">
+                            Business Only
+                          </Badge>
+                        )}
+                        {collection.category_id && (
+                          <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
+                            Category Specific
+                          </Badge>
                         )}
                         <span>{collection.product_count || 0} products</span>
                       </div>

@@ -72,7 +72,7 @@ export default function PaymentMethodsSection({
                   Complete business verification to access payment methods and credit facilities.
                 </p>
                 <a
-                  href="/profile/verification"
+                  href="/profile/business/verification"
                   className="inline-block px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors"
                 >
                   Complete Verification

@@ -11,7 +11,7 @@ import { toast } from "sonner"
 import { ProductTabs } from "@/modules/admin/product-creation/product-tabs"
 import { ProductPreview } from "@/modules/admin/product-creation/product-preview"
 import { VariantEditorDrawer } from "@/components/admin/variant-editor-drawer"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { EditVariantsTab } from "@/modules/admin/product-edit/edit-variants-tab"
 
 // Import all tab components
@@ -86,8 +86,30 @@ export function ProductEditForm({
   variants
 }: ProductEditFormProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("basic-information")
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Define tabs array before using it
+  const tabs = [
+    "basic-information",
+    "media",
+    "product-details",
+    "classification",
+    "pricing-inventory",
+    "variants",
+    "seo",
+    "review"
+  ]
+
+  const [activeTab, setActiveTab] = useState(tabParam && tabs.includes(tabParam) ? tabParam : "basic-information")
+
+  // Update active tab when URL parameter changes
+  useEffect(() => {
+    if (tabParam && tabs.includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   // Variant editor state logic moved to EditVariantsTab
 
@@ -200,16 +222,6 @@ export function ProductEditForm({
     }
   }
 
-  const tabs = [
-    "basic-information",
-    "media",
-    "product-details",
-    "classification",
-    "pricing-inventory",
-    "variants",
-    "seo",
-    "review"
-  ]
 
   const currentTabIndex = tabs.indexOf(activeTab)
 
