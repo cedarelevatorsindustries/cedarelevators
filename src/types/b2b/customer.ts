@@ -17,6 +17,7 @@ export type DocumentType =
   | 'business_license'
   | 'incorporation_certificate'
   | 'address_proof'
+  | 'visiting_card'
   | 'other'
 
 // Document Status
@@ -55,8 +56,12 @@ export interface BusinessProfile {
   id: string
   clerk_user_id: string
   company_name: string
+  legal_business_name?: string
+  contact_person_name?: string
+  contact_person_phone?: string
   company_type?: CompanyType
   gst_number?: string
+  gstin?: string
   pan_number?: string
   tan_number?: string
   business_address?: {
@@ -306,6 +311,7 @@ export function getDocumentTypeLabel(type: DocumentType): string {
     business_license: 'Business License',
     incorporation_certificate: 'Incorporation Certificate',
     address_proof: 'Address Proof',
+    visiting_card: 'Business Visiting Card',
     other: 'Other Document',
   }
   return labels[type]

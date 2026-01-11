@@ -8,7 +8,7 @@ import { CustomersStats } from '@/domains/admin/customers/customers-stats'
 import { CustomersEmptyState } from '@/components/common/empty-states'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCustomers, useCustomerStats } from '@/hooks/queries/useCustomers'
 import { useExportCustomers } from '@/hooks/mutations/useCustomerMutations'
 
@@ -17,14 +17,19 @@ export default function CustomersPage() {
     status: 'all',
   })
   const [page, setPage] = useState(1)
+  const limit = 20
 
   // React Query hooks
   const {
-    data: customers = [],
+    data,
     isLoading: isLoadingCustomers,
     error: customersError,
     refetch: refetchCustomers
-  } = useCustomers(filters, page, 20)
+  } = useCustomers(filters, page, limit)
+
+  const customers = data?.customers || []
+  const total = data?.total || 0
+  const totalPages = Math.ceil(total / limit)
 
   const {
     data: stats,
@@ -138,6 +143,62 @@ export default function CustomersPage() {
 
           {/* Customers Table */}
           <CustomersTable customers={customers} isLoading={isLoadingCustomers} />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t pt-4">
+              <div className="text-sm text-gray-700">
+                Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(page * limit, total)}</span> of{' '}
+                <span className="font-medium">{total}</span> customers
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum
+                    if (totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (page <= 3) {
+                      pageNum = i + 1
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i
+                    } else {
+                      pageNum = page - 2 + i
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={page === pageNum ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setPage(pageNum)}
+                        className="w-10"
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <CustomersEmptyState />

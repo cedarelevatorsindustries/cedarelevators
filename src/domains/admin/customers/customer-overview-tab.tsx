@@ -27,62 +27,6 @@ export function CustomerOverviewTab({ customer }: CustomerOverviewTabProps) {
   return (
     <div className="space-y-6" data-testid="customer-overview-tab">
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card data-testid="stat-total-orders">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{customer.total_orders}</div>
-            <p className="text-xs text-muted-foreground">Lifetime orders</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="stat-total-spent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ₹{customer.total_spent.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">Lifetime value</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="stat-average-order">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Order</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ₹{customer.average_order_value.toFixed(0)}
-            </div>
-            <p className="text-xs text-muted-foreground">Per order</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="stat-last-order">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Order</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {customer.last_order_date
-                ? formatDistanceToNow(new Date(customer.last_order_date), {
-                    addSuffix: true,
-                  })
-                : 'Never'}
-            </div>
-            <p className="text-xs text-muted-foreground">Last purchase</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Customer Information */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Basic Info */}
@@ -155,31 +99,9 @@ export function CustomerOverviewTab({ customer }: CustomerOverviewTabProps) {
               <div className="flex items-center gap-3">
                 <Building2 className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Company Type</p>
-                  <p className="text-sm text-muted-foreground">
-                    {businessProfile.company_type
-                      ? getCompanyTypeLabel(businessProfile.company_type)
-                      : 'Not provided'}
-                  </p>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-muted-foreground" />
-                <div>
                   <p className="text-sm font-medium">GST Number</p>
                   <p className="text-sm text-muted-foreground font-mono">
                     {businessProfile.gst_number || 'Not provided'}
-                  </p>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-center gap-3">
-                <Building2 className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">PAN Number</p>
-                  <p className="text-sm text-muted-foreground font-mono">
-                    {businessProfile.pan_number || 'Not provided'}
                   </p>
                 </div>
               </div>

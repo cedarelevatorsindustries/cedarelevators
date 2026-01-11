@@ -215,8 +215,8 @@ export default function BusinessVerificationSection({
     }
   }
 
-  const canEdit = status === 'incomplete' || status === 'rejected'
-  const canUploadDocs = status === 'incomplete' || status === 'rejected' || status === 'pending'
+  const canEdit = true // Always show the form, but control readOnly state
+  const canUploadDocs = status === 'incomplete' || status === 'rejected'
 
   if (isLoading) {
     return (
@@ -307,10 +307,14 @@ export default function BusinessVerificationSection({
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={formData.business_name}
                     onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                     placeholder="Enter your business name"
+                    readOnly={status === 'pending' || status === 'approved'}
+                    className={cn(
+                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                      (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
+                    )}
                   />
                 </div>
 
@@ -321,10 +325,14 @@ export default function BusinessVerificationSection({
                   <input
                     type="text"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={formData.owner_name}
                     onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
                     placeholder="Enter owner's full name"
+                    readOnly={status === 'pending' || status === 'approved'}
+                    className={cn(
+                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                      (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
+                    )}
                   />
                 </div>
 
@@ -335,10 +343,14 @@ export default function BusinessVerificationSection({
                   <input
                     type="tel"
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={formData.business_phone}
                     onChange={(e) => setFormData({ ...formData, business_phone: e.target.value })}
                     placeholder="Enter business phone number"
+                    readOnly={status === 'pending' || status === 'approved'}
+                    className={cn(
+                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                      (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
+                    )}
                   />
                 </div>
 
@@ -348,10 +360,14 @@ export default function BusinessVerificationSection({
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={formData.gstin}
                     onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
                     placeholder="Enter GST number (if applicable)"
+                    readOnly={status === 'pending' || status === 'approved'}
+                    className={cn(
+                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                      (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
+                    )}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Provide either GST number OR upload a visiting card below
@@ -362,13 +378,33 @@ export default function BusinessVerificationSection({
 
             {/* Submit Button */}
             <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isSubmitting ? 'Submitting...' : status === 'rejected' ? 'Resubmit Verification' : 'Verify Business'}
-              </button>
+              {status === 'pending' ? (
+                <button
+                  type="button"
+                  disabled
+                  className="px-6 py-2 bg-yellow-500 text-white rounded-lg opacity-80 cursor-not-allowed flex items-center gap-2"
+                >
+                  <Clock size={16} />
+                  Verification Pending
+                </button>
+              ) : status === 'approved' ? (
+                <button
+                  type="button"
+                  disabled
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg opacity-100 cursor-default flex items-center gap-2"
+                >
+                  <CircleCheck size={16} />
+                  Business Verified
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Submitting...' : status === 'rejected' ? 'Resubmit Verification' : 'Verify Business'}
+                </button>
+              )}
             </div>
           </form>
         )}

@@ -20,11 +20,11 @@ export async function createBusinessProfile(data: {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     const { data: profile, error } = await supabase
       .from('business_profiles')
       .insert({
@@ -44,12 +44,12 @@ export async function createBusinessProfile(data: {
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error creating business profile:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, profile }
   } catch (error: any) {
     console.error('Error in createBusinessProfile:', error)
@@ -75,11 +75,11 @@ export async function updateBusinessProfile(
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // Convert camelCase to snake_case for database
     const dbUpdates: any = {}
     if (updates.companyName) dbUpdates.company_name = updates.companyName
@@ -93,19 +93,19 @@ export async function updateBusinessProfile(
     if (updates.website) dbUpdates.website = updates.website
     if (updates.annualRevenue) dbUpdates.annual_revenue = updates.annualRevenue
     if (updates.employeeCount) dbUpdates.employee_count = updates.employeeCount
-    
+
     const { data: profile, error } = await supabase
       .from('business_profiles')
       .update(dbUpdates)
       .eq('clerk_user_id', userId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error updating business profile:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, profile }
   } catch (error: any) {
     console.error('Error in updateBusinessProfile:', error)
@@ -123,22 +123,22 @@ export async function uploadBusinessDocument(data: {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // Get business profile
     const { data: profile } = await supabase
       .from('business_profiles')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
-    
+
     if (!profile) {
       return { success: false, error: 'Business profile not found. Please create a profile first.' }
     }
-    
+
     // Upload document
     const { data: document, error } = await supabase
       .from('business_documents')
@@ -153,19 +153,19 @@ export async function uploadBusinessDocument(data: {
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('Error uploading business document:', error)
       return { success: false, error: error.message }
     }
-    
+
     // Update profile status to pending verification if not already
     await supabase
       .from('business_profiles')
       .update({ verification_status: 'pending' })
       .eq('id', profile.id)
       .eq('verification_status', 'unverified')
-    
+
     return { success: true, document }
   } catch (error: any) {
     console.error('Error in uploadBusinessDocument:', error)
@@ -177,11 +177,11 @@ export async function getBusinessProfile() {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     const { data: profile, error } = await supabase
       .from('business_profiles')
       .select(`
@@ -190,7 +190,7 @@ export async function getBusinessProfile() {
       `)
       .eq('clerk_user_id', userId)
       .single()
-    
+
     if (error) {
       if (error.code === 'PGRST116') {
         // No profile found, not an error
@@ -199,7 +199,7 @@ export async function getBusinessProfile() {
       console.error('Error fetching business profile:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, profile }
   } catch (error: any) {
     console.error('Error in getBusinessProfile:', error)
@@ -211,33 +211,33 @@ export async function deleteBusinessDocument(documentId: string) {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // Verify document belongs to user's business profile
     const { data: profile } = await supabase
       .from('business_profiles')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
-    
+
     if (!profile) {
       return { success: false, error: 'Business profile not found' }
     }
-    
+
     const { error } = await supabase
       .from('business_documents')
       .delete()
       .eq('id', documentId)
       .eq('business_profile_id', profile.id)
-    
+
     if (error) {
       console.error('Error deleting business document:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true }
   } catch (error: any) {
     console.error('Error in deleteBusinessDocument:', error)
@@ -257,11 +257,11 @@ export async function verifyBusiness(
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // TODO: Add admin role check here
     // const { data: adminProfile } = await supabase
     //   .from('admin_profiles')
@@ -272,7 +272,7 @@ export async function verifyBusiness(
     // if (!adminProfile || !adminProfile.is_active) {
     //   return { success: false, error: 'Admin access required' }
     // }
-    
+
     const { data: profile, error } = await supabase
       .from('business_profiles')
       .update({
@@ -284,18 +284,18 @@ export async function verifyBusiness(
       .eq('id', profileId)
       .select('clerk_user_id, company_name')
       .single()
-    
+
     if (error) {
       console.error('Error verifying business:', error)
       return { success: false, error: error.message }
     }
-    
+
     // Send email notification to business owner
     try {
       // Import Clerk to get user email
       const { clerkClient } = await import('@clerk/nextjs/server')
       const user = await (await clerkClient()).users.getUser(profile.clerk_user_id)
-      
+
       if (user.primaryEmailAddress?.emailAddress) {
         const { sendVerificationStatus } = await import('@/lib/services/email')
         await sendVerificationStatus(
@@ -309,7 +309,7 @@ export async function verifyBusiness(
       console.error('Error sending verification email:', emailError)
       // Don't fail the verification if email fails
     }
-    
+
     return { success: true, profile }
   } catch (error: any) {
     console.error('Error in verifyBusiness:', error)
@@ -323,42 +323,51 @@ export async function fetchBusinessProfiles(filters?: {
   limit?: number
 }) {
   try {
-    const supabase = await createClerkSupabaseClient()
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const supabase = createAdminClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // TODO: Add admin role check here
-    
+
+    // Query business_verifications table instead of business_profiles
     let query = supabase
-      .from('business_profiles')
+      .from('business_verifications')
       .select(`
         *,
-        documents:business_documents(count)
+        user_profile:user_profiles!inner(
+          id,
+          email,
+          first_name,
+          last_name,
+          clerk_user_id
+        ),
+        documents:business_verification_documents(count)
       `)
       .order('created_at', { ascending: false })
-    
+
     if (filters?.status && filters.status !== 'all') {
-      query = query.eq('verification_status', filters.status)
+      query = query.eq('status', filters.status)
     }
-    
+
     if (filters?.search) {
-      query = query.or(`company_name.ilike.%${filters.search}%,gst_number.ilike.%${filters.search}%`)
+      query = query.or(`legal_business_name.ilike.%${filters.search}%,gstin.ilike.%${filters.search}%`)
     }
-    
+
     if (filters?.limit) {
       query = query.limit(filters.limit)
     }
-    
+
     const { data: profiles, error } = await query
-    
+
     if (error) {
-      console.error('Error fetching business profiles:', error)
+      console.error('Error fetching business verifications:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, profiles }
   } catch (error: any) {
     console.error('Error in fetchBusinessProfiles:', error)
@@ -370,13 +379,13 @@ export async function getBusinessProfileById(profileId: string) {
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       return { success: false, error: 'Unauthorized' }
     }
-    
+
     // TODO: Add admin role check here
-    
+
     const { data: profile, error } = await supabase
       .from('business_profiles')
       .select(`
@@ -385,7 +394,7 @@ export async function getBusinessProfileById(profileId: string) {
       `)
       .eq('id', profileId)
       .single()
-    
+
     if (error) {
       if (error.code === 'PGRST116') {
         return { success: false, error: 'Business profile not found' }
@@ -393,7 +402,7 @@ export async function getBusinessProfileById(profileId: string) {
       console.error('Error fetching business profile:', error)
       return { success: false, error: error.message }
     }
-    
+
     return { success: true, profile }
   } catch (error: any) {
     console.error('Error in getBusinessProfileById:', error)

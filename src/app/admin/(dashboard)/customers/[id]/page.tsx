@@ -58,14 +58,7 @@ export default function CustomerDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            data-testid="back-button"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight" data-testid="customer-name">
@@ -87,6 +80,14 @@ export default function CustomerDetailPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
+            onClick={() => router.back()}
+            data-testid="back-button"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleRefresh}
             data-testid="refresh-button"
           >
@@ -106,21 +107,33 @@ export default function CustomerDetailPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" data-testid="customer-tabs">
-        <TabsList>
-          <TabsTrigger value="overview" data-testid="tab-overview">
+        <TabsList className="w-full flex">
+          <TabsTrigger
+            value="overview"
+            className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+            data-testid="tab-overview"
+          >
             Overview
           </TabsTrigger>
           {isBusiness && (
-            <TabsTrigger value="verification" data-testid="tab-verification">
+            <TabsTrigger
+              value="verification"
+              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+              data-testid="tab-verification"
+            >
               Verification
               {verificationStatus === 'pending' && (
-                <Badge variant="outline" className="ml-2 bg-yellow-100 text-yellow-700 border-yellow-200">
+                <Badge variant="outline" className="ml-2 bg-orange-100 text-orange-700 border-orange-200">
                   Pending
                 </Badge>
               )}
             </TabsTrigger>
           )}
-          <TabsTrigger value="quotes" data-testid="tab-quotes">
+          <TabsTrigger
+            value="quotes"
+            className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+            data-testid="tab-quotes"
+          >
             Quotes
             {customer.quotes && customer.quotes.length > 0 && (
               <Badge variant="outline" className="ml-2">
@@ -128,7 +141,11 @@ export default function CustomerDetailPage() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="orders" data-testid="tab-orders">
+          <TabsTrigger
+            value="orders"
+            className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+            data-testid="tab-orders"
+          >
             Orders
             {customer.orders && customer.orders.length > 0 && (
               <Badge variant="outline" className="ml-2">
@@ -136,7 +153,11 @@ export default function CustomerDetailPage() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="notes" data-testid="tab-notes">
+          <TabsTrigger
+            value="notes"
+            className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+            data-testid="tab-notes"
+          >
             Internal Notes
           </TabsTrigger>
         </TabsList>

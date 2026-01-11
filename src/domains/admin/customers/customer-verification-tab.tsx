@@ -48,6 +48,7 @@ export function CustomerVerificationTab({ customer, onUpdate }: CustomerVerifica
   const [documents, setDocuments] = useState<any[]>([])
   const [auditLogs, setAuditLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [showRejectInput, setShowRejectInput] = useState(false)
 
   // Modals
   const [showApproveDialog, setShowApproveDialog] = useState(false)
@@ -120,6 +121,7 @@ export function CustomerVerificationTab({ customer, onUpdate }: CustomerVerifica
       if (result.success) {
         toast.success('Business verification rejected')
         setShowRejectDialog(false)
+        setShowRejectInput(false)
         setRejectReason('')
         onUpdate()
         loadVerificationData()
@@ -160,58 +162,58 @@ export function CustomerVerificationTab({ customer, onUpdate }: CustomerVerifica
     )
   }
 
+  const visitingCardDoc = documents.find(d => d.document_type === 'visiting_card')
+  const hasGST = !!(businessProfile.gstin || businessProfile.gst_number)
+  const hasVisitingCard = !!visitingCardDoc
+
   return (
     <div className="space-y-6" data-testid="customer-verification-tab">
-      {/* Verification Status Card */}
+      {/* Card 1: Basic Information */}
       <Card data-testid="verification-status-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Verification Status</CardTitle>
-              <CardDescription>
-                Review and approve business verification documents
-              </CardDescription>
-            </div>
-            {verificationStatus === 'pending' && canApproveVerification() && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowRejectDialog(true)}
-                  data-testid="reject-verification-button"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Reject
-                </Button>
-                <Button
-                  onClick={() => setShowApproveDialog(true)}
-                  data-testid="approve-verification-button"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Approve Verification
-                </Button>
-              </div>
-            )}
-          </div>
+          <CardTitle>Verification Status</CardTitle>
+          <CardDescription>
+            Review and approve business verification documents
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Company Name</p>
-              <p className="text-sm font-semibold">{businessProfile.company_name}</p>
+              <p className="text-sm font-medium text-muted-foreground">Business Name</p>
+              <p className="text-sm font-semibold">{businessProfile.legal_business_name || businessProfile.company_name}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">GST Number</p>
-              <p className="text-sm font-mono">{businessProfile.gst_number || 'Not provided'}</p>
+              <p className="text-sm font-medium text-muted-foreground">Owner Name</p>
+              <p className="text-sm font-semibold">{businessProfile.contact_person_name || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">PAN Number</p>
-              <p className="text-sm font-mono">{businessProfile.pan_number || 'Not provided'}</p>
+              <p className="text-sm font-medium text-muted-foreground">Business Phone Number</p>
+              <p className="text-sm font-mono">{businessProfile.contact_person_phone || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Documents Uploaded</p>
-              <p className="text-sm font-semibold">{documents.length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Verification Method</p>
+              {hasGST ? (
+                <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                  GST Number
+                </Badge>
+              ) : hasVisitingCard ? (
+                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
+                  Visiting Card
+                </Badge>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not provided</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Created At</p>
+              <p className="text-sm">{businessProfile.created_at ? format(new Date(businessProfile.created_at), 'MMM d, yyyy HH:mm') : 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Updated At</p>
+              <p className="text-sm">{businessProfile.updated_at ? format(new Date(businessProfile.updated_at), 'MMM d, yyyy HH:mm') : 'N/A'}</p>
             </div>
           </div>
+
           {businessProfile.verification_notes && (
             <>
               <Separator />
@@ -226,114 +228,123 @@ export function CustomerVerificationTab({ customer, onUpdate }: CustomerVerifica
         </CardContent>
       </Card>
 
-      {/* Documents Card */}
-      <Card data-testid="documents-card">
+      {/* Card 2: Verification Details */}
+      <Card data-testid="verification-details-card">
         <CardHeader>
-          <CardTitle>Verification Documents</CardTitle>
+          <CardTitle>
+            {hasGST ? 'GST Verification' : hasVisitingCard ? 'Visiting Card Verification' : 'Verification Details'}
+          </CardTitle>
           <CardDescription>
-            Review uploaded documents for business verification
+            {hasGST ? 'GST number provided for verification' : hasVisitingCard ? 'Business visiting card uploaded for verification' : 'No verification method provided'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {documents.length > 0 ? (
-            <div className="space-y-3">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  data-testid={`document-${doc.id}`}
+        <CardContent className="space-y-4">
+          {hasGST ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <p className="text-sm font-medium text-blue-700 mb-2">GST Number</p>
+              <p className="text-2xl font-bold text-blue-900 font-mono tracking-wider">
+                {businessProfile.gstin || businessProfile.gst_number}
+              </p>
+            </div>
+          ) : hasVisitingCard ? (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+              <p className="text-sm font-medium text-purple-700 mb-3 text-center">Business Visiting Card</p>
+              <div className="flex justify-center">
+                <img
+                  src={visitingCardDoc.file_url}
+                  alt="Business Visiting Card"
+                  className="max-w-full max-h-96 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => window.open(visitingCardDoc.file_url, '_blank')}
+                />
+              </div>
+              <div className="text-center mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(visitingCardDoc.file_url, '_blank')}
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        {getDocumentTypeLabel(doc.document_type)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {doc.file_name} • Uploaded {format(new Date(doc.uploaded_at), 'MMM d, yyyy')}
-                      </p>
-                      {doc.rejection_reason && (
-                        <p className="text-xs text-red-600 mt-1">
-                          Rejected: {doc.rejection_reason}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={getDocumentStatusColor(doc.status)}
-                      data-testid={`document-status-${doc.id}`}
-                    >
-                      {getDocumentStatusLabel(doc.status)}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(doc.file_url, '_blank')}
-                      data-testid={`view-document-${doc.id}`}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {doc.status === 'pending' && canApproveVerification() && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleApproveDocument(doc.id)}
-                        data-testid={`approve-document-${doc.id}`}
-                      >
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Full Size
+                </Button>
+              </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8" data-testid="no-documents">
-              No documents uploaded yet
-            </p>
+            <div className="bg-muted rounded-lg p-6 text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No verification method provided</p>
+            </div>
+          )}
+
+          {/* Approve/Reject Actions */}
+          {verificationStatus === 'pending' && (hasGST || hasVisitingCard) && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => setShowRejectInput(!showRejectInput)}
+                    data-testid="reject-verification-button-inline"
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={handleApproveVerification}
+                    disabled={loading}
+                    data-testid="approve-verification-button-inline"
+                  >
+                    Approve
+                  </Button>
+                </div>
+
+                {/* Inline Reject Reason Input */}
+                {showRejectInput && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-red-900">Rejection Reason *</label>
+                      <Textarea
+                        placeholder="Explain why the verification is being rejected..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        rows={3}
+                        className="mt-2"
+                        data-testid="reject-reason-textarea-inline"
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowRejectInput(false)
+                          setRejectReason('')
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleRejectVerification}
+                        disabled={loading || !rejectReason.trim()}
+                        className="bg-red-600 hover:bg-red-700"
+                        data-testid="confirm-reject-button-inline"
+                      >
+                        Confirm Rejection
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Audit Log */}
-      <Card data-testid="audit-log-card">
-        <CardHeader>
-          <CardTitle>Verification History</CardTitle>
-          <CardDescription>Timeline of all verification actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {auditLogs.length > 0 ? (
-            <div className="space-y-4">
-              {auditLogs.map((log) => (
-                <div key={log.id} className="flex gap-4" data-testid={`audit-log-${log.id}`}>
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-full bg-muted p-2">
-                      <Clock className="h-4 w-4" />
-                    </div>
-                    <div className="w-px h-full bg-muted mt-2"></div>
-                  </div>
-                  <div className="flex-1 pb-4">
-                    <p className="text-sm font-medium">{log.action_type.replace(/_/g, ' ').toUpperCase()}</p>
-                    {log.notes && (
-                      <p className="text-sm text-muted-foreground mt-1">{log.notes}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {log.admin_name && `${log.admin_name} • `}
-                      {format(new Date(log.created_at), 'MMM d, yyyy HH:mm')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8" data-testid="no-audit-logs">
-              No verification history yet
-            </p>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Approve Dialog */}
       <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>

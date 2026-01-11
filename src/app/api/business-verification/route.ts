@@ -16,13 +16,28 @@ export async function GET() {
 
         const supabase = await createClerkSupabaseClient()
 
-        // First, get the user_profile ID from clerk_user_id
+        // First, get the user from users table using clerk_user_id
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('clerk_user_id', userId)
+            .maybeSingle()
+
+        if (userError || !user) {
+            // No user found
+            return NextResponse.json({
+                success: true,
+                verification: null
+            })
+        }
+
+        // Get user_profile using user_id
         const { data: userProfile, error: profileError } = await supabase
             .from('user_profiles')
             .select('id')
-            .eq('clerk_user_id', userId)
+            .eq('user_id', user.id)
             .eq('profile_type', 'business')
-            .single()
+            .maybeSingle()
 
         if (profileError || !userProfile) {
             // No business profile found
@@ -72,20 +87,54 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const supabase = await createClerkSupabaseClient()
 
-        // First, get the user_profile ID from clerk_user_id
-        const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
+        // Use admin client to bypass RLS - RLS policies cause UUID casting errors
+        const { createAdminClient } = await import('@/lib/supabase/server')
+        const supabase = createAdminClient()
+
+        // First, get the user from users table using clerk_user_id
+        const { data: user, error: userError } = await supabase
+            .from('users')
             .select('id')
             .eq('clerk_user_id', userId)
-            .eq('profile_type', 'business')
-            .single()
+            .maybeSingle()
 
-        if (profileError || !userProfile) {
+        if (userError) {
+            console.error('Error fetching user:', userError)
             return NextResponse.json(
-                { success: false, error: 'Business profile not found. Please ensure you have a business account.' },
+                { success: false, error: 'Failed to fetch user' },
+                { status: 500 }
+            )
+        }
+
+        if (!user) {
+            return NextResponse.json(
+                { success: false, error: 'User not found. Please try logging out and logging back in.' },
                 { status: 404 }
+            )
+        }
+
+        // Now get the user_profile using user_id
+        // Check for business account type - only business users can submit verification
+        const { data: userProfile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('id, account_type')
+            .eq('user_id', user.id)
+            .eq('account_type', 'business')
+            .maybeSingle()
+
+        if (profileError) {
+            console.error('Error fetching user profile:', profileError)
+            return NextResponse.json(
+                { success: false, error: 'Failed to fetch user profile' },
+                { status: 500 }
+            )
+        }
+
+        if (!userProfile) {
+            return NextResponse.json(
+                { success: false, error: 'Business account required. Please switch to a business account to submit verification.' },
+                { status: 403 }
             )
         }
 

@@ -1,6 +1,7 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { sendVerificationStatus } from '@/lib/services/email'
 
 // GET - Get verification details (admin only)
 export async function GET(
@@ -108,6 +109,20 @@ export async function PATCH(
             )
         }
 
+        // Get verification details before updating
+        const { data: verification, error: fetchError } = await supabase
+            .from('business_verifications')
+            .select('user_id, legal_business_name')
+            .eq('id', id)
+            .single()
+
+        if (fetchError || !verification) {
+            return NextResponse.json(
+                { success: false, error: 'Verification not found' },
+                { status: 404 }
+            )
+        }
+
         // Update verification
         const updateData: any = {
             status: action === 'approve' ? 'approved' : 'rejected',
@@ -132,6 +147,49 @@ export async function PATCH(
         if (error) throw error
 
         // The trigger will automatically sync to user_profiles
+
+        // Send email notification
+        try {
+            // Get user profile to fetch clerk_user_id
+            const { data: userProfile, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('clerk_user_id')
+                .eq('id', verification.user_id)
+                .single()
+
+            if (profileError || !userProfile?.clerk_user_id) {
+                console.error('Failed to fetch user profile for email:', profileError)
+            } else {
+                // Get user email from Clerk
+                const client = await clerkClient()
+                const user = await client.users.getUser(userProfile.clerk_user_id)
+                const userEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId)?.emailAddress
+
+                if (userEmail) {
+                    // Send verification status email
+                    const emailStatus = action === 'approve' ? 'approved' : 'rejected'
+                    const emailNotes = action === 'reject' ? rejection_reason : admin_notes
+
+                    const emailResult = await sendVerificationStatus(
+                        userEmail,
+                        emailStatus,
+                        verification.legal_business_name || 'Your Business',
+                        emailNotes
+                    )
+
+                    if (emailResult.success) {
+                        console.log(`Verification ${emailStatus} email sent successfully to ${userEmail}`)
+                    } else {
+                        console.error(`Failed to send verification ${emailStatus} email:`, emailResult.error)
+                    }
+                } else {
+                    console.error('User email not found in Clerk')
+                }
+            }
+        } catch (emailError) {
+            // Log email error but don't fail the request
+            console.error('Error sending verification email:', emailError)
+        }
 
         return NextResponse.json({
             success: true,

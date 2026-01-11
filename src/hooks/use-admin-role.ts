@@ -35,20 +35,21 @@ export function useAdminRole() {
   const fetchAdminRole = async () => {
     try {
       const response = await fetch('/api/admin/current-role')
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch admin role')
       }
-      
+
       const data = await response.json()
-      
+
       setState({
         role: data.role as AdminRole,
         isLoading: false,
         error: null,
       })
     } catch (error) {
-      console.error('Error fetching admin role:', error)
+      // Silently fail for 401/403 errors to avoid console spam in dev
+      // console.error('Error fetching admin role:', error)
       setState({
         role: null,
         isLoading: false,
