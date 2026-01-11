@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { getCustomerNotes, addCustomerNote } from '@/lib/actions/admin-customers'
+import { getCustomerNotes, addCustomerNote } from '@/lib/actions/customers/notes'
 import { format } from 'date-fns'
 import { Checkbox } from '@/components/ui/checkbox'
 
@@ -157,11 +157,10 @@ export function CustomerNotesTab({ customerClerkId }: CustomerNotesTabProps) {
               {notes.map((note) => (
                 <div
                   key={note.id}
-                  className={`p-4 rounded-lg border ${
-                    note.is_important
-                      ? 'bg-yellow-50 border-yellow-200'
-                      : 'bg-muted/50'
-                  }`}
+                  className={`p-4 rounded-lg border ${note.is_important
+                    ? 'bg-yellow-50 border-yellow-200'
+                    : 'bg-muted/50'
+                    }`}
                   data-testid={`note-${note.id}`}
                 >
                   <div className="flex items-start justify-between mb-2">

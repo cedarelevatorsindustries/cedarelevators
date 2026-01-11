@@ -32,9 +32,8 @@ import {
   requestMoreDocuments,
   approveDocument,
   rejectDocument,
-  getVerificationDocuments,
-  getVerificationAuditLog,
-} from '@/lib/actions/admin-customers'
+} from '@/lib/actions/customers/verification'
+import { getVerificationDocuments } from '@/lib/actions/customers/queries'
 import { useAdminRole } from '@/hooks/use-admin-role'
 import { format } from 'date-fns'
 

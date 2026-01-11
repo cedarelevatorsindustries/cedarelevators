@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { CustomerWithStats, CustomerFilters } from '@/lib/types/customers'
-import { getCustomers, getCustomerStats } from '@/lib/actions/admin-customers'
+import { getCustomers, getCustomerStats } from '@/lib/actions/customers/queries'
 
 
 export const useCustomers = (filters: CustomerFilters, page: number, limit: number) => {
@@ -44,7 +44,7 @@ export const useCustomer = (customerId: string) => {
     return useQuery({
         queryKey: ['customer', customerId],
         queryFn: async () => {
-            const { getCustomerById } = await import('@/lib/actions/admin-customers')
+            const { getCustomerById } = await import('@/lib/actions/customers/queries')
             const result = await getCustomerById(customerId)
             if (!result.success) {
                 throw new Error(result.error)
