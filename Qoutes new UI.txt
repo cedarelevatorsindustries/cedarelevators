@@ -1,0 +1,279 @@
+below is the final, crystal-clear Quote Detail Page UI as seen inside the ADMIN PANEL, showing how the SAME page adapts based on the quote’s user type.
+
+This is admin-facing only (not storefront), and it reflects everything you’ve implemented and locked.
+
+🧾 ADMIN QUOTE DETAIL PAGE
+
+/admin/quotes/[id]
+
+One page. One layout. Conditional sections.
+Admin always lands on the same page — context changes based on quote origin.
+
+🧠 GLOBAL STRUCTURE (ALWAYS THE SAME)
+
+These 6 logical sections exist for every quote, but content + actions vary:
+
+Quote Header
+
+Requester / Business Info
+
+Quote Items
+
+Pricing Section
+
+Customer Notes & Attachments
+
+Admin Decision Panel
+
+1️⃣ QUOTE HEADER (ALL QUOTES – ALWAYS VISIBLE)
+
+Purpose: Immediate context
+
+UI
+Quote #QT-10432        [ Pending / Under Review / Approved / Rejected ]
+User Type: Guest | Individual | Business (Unverified) | Business (Verified)
+Created: 12 Sep 2026
+
+Visual
+
+Status badge (color-coded)
+
+User-type badge
+
+Sticky header on scroll
+
+✅ Same for all quote types
+
+2️⃣ REQUESTER / BUSINESS INFO
+
+Visibility & content depend on quote type
+
+👤 GUEST QUOTE
+Requester
+─────────
+Name: John Doe
+Email: john@example.com
+Source: Guest (No Account)
+
+
+No account links
+
+No verification info
+
+No edit controls
+
+👤 INDIVIDUAL USER QUOTE
+Requester
+─────────
+Name: Alex Kumar
+Email: alex@cedar.com
+Account Type: Individual
+Joined: Mar 2025
+
+
+Read-only
+
+No business data
+
+Subtle note:
+
+Individual accounts cannot place orders
+
+🏢 BUSINESS (UNVERIFIED)
+Business
+────────
+Company: ABC Elevators
+GST: 33ABCDE1234F1Z5
+Verification Status: ❌ Not Verified
+
+
+Verification badge shown clearly
+
+No edit
+
+Context reminder for admin
+
+🏢 BUSINESS (VERIFIED)
+Business
+────────
+Company: ABC Elevators
+GST: 33ABCDE1234F1Z5
+Verification Status: ✅ Verified
+
+
+Clean
+
+Trust established
+
+No distractions
+
+3️⃣ QUOTE ITEMS (ALL QUOTES – ALWAYS VISIBLE)
+
+Purpose: What is being requested
+
+UI (Table)
+Product | Variant | Quantity
+--------------------------------
+Motor X | 10 HP   | 5
+Cable Y | 12mm    | 100
+
+
+Rules:
+
+Read-only
+
+No product edits
+
+No quantity edits (unless you explicitly allow admin override)
+
+4️⃣ PRICING SECTION (ADMIN-CONTROLLED)
+Visibility
+Quote Status	Pricing Editable?
+Pending	❌ Hidden
+Under Review	✅ Editable
+Approved	🔒 Read-only
+Rejected	🔒 Read-only
+🔹 Pending
+Pricing
+────────
+Pricing not set yet.
+[ Start Review ]
+
+🔹 Under Review (CRITICAL STATE)
+Pricing
+────────
+Motor X  | Qty 5  | Unit Price [ 48,000 ]
+Cable Y  | Qty 100| Unit Price [ 120 ]
+
+Subtotal: ₹ 1,08,000
+Tax (18%): ₹ 19,440
+Total:     ₹ 1,27,440
+
+[ Save Pricing ]
+
+
+✔ Editable inputs
+✔ Auto-calculation
+✔ Save required before approval
+
+🔹 Approved / Converted
+Pricing
+────────
+Motor X  | Qty 5  | ₹ 48,000
+Cable Y  | Qty 100| ₹ 120
+
+Total: ₹ 1,27,440
+
+
+🔒 Locked forever
+
+5️⃣ CUSTOMER NOTES & ATTACHMENTS
+
+Always visible if present
+
+Customer Notes
+──────────────
+"Need delivery within 10 days. Project at Chennai."
+
+Attachments
+📎 layout.pdf
+📎 boq.xlsx
+
+
+Read-only
+
+Downloadable
+
+Same for all quote types
+
+6️⃣ ADMIN DECISION PANEL
+
+This is where quote type matters most
+
+👤 GUEST QUOTE — ADMIN ACTIONS
+Admin Response
+──────────────
+Response Message (Email to customer)
+[ textarea ]
+
+Internal Notes (Admin only)
+[ textarea ]
+
+[ Approve Quote ]   [ Reject Quote ]
+
+
+Post-approval:
+
+Email sent
+
+No conversion option
+
+👤 INDIVIDUAL USER — ADMIN ACTIONS
+
+Same as Guest, plus context note:
+
+Individual users cannot place orders. Encourage business registration if applicable.
+
+No convert button.
+
+🏢 BUSINESS (UNVERIFIED) — ADMIN ACTIONS
+Admin Response
+──────────────
+Response Message
+[ textarea ]
+
+Internal Notes
+[ textarea ]
+
+[ Approve Quote ]   [ Reject Quote ]
+
+
+After approval:
+
+⚠ Business verification required to place order
+
+
+❌ No Convert button
+
+🏢 BUSINESS (VERIFIED) — ADMIN ACTIONS
+Admin Response
+──────────────
+Response Message
+[ textarea ]
+
+Internal Notes
+[ textarea ]
+
+[ Approve Quote ]   [ Reject Quote ]
+
+
+After approval:
+
+[ Convert to Order ]
+[ Create Bulk Order ]
+
+
+✔ Conversion enabled
+✔ Uses approved pricing
+
+🔐 KEY ADMIN RULES (ENFORCED)
+
+Admin never edits catalog price here
+
+Admin never edits pricing after approval
+
+Admin never sees different pages — only different actions
+
+All actions logged in audit trail
+
+📌 FINAL VISIBILITY MATRIX (ADMIN VIEW)
+Section	Guest	Individual	Biz (Unverified)	Biz (Verified)
+Header	✅	✅	✅	✅
+Requester / Business Info	✅	✅	✅	✅
+Quote Items	✅	✅	✅	✅
+Pricing	⚠️ (settable)	⚠️	⚠️	⚠️
+Notes & Attachments	✅	✅	✅	✅
+Convert to Order	❌	❌	❌	✅
+✅ FINAL ONE-LINE SUMMARY
+
+The admin quote detail page is a single unified layout with six core sections, where requester context, pricing editability, and conversion actions dynamically adapt based on whether the quote originated from a guest, individual, unverified business, or verified business—allowing admins to review, price, and decide without role-specific page fragmentation.

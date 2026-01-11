@@ -44,8 +44,10 @@ export async function createQuote(data: CreateQuoteInput) {
       notes: data.notes,
     };
 
+    // For guest users, save contact info to dedicated columns
     if (isGuest && data.name && data.email) {
-      quoteData.notes = `[Guest Contact: ${data.name} (${data.email})]\n\n${data.notes || ''}`;
+      quoteData.guest_name = data.name;
+      quoteData.guest_email = data.email;
     }
 
     const { data: quote, error: quoteError } = await supabase

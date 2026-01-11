@@ -293,7 +293,15 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     const StatusIcon = statusConfig.icon
     const canEditPricing = quote.status === 'reviewing'
     const canApprove = quote.status === 'reviewing'
-    const canConvert = quote.status === 'approved' && quote.account_type === 'verified'
+
+    // Per spec: Only verified business users can convert to order
+    // account_type can be: 'guest' | 'individual' | 'business' | 'verified'
+    // 'verified' means business with verification completed
+    const isVerifiedBusiness = quote.account_type === 'verified'
+    const canConvert = quote.status === 'approved' && isVerifiedBusiness
+    const isUnverifiedBusiness = quote.account_type === 'business' // business but not yet verified
+    const isIndividual = quote.account_type === 'individual'
+    const isGuest = quote.account_type === 'guest' || !quote.account_type
 
     return (
         <div className="space-y-6" data-testid="admin-quote-detail">
@@ -379,10 +387,22 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 Convert to Order
                             </Button>
                         )}
-                        {quote.status === 'approved' && quote.account_type !== 'verified' && (
+                        {quote.status === 'approved' && isUnverifiedBusiness && (
                             <span className="text-sm text-amber-600 flex items-center gap-1">
                                 <FileWarning className="w-4 h-4" />
-                                Business must verify to convert
+                                Business verification required to place order
+                            </span>
+                        )}
+                        {quote.status === 'approved' && isIndividual && (
+                            <span className="text-sm text-blue-600 flex items-center gap-1">
+                                <User className="w-4 h-4" />
+                                Individual accounts cannot place orders
+                            </span>
+                        )}
+                        {quote.status === 'approved' && isGuest && (
+                            <span className="text-sm text-gray-600 flex items-center gap-1">
+                                <Mail className="w-4 h-4" />
+                                Quote sent via email
                             </span>
                         )}
                     </div>
@@ -415,9 +435,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
                                 <div>
                                     <p className="text-sm text-gray-500">Account Type</p>
                                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${quote.account_type === 'verified' ? 'bg-green-100 text-green-700' :
-                                            quote.account_type === 'business' ? 'bg-purple-100 text-purple-700' :
-                                                quote.account_type === 'individual' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-gray-100 text-gray-700'
+                                        quote.account_type === 'business' ? 'bg-purple-100 text-purple-700' :
+                                            quote.account_type === 'individual' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-gray-100 text-gray-700'
                                         }`}>
                                         {quote.account_type === 'verified' && <BadgeCheck className="w-3 h-3" />}
                                         {(quote.account_type || 'guest').charAt(0).toUpperCase() + (quote.account_type || 'guest').slice(1)}

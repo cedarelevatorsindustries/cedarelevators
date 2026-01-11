@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabase } from '@/lib/supabase/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 export interface ProductOption {
     value: string;
@@ -10,8 +11,29 @@ export interface ProductOption {
 }
 
 /**
+ * Check if user can see prices (only verified business users)
+ */
+async function canUserSeePrices(): Promise<boolean> {
+    try {
+        const user = await currentUser();
+        if (!user) return false;
+
+        // Only verified business users or admins can see prices
+        const isAdmin = user.publicMetadata?.role === 'admin';
+        const isVerifiedBusiness =
+            user.publicMetadata?.account_type === 'business' &&
+            user.publicMetadata?.verification_status === 'verified';
+
+        return isAdmin || isVerifiedBusiness;
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Fetch products for quote form dropdown
  * Returns simplified product list optimized for selection
+ * Prices are only included for verified business users
  */
 export async function getProductsForQuote(searchQuery?: string): Promise<{
     success: boolean;
@@ -20,12 +42,12 @@ export async function getProductsForQuote(searchQuery?: string): Promise<{
 }> {
     try {
         const supabase = await createServerSupabase();
+        const showPrices = await canUserSeePrices();
 
         let query = supabase
             .from('products')
             .select('id, name, sku, price')
             .eq('status', 'active')
-            .eq('is_categorized', true)
             .order('name');
 
         // If search query provided, filter by name or SKU
@@ -43,12 +65,12 @@ export async function getProductsForQuote(searchQuery?: string): Promise<{
             return { success: false, error: error.message };
         }
 
-        // Transform to dropdown format
+        // Transform to dropdown format - only include prices for verified users
         const products: ProductOption[] = (data || []).map(product => ({
             value: product.id,
             label: `${product.name} ${product.sku ? `(${product.sku})` : ''}`,
             sku: product.sku || '',
-            price: product.price
+            price: showPrices ? product.price : undefined
         }));
 
         return {
@@ -64,6 +86,7 @@ export async function getProductsForQuote(searchQuery?: string): Promise<{
 /**
  * Search products with autocomplete for quote form
  * Optimized for fast typeahead search
+ * Prices are only included for verified business users
  */
 export async function searchProductsForQuote(query: string): Promise<{
     success: boolean;
@@ -76,12 +99,12 @@ export async function searchProductsForQuote(query: string): Promise<{
         }
 
         const supabase = await createServerSupabase();
+        const showPrices = await canUserSeePrices();
 
         const { data, error } = await supabase
             .from('products')
             .select('id, name, sku, price')
             .eq('status', 'active')
-            .eq('is_categorized', true)
             .or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
             .order('name')
             .limit(20);
@@ -91,11 +114,12 @@ export async function searchProductsForQuote(query: string): Promise<{
             return { success: false, error: error.message };
         }
 
+        // Only include prices for verified business users
         const products: ProductOption[] = (data || []).map(product => ({
             value: product.id,
             label: `${product.name} ${product.sku ? `(${product.sku})` : ''}`,
             sku: product.sku || '',
-            price: product.price
+            price: showPrices ? product.price : undefined
         }));
 
         return {
