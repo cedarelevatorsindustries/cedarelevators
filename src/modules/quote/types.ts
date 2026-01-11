@@ -1,4 +1,4 @@
-export type QuoteStatus = 'draft' | 'pending' | 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'converted' | 'expired';
+export type QuoteStatus = 'draft' | 'pending' | 'reviewing' | 'approved' | 'rejected' | 'converted' | 'expired';
 export type UserType = 'guest' | 'individual' | 'business';
 
 export interface Quote {
