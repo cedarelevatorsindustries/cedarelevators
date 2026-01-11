@@ -1,14 +1,19 @@
-export type QuoteStatus = 'draft' | 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'converted';
+export type QuoteStatus = 'draft' | 'pending' | 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'converted' | 'expired';
 export type UserType = 'guest' | 'individual' | 'business';
 
 export interface Quote {
     id: string;
-    quote_number?: string; // if generated
+    quote_number?: string;
     user_id: string | null;
     account_type: UserType;
     status: QuoteStatus;
     notes: string | null;
     estimated_total: number | null;
+    valid_until?: string;
+    converted_order_id?: string;
+    converted_at?: string;
+    admin_response_message?: string;
+    admin_internal_notes?: string;
     created_at: string;
     updated_at: string;
 
@@ -30,6 +35,8 @@ export interface QuoteItem {
     // UI convenience (joined)
     product_name?: string;
     product_image?: string;
+    product_thumbnail?: string;
+    product_sku?: string;
 }
 
 export interface QuoteAttachment {
@@ -48,4 +55,3 @@ export interface QuoteAdminResponse {
     responded_by: string | null;
     responded_at: string;
 }
-

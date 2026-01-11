@@ -424,3 +424,235 @@ export async function sendAdminInviteEmail(to: string, role: string, inviteLink:
   }
 }
 
+/**
+ * Send quote approved email
+ */
+export async function sendQuoteApprovedEmail(
+  to: string,
+  quoteData: {
+    quoteNumber: string
+    customerName: string
+    total: number
+    validUntil: string
+    adminMessage?: string
+  }
+) {
+  try {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Quote ${quoteData.quoteNumber} Approved - Cedar Elevators`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f97316; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Cedar Elevators</h1>
+            </div>
+            
+            <div style="padding: 20px; background-color: #f9f9f9;">
+              <h2 style="color: #16a34a;">✅ Your Quote Has Been Approved!</h2>
+              <p>Dear ${quoteData.customerName},</p>
+              <p>Great news! Your quote request has been approved and is ready for you to review.</p>
+              
+              <div style="background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #16a34a;">
+                <p style="margin: 0;"><strong>Quote Number:</strong> ${quoteData.quoteNumber}</p>
+                <p style="margin: 10px 0 0 0;"><strong>Total:</strong> ₹${quoteData.total.toLocaleString()}</p>
+                <p style="margin: 10px 0 0 0;"><strong>Valid Until:</strong> ${quoteData.validUntil}</p>
+              </div>
+              
+              ${quoteData.adminMessage ? `
+                <div style="background-color: #eff6ff; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                  <p style="margin: 0; color: #1e40af;"><strong>Message from Cedar Team:</strong></p>
+                  <p style="margin: 10px 0 0 0;">${quoteData.adminMessage}</p>
+                </div>
+              ` : ''}
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/quotes" 
+                   style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                  View Quote & Place Order
+                </a>
+              </div>
+              
+              <p style="margin-top: 30px; text-align: center; color: #666;">
+                Thank you for choosing Cedar Elevators!
+              </p>
+            </div>
+            
+            <div style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} Cedar Elevators. All rights reserved.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Error sending quote approved email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('Error in sendQuoteApprovedEmail:', error)
+    return { success: false, error: error.message || 'Failed to send email' }
+  }
+}
+
+/**
+ * Send quote rejected email
+ */
+export async function sendQuoteRejectedEmail(
+  to: string,
+  quoteData: {
+    quoteNumber: string
+    customerName: string
+    reason: string
+  }
+) {
+  try {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Quote ${quoteData.quoteNumber} Update - Cedar Elevators`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f97316; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Cedar Elevators</h1>
+            </div>
+            
+            <div style="padding: 20px; background-color: #f9f9f9;">
+              <h2>Quote Update</h2>
+              <p>Dear ${quoteData.customerName},</p>
+              <p>We've reviewed your quote request and unfortunately we're unable to proceed at this time.</p>
+              
+              <div style="background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="margin: 0;"><strong>Quote Number:</strong> ${quoteData.quoteNumber}</p>
+              </div>
+              
+              <div style="background-color: #fef2f2; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #dc2626;">
+                <p style="margin: 0; color: #991b1b;"><strong>Reason:</strong></p>
+                <p style="margin: 10px 0 0 0;">${quoteData.reason}</p>
+              </div>
+              
+              <p>If you have any questions or would like to submit a new quote request, please don't hesitate to contact us.</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/contact" 
+                   style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                  Contact Support
+                </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} Cedar Elevators. All rights reserved.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Error sending quote rejected email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('Error in sendQuoteRejectedEmail:', error)
+    return { success: false, error: error.message || 'Failed to send email' }
+  }
+}
+
+/**
+ * Send quote expired email
+ */
+export async function sendQuoteExpiredEmail(
+  to: string,
+  quoteData: {
+    quoteNumber: string
+    customerName: string
+  }
+) {
+  try {
+    if (!resend) {
+      console.warn('Resend not configured, skipping email')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Quote ${quoteData.quoteNumber} Expired - Cedar Elevators`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f97316; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Cedar Elevators</h1>
+            </div>
+            
+            <div style="padding: 20px; background-color: #f9f9f9;">
+              <h2>Quote Expired</h2>
+              <p>Dear ${quoteData.customerName},</p>
+              <p>Your quote has expired and is no longer valid for conversion to an order.</p>
+              
+              <div style="background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                <p style="margin: 0;"><strong>Quote Number:</strong> ${quoteData.quoteNumber}</p>
+              </div>
+              
+              <p>If you're still interested, please submit a new quote request and we'll be happy to assist you.</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/quotes/new" 
+                   style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                  Request New Quote
+                </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #333; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} Cedar Elevators. All rights reserved.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('Error sending quote expired email:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, data }
+  } catch (error: any) {
+    console.error('Error in sendQuoteExpiredEmail:', error)
+    return { success: false, error: error.message || 'Failed to send email' }
+  }
+}

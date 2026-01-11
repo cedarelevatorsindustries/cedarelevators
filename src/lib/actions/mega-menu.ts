@@ -21,7 +21,7 @@ export async function getMegaMenuData() {
         // Query 1: Fetch active categories
         const { data: categories, error: catError } = await supabase
             .from('categories')
-            .select('id, title, slug, description, image_url')
+            .select('id, title, slug, description, thumbnail')
             .eq('is_active', true)
             .order('title', { ascending: true })
 
@@ -88,7 +88,7 @@ export async function getMegaMenuData() {
                     handle: category.slug,
                     description: category.description,
                     metadata: {
-                        image: category.image_url
+                        image: category.thumbnail
                     },
                     products: products.map((p: any) => ({
                         id: p.id,

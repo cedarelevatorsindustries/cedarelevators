@@ -5,8 +5,12 @@
  * organized into logical sub-modules for better maintainability.
  */
 
-// Audit logging
-export { logQuoteAction } from './quote-audit'
+// Audit logging and expiry
+export {
+    getQuoteAuditTimeline,
+    checkAndExpireQuote,
+    expireOverdueQuotes
+} from './quote-audit'
 
 // Query operations
 export {

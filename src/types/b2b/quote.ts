@@ -191,6 +191,8 @@ export interface Quote {
   estimated_total: number
   pricing_visible: boolean // Controls if verified business can see pricing
   admin_notes?: string
+  admin_response_message?: string // Public response sent to customer
+  admin_internal_notes?: string // Internal admin notes (not visible to customer)
   admin_response_at?: string
   responded_by?: string
   valid_until: string
@@ -251,8 +253,6 @@ export type QuoteActionType =
   | 'approved'
   | 'rejected'
   | 'converted'
-  | 'message_sent'
-  | 'clarification_requested'
 
 export type AdminRole = 'staff' | 'manager' | 'admin' | 'super_admin'
 

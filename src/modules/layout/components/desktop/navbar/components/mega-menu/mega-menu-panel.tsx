@@ -86,9 +86,9 @@ export function MegaMenuPanel({
       }
     }
 
-    // Close menu when scrolled to bottom
+    // Close menu when scrolled to bottom (only on user scroll, not programmatic)
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10
-    if (isAtBottom) {
+    if (isAtBottom && !isScrollingProgrammatically.current) {
       setTimeout(() => {
         onClose()
       }, 300)

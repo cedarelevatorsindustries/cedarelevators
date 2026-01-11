@@ -47,7 +47,7 @@ export function CategorySidebar({
 
       setTimeout(() => {
         isScrollingProgrammatically.current = false
-      }, 600)
+      }, 1200)
     }
   }
 
@@ -71,8 +71,8 @@ export function CategorySidebar({
                 key={category.id}
                 ref={(el) => { categoryButtonRefs.current[category.id] = el }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm rounded-lg transition-all duration-300 ease-in-out transform ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg scale-105'
-                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:scale-102'
+                  ? 'bg-blue-600 text-white shadow-lg scale-105'
+                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:scale-102'
                   }`}
                 onClick={() => handleCategoryClick(category.id)}
               >

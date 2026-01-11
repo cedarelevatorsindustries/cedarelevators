@@ -30,12 +30,19 @@ export default async function QuoteDetailPage({ params }: PageProps) {
         return <div className="p-8 text-red-500">Could not load quote.</div>;
     }
 
-    // Determine user capabilities
+    // Determine user type for role-based visibility
     const user = await currentUser();
-    // Simplified checks
-    const userType = user?.publicMetadata?.role === 'admin' || user?.publicMetadata?.verification_status === 'verified'
-        ? 'verified'
-        : (user?.publicMetadata?.account_type === 'business' ? 'business' : 'individual');
+    let userType: 'guest' | 'individual' | 'business' | 'verified' = 'individual';
+
+    if (!user) {
+        userType = 'guest';
+    } else if (user.publicMetadata?.verification_status === 'verified' || user.publicMetadata?.role === 'admin') {
+        userType = 'verified';
+    } else if (user.publicMetadata?.account_type === 'business') {
+        userType = 'business';
+    } else {
+        userType = 'individual';
+    }
 
     return (
         <div className="container py-8 max-w-5xl mx-auto px-4">
