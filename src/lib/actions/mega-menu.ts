@@ -2,6 +2,13 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 
+/**
+ * Optimized Mega Menu Data Fetcher
+ * Uses batch queries instead of N+1 pattern
+ * - Query 1: Fetch all active categories
+ * - Query 2: Fetch all products for all categories in one query
+ * - Group products by category in JS
+ */
 export async function getMegaMenuData() {
     try {
         const supabase = createServerSupabaseClient()
@@ -11,81 +18,101 @@ export async function getMegaMenuData() {
             return { success: false, categories: [], error: 'Failed to create client' }
         }
 
-        // 1. Fetch active categories from the categories table
+        // Query 1: Fetch active categories
         const { data: categories, error: catError } = await supabase
             .from('categories')
-            .select('*')
+            .select('id, title, slug, description, image_url')
             .eq('is_active', true)
             .order('title', { ascending: true })
-
-        console.log('[getMegaMenuData] Categories query:', {
-            count: categories?.length || 0,
-            error: catError?.message,
-            categories: categories?.map(c => ({ id: c.id, title: c.title, slug: c.slug }))
-        })
 
         if (catError) {
             console.error('[getMegaMenuData] Category fetch error:', catError)
             throw catError
         }
 
-        // 2. For each category, fetch its products (limit 5 per category)
-        const categoriesWithProducts = await Promise.all(
-            (categories || []).map(async (category) => {
-                // Fetch products for this category via junction table
-                const { data: productLinks } = await supabase
-                    .from('product_categories')
-                    .select(`
-                        product:products (
-                            id,
-                            name,
-                            slug,
-                            thumbnail_url,
-                            price,
-                            short_description,
-                            description,
-                            sku,
-                            status
-                        )
-                    `)
-                    .eq('category_id', category.id)
-                    .limit(5)
+        if (!categories || categories.length === 0) {
+            return { success: true, categories: [] }
+        }
 
-                // Extract and filter active products
-                const products = (productLinks || [])
-                    .map(link => link.product)
-                    .filter((p: any) => p && p.status === 'active')
+        // Query 2: Fetch ALL products for ALL categories in ONE query (optimized)
+        const categoryIds = categories.map(c => c.id)
+        const { data: allProductLinks, error: productsError } = await supabase
+            .from('product_categories')
+            .select(`
+                category_id,
+                product:products (
+                    id,
+                    name,
+                    slug,
+                    thumbnail_url,
+                    price,
+                    short_description,
+                    description,
+                    sku,
+                    status
+                )
+            `)
+            .in('category_id', categoryIds)
+
+        if (productsError) {
+            console.error('[getMegaMenuData] Products fetch error:', productsError)
+            throw productsError
+        }
+
+        // Group products by category_id and limit to 5 per category
+        const productsByCategory = new Map<string, any[]>()
+
+        for (const link of allProductLinks || []) {
+            const product = link.product as any
+            if (!product || product.status !== 'active') continue
+
+            const categoryId = link.category_id
+            if (!productsByCategory.has(categoryId)) {
+                productsByCategory.set(categoryId, [])
+            }
+
+            const categoryProducts = productsByCategory.get(categoryId)!
+            if (categoryProducts.length < 5) { // Limit 5 per category
+                categoryProducts.push(product)
+            }
+        }
+
+        // Build final response
+        const categoriesWithProducts = categories
+            .map(category => {
+                const products = productsByCategory.get(category.id) || []
 
                 return {
                     id: category.id,
-                    name: category.title, // Map 'title' to 'name' for display
+                    name: category.title,
                     handle: category.slug,
                     description: category.description,
                     metadata: {
                         image: category.image_url
                     },
-                    products: (products || []).map((p: any) => ({
+                    products: products.map((p: any) => ({
                         id: p.id,
-                        title: p.name, // Map 'name' to 'title'
-                        handle: p.slug, // Map 'slug' to 'handle'
+                        title: p.name,
+                        handle: p.slug,
                         thumbnail: p.thumbnail_url,
                         price: {
                             amount: p.price || 0,
                             currency_code: 'INR'
                         },
-                        description: p.short_description || p.description, // Use short_description if available
+                        description: p.short_description || p.description,
                         sku: p.sku
                     }))
                 }
             })
-        )
+            .filter(cat => cat.products.length > 0) // Only categories with products
 
-        // Filter out categories with no products
-        const categoriesWithProductsFiltered = categoriesWithProducts.filter(
-            cat => cat.products && cat.products.length > 0
-        )
+        console.log('[getMegaMenuData] Optimized query:', {
+            totalCategories: categories.length,
+            categoriesWithProducts: categoriesWithProducts.length,
+            totalProducts: allProductLinks?.length || 0
+        })
 
-        return { success: true, categories: categoriesWithProductsFiltered }
+        return { success: true, categories: categoriesWithProducts }
     } catch (error) {
         console.error('Error fetching mega menu data:', error)
         return { success: false, categories: [], error }

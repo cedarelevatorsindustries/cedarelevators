@@ -27,7 +27,7 @@ import {
 import { logger } from '@/lib/services/logger'
 
 // =====================================================
-// Helper: Get User Context
+// Helper: Get User Context (Optimized with parallel queries)
 // =====================================================
 
 async function getUserContext(): Promise<CartContext | null> {
@@ -36,18 +36,22 @@ async function getUserContext(): Promise<CartContext | null> {
 
   const supabase = await createClerkSupabaseClient()
 
-  // Get user type from customer_meta or business_profiles
-  const { data: customerMeta } = await supabase
-    .from('customer_meta')
-    .select('user_type')
-    .eq('clerk_user_id', userId)
-    .single()
+  // Run both queries in parallel for better performance
+  const [customerMetaResult, businessProfileResult] = await Promise.all([
+    supabase
+      .from('customer_meta')
+      .select('user_type')
+      .eq('clerk_user_id', userId)
+      .single(),
+    supabase
+      .from('business_profiles')
+      .select('id, verification_status')
+      .eq('clerk_user_id', userId)
+      .single()
+  ])
 
-  const { data: businessProfile } = await supabase
-    .from('business_profiles')
-    .select('id, verification_status')
-    .eq('clerk_user_id', userId)
-    .single()
+  const customerMeta = customerMetaResult.data
+  const businessProfile = businessProfileResult.data
 
   const profileType: ProfileType = customerMeta?.user_type === 'business' ? 'business' : 'individual'
 
@@ -68,6 +72,7 @@ async function getUserContext(): Promise<CartContext | null> {
     isVerified: userType === 'business_verified'
   }
 }
+
 
 // =====================================================
 // Get or Create Active Cart

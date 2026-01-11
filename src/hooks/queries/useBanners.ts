@@ -35,6 +35,8 @@ export function useBanners(filters?: BannerFilters) {
             }
             return result
         },
+        staleTime: 1000 * 60 * 5,  // 5 minutes - banners are marketing content, rarely change
+        gcTime: 1000 * 60 * 15,    // 15 minutes cache
     })
 }
 
@@ -52,6 +54,8 @@ export function useBanner(id: string) {
             return result.banner
         },
         enabled: !!id,
+        staleTime: 1000 * 60 * 5,  // 5 minutes
+        gcTime: 1000 * 60 * 15,
     })
 }
 

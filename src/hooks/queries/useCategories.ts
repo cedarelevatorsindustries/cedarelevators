@@ -39,6 +39,8 @@ export function useCategories(filters?: CategoryFilters) {
   return useQuery({
     queryKey: categoryKeys.list(filters),
     queryFn: () => getCategories(filters),
+    staleTime: 1000 * 60 * 5,  // 5 minutes - categories rarely change
+    gcTime: 1000 * 60 * 15,    // 15 minutes cache
   })
 }
 
@@ -47,6 +49,8 @@ export function useCategory(id: string) {
     queryKey: categoryKeys.detail(id),
     queryFn: () => getCategoryById(id),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 15,
   })
 }
 
@@ -55,6 +59,8 @@ export function useCategoryBySlug(slug: string) {
     queryKey: [...categoryKeys.all, 'slug', slug] as const,
     queryFn: () => getCategoryBySlug(slug),
     enabled: !!slug,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 15,
   })
 }
 
