@@ -36,13 +36,16 @@ export default async function NewQuotePage(props: PageProps) {
         // Use unsafeMetadata to match the rest of the codebase
         const accountType = user?.unsafeMetadata?.accountType as string | undefined;
         const isVerified = user?.unsafeMetadata?.is_verified === true;
+        // Get actual verification status from metadata
+        const actualVerificationStatus = user?.unsafeMetadata?.verification_status as string | undefined;
 
         if (isVerified) {
             userType = 'verified';
             verificationStatus = 'verified';
         } else if (accountType === 'business') {
             userType = 'business';
-            verificationStatus = 'pending';
+            // Use actual verification status instead of defaulting to 'pending'
+            verificationStatus = actualVerificationStatus || 'unverified';
         } else if (accountType === 'individual') {
             userType = 'individual';
         }

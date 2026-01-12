@@ -3,6 +3,14 @@ import { getUserWithProfile, type UserWithProfile } from "@/lib/services/auth-sy
 
 export type UserType = "guest" | "individual" | "business" | "verified"
 
+export interface BusinessDetails {
+  id: string
+  name: string
+  verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
+  verified_at: string | null
+  verified_by: string | null
+}
+
 export interface EnhancedAuthUser {
   // Clerk data
   clerkUser: {
@@ -26,12 +34,7 @@ export interface EnhancedAuthUser {
     is_active: boolean
   }
   // Business (if applicable)
-  business?: {
-    id: string
-    name: string
-    gst_number: string | null
-    verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
-  }
+  business?: BusinessDetails
   // Derived properties
   userType: UserType
   isVerified: boolean
@@ -94,8 +97,9 @@ export async function getAuthUser(): Promise<EnhancedAuthUser | null> {
     business: business ? {
       id: business.id,
       name: business.name,
-      gst_number: business.gst_number,
-      verification_status: business.verification_status
+      verification_status: business.verification_status,
+      verified_at: business.verified_at,
+      verified_by: business.verified_by,
     } : undefined,
     userType,
     isVerified

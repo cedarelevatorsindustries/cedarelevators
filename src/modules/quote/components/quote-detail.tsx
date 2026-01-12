@@ -33,7 +33,7 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
     const isVerified = userType === 'verified';
 
     // What each role can see
-    const canSeePricing = isBusiness || isVerified;
+    const canSeePricing = isVerified; // Only verified business users can see pricing
     const canConvert = isVerified && quote.status === 'approved';
     const showVerifyCTA = isBusiness && !isVerified && quote.status === 'approved';
     const showBusinessUpgrade = isIndividual && quote.status === 'approved';

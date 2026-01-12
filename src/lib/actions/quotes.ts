@@ -148,7 +148,8 @@ export async function getQuoteById(id: string) {
 
     const supabase = await createClerkSupabaseClient();
 
-    const { data, error } = await supabase
+    // 1. Fetch quote and items first (safe query)
+    const { data: quoteData, error: quoteError } = await supabase
       .from('quotes')
       .select(`
                 *,
@@ -160,12 +161,50 @@ export async function getQuoteById(id: string) {
       .eq('user_id', userId)
       .single();
 
-    if (error) throw error;
+    if (quoteError) throw quoteError;
 
-    // Transform admin_response array to single object
+    let itemsWithDetails = quoteData.items || [];
+
+    // 2. Extract IDs for fetching details
+    const productIds = itemsWithDetails.map((i: any) => i.product_id).filter(Boolean);
+    const variantIds = itemsWithDetails.map((i: any) => i.variant_id).filter(Boolean);
+
+    // 3. Fetch products and variants manually if needed
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, name, images, sku')
+        .in('id', productIds);
+
+      const { data: variants } = await supabase
+        .from('variants')
+        .select('id, title, price, sku')
+        .in('id', variantIds);
+
+      // 4. Map details back to items
+      const productMap = new Map(products?.map((p: any) => [p.id, p]) || []);
+      const variantMap = new Map(variants?.map((v: any) => [v.id, v]) || []);
+
+      itemsWithDetails = itemsWithDetails.map((item: any) => {
+        const product = productMap.get(item.product_id);
+        const variant = variantMap.get(item.variant_id);
+
+        return {
+          ...item,
+          product_name: product?.name || 'Product',
+          product_image: product?.images?.[0] || null,
+          product_thumbnail: product?.images?.[0] || null,
+          product_sku: variant?.sku || product?.sku || '',
+          variant_title: variant?.title || null
+        };
+      });
+    }
+
+    // 5. Construct final response
     const quote = {
-      ...data,
-      admin_response: data.admin_response?.[0] || null
+      ...quoteData,
+      admin_response: quoteData.admin_response?.[0] || null,
+      items: itemsWithDetails
     };
 
     return { success: true, quote };

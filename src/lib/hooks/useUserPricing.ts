@@ -33,12 +33,14 @@ export function useUserPricing(): UserPricingInfo {
     userType = isBusiness ? 'business' : 'individual'
   }
 
+
   // Pricing visibility logic based on strategy:
   // - Guest: No prices
   // - Individual: No prices
-  // - Business (Unverified): Show prices but no direct buy
+  // - Business (Unverified): No prices (must be verified first)
   // - Verified Business: Show prices + direct buy
   const canSeePrices = isBusiness && isVerified
+
 
   // Cart/Checkout logic:
   // - Only verified business can add to cart and checkout

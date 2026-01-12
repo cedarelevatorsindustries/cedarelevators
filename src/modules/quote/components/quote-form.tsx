@@ -178,7 +178,38 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                     </div>
                 )}
 
-                {userType === 'business' && verificationStatus !== 'verified' && (
+                {/* Business Verification Banners */}
+                {userType === 'business' && verificationStatus === 'pending' && (
+                    <div className="bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-orange-900">Verification in Progress</p>
+                            <p className="text-sm text-orange-700 mt-1">
+                                Our team is reviewing your documents. You'll receive an email once approved (usually within 24 hours).
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {userType === 'business' && verificationStatus === 'rejected' && (
+                    <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-red-900">Verification Rejected</p>
+                            <p className="text-sm text-red-700 mt-1">
+                                Please review the rejection reason and resubmit your documents.
+                            </p>
+                            <Link
+                                href="/profile?tab=business"
+                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                            >
+                                Resubmit Documents
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {userType === 'business' && (!verificationStatus || verificationStatus === 'unverified') && (
                     <div className="bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 flex items-start gap-3">
                         <Shield className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
@@ -195,6 +226,8 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                         </div>
                     </div>
                 )}
+
+
 
                 {/* Items Section */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm">

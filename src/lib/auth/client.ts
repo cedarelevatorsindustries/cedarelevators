@@ -17,17 +17,9 @@ export interface UserProfile {
 export interface Business {
     id: string
     name: string
-    gst_number: string | null
-    pan_number: string | null
     verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
-    verification_documents: any
-    verification_requested_at: string | null
     verified_at: string | null
     verified_by: string | null
-    verification_notes: string | null
-    company_address: string | null
-    contact_person: string | null
-    contact_phone: string | null
     created_at: string
     updated_at: string
 }

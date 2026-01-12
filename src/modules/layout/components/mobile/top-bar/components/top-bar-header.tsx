@@ -40,6 +40,7 @@ export function TopBarHeader({
     if (pathname === '/catalog') return 'Catalog'
     if (pathname === '/cart') return 'Cart'
     if (pathname === '/quotes/new') return 'Quote'
+    if (pathname.startsWith('/quotes/') && pathname !== '/quotes/new') return 'Quote Details'
     if (pathname === '/profile' || pathname === '/account') return 'My Cedar'
 
     // For other pages, format the pathname

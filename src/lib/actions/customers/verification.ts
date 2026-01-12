@@ -103,7 +103,8 @@ export async function approveVerification(
         } else {
             // business_verifications table
             updateData.status = 'approved' // business_verifications uses 'approved'
-            // No notes, verified_by, verified_at columns in this table
+            updateData.reviewed_at = updateTime
+            updateData.reviewed_by = adminUser?.id || 'unknown'
         }
 
         const { error: updateError } = await supabase
@@ -113,6 +114,22 @@ export async function approveVerification(
 
         if (updateError) {
             return { success: false, error: updateError.message }
+        }
+
+        // Ensure business_id is set in business_verifications if using that table
+        if (targetTable === 'business_verifications' && !profile.business_id) {
+            const { data: businessMember } = await supabase
+                .from('business_members')
+                .select('business_id')
+                .eq('user_id', userId)
+                .single()
+
+            if (businessMember?.business_id) {
+                await supabase
+                    .from('business_verifications')
+                    .update({ business_id: businessMember.business_id })
+                    .eq('id', businessProfileId)
+            }
         }
 
         // Update customer_meta
@@ -126,6 +143,21 @@ export async function approveVerification(
                 .from('customer_meta')
                 .update({ business_verified: true })
                 .eq('clerk_user_id', clerkIdToUpdate)
+
+            // Update Clerk user metadata to reflect verified status
+            try {
+                const { clerkClient } = await import('@clerk/nextjs/server')
+                const client = await clerkClient()
+                await client.users.updateUserMetadata(clerkIdToUpdate, {
+                    unsafeMetadata: {
+                        verification_status: 'verified',
+                        is_verified: true
+                    }
+                })
+            } catch (clerkError) {
+                console.error('Error updating Clerk metadata:', clerkError)
+                // Don't fail the entire operation if Clerk update fails
+            }
         }
 
         // Log the action
@@ -277,6 +309,21 @@ export async function rejectVerification(
                 .from('customer_meta')
                 .update({ business_verified: false })
                 .eq('clerk_user_id', clerkIdToUpdate)
+
+            // Update Clerk user metadata to reflect rejected status
+            try {
+                const { clerkClient } = await import('@clerk/nextjs/server')
+                const client = await clerkClient()
+                await client.users.updateUserMetadata(clerkIdToUpdate, {
+                    unsafeMetadata: {
+                        verification_status: 'rejected',
+                        is_verified: false
+                    }
+                })
+            } catch (clerkError) {
+                console.error('Error updating Clerk metadata:', clerkError)
+                // Don't fail the entire operation if Clerk update fails
+            }
         }
 
         // Log the action

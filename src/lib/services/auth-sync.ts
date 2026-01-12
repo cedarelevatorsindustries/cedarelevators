@@ -24,17 +24,9 @@ export interface UserProfile {
 export interface Business {
     id: string
     name: string
-    gst_number: string | null
-    pan_number: string | null
     verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
-    verification_documents: any
-    verification_requested_at: string | null
     verified_at: string | null
     verified_by: string | null
-    verification_notes: string | null
-    company_address: string | null
-    contact_person: string | null
-    contact_phone: string | null
     created_at: string
     updated_at: string
 }
@@ -204,13 +196,24 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
             try {
                 const { data: businessMember, error: businessError } = await supabase
                     .from('business_members')
-                    .select('business_id, businesses(*)')
+                    .select(`
+                        business_id,
+                        businesses (
+                            id,
+                            name,
+                            verification_status,
+                            verified_at,
+                            verified_by,
+                            created_at,
+                            updated_at
+                        )
+                    `)
                     .eq('user_id', user.id)
-                    .single()
+                    .maybeSingle() // Use maybeSingle instead of single to handle 0 rows gracefully
 
-                if (businessError) {
+                // Only log error if it's not "no rows found"
+                if (businessError && businessError.code !== 'PGRST116') {
                     console.error('Error loading business data:', businessError)
-                    // Don't throw - we still return hasBusinessProfile as true
                 } else if (businessMember?.businesses) {
                     // Supabase returns nested object, not array
                     business = businessMember.businesses as unknown as Business
@@ -299,8 +302,6 @@ export async function createBusinessProfile(
     userId: string,
     businessData: {
         name: string
-        gst_number?: string
-        pan_number?: string
     }
 ): Promise<{ success: boolean; businessId?: string; error?: string }> {
     try {
@@ -318,13 +319,11 @@ export async function createBusinessProfile(
             return { success: false, error: 'Business profile already exists' }
         }
 
-        // Create business entity
+        // Create business entity (only name and verification_status)
         const { data: business, error: businessError } = await supabase
             .from('businesses')
             .insert({
                 name: businessData.name,
-                gst_number: businessData.gst_number,
-                pan_number: businessData.pan_number,
                 verification_status: 'unverified'
             })
             .select()
