@@ -3,6 +3,7 @@
 import { createClerkSupabaseClient, createServerSupabaseClient } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
+import { generateQuoteNumber } from '@/lib/utils/quote-number-generator'
 
 interface CreateQuoteInput {
   items: {
@@ -36,8 +37,13 @@ export async function createQuote(data: CreateQuoteInput) {
     const supabase = userId ? await createClerkSupabaseClient() : createServerSupabaseClient();
     if (!supabase) throw new Error("Database connection failed");
 
+    // Generate enterprise-grade quote number
+    // Format: CED-QT-{TYPE}-{YYMMDD}-{SEQ}
+    const quoteNumber = await generateQuoteNumber(data.account_type);
+
     // 1. Create Quote
     const quoteData: any = {
+      quote_number: quoteNumber,
       user_id: userId || null,
       account_type: data.account_type,
       status: 'submitted',
@@ -53,7 +59,7 @@ export async function createQuote(data: CreateQuoteInput) {
     const { data: quote, error: quoteError } = await supabase
       .from('quotes')
       .insert(quoteData)
-      .select('id')
+      .select('id, quote_number')
       .single();
 
     if (quoteError) {
@@ -94,7 +100,11 @@ export async function createQuote(data: CreateQuoteInput) {
     }
 
     revalidatePath('/quotes');
-    return { success: true, id: quote.id };
+    return {
+      success: true,
+      id: quote.id,
+      quote_number: quote.quote_number
+    };
 
   } catch (error: any) {
     console.error("createQuote Action Error:", error);
