@@ -52,7 +52,9 @@ export default function ProductCard({
   const accountType = user?.unsafeMetadata?.accountType as string | undefined
   const isIndividual = accountType === "individual"
   const isBusiness = accountType === "business"
-  const isVerified = user?.unsafeMetadata?.is_verified === true
+  // Check both is_verified boolean AND verificationStatus = 'approved'
+  const verificationStatus = user?.unsafeMetadata?.verificationStatus as string | undefined
+  const isVerified = user?.unsafeMetadata?.is_verified === true || verificationStatus === 'approved'
 
   // Pricing logic - only show for verified business
   const showPrice = isBusiness && isVerified

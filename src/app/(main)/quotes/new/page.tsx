@@ -20,11 +20,15 @@ export default async function NewQuotePage(props: PageProps) {
     // Parse search params for prefilling
     const productId = typeof searchParams.productId === 'string' ? searchParams.productId : undefined;
     const productName = typeof searchParams.productName === 'string' ? searchParams.productName : undefined;
+    // Get quantity from URL params (passed from product detail page)
+    const quantityParam = typeof searchParams.quantity === 'string' ? parseInt(searchParams.quantity, 10) : undefined;
+    const prefillQuantity = quantityParam && !isNaN(quantityParam) ? quantityParam : 1;
 
     // Optional: Get price from params if needed, but safer to let it be fetched or optional
     const prefilledProduct = productId && productName ? {
         id: productId,
-        name: productName
+        name: productName,
+        quantity: prefillQuantity
     } : null;
 
     let userType: 'guest' | 'individual' | 'business' | 'verified' = 'guest';
@@ -37,12 +41,14 @@ export default async function NewQuotePage(props: PageProps) {
         // Use unsafeMetadata to match the rest of the codebase
         const accountType = user?.unsafeMetadata?.accountType as string | undefined;
         const isVerified = user?.unsafeMetadata?.is_verified === true;
-        // Get actual verification status from metadata
-        const actualVerificationStatus = user?.unsafeMetadata?.verification_status as string | undefined;
+        // Get actual verification status from metadata - check BOTH camelCase and snake_case for backward compatibility
+        const actualVerificationStatus = (user?.unsafeMetadata as any)?.verificationStatus as string | undefined ||
+            (user?.unsafeMetadata as any)?.verification_status as string | undefined;
 
-        if (isVerified) {
+        // Check if user is verified either by is_verified boolean OR verificationStatus = 'approved'
+        if (isVerified || actualVerificationStatus === 'approved') {
             userType = 'verified';
-            verificationStatus = 'verified';
+            verificationStatus = 'approved';
         } else if (accountType === 'business') {
             userType = 'business';
             // Use actual verification status instead of defaulting to 'pending'

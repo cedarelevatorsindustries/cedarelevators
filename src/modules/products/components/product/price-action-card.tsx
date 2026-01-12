@@ -10,7 +10,7 @@ interface PriceActionCardProps {
     price?: number | null
     mrp?: number | null
     onAddToCart?: (quantity: number) => void
-    onRequestQuote?: () => void
+    onRequestQuote?: (quantity: number) => void
     className?: string
     isMobile?: boolean
     actionDisabled?: boolean
@@ -85,7 +85,7 @@ export function PriceActionCard({
 
                     {/* Secondary Button */}
                     <button
-                        onClick={onRequestQuote}
+                        onClick={() => onRequestQuote?.(1)}
                         className="flex w-full items-center justify-center overflow-hidden rounded-lg h-11 px-4 border border-gray-300 bg-transparent text-gray-700 text-sm font-bold tracking-wide transition-all hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98]"
                     >
                         <span className="truncate">{permissions.secondaryCTA}</span>
@@ -203,7 +203,7 @@ export function PriceActionCard({
                     </button>
 
                     <button
-                        onClick={onRequestQuote}
+                        onClick={() => onRequestQuote?.(quantity)}
                         className="flex-1 bg-transparent hover:bg-orange-50 border border-gray-300 text-gray-800 font-medium py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                     >
                         <FileText className="w-5 h-5" />

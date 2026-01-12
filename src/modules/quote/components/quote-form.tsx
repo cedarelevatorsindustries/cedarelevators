@@ -24,6 +24,7 @@ interface QuoteFormProps {
         id: string;
         name: string;
         price?: number;
+        quantity?: number;
     } | null;
     userProfile?: {
         name?: string;
@@ -60,9 +61,9 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
     const { register, control, handleSubmit, formState: { errors } } = useForm<any>({
         resolver: zodResolver(schema),
         defaultValues: userType === 'guest'
-            ? { product_id: prefilledProduct?.id || "", quantity: 1, name: "", email: "", phone: "", notes: "" }
+            ? { product_id: prefilledProduct?.id || "", quantity: prefilledProduct?.quantity || 1, name: "", email: "", phone: "", notes: "" }
             : {
-                items: [{ product_id: prefilledProduct?.id || "", quantity: 1 }],
+                items: [{ product_id: prefilledProduct?.id || "", quantity: prefilledProduct?.quantity || 1 }],
                 bulk_pricing_requested: false,
                 notes: "",
                 // Pre-fill contact info from user profile for logged-in users

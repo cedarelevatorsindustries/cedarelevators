@@ -176,7 +176,7 @@ export async function approveVerification(
                 const client = await clerkClient()
                 await client.users.updateUserMetadata(clerkIdToUpdate, {
                     unsafeMetadata: {
-                        verification_status: 'verified',
+                        verificationStatus: 'approved',  // camelCase to match frontend
                         is_verified: true
                     }
                 })

@@ -135,10 +135,11 @@ export default function MobileProductDetailPage({
     })
   }
 
-  const handleRequestQuote = () => {
+  const handleRequestQuote = (quantity: number = 1) => {
     const params = new URLSearchParams({
       productId: product.id,
-      productName: product.title || ""
+      productName: product.title || "",
+      quantity: quantity.toString()
     })
     router.push(`/quotes/new?${params.toString()}`)
   }
@@ -626,7 +627,7 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
                 ) : null}
 
                 <button
-                  onClick={handleRequestQuote}
+                  onClick={() => handleRequestQuote(1)}
                   className="px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4" />

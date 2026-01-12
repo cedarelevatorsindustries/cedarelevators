@@ -8,7 +8,7 @@ interface PricingBlockSectionProps {
   price?: number | null
   originalPrice?: number | null
   onAddToCart?: (quantity: number) => void
-  onRequestQuote?: () => void
+  onRequestQuote?: (quantity: number) => void
   className?: string
   isMobile?: boolean
   actionDisabled?: boolean

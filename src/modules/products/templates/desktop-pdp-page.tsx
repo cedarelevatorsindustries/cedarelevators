@@ -170,10 +170,11 @@ export default function ProductDetailPage({
     })
   }
 
-  const handleRequestQuote = () => {
+  const handleRequestQuote = (quantity: number = 1) => {
     const params = new URLSearchParams({
       productId: product.id,
-      productName: product.title || ""
+      productName: product.title || "",
+      quantity: quantity.toString()
     })
     router.push(`/quotes/new?${params.toString()}`)
   }
