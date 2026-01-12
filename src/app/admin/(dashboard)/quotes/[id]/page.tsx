@@ -111,15 +111,11 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     const isGuest = !quote?.account_type || quote?.account_type === 'guest'
 
     // Permission checks
-    // Allow editing for pending, reviewing, and any non-finalized guest quotes
+    // Allow editing and approval for all non-finalized quotes (regardless of user type)
     const isFinalized = ['approved', 'rejected', 'converted', 'expired'].includes(quote?.status || '')
-    const canEditPricing =
-        quote?.status === 'pending' ||
-        quote?.status === 'reviewing' ||
-        quote?.status === 'draft' ||
-        (isGuest && !isFinalized)
+    const canEditPricing = !isFinalized  // Allow pricing for any non-finalized quote
 
-    const canApprove = quote?.status === 'reviewing' || (isGuest && !isFinalized)
+    const canApprove = !isFinalized  // Allow approval for any non-finalized quote
     const canConvert = quote?.status === 'approved' && quote?.account_type === 'verified'
 
     // === ACTIONS ===
