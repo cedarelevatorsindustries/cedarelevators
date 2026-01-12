@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { Quote, QuoteStatus, QuoteStats, QuotePriority, QuoteAuditLog } from '@/types/b2b/quote'
 
 export interface AdminQuoteFilters {
@@ -19,7 +19,7 @@ export async function getAdminQuotes(filters: AdminQuoteFilters): Promise<
     | { success: false; error: string }
 > {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -100,7 +100,7 @@ export async function getAdminQuoteById(quoteId: string): Promise<
     | { success: false; error: string }
 > {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -153,7 +153,7 @@ export async function getAdminQuoteStats(): Promise<
     | { success: false; error: string }
 > {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -192,7 +192,7 @@ export async function getQuoteAuditLog(quoteId: string): Promise<
     | { success: false; error: string }
 > {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
