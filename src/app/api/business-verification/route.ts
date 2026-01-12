@@ -114,35 +114,20 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Check for business account - verify user is associated with a business
-        // Get user profile first
-        const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('id, clerk_user_id')
-            .eq('clerk_user_id', userId)
-            .maybeSingle()
-
-        if (profileError) {
-            console.error('Error fetching user profile:', profileError)
-            return NextResponse.json(
-                { success: false, error: 'Failed to fetch user profile' },
-                { status: 500 }
-            )
-        }
-
-        if (!userProfile) {
-            return NextResponse.json(
-                { success: false, error: 'User profile not found' },
-                { status: 404 }
-            )
-        }
-
         // Check if user has a business record in the businesses table
         const { data: business, error: businessError } = await supabase
             .from('businesses')
             .select('id, name, verification_status')
             .eq('owner_clerk_user_id', userId)
             .maybeSingle()
+
+        if (businessError) {
+            console.error('Error fetching business:', businessError)
+            return NextResponse.json(
+                { success: false, error: 'Failed to fetch business' },
+                { status: 500 }
+            )
+        }
 
         if (!business) {
             return NextResponse.json(
@@ -151,16 +136,26 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Get user_id from user_profiles for business_verifications table
+        // If no user_profile exists, we'll use clerk_user_id directly
+        const { data: userProfile } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('clerk_user_id', userId)
+            .maybeSingle()
+
+        const userIdForVerification = userProfile?.id || userId
+
         // Check if verification already exists
         const { data: existing } = await supabase
             .from('business_verifications')
             .select('id, status')
-            .eq('user_id', userProfile.id)
+            .eq('user_id', userIdForVerification)
             .single()
 
         // Prepare verification data - SIMPLIFIED SCHEMA
         const verificationData = {
-            user_id: userProfile.id, // Use the user_profile UUID
+            user_id: userIdForVerification, // Use user_profile UUID or clerk_user_id
             legal_business_name: body.legal_business_name,
             contact_person_name: body.contact_person_name,
             contact_person_phone: body.contact_person_phone,
