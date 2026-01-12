@@ -50,37 +50,24 @@ export async function getCustomers(
             return { success: false, error: verificationError.message }
         }
 
-        // Fetch users to map user_id to clerk_user_id
-        const { data: allUsers } = await supabase
-            .from('users')
-            .select('id, clerk_user_id')
-
-        // Create a map of users.id -> clerk_user_id
-        const userIdToClerkId = new Map<string, string>()
-        allUsers?.forEach((u: any) => {
-            userIdToClerkId.set(u.id, u.clerk_user_id)
-        })
-
-        // Create verification map by clerk_user_id (since user_profiles has clerk_user_id)
-        // business_verifications.user_id -> users.id -> users.clerk_user_id -> user_profiles.clerk_user_id
+        // Create verification map by user_id
+        // Both business_verifications.user_id and user_profiles.user_id reference users.id
+        // So we can map directly
         const verificationMap = new Map()
         allVerifications?.forEach((v: any) => {
-            // Try to get clerk_user_id from the users.id stored in verification
-            const clerkId = userIdToClerkId.get(v.user_id)
-            const key = clerkId || v.user_id // Fallback to raw user_id if no mapping
-
-            if (!verificationMap.has(key)) {
-                verificationMap.set(key, [])
+            if (!verificationMap.has(v.user_id)) {
+                verificationMap.set(v.user_id, [])
             }
-            verificationMap.get(key).push(v)
+            verificationMap.get(v.user_id).push(v)
         })
 
         console.log('[getCustomers Debug] Verification map keys:', Array.from(verificationMap.keys()))
 
-        // Attach verifications to profiles using clerk_user_id
+        // Attach verifications to profiles using user_id (not clerk_user_id!)
+        // user_profiles.user_id = users.id = business_verifications.user_id
         const profilesWithVerifications = (allProfiles || []).map((profile: any) => ({
             ...profile,
-            business_verification: verificationMap.get(profile.clerk_user_id) || []
+            business_verification: verificationMap.get(profile.user_id) || []
         }))
 
         console.log('=== CUSTOMERS DEBUG ===')
@@ -369,33 +356,20 @@ export async function getCustomerStats(): Promise<
             .from('business_verifications')
             .select('user_id, status')
 
-        // Fetch users to map user_id to clerk_user_id
-        const { data: allUsers } = await supabase
-            .from('users')
-            .select('id, clerk_user_id')
-
-        // Create a map of users.id -> clerk_user_id
-        const userIdToClerkId = new Map<string, string>()
-        allUsers?.forEach((u: any) => {
-            userIdToClerkId.set(u.id, u.clerk_user_id)
-        })
-
-        // Create verification map by clerk_user_id (since user_profiles has clerk_user_id)
+        // Create verification map by user_id
+        // Both business_verifications.user_id and user_profiles.user_id reference users.id
         const verificationMap = new Map()
         verifications?.forEach((v: any) => {
-            const clerkId = userIdToClerkId.get(v.user_id)
-            const key = clerkId || v.user_id
-
-            if (!verificationMap.has(key)) {
-                verificationMap.set(key, [])
+            if (!verificationMap.has(v.user_id)) {
+                verificationMap.set(v.user_id, [])
             }
-            verificationMap.get(key).push(v)
+            verificationMap.get(v.user_id).push(v)
         })
 
-        // Attach verifications to profiles using clerk_user_id
+        // Attach verifications to profiles using user_id
         const profilesWithVerifications = (profiles || []).map((profile: any) => ({
             ...profile,
-            business_verification: verificationMap.get(profile.clerk_user_id) || []
+            business_verification: verificationMap.get(profile.user_id) || []
         }))
 
         // Filter to only users with commercial intent
