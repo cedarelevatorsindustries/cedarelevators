@@ -32,11 +32,9 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Create business profile
+        // Create business profile (only name is supported currently)
         const result = await createBusinessProfile(user.id, {
-            name,
-            gst_number,
-            pan_number
+            name
         })
 
         if (!result.success) {

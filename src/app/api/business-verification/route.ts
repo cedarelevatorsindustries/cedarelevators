@@ -114,13 +114,12 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Now get the user_profile using user_id
-        // Check for business account type - only business users can submit verification
+        // Check for business account - verify user is associated with a business
+        // Get user profile first
         const { data: userProfile, error: profileError } = await supabase
             .from('user_profiles')
-            .select('id, account_type')
-            .eq('user_id', user.id)
-            .eq('account_type', 'business')
+            .select('id, clerk_user_id')
+            .eq('clerk_user_id', userId)
             .maybeSingle()
 
         if (profileError) {
@@ -132,6 +131,20 @@ export async function POST(request: NextRequest) {
         }
 
         if (!userProfile) {
+            return NextResponse.json(
+                { success: false, error: 'User profile not found' },
+                { status: 404 }
+            )
+        }
+
+        // Check if user has a business record in the businesses table
+        const { data: business, error: businessError } = await supabase
+            .from('businesses')
+            .select('id, name, verification_status')
+            .eq('owner_clerk_user_id', userId)
+            .maybeSingle()
+
+        if (!business) {
             return NextResponse.json(
                 { success: false, error: 'Business account required. Please switch to a business account to submit verification.' },
                 { status: 403 }

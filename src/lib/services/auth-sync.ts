@@ -24,7 +24,9 @@ export interface UserProfile {
 export interface Business {
     id: string
     name: string
+    owner_clerk_user_id: string | null
     verification_status: 'unverified' | 'pending' | 'verified' | 'rejected'
+    status?: 'pending' | 'verified' | 'rejected'  // General business status
     verified_at: string | null
     verified_by: string | null
     created_at: string

@@ -37,13 +37,13 @@ export default function BusinessInfoPage() {
     const companyProfile = {
         company_name: user?.business?.name || user?.name || '',
         company_logo: user?.imageUrl || undefined,
-        tax_id: user?.business?.gst_number || '',
+        tax_id: '',  // TODO: Add GST field to businesses table if needed
         industry: '',
         company_size: '',
-        billing_address: user.business?.company_address ? { ...emptyAddress, line1: user.business.company_address } : emptyAddress,
-        shipping_address: user.business?.company_address ? { ...emptyAddress, line1: user.business.company_address } : emptyAddress,
+        billing_address: emptyAddress,  // TODO: Add address fields to businesses table if needed
+        shipping_address: emptyAddress,
         contact_email: user.email || '',
-        contact_phone: user.business?.contact_phone || ''
+        contact_phone: ''  // TODO: Add contact_phone field to businesses table if needed
     }
 
     return (

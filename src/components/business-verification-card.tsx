@@ -84,11 +84,6 @@ export function BusinessVerificationCard({ business }: BusinessVerificationCardP
                         <p className="text-sm text-blue-800">
                             Your verification request is being reviewed by our team. We'll notify you once it's processed.
                         </p>
-                        {business.verification_requested_at && (
-                            <p className="text-xs text-blue-600 mt-2">
-                                Submitted on {new Date(business.verification_requested_at).toLocaleDateString()}
-                            </p>
-                        )}
                     </div>
                 )}
 
@@ -96,8 +91,9 @@ export function BusinessVerificationCard({ business }: BusinessVerificationCardP
                 {business.verification_status === 'rejected' && (
                     <div className="space-y-3">
                         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <p className="text-sm font-medium text-red-900 mb-1">Rejection Reason:</p>
-                            <p className="text-sm text-red-800">{business.verification_notes || 'No reason provided'}</p>
+                            <p className="text-sm text-red-800">
+                                Your verification request was rejected. Please contact support or submit a new application.
+                            </p>
                         </div>
                         <Button
                             onClick={() => router.push('/profile/business/verification')}
