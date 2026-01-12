@@ -15,8 +15,12 @@ interface CreateQuoteInput {
   account_type: 'guest' | 'individual' | 'business';
   status?: string;
   notes?: string;
+
+  // Contact info for ALL users (not just guests)
   name?: string;
   email?: string;
+  phone?: string;
+
   attachments?: {
     file_name: string;
     file_url: string;
@@ -41,7 +45,7 @@ export async function createQuote(data: CreateQuoteInput) {
     // Format: CED-QT-{TYPE}-{YYMMDD}-{SEQ}
     const quoteNumber = await generateQuoteNumber(data.account_type);
 
-    // 1. Create Quote
+    // Create Quote
     const quoteData: any = {
       quote_number: quoteNumber,
       user_id: userId || null,
@@ -50,11 +54,11 @@ export async function createQuote(data: CreateQuoteInput) {
       notes: data.notes,
     };
 
-    // For guest users, save contact info to dedicated columns
-    if (isGuest && data.name && data.email) {
-      quoteData.guest_name = data.name;
-      quoteData.guest_email = data.email;
-    }
+    // Save contact info for ALL users (using guest_* columns)
+    // These columns represent "contact for this quote" and may differ from current profile
+    if (data.name) quoteData.guest_name = data.name;
+    if (data.email) quoteData.guest_email = data.email;
+    if (data.phone) quoteData.guest_phone = data.phone;
 
     const { data: quote, error: quoteError } = await supabase
       .from('quotes')

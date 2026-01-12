@@ -29,6 +29,7 @@ export default async function NewQuotePage(props: PageProps) {
 
     let userType: 'guest' | 'individual' | 'business' | 'verified' = 'guest';
     let verificationStatus = null;
+    let userProfile = null;
 
     if (userId) {
         const user = await currentUser();
@@ -49,6 +50,13 @@ export default async function NewQuotePage(props: PageProps) {
         } else if (accountType === 'individual') {
             userType = 'individual';
         }
+
+        // Extract user profile data for auto-population
+        userProfile = {
+            name: user?.unsafeMetadata?.full_name as string || user?.firstName || '',
+            email: user?.emailAddresses?.[0]?.emailAddress || '',
+            phone: user?.unsafeMetadata?.phone_number as string || ''
+        };
     }
 
     return (
@@ -57,6 +65,7 @@ export default async function NewQuotePage(props: PageProps) {
                 userType={userType}
                 verificationStatus={verificationStatus}
                 prefilledProduct={prefilledProduct}
+                userProfile={userProfile}
             />
         </div>
     )

@@ -25,6 +25,11 @@ interface QuoteFormProps {
         name: string;
         price?: number;
     } | null;
+    userProfile?: {
+        name?: string;
+        email?: string;
+        phone?: string;
+    } | null;
 }
 
 interface UploadedFile {
@@ -34,7 +39,7 @@ interface UploadedFile {
     publicId?: string;
 }
 
-export function QuoteForm({ userType = 'guest', verificationStatus = null, prefilledProduct = null }: QuoteFormProps) {
+export function QuoteForm({ userType = 'guest', verificationStatus = null, prefilledProduct = null, userProfile = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [attachments, setAttachments] = useState<UploadedFile[]>([]);
@@ -55,8 +60,16 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
     const { register, control, handleSubmit, formState: { errors } } = useForm<any>({
         resolver: zodResolver(schema),
         defaultValues: userType === 'guest'
-            ? { product_id: prefilledProduct?.id || "", quantity: 1, name: "", email: "", notes: "" }
-            : { items: [{ product_id: prefilledProduct?.id || "", quantity: 1 }], bulk_pricing_requested: false, notes: "" }
+            ? { product_id: prefilledProduct?.id || "", quantity: 1, name: "", email: "", phone: "", notes: "" }
+            : {
+                items: [{ product_id: prefilledProduct?.id || "", quantity: 1 }],
+                bulk_pricing_requested: false,
+                notes: "",
+                // Pre-fill contact info from user profile for logged-in users
+                name: userProfile?.name || "",
+                email: userProfile?.email || "",
+                phone: userProfile?.phone || ""
+            }
     });
 
     const onSubmit = async (data: any) => {
@@ -83,6 +96,10 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                     account_type: userType === 'verified' ? 'business' as const : userType as 'individual' | 'business',
                     notes: data.notes,
                     bulk_pricing_requested: data.bulk_pricing_requested,
+                    // Include contact info for logged-in users
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
                     attachments: attachments.map(file => ({
                         file_name: file.name,
                         file_url: file.url,
@@ -285,6 +302,69 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                                     <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
                                         <AlertCircle className="w-4 h-4" />
                                         {errors.email.message as string}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Contact Information (Logged-in Users) */}
+                {userType !== 'guest' && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                            <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
+                            <p className="text-sm text-gray-600 mt-1">Your profile information (editable if needed)</p>
+                        </div>
+                        <div className="p-6 grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    {...register("name")}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="Your name"
+                                />
+                                {errors.name && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.name.message as string}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    {...register("email")}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="your@email.com"
+                                />
+                                {errors.email && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.email.message as string}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Phone Number (Optional)
+                                </label>
+                                <input
+                                    type="tel"
+                                    {...register("phone")}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="+91 1234567890"
+                                />
+                                {errors.phone && (
+                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errors.phone.message as string}
                                     </p>
                                 )}
                             </div>

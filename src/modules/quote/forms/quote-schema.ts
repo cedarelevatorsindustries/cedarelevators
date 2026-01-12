@@ -46,6 +46,11 @@ export const individualQuoteSchema = z.object({
     items: z.array(quoteItemSchema).min(1, "Add at least one item"),
     notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
 
+    // Contact Info (pre-filled from profile, but editable)
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional().or(z.literal('')),
+
     // Single attachment allowed
     attachments: fileValidation.optional(), // We'll validate length manually or via refinement if needed
 });
@@ -55,6 +60,11 @@ export const businessUnverifiedQuoteSchema = z.object({
     items: z.array(quoteItemSchema).min(1, "Add at least one item"),
     bulk_pricing_requested: z.boolean().default(false),
     notes: z.string().max(1000, "Notes cannot exceed 1000 characters").optional(),
+
+    // Contact Info (pre-filled from profile, but editable)
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional().or(z.literal('')),
 
     // Max 2 attachments
     attachments: fileValidation.optional(),
@@ -66,6 +76,11 @@ export const businessVerifiedQuoteSchema = z.object({
     bulk_pricing_requested: z.boolean().default(false),
     save_as_draft: z.boolean().optional(),
     notes: z.string().max(1000, "Notes cannot exceed 1000 characters").optional(),
+
+    // Contact Info (pre-filled from profile, but editable)
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional().or(z.literal('')),
 
     // Max 5 attachments
     attachments: fileValidation.optional(),
