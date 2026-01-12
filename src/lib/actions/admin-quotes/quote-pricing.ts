@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -16,16 +16,13 @@ export async function updateQuotePricing(
     }
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { success: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('quotes')
             .update({
                 ...pricing,
-                status: 'revised',
+                status: 'reviewing',  // Transition to reviewing after pricing is set
                 updated_at: new Date().toISOString()
             })
             .eq('id', quoteId)
@@ -57,10 +54,7 @@ export async function updateQuoteItemPricing(
     }
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { success: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('quote_items')

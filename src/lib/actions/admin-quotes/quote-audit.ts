@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { QuoteStatus, QuotePriority, QuoteActionType } from '@/types/b2b/quote'
 import { getCurrentAdminUser } from '@/lib/auth/admin-roles'
 
@@ -21,10 +21,7 @@ export async function getQuoteAuditTimeline(
     quoteId: string
 ): Promise<{ success: boolean; entries?: QuoteAuditEntry[]; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { success: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('quote_audit_log')
@@ -51,10 +48,7 @@ export async function checkAndExpireQuote(
     quoteId: string
 ): Promise<{ expired: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { expired: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         const { data: quote, error: fetchError } = await supabase
             .from('quotes')
@@ -113,10 +107,7 @@ export async function checkAndExpireQuote(
  */
 export async function expireOverdueQuotes(): Promise<{ count: number; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { count: 0, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         const now = new Date().toISOString()
 
@@ -135,7 +126,7 @@ export async function expireOverdueQuotes(): Promise<{ count: number; error?: st
             return { count: 0 }
         }
 
-        const quoteIds = overdueQuotes.map(q => q.id)
+        const quoteIds = overdueQuotes.map((q: any) => q.id)
 
         // Update all to expired
         const { error: updateError } = await supabase
@@ -151,7 +142,7 @@ export async function expireOverdueQuotes(): Promise<{ count: number; error?: st
         }
 
         // Log each expiry
-        const auditEntries = quoteIds.map(id => ({
+        const auditEntries = quoteIds.map((id: string) => ({
             quote_id: id,
             action_type: 'expired',
             old_status: 'approved',
@@ -187,7 +178,7 @@ export async function logQuoteAction(
 ): Promise<void> {
     try {
         const adminUser = await getCurrentAdminUser()
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
 
         if (!supabase) return
 

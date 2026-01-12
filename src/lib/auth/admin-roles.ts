@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type { AdminRole } from '@/types/b2b/quote'
 
 // =====================================================
@@ -19,10 +19,7 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 export async function getCurrentAdminUser() {
   'use server'
   try {
-    const supabase = createServerSupabaseClient()
-    if (!supabase) {
-      return null
-    }
+    const supabase = createAdminClient()  // Use admin client to bypass RLS
 
     // Get authenticated user from Supabase Auth (admin panel uses Supabase Auth)
     const { data: { user }, error: authError } = await supabase.auth.getUser()

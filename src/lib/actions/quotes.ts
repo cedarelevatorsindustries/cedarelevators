@@ -50,7 +50,7 @@ export async function createQuote(data: CreateQuoteInput) {
       quote_number: quoteNumber,
       user_id: userId || null,
       account_type: data.account_type,
-      status: 'pending',  // Initial state when quote is submitted
+      status: 'reviewing',  // Initial state - database constraint doesn't allow 'pending'
       notes: data.notes,
     };
 

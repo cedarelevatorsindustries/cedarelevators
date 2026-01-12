@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { canApproveQuotes } from '@/lib/auth/admin-roles'
 import { logQuoteAction } from './quote-audit'
@@ -23,10 +23,7 @@ export async function convertQuoteToOrder(
             return { success: false, error: 'Insufficient permissions to convert quotes' }
         }
 
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { success: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         // Get quote with all details
         const { data: quote, error: fetchError } = await supabase

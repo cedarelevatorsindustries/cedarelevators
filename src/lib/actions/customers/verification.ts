@@ -132,6 +132,15 @@ export async function approveVerification(
             }
         }
 
+        // Update businesses.status to 'verified' when verification is approved
+        // This ensures the frontend verification checks work correctly
+        if (targetTable === 'business_verifications' && profile.business_id) {
+            await supabase
+                .from('businesses')
+                .update({ status: 'verified' })
+                .eq('id', profile.business_id)
+        }
+
         // Update customer_meta
         // For business_verifications, we need the clerk user id. usually user_id key holds it.
         // If not, we might need to look up user_profiles if userId is not the clerk id.
@@ -299,6 +308,15 @@ export async function rejectVerification(
 
         if (updateError) {
             return { success: false, error: updateError.message }
+        }
+
+        // Update businesses.status to 'rejected' when verification is rejected
+        // This ensures the frontend verification checks work correctly
+        if (targetTable === 'business_verifications' && profile.business_id) {
+            await supabase
+                .from('businesses')
+                .update({ status: 'rejected' })
+                .eq('id', profile.business_id)
         }
 
         // Update customer_meta

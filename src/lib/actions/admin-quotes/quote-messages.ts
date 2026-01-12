@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -13,10 +13,7 @@ export async function addAdminQuoteMessage(
     isInternal: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) {
-            return { success: false, error: 'Database connection failed' }
-        }
+        const supabase = createAdminClient()
 
         // Update quotes table with message in appropriate field
         const updateData: Record<string, any> = {

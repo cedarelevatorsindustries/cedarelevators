@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { Quote, QuoteItem } from '@/types/b2b/quote'
 
@@ -15,7 +15,7 @@ export async function getAdminQuotes(filters?: {
     date_range?: string
 }): Promise<{ success: boolean; quotes?: Quote[]; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -85,7 +85,7 @@ export async function getAdminQuotes(filters?: {
  */
 export async function getAdminQuoteById(quoteId: string): Promise<{ success: boolean; quote?: Quote; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -124,7 +124,7 @@ export async function updateQuoteItems(
     adminName: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -207,7 +207,7 @@ export async function updateQuoteQuantities(
     adminName: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -277,7 +277,7 @@ export async function setQuoteExpiry(
     adminName: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -327,7 +327,7 @@ export async function addAdminNote(
     adminName: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
@@ -361,7 +361,7 @@ export async function addAdminNote(
  * Recalculate quote totals (internal helper)
  */
 async function recalculateQuoteTotals(quoteId: string): Promise<void> {
-    const supabase = createServerSupabaseClient()
+    const supabase = createAdminClient()
     if (!supabase) return
 
     // Get all items
@@ -398,7 +398,7 @@ async function recalculateQuoteTotals(quoteId: string): Promise<void> {
  */
 export async function deleteQuote(quoteId: string): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = createServerSupabaseClient()
+        const supabase = createAdminClient()
         if (!supabase) {
             return { success: false, error: 'Database connection failed' }
         }
