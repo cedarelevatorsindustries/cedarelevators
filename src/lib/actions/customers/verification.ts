@@ -96,7 +96,7 @@ export async function approveVerification(
 
         if (targetTable === 'business_profiles') {
             updateData.verification_status = 'verified' // business_profiles uses 'verified'
-            updateData.verified_by = adminUser?.clerk_user_id
+            updateData.verified_by = adminUser?.id
             updateData.verified_at = updateTime
             updateData.verification_notes = notes
             updateData.last_verification_check_at = updateTime
@@ -249,7 +249,7 @@ export async function rejectVerification(
 
         if (targetTable === 'business_profiles') {
             updateData.verification_status = 'rejected'
-            updateData.verified_by = adminUser?.clerk_user_id // store who rejected
+            updateData.verified_by = adminUser?.id // store who rejected
             updateData.rejected_at = updateTime
             updateData.verification_notes = reason
             // updateData.rejection_reason = reason // IF exists

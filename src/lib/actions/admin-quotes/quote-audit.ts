@@ -201,8 +201,8 @@ export async function logQuoteAction(
             pricing_changed: details.oldTotal !== details.newTotal,
             old_total: details.oldTotal,
             new_total: details.newTotal,
-            admin_clerk_id: adminUser?.clerk_user_id,
-            admin_name: adminUser?.full_name,
+            admin_id: adminUser?.id, // Supabase auth user ID
+            admin_name: adminUser?.full_name || adminUser?.display_name,
             admin_role: adminUser?.role,
             notes: details.notes,
             metadata: details.metadata,

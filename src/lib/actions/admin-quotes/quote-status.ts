@@ -52,7 +52,7 @@ export async function updateQuoteStatus(
         }
 
         if (status === 'approved') {
-            updateData.approved_by = adminUser?.clerk_user_id
+            updateData.approved_by = adminUser?.id
             updateData.approved_at = new Date().toISOString()
         }
 
@@ -152,7 +152,7 @@ export async function approveQuote(
             .from('quotes')
             .update({
                 status: 'approved',
-                approved_by: adminUser?.clerk_user_id,
+                approved_by: adminUser?.id,
                 approved_at: new Date().toISOString(),
                 valid_until: validUntil.toISOString(),
                 admin_notes: options.adminNotes || quote.admin_notes,

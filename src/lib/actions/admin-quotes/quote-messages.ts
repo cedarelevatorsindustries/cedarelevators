@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 /**
  * Add admin message to quote
+ * Updated to use quotes table fields instead of deprecated quote_admin_responses table
  */
 export async function addAdminQuoteMessage(
     quoteId: string,
@@ -17,14 +18,22 @@ export async function addAdminQuoteMessage(
             return { success: false, error: 'Database connection failed' }
         }
 
+        // Update quotes table with message in appropriate field
+        const updateData: Record<string, any> = {
+            admin_response_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        }
+
+        if (isInternal) {
+            updateData.admin_internal_notes = message
+        } else {
+            updateData.admin_response_message = message
+        }
+
         const { error } = await supabase
-            .from('quote_admin_responses')
-            .insert({
-                quote_id: quoteId,
-                response_note: message,
-                responded_by: 'Cedar Team',
-                responded_at: new Date().toISOString()
-            })
+            .from('quotes')
+            .update(updateData)
+            .eq('id', quoteId)
 
         if (error) {
             console.error('Error adding admin message:', error)

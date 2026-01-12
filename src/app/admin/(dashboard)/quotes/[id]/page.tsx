@@ -365,7 +365,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
             {/* Reject Modal */}
             {showRejectModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <Card className="w-full max-w-md mx-4">
+                    <Card className="w-full max-w-md mx-4 bg-white">
                         <CardContent className="pt-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold">Reject Quote</h3>
@@ -396,7 +396,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
             {/* Convert Modal */}
             {showConvertModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <Card className="w-full max-w-md mx-4">
+                    <Card className="w-full max-w-md mx-4 bg-white">
                         <CardContent className="pt-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold">Convert to Order</h3>

@@ -32,7 +32,6 @@ export async function getAdminQuotes(filters: AdminQuoteFilters): Promise<
           *,
           product:products(id, name, thumbnail_url, sku)
         ),
-        admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
             .order('created_at', { ascending: false })
@@ -114,7 +113,6 @@ export async function getAdminQuoteById(quoteId: string): Promise<
           *,
           product:products(id, name, thumbnail_url, sku)
         ),
-        admin_responses:quote_admin_responses(*),
         attachments:quote_attachments(*)
       `)
             .eq('id', quoteId)

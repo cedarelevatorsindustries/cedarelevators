@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { AdminRole } from '@/types/b2b/quote'
 
@@ -20,24 +19,28 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 export async function getCurrentAdminUser() {
   'use server'
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return null
-    }
-
     const supabase = createServerSupabaseClient()
     if (!supabase) {
       return null
     }
 
+    // Get authenticated user from Supabase Auth (admin panel uses Supabase Auth)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return null
+    }
+
+    // Find admin user by email (more reliable than id matching)
     const { data: adminUser, error } = await supabase
       .from('admin_users')
       .select('*')
-      .eq('clerk_user_id', userId)
+      .eq('email', user.email)
       .eq('is_active', true)
       .single()
 
     if (error || !adminUser) {
+      console.error('Admin user not found or not active:', { email: user.email, error })
       return null
     }
 
