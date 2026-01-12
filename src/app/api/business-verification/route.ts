@@ -108,28 +108,49 @@ export async function POST(request: NextRequest) {
         }
 
         if (!user) {
+            console.log('[Verification Debug] User not found for clerk_user_id:', userId)
             return NextResponse.json(
                 { success: false, error: 'User not found. Please try logging out and logging back in.' },
                 { status: 404 }
             )
         }
 
-        // Check if user has a business record in the businesses table
-        const { data: business, error: businessError } = await supabase
-            .from('businesses')
-            .select('id, name, verification_status')
-            .eq('owner_clerk_user_id', userId)
+        console.log('[Verification Debug] Found user:', { userId, supabaseUserId: user.id })
+
+        // Check if user has a business via business_members table
+        // The link is: users.id → business_members.user_id → business_members.business_id → businesses
+        const { data: businessMember, error: memberError } = await supabase
+            .from('business_members')
+            .select(`
+                business_id,
+                role,
+                businesses (
+                    id,
+                    name,
+                    verification_status
+                )
+            `)
+            .eq('user_id', user.id)
             .maybeSingle()
 
-        if (businessError) {
-            console.error('Error fetching business:', businessError)
+        console.log('[Verification Debug] Business member lookup:', {
+            userId: user.id,
+            memberError,
+            businessMember
+        })
+
+        if (memberError) {
+            console.error('[Verification Debug] Error fetching business member:', memberError)
             return NextResponse.json(
                 { success: false, error: 'Failed to fetch business' },
                 { status: 500 }
             )
         }
 
+        const business = businessMember?.businesses as any
+
         if (!business) {
+            console.log('[Verification Debug] No business found for user:', user.id)
             return NextResponse.json(
                 { success: false, error: 'Business account required. Please switch to a business account to submit verification.' },
                 { status: 403 }
