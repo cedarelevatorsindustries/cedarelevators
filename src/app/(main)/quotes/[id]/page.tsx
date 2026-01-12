@@ -10,16 +10,17 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }
 
 export default async function QuoteDetailPage({ params }: PageProps) {
+    const { id } = await params;
     const { userId } = await auth();
     if (!userId) {
-        redirect(`/sign-in?redirect_url=/quotes/${params.id}`);
+        redirect(`/sign-in?redirect_url=/quotes/${id}`);
     }
 
-    const { success, quote, error } = await getQuoteById(params.id);
+    const { success, quote, error } = await getQuoteById(id);
 
     if (!success || !quote) {
         if (error !== 'Unauthorized') {

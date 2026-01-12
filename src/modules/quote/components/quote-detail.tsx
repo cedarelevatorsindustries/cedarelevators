@@ -4,7 +4,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import { Quote, UserType } from '../types';
 import { QuoteStatusBadge } from './quote-status-badge';
-import { Package, Download, BadgeCheck, Mail, ArrowRight } from 'lucide-react';
+import { Package, Download, BadgeCheck, Mail, ArrowRight, Check, Clock, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface QuoteDetailProps {
@@ -65,6 +65,101 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                             <BadgeCheck className="w-3 h-3" />
                             Verified
                         </span>
+                    )}
+                </div>
+            </div>
+
+            {/* === STATUS TIMELINE === */}
+            <div className="bg-white rounded-xl border border-neutral-200 p-6">
+                <h3 className="font-semibold text-gray-900 mb-6">Quote Timeline</h3>
+                <div className="space-y-4">
+                    {/* Submitted */}
+                    <div className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                                <Check className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="w-0.5 flex-1 bg-gray-200 mt-2" />
+                        </div>
+                        <div className="pb-8 flex-1">
+                            <p className="font-medium text-gray-900">Quote Submitted</p>
+                            <p className="text-sm text-gray-500">
+                                {format(new Date(quote.created_at), 'MMM d, yyyy h:mm a')}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Pending/Awaiting Review */}
+                    {(quote.status === 'pending' || quote.status === 'submitted') && !quote.approved_at && !quote.rejected_at && (
+                        <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
+                                <Clock className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium text-gray-900">Awaiting Review</p>
+                                <p className="text-sm text-gray-500">
+                                    We'll review your quote and get back to you soon
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Approved */}
+                    {(quote.approved_at || quote.status === 'approved') && (
+                        <div className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="w-4 h-4 text-white" />
+                                </div>
+                                {quote.converted_at && <div className="w-0.5 flex-1 bg-gray-200 mt-2" />}
+                            </div>
+                            <div className={`flex-1 ${quote.converted_at ? 'pb-8' : ''}`}>
+                                <p className="font-medium text-gray-900">Quote Approved</p>
+                                <p className="text-sm text-gray-500">
+                                    {quote.approved_at ? format(new Date(quote.approved_at), 'MMM d, yyyy h:mm a') : 'Approved'}
+                                </p>
+                                {quote.valid_until && (
+                                    <p className="text-xs text-amber-600 mt-1">
+                                        Valid until {format(new Date(quote.valid_until), 'MMM d, yyyy')}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Rejected */}
+                    {(quote.rejected_at || quote.status === 'rejected') && (
+                        <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                                <XCircle className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium text-gray-900">Quote Rejected</p>
+                                <p className="text-sm text-gray-500">
+                                    {quote.rejected_at ? format(new Date(quote.rejected_at), 'MMM d, yyyy h:mm a') : 'Rejected'}
+                                </p>
+                                {quote.rejected_reason && (
+                                    <p className="text-sm text-red-600 mt-1 bg-red-50 p-2 rounded">
+                                        {quote.rejected_reason}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Converted to Order */}
+                    {quote.converted_at && (
+                        <div className="flex gap-4">
+                            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                                <Package className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium text-gray-900">Converted to Order</p>
+                                <p className="text-sm text-gray-500">
+                                    {format(new Date(quote.converted_at), 'MMM d, yyyy h:mm a')}
+                                </p>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
@@ -145,6 +240,26 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                         <p className="text-xs text-blue-600 mt-4">
                             {format(new Date(quote.admin_response.responded_at), 'MMM d, yyyy')}
                         </p>
+                    )}
+
+                    {/* Convert to Order Button - Show after admin approves */}
+                    {canConvert && (
+                        <div className="mt-4 pt-4 border-t border-blue-200">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-semibold text-blue-900">Ready to Place Order</h4>
+                                    <p className="text-sm text-blue-700 mt-1">
+                                        Your quote has been approved. Convert it to an order now.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={`/quotes/${quote.id}/checkout`}
+                                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                                >
+                                    Convert to Order <ArrowRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        </div>
                     )}
                 </div>
             )}

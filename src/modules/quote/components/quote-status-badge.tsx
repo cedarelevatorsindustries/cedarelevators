@@ -10,6 +10,7 @@ export function QuoteStatusBadge({ status, className = '' }: QuoteStatusBadgePro
     const statusStyles: Record<QuoteStatus, string> = {
         draft: 'bg-neutral-100 text-neutral-800 border-neutral-200',
         pending: 'bg-blue-50 text-blue-800 border-blue-200',
+        submitted: 'bg-blue-50 text-blue-800 border-blue-200',
         reviewing: 'bg-orange-50 text-orange-800 border-orange-200',
         approved: 'bg-green-50 text-green-800 border-green-200',
         rejected: 'bg-red-50 text-red-800 border-red-200',
@@ -19,7 +20,8 @@ export function QuoteStatusBadge({ status, className = '' }: QuoteStatusBadgePro
 
     const labels: Record<QuoteStatus, string> = {
         draft: 'Draft',
-        pending: 'Submitted',
+        pending: 'Pending',
+        submitted: 'Submitted',
         reviewing: 'Under Review',
         approved: 'Approved',
         rejected: 'Rejected',

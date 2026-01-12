@@ -1,4 +1,4 @@
-export type QuoteStatus = 'draft' | 'pending' | 'reviewing' | 'approved' | 'rejected' | 'converted' | 'expired';
+export type QuoteStatus = 'draft' | 'pending' | 'submitted' | 'reviewing' | 'approved' | 'rejected' | 'converted' | 'expired';
 export type UserType = 'guest' | 'individual' | 'business';
 
 export interface Quote {
@@ -14,6 +14,11 @@ export interface Quote {
     converted_at?: string;
     admin_response_message?: string;
     admin_internal_notes?: string;
+    // Timeline fields
+    approved_by?: string;
+    approved_at?: string;
+    rejected_at?: string;
+    rejected_reason?: string;
     created_at: string;
     updated_at: string;
 

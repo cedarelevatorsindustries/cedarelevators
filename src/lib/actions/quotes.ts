@@ -121,7 +121,10 @@ export async function getQuotes(filters: { status?: string } = {}) {
 
     let query = supabase
       .from('quotes')
-      .select('*')
+      .select(`
+        *,
+        items:quote_items(*)
+      `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 

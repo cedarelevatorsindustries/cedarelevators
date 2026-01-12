@@ -24,7 +24,7 @@ export default function QuotesOrdersSnapshot() {
         const quotesResult = await getQuotes({ status: 'all' })
 
         if (quotesResult.success && quotesResult.quotes) {
-          const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'reviewing').length
+          const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'reviewing' || q.status === 'submitted').length
           const approved = quotesResult.quotes.filter(q => q.status === 'approved').length
           setQuotesData({ pending, approved })
         }
@@ -64,7 +64,23 @@ export default function QuotesOrdersSnapshot() {
 
   return (
     <section className="bg-white border border-gray-200 rounded-lg p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Quotes & Orders</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-900">Quotes & Orders</h2>
+        <div className="flex gap-2">
+          <LocalizedClientLink
+            href="/quotes"
+            className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
+          >
+            View All Quotes
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/profile/orders"
+            className="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-200"
+          >
+            View All Orders
+          </LocalizedClientLink>
+        </div>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Quotes Section */}

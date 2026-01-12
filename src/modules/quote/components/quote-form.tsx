@@ -15,6 +15,7 @@ import {
 } from '../forms/quote-schema';
 import { QuoteItemsInput } from './quote-items-input';
 import { getQuotePermissions } from '../utils/quote-permissions';
+import { FileUpload } from '@/components/common/file-upload';
 
 interface QuoteFormProps {
     userType?: 'guest' | 'individual' | 'business' | 'verified';
@@ -26,9 +27,17 @@ interface QuoteFormProps {
     } | null;
 }
 
+interface UploadedFile {
+    name: string;
+    url: string;
+    size: number;
+    publicId?: string;
+}
+
 export function QuoteForm({ userType = 'guest', verificationStatus = null, prefilledProduct = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [attachments, setAttachments] = useState<UploadedFile[]>([]);
     const router = useRouter();
 
     const getSchema = () => {
@@ -63,21 +72,41 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                     notes: data.notes,
                     name: data.name,
                     email: data.email,
+                    attachments: attachments.map(file => ({
+                        file_name: file.name,
+                        file_url: file.url,
+                        file_size: file.size
+                    }))
                 }
                 : {
                     items: data.items,
                     account_type: userType === 'verified' ? 'business' as const : userType as 'individual' | 'business',
                     notes: data.notes,
                     bulk_pricing_requested: data.bulk_pricing_requested,
+                    attachments: attachments.map(file => ({
+                        file_name: file.name,
+                        file_url: file.url,
+                        file_size: file.size
+                    }))
                 };
 
             const result = await createQuote(quoteData);
 
             if (result.success) {
-                // Redirect to success page or quotes list
+                // Redirect logic based on user type and device
                 if (userType === 'guest') {
+                    // Guest users go to success page
                     router.push(`/quotes/success?id=${result.id}`);
+                } else if (userType === 'business' || userType === 'verified') {
+                    // Business users: Desktop -> Home (Business Hub), Mobile -> Quotes
+                    const isMobile = window.innerWidth < 768; // md breakpoint
+                    if (isMobile) {
+                        router.push('/quotes');
+                    } else {
+                        router.push('/?tab=business'); // Business Hub tab
+                    }
                 } else {
+                    // Individual users go to quotes page
                     router.push('/quotes');
                 }
             } else {
@@ -283,14 +312,13 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Attachments (Optional)
                                 </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-500 transition-colors cursor-pointer bg-gray-50">
-                                    <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                                    <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        PDF, JPG, PNG up to 10MB • Max {permissions.maxAttachments} files
-                                    </p>
-                                    <input type="file" multiple className="hidden" />
-                                </div>
+                                <FileUpload
+                                    maxFiles={permissions.maxAttachments}
+                                    maxSizeBytes={10 * 1024 * 1024}
+                                    acceptedTypes={['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']}
+                                    onFilesChange={setAttachments}
+                                    value={attachments}
+                                />
                             </div>
                         )}
                     </div>

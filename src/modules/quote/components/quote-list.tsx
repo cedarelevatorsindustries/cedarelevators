@@ -48,9 +48,9 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                     </Link>
                 </div>
 
-                {/* Business Collections (Empty State) */}
+                {/* Business Collections (Empty State - Mobile Only) */}
                 {collections.length > 0 && (
-                    <div className="pt-8 border-t border-gray-100">
+                    <div className="pt-8 border-t border-gray-100 md:hidden">
                         <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
                         <div className="space-y-8">
                             {collections.map((collection) => (
@@ -141,10 +141,10 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
             </div>
 
 
-            {/* Business Collections (With Content) */}
+            {/* Business Collections (With Content - Mobile Only) */}
             {
                 collections.length > 0 && (
-                    <div className="pt-8 border-t border-gray-100">
+                    <div className="pt-8 border-t border-gray-100 md:hidden">
                         <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
                         <div className="space-y-8">
                             {collections.map((collection) => (
