@@ -158,14 +158,15 @@ export async function POST(request: NextRequest) {
         }
 
         // Get user_id from user_profiles for business_verifications table
-        // If no user_profile exists, we'll use clerk_user_id directly
+        // If no user_profile exists, use the Supabase user.id (UUID), NOT the Clerk userId (string)
         const { data: userProfile } = await supabase
             .from('user_profiles')
             .select('id')
             .eq('clerk_user_id', userId)
             .maybeSingle()
 
-        const userIdForVerification = userProfile?.id || userId
+        // IMPORTANT: Must use UUID (user.id), not Clerk string (userId)
+        const userIdForVerification = userProfile?.id || user.id
 
         // Check if verification already exists
         const { data: existing } = await supabase
