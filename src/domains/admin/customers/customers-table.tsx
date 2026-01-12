@@ -145,13 +145,13 @@ export function CustomersTable({ customers, isLoading }: CustomersTableProps) {
 
               {/* Verification Status - Only for Business */}
               <TableCell>
-                {customer.account_type === 'business' && customer.verification_status ? (
+                {customer.account_type === 'business' ? (
                   <Badge
                     variant="outline"
-                    className={getVerificationStatusColor(customer.verification_status)}
+                    className={getVerificationStatusColor(customer.verification_status || 'unverified')}
                     data-testid={`verification-status-${customer.id}`}
                   >
-                    {getVerificationStatusLabel(customer.verification_status)}
+                    {getVerificationStatusLabel(customer.verification_status || 'unverified')}
                   </Badge>
                 ) : (
                   <span className="text-sm text-muted-foreground">N/A</span>

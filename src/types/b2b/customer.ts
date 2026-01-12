@@ -8,7 +8,7 @@
 export type AccountType = 'individual' | 'business'
 
 // Verification Status
-export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected'
+export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'approved' | 'rejected'
 
 // Document Types
 export type DocumentType =
@@ -289,9 +289,10 @@ export function getVerificationStatusLabel(status: VerificationStatus): string {
     unverified: 'Unverified',
     pending: 'Pending Review',
     verified: 'Verified',
+    approved: 'Verified',  // DB uses 'approved' as alias for 'verified'
     rejected: 'Rejected',
   }
-  return labels[status]
+  return labels[status] || 'Unknown'
 }
 
 export function getVerificationStatusColor(status: VerificationStatus): string {
@@ -299,9 +300,10 @@ export function getVerificationStatusColor(status: VerificationStatus): string {
     unverified: 'bg-gray-100 text-gray-700 border-gray-200',
     pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
     verified: 'bg-green-100 text-green-700 border-green-200',
+    approved: 'bg-green-100 text-green-700 border-green-200',  // DB uses 'approved' as alias for 'verified'
     rejected: 'bg-red-100 text-red-700 border-red-200',
   }
-  return colors[status]
+  return colors[status] || 'bg-gray-100 text-gray-700 border-gray-200'
 }
 
 export function getDocumentTypeLabel(type: DocumentType): string {

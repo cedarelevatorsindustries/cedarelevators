@@ -185,6 +185,19 @@ export function PricingDisplay({
                 ))}
               </div>
             </div>
+          ) : verificationStatus === 'pending' ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+              <p className="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-blue-600" />
+                Volume Pricing Pending
+              </p>
+              <p className="text-sm text-blue-800 mb-2">
+                Your business verification is under review. Once approved, you&apos;ll unlock volume discounts.
+              </p>
+              <span className="text-sm font-medium text-blue-700">
+                ⏳ Verification Under Review
+              </span>
+            </div>
           ) : (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4">
               <p className="text-sm font-semibold text-orange-900 mb-2 flex items-center gap-2">
@@ -206,7 +219,11 @@ export function PricingDisplay({
 
         {hasVolumePricing && variant === "card" && (
           <p className="text-xs text-blue-600 mt-2">
-            {isVerified ? "Volume discounts available" : "Verify for volume discounts"}
+            {isVerified
+              ? "Volume discounts available"
+              : verificationStatus === 'pending'
+                ? "⏳ Under review"
+                : "Verify for volume discounts"}
           </p>
         )}
       </div>

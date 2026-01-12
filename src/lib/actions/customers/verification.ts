@@ -116,8 +116,11 @@ export async function approveVerification(
             return { success: false, error: updateError.message }
         }
 
-        // Ensure business_id is set in business_verifications if using that table
-        if (targetTable === 'business_verifications' && !profile.business_id) {
+        // Find the business_id - either from profile or via business_members lookup
+        let businessId = profile.business_id
+
+        // If business_id is not set, find it via business_members table
+        if (targetTable === 'business_verifications' && !businessId) {
             const { data: businessMember } = await supabase
                 .from('business_members')
                 .select('business_id')
@@ -125,20 +128,34 @@ export async function approveVerification(
                 .single()
 
             if (businessMember?.business_id) {
+                businessId = businessMember.business_id
+
+                // Update the verification record with the business_id
                 await supabase
                     .from('business_verifications')
-                    .update({ business_id: businessMember.business_id })
+                    .update({ business_id: businessId })
                     .eq('id', businessProfileId)
             }
         }
 
-        // Update businesses.status to 'verified' when verification is approved
-        // This ensures the frontend verification checks work correctly
-        if (targetTable === 'business_verifications' && profile.business_id) {
-            await supabase
+        // Update businesses table when verification is approved
+        // CRITICAL: Update both verification_status AND status columns
+        if (targetTable === 'business_verifications' && businessId) {
+            console.log('[approveVerification] Updating businesses table for business_id:', businessId)
+            const { error: businessUpdateError } = await supabase
                 .from('businesses')
-                .update({ status: 'verified' })
-                .eq('id', profile.business_id)
+                .update({
+                    status: 'verified',
+                    verification_status: 'verified',
+                    verified_at: updateTime
+                })
+                .eq('id', businessId)
+
+            if (businessUpdateError) {
+                console.error('[approveVerification] Error updating businesses:', businessUpdateError)
+            } else {
+                console.log('[approveVerification] Successfully updated businesses table')
+            }
         }
 
         // Update customer_meta
