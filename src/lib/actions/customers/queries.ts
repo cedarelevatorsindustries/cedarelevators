@@ -252,76 +252,102 @@ export async function getCustomerById(
             return { success: false, error: 'Database connection failed' }
         }
 
-        // Get user profiles by clerk_user_id (there might be multiple - individual and business)
-        const { data: userProfiles, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('*')
+        // Get user data from users table
+        const { data: userData } = await supabase
+            .from('users')
+            .select('id, clerk_user_id, email, name')
             .eq('clerk_user_id', customerClerkId)
+            .maybeSingle()
 
-        if (profileError || !userProfiles || userProfiles.length === 0) {
-            console.error('Error fetching user profile:', profileError)
-            return { success: false, error: 'User profile not found' }
-        }
-
-        // Prefer business profile if it exists, otherwise use the first one
-        const userProfile = userProfiles.find(p => p.account_type === 'business') || userProfiles[0]
-
-        // Get business verification if exists
-        const { data: businessVerifications } = await supabase
-            .from('business_verifications')
-            .select('*')
-            .eq('user_id', userProfile.id)
-
-        const businessVerification = businessVerifications?.[0]
-
-        // Get orders (these use clerk_user_id or user_id - check your schema)
-        const { data: orders } = await supabase
-            .from('orders')
-            .select(`
-        *,
-        order_items:order_items(*)
-      `)
-            .eq('user_id', customerClerkId)
-            .order('created_at', { ascending: false })
-
-        // Get quotes
+        // Get quotes for this customer
         const { data: quotes } = await supabase
             .from('quotes')
             .select('*')
             .eq('user_id', customerClerkId)
             .order('created_at', { ascending: false })
 
+        // Get orders for this customer
+        const { data: orders } = await supabase
+            .from('orders')
+            .select(`*, order_items:order_items(*)`)
+            .eq('clerk_user_id', customerClerkId)
+            .order('created_at', { ascending: false })
+
+        // Get business verification if exists (need to map clerk_user_id to users.id first)
+        let businessVerification = null
+        if (userData?.id) {
+            const { data: verifications } = await supabase
+                .from('business_verifications')
+                .select('*')
+                .eq('user_id', userData.id)
+                .maybeSingle()
+            businessVerification = verifications
+        }
+
+        // If no quotes, orders, or verification found, check if this is just a verification-only customer
+        const hasQuotes = quotes && quotes.length > 0
+        const hasOrders = orders && orders.length > 0
+        const hasVerification = businessVerification !== null
+
+        if (!hasQuotes && !hasOrders && !hasVerification) {
+            return { success: false, error: 'Customer not found' }
+        }
+
+        // Get customer info from quotes or user data
+        const latestQuote = quotes?.[0]
+        const customerName = businessVerification?.legal_business_name ||
+            latestQuote?.guest_name ||
+            userData?.name ||
+            'Unknown'
+        const customerEmail = latestQuote?.guest_email || userData?.email || ''
+        const customerPhone = latestQuote?.guest_phone || ''
+        const accountType = latestQuote?.account_type || (hasVerification ? 'business' : 'individual')
+
         // Calculate stats
         const totalQuotes = quotes?.length || 0
         const totalOrders = orders?.length || 0
-        const totalSpent = orders?.reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0) || 0
+        const totalSpent = orders?.reduce((sum: number, order: any) => sum + (parseFloat(order.total_amount) || 0), 0) || 0
         const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0
         const lastOrderDate = orders && orders.length > 0 ? orders[0].created_at : null
 
+        // Determine customer type
+        let customerType: 'lead' | 'customer' | 'business' | 'individual'
+        if (totalOrders > 0) customerType = 'customer'
+        else if (accountType === 'business') customerType = 'business'
+        else if (totalQuotes > 0) customerType = 'lead'
+        else customerType = 'individual'
+
+        // Calculate last activity
+        const activities: Date[] = []
+        if (latestQuote?.created_at) activities.push(new Date(latestQuote.created_at))
+        if (orders?.[0]?.created_at) activities.push(new Date(orders[0].created_at))
+        if (businessVerification?.created_at) activities.push(new Date(businessVerification.created_at))
+        const lastActivity = activities.length > 0
+            ? new Date(Math.max(...activities.map(d => d.getTime()))).toISOString()
+            : new Date().toISOString()
+
         const customer: Customer = {
-            id: userProfile.id,
+            id: customerClerkId,
             clerk_user_id: customerClerkId,
-            email: userProfile.email || '',
-            first_name: userProfile.first_name,
-            last_name: userProfile.last_name,
-            full_name: userProfile.first_name && userProfile.last_name
-                ? `${userProfile.first_name} ${userProfile.last_name}`
-                : userProfile.first_name || userProfile.last_name || '',
-            account_type: userProfile.account_type || 'individual',
-            customer_type: businessVerification?.status === 'approved' ? 'business' : 'lead',
+            email: customerEmail,
+            first_name: customerName?.split(' ')[0] || '',
+            last_name: customerName?.split(' ').slice(1).join(' ') || '',
+            full_name: customerName,
+            account_type: accountType,
+            customer_type: customerType,
             business_verified: businessVerification?.status === 'approved',
-            verification_status: businessVerification?.status,
-            phone: userProfile.phone,
+            verification_status: businessVerification?.status || null,
+            phone: customerPhone,
             total_quotes: totalQuotes,
             total_orders: totalOrders,
             total_spent: totalSpent,
             average_order_value: averageOrderValue,
             last_order_date: lastOrderDate,
-            last_activity: userProfile.updated_at || userProfile.created_at,
-            registration_date: userProfile.created_at,
+            last_activity: lastActivity,
+            registration_date: latestQuote?.created_at || businessVerification?.created_at || new Date().toISOString(),
             status: 'active',
-            created_at: userProfile.created_at,
-            updated_at: userProfile.updated_at,
+            created_at: latestQuote?.created_at || businessVerification?.created_at || new Date().toISOString(),
+            updated_at: lastActivity,
             orders: orders || [],
             quotes: quotes || [],
             business_profile: businessVerification ? {
