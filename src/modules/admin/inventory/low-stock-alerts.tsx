@@ -108,8 +108,8 @@ export function LowStockAlerts({ items, isLoading }: LowStockAlertsProps) {
               <Badge
                 variant={item.status === "out_of_stock" ? "destructive" : "secondary"}
                 className={`${item.status === "out_of_stock"
-                    ? 'bg-orange-100 text-orange-700 border-orange-200'
-                    : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                  ? 'bg-orange-100 text-orange-700 border-orange-200'
+                  : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                   } font-medium`}
               >
                 {item.current_stock} left
