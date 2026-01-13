@@ -4,9 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server"
 
 export async function getApplications() {
   try {
-    console.log('getApplications: Initializing Supabase client...')
     const supabase = await createServerSupabase()
-    console.log('getApplications: Client initialized. Fetching data...')
 
     const { data, error } = await supabase
       .from('applications')
@@ -15,12 +13,9 @@ export async function getApplications() {
       .order('title')
 
     if (error) {
-      console.error('getApplications: Supabase error raw:', error)
-      console.error('getApplications: Supabase error string:', JSON.stringify(error))
       throw error
     }
 
-    console.log('getApplications: Success, rows:', data?.length)
     return { success: true, data }
   } catch (error: any) {
     console.error('Error fetching applications:', error)
@@ -125,7 +120,6 @@ export async function getElevatorTypes() {
 export async function getCollections() {
   try {
     const supabase = await createServerSupabase()
-    console.log('getCollections: Fetching collections...')
 
     const { data, error } = await supabase
       .from('collections')
@@ -134,11 +128,9 @@ export async function getCollections() {
       .order('title')
 
     if (error) {
-      console.error('getCollections: Error:', error)
       throw error
     }
 
-    console.log('getCollections: Found', data?.length || 0, 'collections')
     return { success: true, data }
   } catch (error: any) {
     console.error('Error fetching collections:', error)

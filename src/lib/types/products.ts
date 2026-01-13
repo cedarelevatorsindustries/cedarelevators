@@ -137,7 +137,7 @@ export interface ProductFormData {
 
 export interface ProductFilters {
     search?: string
-    status?: ProductStatus
+    status?: ProductStatus | 'all'
     category?: string
     is_featured?: boolean
     min_price?: number

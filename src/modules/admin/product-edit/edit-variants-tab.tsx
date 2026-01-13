@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table"
 import { Settings, Edit2, Trash2, Plus, Zap, Image as ImageIcon, X, Activity } from "lucide-react"
 import { VariantEditorDrawer } from "@/components/admin/variant-editor-drawer"
-import { deleteVariant, createVariant, updateVariant } from "@/lib/actions/variants"
+import { deleteVariant, createVariant, updateVariant, toggleVariantStatus } from "@/lib/actions/variants"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Switch } from "@/components/ui/switch"
@@ -348,6 +348,17 @@ export function EditVariantsTab({ productId, variants: initialVariants, productP
         }
     }
 
+    // Dedicated handler for status toggle - uses toggleVariantStatus instead of updateVariant
+    const handleToggleStatus = async (variantId: string, newStatus: 'active' | 'draft') => {
+        const result = await toggleVariantStatus(variantId, productId, newStatus)
+        if (result.success) {
+            toast.success(`Variant ${newStatus === 'active' ? 'activated' : 'deactivated'}`)
+            router.refresh()
+        } else {
+            toast.error(result.error || 'Failed to update status')
+        }
+    }
+
     const handleSaveVariant = async (data: any) => {
         if (variantEditorMode === 'create') {
             const result = await createVariant(productId, data)
@@ -599,7 +610,7 @@ export function EditVariantsTab({ productId, variants: initialVariants, productP
                                                         <TableCell>
                                                             <Switch
                                                                 checked={variant.status === 'active'}
-                                                                onCheckedChange={(checked) => handleSaveVariant({ ...variant, status: checked ? 'active' : 'draft' })}
+                                                                onCheckedChange={(checked) => handleToggleStatus(variant.id, checked ? 'active' : 'draft')}
                                                             />
                                                         </TableCell>
                                                         <TableCell className="text-right">

@@ -1,13 +1,14 @@
 "use server"
 
-import { createServerSupabase } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import type { Product, ProductFilters } from "@/lib/types/products"
 
 /**
  * Fetch products with filters and pagination
+ * Uses admin client to bypass RLS and show all product statuses
  */
 export async function getProducts(filters: ProductFilters = {}, page = 1, limit = 20) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     let query = supabase
         .from('products')
@@ -32,7 +33,7 @@ export async function getProducts(filters: ProductFilters = {}, page = 1, limit 
         }
     }
 
-    if (filters.status) {
+    if (filters.status && filters.status !== 'all') {
         query = query.eq('status', filters.status)
     }
 
@@ -62,9 +63,10 @@ export async function getProducts(filters: ProductFilters = {}, page = 1, limit 
 
 /**
  * Fetch single product by ID
+ * Uses admin client to bypass RLS
  */
 export async function getProduct(id: string) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')
@@ -84,7 +86,7 @@ export async function getProduct(id: string) {
  * Fetch product with variants and classifications
  */
 export async function getProductWithVariants(id: string) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')
@@ -150,7 +152,7 @@ export async function getProductWithVariants(id: string) {
  * Fetch product variants only
  */
 export async function getProductVariants(productId: string) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('product_variants')
@@ -170,7 +172,7 @@ export async function getProductVariants(productId: string) {
  * Fetch product elevator type associations
  */
 export async function getProductElevatorTypes(productId: string) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('product_elevator_types')
@@ -189,7 +191,7 @@ export async function getProductElevatorTypes(productId: string) {
  * Fetch product collection associations
  */
 export async function getProductCollections(productId: string) {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('product_collections')
@@ -211,7 +213,7 @@ export async function getProductCollections(productId: string) {
 export async function getProductsByIds(ids: string[]) {
     if (!ids.length) return []
 
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')
@@ -231,7 +233,7 @@ export async function getProductsByIds(ids: string[]) {
  * Get product statistics
  */
 export async function getProductStats() {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')
@@ -272,7 +274,7 @@ export async function getProductStats() {
 // Backwards compatibility aliases for API routes
 export const fetchProducts = getProducts
 export const getLowStockProducts = async (threshold = 10) => {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')
@@ -289,7 +291,7 @@ export const getLowStockProducts = async (threshold = 10) => {
 }
 
 export const updateProductInventory = async (productId: string, quantity: number) => {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     const { data, error } = await supabase
         .from('products')

@@ -37,13 +37,65 @@ export async function createVariant(productId: string, variantData: any) {
             .single()
 
         const baseSku = product?.sku || 'SKU'
-        const generatedSku = `${baseSku}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-        const finalSku = variantData.sku || generatedSku
+
+        // Generate or use provided SKU
+        let finalSku = variantData.sku
+
+        // If no SKU provided or empty, generate one
+        if (!finalSku || finalSku.trim() === '') {
+            // Generate a unique SKU
+            let attempts = 0
+            let isUnique = false
+
+            while (!isUnique && attempts < 10) {
+                const generatedSku = `${baseSku}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+
+                // Check if SKU already exists
+                const { data: existingSku } = await supabase
+                    .from('product_variants')
+                    .select('id')
+                    .eq('sku', generatedSku)
+                    .maybeSingle()
+
+                if (!existingSku) {
+                    finalSku = generatedSku
+                    isUnique = true
+                }
+                attempts++
+            }
+
+            if (!isUnique) {
+                throw new Error('Failed to generate unique SKU after 10 attempts')
+            }
+        } else {
+            // Validate that provided SKU is unique
+            const { data: existingSku } = await supabase
+                .from('product_variants')
+                .select('id')
+                .eq('sku', finalSku)
+                .maybeSingle()
+
+            if (existingSku) {
+                throw new Error(`SKU "${finalSku}" already exists. Please use a different SKU.`)
+            }
+        }
 
         // Handle Image Upload
         let imageUrl = variantData.image_url || null
         if (variantData.image_file) {
             imageUrl = await uploadVariantImage(variantData.image_file, finalSku)
+        }
+
+        // Build options JSON from variant data
+        const options: any = {}
+        if (variantData.option1_name && variantData.option1_value) {
+            options[variantData.option1_name] = variantData.option1_value
+        }
+        if (variantData.option2_name && variantData.option2_value) {
+            options[variantData.option2_name] = variantData.option2_value
+        }
+        if (variantData.option3_name && variantData.option3_value) {
+            options[variantData.option3_name] = variantData.option3_value
         }
 
         const { data: variant, error } = await supabase
@@ -56,16 +108,9 @@ export async function createVariant(productId: string, variantData: any) {
                 compare_at_price: variantData.compare_at_price ? parseFloat(variantData.compare_at_price) : null,
                 cost_per_item: variantData.cost_per_item ? parseFloat(variantData.cost_per_item) : null,
                 inventory_quantity: parseInt(variantData.inventory_quantity) || 0,
-                barcode: variantData.barcode || null,
-                weight: variantData.weight ? parseFloat(variantData.weight) : null,
                 status: variantData.status || 'active',
                 image_url: imageUrl,
-                option1_name: variantData.option1_name || null,
-                option1_value: variantData.option1_value || null,
-                option2_name: variantData.option2_name || null,
-                option2_value: variantData.option2_value || null,
-                option3_name: variantData.option3_name || null,
-                option3_value: variantData.option3_value || null,
+                options: Object.keys(options).length > 0 ? options : null,
             }])
             .select()
             .single()
@@ -90,12 +135,38 @@ export async function updateVariant(variantId: string, productId: string, varian
     const supabase = await createServerSupabase()
 
     try {
+        // Validate SKU uniqueness if SKU is being changed
+        if (variantData.sku) {
+            const { data: existingSku } = await supabase
+                .from('product_variants')
+                .select('id')
+                .eq('sku', variantData.sku)
+                .neq('id', variantId) // Exclude current variant
+                .maybeSingle()
+
+            if (existingSku) {
+                throw new Error(`SKU "${variantData.sku}" already exists. Please use a different SKU.`)
+            }
+        }
+
         // Handle Image Upload
         let imageUrl = variantData.image_url
         if (variantData.image_file) {
             // If sku is available, use it, otherwise use ID or random
             const skuForImage = variantData.sku || variantId
             imageUrl = await uploadVariantImage(variantData.image_file, skuForImage)
+        }
+
+        // Build options JSON from variant data
+        const options: any = {}
+        if (variantData.option1_name && variantData.option1_value) {
+            options[variantData.option1_name] = variantData.option1_value
+        }
+        if (variantData.option2_name && variantData.option2_value) {
+            options[variantData.option2_name] = variantData.option2_value
+        }
+        if (variantData.option3_name && variantData.option3_value) {
+            options[variantData.option3_name] = variantData.option3_value
         }
 
         const { data: variant, error } = await supabase
@@ -107,16 +178,9 @@ export async function updateVariant(variantId: string, productId: string, varian
                 compare_at_price: variantData.compare_at_price ? parseFloat(variantData.compare_at_price) : null,
                 cost_per_item: variantData.cost_per_item ? parseFloat(variantData.cost_per_item) : null,
                 inventory_quantity: parseInt(variantData.inventory_quantity) || 0,
-                barcode: variantData.barcode || null,
-                weight: variantData.weight ? parseFloat(variantData.weight) : null,
                 status: variantData.status || 'active',
                 image_url: imageUrl,
-                option1_name: variantData.option1_name || null,
-                option1_value: variantData.option1_value || null,
-                option2_name: variantData.option2_name || null,
-                option2_value: variantData.option2_value || null,
-                option3_name: variantData.option3_name || null,
-                option3_value: variantData.option3_value || null,
+                options: Object.keys(options).length > 0 ? options : null,
                 updated_at: new Date().toISOString()
             })
             .eq('id', variantId)
@@ -158,6 +222,37 @@ export async function deleteVariant(variantId: string, productId: string) {
     } catch (error: any) {
         console.error('Error in deleteVariant:', error)
         return { success: false, error: error.message || 'Failed to delete variant' }
+    }
+}
+
+/**
+ * Toggle variant status (active/draft)
+ * Simple status update without SKU validation
+ */
+export async function toggleVariantStatus(variantId: string, productId: string, newStatus: 'active' | 'draft') {
+    const supabase = await createServerSupabase()
+
+    try {
+        const { data: variant, error } = await supabase
+            .from('product_variants')
+            .update({
+                status: newStatus,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', variantId)
+            .select()
+            .single()
+
+        if (error) {
+            console.error('Error toggling variant status:', error)
+            throw new Error('Failed to toggle variant status')
+        }
+
+        revalidatePath(`/admin/products/${productId}/edit`)
+        return { success: true, data: variant }
+    } catch (error: any) {
+        console.error('Error in toggleVariantStatus:', error)
+        return { success: false, error: error.message || 'Failed to toggle variant status' }
     }
 }
 

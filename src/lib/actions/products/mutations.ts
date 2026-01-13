@@ -1,6 +1,6 @@
 "use server"
 
-import { createServerSupabase } from "@/lib/supabase/server"
+import { createServerSupabase, createAdminClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { Product, ProductFormData } from "@/lib/types/products"
 import { cloudinary } from "@/lib/cloudinary/config"
@@ -281,9 +281,10 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
 
 /**
  * Update existing product
+ * Uses admin client to bypass RLS policies
  */
 export async function updateProduct(productId: string, productData: any): Promise<ActionResult<Product>> {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     try {
         const {
@@ -337,7 +338,7 @@ export async function updateProduct(productId: string, productData: any): Promis
         )
 
         // Update main product
-        const { data: updatedProduct, error: productError } = await supabase
+        const { data: updatedProducts, error: productError } = await supabase
             .from('products')
             .update({
                 ...productToUpdate,
@@ -353,12 +354,17 @@ export async function updateProduct(productId: string, productData: any): Promis
             })
             .eq('id', productId)
             .select()
-            .single()
 
         if (productError) {
             logger.error('Error updating product', productError)
             throw productError
         }
+
+        if (!updatedProducts || updatedProducts.length === 0) {
+            throw new Error('Product not found or update failed')
+        }
+
+        const updatedProduct = updatedProducts[0]
 
         // Update elevator types junction table
         if (elevator_type_ids !== undefined) {

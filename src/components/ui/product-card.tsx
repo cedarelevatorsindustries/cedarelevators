@@ -117,6 +117,10 @@ export default function ProductCard({
 
   const badgeConfig = getBadgeConfig()
 
+  // Check if product is out of stock
+  const totalInventory = product.variants?.reduce((sum, v) => sum + (v.inventory_quantity || 0), 0) || 0
+  const isOutOfStock = totalInventory === 0
+
   // Mobile Card Variant - Compact with cart icon left of quote button
   if (variant === "mobile") {
     return (
@@ -136,9 +140,18 @@ export default function ProductCard({
               </div>
             )}
 
+            {/* Out of Stock Banner */}
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+                <div className="bg-red-600 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-lg">
+                  OUT OF STOCK
+                </div>
+              </div>
+            )}
+
             {/* Badge - Top Left */}
             {badgeConfig && (
-              <div className={`absolute top-1.5 left-1.5 ${badgeConfig.bg} text-white px-1.5 py-0.5 text-[10px] rounded font-medium shadow-md`}>
+              <div className={`absolute top-1.5 left-1.5 ${badgeConfig.bg} text-white px-1.5 py-0.5 text-[10px] rounded font-medium shadow-md z-10`}>
                 {badgeConfig.text}
               </div>
             )}
@@ -259,6 +272,15 @@ export default function ProductCard({
             </div>
           )}
 
+          {/* Out of Stock Banner */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+              <div className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+                OUT OF STOCK
+              </div>
+            </div>
+          )}
+
           {/* Badge - Inside Image Overlay (Top Left) */}
           {/* Badge - Inside Image Overlay (Top Left) */}
           {badge && (
@@ -351,9 +373,18 @@ export default function ProductCard({
             </div>
           )}
 
+          {/* Out of Stock Banner */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+              <div className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-base shadow-lg">
+                OUT OF STOCK
+              </div>
+            </div>
+          )}
+
           {/* Badge - Top Left */}
           {badgeConfig && (
-            <div className={`absolute top-2 left-2 ${badgeConfig.bg} text-white px-2 py-1 text-xs rounded-md font-medium shadow-md`}>
+            <div className={`absolute top-2 left-2 ${badgeConfig.bg} text-white px-2 py-1 text-xs rounded-md font-medium shadow-md z-10`}>
               {badgeConfig.text}
             </div>
           )}
