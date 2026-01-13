@@ -181,7 +181,7 @@ export default function InventoryPage() {
           </div>
 
           {/* Low Stock Alerts */}
-          <LowStockAlerts items={lowStockItems} isLoading={isLoadingLowStock} />
+          <LowStockAlerts items={lowStockItems.filter(item => item.sku !== null) as any} isLoading={isLoadingLowStock} />
 
           {/* Filters */}
           <InventoryFiltersComponent
@@ -191,7 +191,7 @@ export default function InventoryPage() {
 
           {/* Inventory Table */}
           <InventoryTable
-            inventory={inventory}
+            inventory={inventory as any}
             isLoading={isLoading}
             onRefresh={refetchInventory}
           />

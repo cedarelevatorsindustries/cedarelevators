@@ -1,6 +1,7 @@
 "use client"
 
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
+import { useState, useEffect } from "react"
+import { Product, ProductCategory } from "@/lib/types/domain"
 import {
   HeroLiteMobile
 } from "../../components/mobile"
@@ -33,6 +34,41 @@ export default function MobileHomepageLoggedIn({
   collections: dbCollections = [],
   applications = []
 }: MobileHomepageLoggedInProps) {
+  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([])
+  const [recentProducts, setRecentProducts] = useState<Product[]>([])
+  const [isClient, setIsClient] = useState(false)
+
+  // Load wishlist and recently viewed from client-side
+  useEffect(() => {
+    setIsClient(true)
+
+    // Load wishlist from localStorage
+    const wishlistStr = localStorage.getItem('wishlist')
+    if (wishlistStr) {
+      try {
+        const wishlistIds = JSON.parse(wishlistStr) as string[]
+        // TODO: Fetch actual product data for wishlist IDs
+        // For now, just use empty array until we implement proper fetching
+        setWishlistProducts([])
+      } catch {
+        setWishlistProducts([])
+      }
+    }
+
+    // Load recently viewed from localStorage  
+    const recentStr = localStorage.getItem('recentlyViewed')
+    if (recentStr) {
+      try {
+        const recentIds = JSON.parse(recentStr) as string[]
+        // TODO: Fetch actual product data for recent IDs
+        // For now, just use empty array until we implement proper fetching
+        setRecentProducts([])
+      } catch {
+        setRecentProducts([])
+      }
+    }
+  }, [])
+
   // Use the same logic as desktop ProductsTab to transform collections
   const collections = dbCollections.map(dbCollection => {
     // Handle favorites collection (if passed in future)
@@ -71,14 +107,15 @@ export default function MobileHomepageLoggedIn({
         const product = pc.product || pc
         return {
           id: product.id,
-          title: product.name,
-          name: product.name,
+          title: product.name || product.title,
+          name: product.name || product.title,
           slug: product.slug,
           handle: product.slug,
           thumbnail: product.thumbnail_url || product.thumbnail,
           price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
-          variants: [],
-          metadata: {}
+          compare_at_price: product.compare_at_price,
+          // Include variants from product_variants for stock display
+          variants: product.product_variants || []
         }
       }),
       isActive: dbCollection.is_active,
@@ -87,6 +124,49 @@ export default function MobileHomepageLoggedIn({
       metadata: {}
     }
   })
+
+  // Create wishlist collection (only if has data)
+  const wishlistCollection = isClient && wishlistProducts.length > 0 ? {
+    id: 'your-favorites',
+    title: 'Your Favourites',
+    description: 'Products you\'ve saved for later',
+    slug: 'your-favorites',
+    displayLocation: [],
+    layout: 'grid-4' as const,
+    icon: 'heart' as const,
+    viewAllLink: '/wishlist',
+    products: wishlistProducts.slice(0, 4),
+    isActive: true,
+    sortOrder: -1, // Show first
+    showViewAll: true,
+    metadata: {},
+    emptyStateMessage: ''
+  } : null
+
+  // Create recently viewed collection (only if has data)
+  const recentlyViewedCollection = isClient && recentProducts.length > 0 ? {
+    id: 'recently-viewed',
+    title: 'Recently Viewed',
+    description: 'Pick up where you left off',
+    slug: 'recently-viewed',
+    displayLocation: [],
+    layout: 'grid-4' as const,
+    icon: 'none' as const,
+    viewAllLink: '', // No view all for recently viewed
+    products: recentProducts.slice(0, 4),
+    isActive: true,
+    sortOrder: 999, // Show last
+    showViewAll: false,
+    metadata: {},
+    emptyStateMessage: ''
+  } : null
+
+  // Combine all collections and sort
+  const allCollections = [
+    ...(wishlistCollection ? [wishlistCollection] : []),
+    ...collections,
+    ...(recentlyViewedCollection ? [recentlyViewedCollection] : [])
+  ].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
 
   return (
     <div className="w-full pt-14">
@@ -98,10 +178,10 @@ export default function MobileHomepageLoggedIn({
         <ApplicationsSection applications={applications} />
       )}
 
-      {/* Dynamic Collections from Database (replacing hardcoded sections) */}
+      {/* Dynamic Collections from Database + Wishlist + Recently Viewed */}
       <div className="space-y-2">
-        {collections.length > 0 ? (
-          collections.map((collection) => (
+        {allCollections.length > 0 ? (
+          allCollections.map((collection) => (
             <DynamicCollectionSection
               key={collection.id}
               collection={collection}

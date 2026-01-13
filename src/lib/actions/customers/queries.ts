@@ -7,6 +7,7 @@ import {
     CustomerFilters,
     VerificationDocument,
     BusinessProfile,
+    AccountType,
 } from '@/types/b2b/customer'
 
 // =====================================================
@@ -275,7 +276,7 @@ export async function getCustomerById(
 
         // Get business verification if exists (need to map clerk_user_id to users.id first)
         let businessVerification = null
-        let accountType = 'individual' // Default
+        let accountType: AccountType = 'individual' // Default
 
         if (userData?.id) {
             // Get active profile to determine current account type
@@ -287,7 +288,7 @@ export async function getCustomerById(
                 .maybeSingle()
 
             // Set account type from active profile
-            accountType = (activeProfile?.profile_type || 'individual') as 'individual' | 'business'
+            accountType = (activeProfile?.profile_type || 'individual') as AccountType
 
             const { data: verifications } = await supabase
                 .from('business_verifications')

@@ -184,6 +184,21 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   // Fetch elevator types for mobile categories tab
   const elevatorTypes = await listElevatorTypes()
 
+  // Fetch category-specific collections for mobile categories tab
+  let categoryCollections: any[] = []
+  if (isAuthenticated) {
+    try {
+      const { getCollections } = await import('@/lib/actions/collections')
+      // Get category-specific collections only  
+      const result = await getCollections({ collection_type: 'category_specific', is_active: true })
+      // Ensure it's always an array
+      categoryCollections = (result.success && Array.isArray(result.collections)) ? result.collections : []
+    } catch (error) {
+      console.error('Error loading category collections:', error)
+      categoryCollections = []
+    }
+  }
+
   return (
     <>
       {/* Desktop View */}
@@ -208,6 +223,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           categories={categories}
           applications={applications}
           elevatorTypes={elevatorTypes}
+          collections={categoryCollections}
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
           activeCollection={activeCollection}

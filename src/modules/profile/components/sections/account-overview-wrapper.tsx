@@ -82,7 +82,7 @@ export default function AccountOverviewWrapper() {
         <BusinessInfoDisplay
           companyName={user.business?.name || user.name || ''}
           email={user.email || ''}
-          phone={user.phone}
+          phone={user.phone ?? undefined}
           taxId=""
           industry=""
           companySize=""

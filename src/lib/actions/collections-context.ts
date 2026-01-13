@@ -47,8 +47,13 @@ export async function getHomepageCollections(limit = 5) {
                             slug,
                             thumbnail,
                             price,
+                            compare_at_price,
                             status,
-                            handle
+                            handle,
+                            product_variants (
+                                id,
+                                inventory_quantity
+                            )
                         )
                     `)
                     .eq('collection_id', collection.id)
@@ -67,7 +72,9 @@ export async function getHomepageCollections(limit = 5) {
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
-                        } : undefined
+                        } : undefined,
+                        compare_at_price: product.compare_at_price,
+                        variants: product.product_variants || []
                     }
                 })
 
@@ -122,8 +129,13 @@ export async function getCategoryCollections(categoryId: string, limit = 5) {
                             slug,
                             thumbnail,
                             price,
+                            compare_at_price,
                             status,
-                            handle
+                            handle,
+                            product_variants (
+                                id,
+                                inventory_quantity
+                            )
                         )
                     `)
                     .eq('collection_id', collection.id)
@@ -142,7 +154,9 @@ export async function getCategoryCollections(categoryId: string, limit = 5) {
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
-                        } : undefined
+                        } : undefined,
+                        compare_at_price: product.compare_at_price,
+                        variants: product.product_variants || []
                     }
                 })
 
@@ -196,8 +210,13 @@ export async function getBusinessCollections(limit = 5) {
                             slug,
                             thumbnail,
                             price,
+                            compare_at_price,
                             status,
-                            handle
+                            handle,
+                            product_variants (
+                                id,
+                                inventory_quantity
+                            )
                         )
                     `)
                     .eq('collection_id', collection.id)
@@ -216,7 +235,9 @@ export async function getBusinessCollections(limit = 5) {
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
-                        } : undefined
+                        } : undefined,
+                        compare_at_price: product.compare_at_price,
+                        variants: product.product_variants || []
                     }
                 })
 
@@ -270,9 +291,14 @@ export async function getCatalogCollections() {
                             slug,
                             thumbnail,
                             price,
+                            compare_at_price,
                             status,
                             handle,
-                            description
+                            description,
+                            product_variants (
+                                id,
+                                inventory_quantity
+                            )
                         )
                     `)
                     .eq('collection_id', collection.id)
@@ -292,7 +318,9 @@ export async function getCatalogCollections() {
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
-                        } : undefined
+                        } : undefined,
+                        compare_at_price: product.compare_at_price,
+                        variants: product.product_variants || []
                     }
                 })
 
@@ -343,10 +371,15 @@ export async function getCollectionProducts(collectionSlug: string, limit?: numb
                     slug,
                     thumbnail,
                     price,
+                    compare_at_price,
                     status,
                     handle,
                     description,
-                    metadata
+                    metadata,
+                    product_variants (
+                        id,
+                        inventory_quantity
+                    )
                 )
             `)
             .eq('collection_id', collection.id)
@@ -375,7 +408,9 @@ export async function getCollectionProducts(collectionSlug: string, limit?: numb
                 price: product.price ? {
                     amount: product.price,
                     currency_code: 'INR'
-                } : undefined
+                } : undefined,
+                compare_at_price: product.compare_at_price,
+                variants: product.product_variants || []
             }
         })
 

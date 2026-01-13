@@ -249,9 +249,11 @@ export interface LowStockItem {
     id: string
     variant_id: string
     product_name: string
+    name: string  // Alias for product_name
     variant_name: string | null
     sku: string | null
     current_stock: number
+    currentStock: number  // Alias for current_stock
     threshold: number
     thumbnail: string | null
 }
@@ -432,9 +434,11 @@ export async function getLowStockAlerts(): Promise<LowStockItem[]> {
                 id: item.id,
                 variant_id: item.variant_id,
                 product_name: product?.name || 'Unknown Product',
+                name: product?.name || 'Unknown Product',  // Alias for product_name
                 variant_name: variant?.name,
                 sku: variant?.sku,
                 current_stock: item.quantity,
+                currentStock: item.quantity,  // Alias for current_stock
                 threshold: item.low_stock_threshold || 10,
                 thumbnail: variant?.image_url || product?.thumbnail_url
             }

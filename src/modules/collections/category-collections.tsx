@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { getCategoryCollections } from '@/lib/actions/collections-context'
 import Link from 'next/link'
-import { ChevronRight, Package } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { ChevronRight } from 'lucide-react'
+import ProductCard from '@/components/ui/product-card'
 
 interface Product {
     id: string
@@ -13,10 +13,13 @@ interface Product {
     slug: string
     handle: string
     thumbnail?: string
+    description?: string
     price?: {
         amount: number
         currency_code: string
     }
+    compare_at_price?: number
+    variants?: any[]
 }
 
 interface Collection {
@@ -101,37 +104,10 @@ export function CategoryCollections({ categoryId }: CategoryCollectionsProps) {
                     {/* Products Grid (5 products) */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {collection.products.map((product) => (
-                            <Link
+                            <ProductCard
                                 key={product.id}
-                                href={`/products/${product.handle || product.slug}`}
-                                className="group"
-                            >
-                                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                                        {product.thumbnail ? (
-                                            <img
-                                                src={product.thumbnail}
-                                                alt={product.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Package className="h-12 w-12 text-gray-300" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-orange-600 transition-colors">
-                                            {product.title}
-                                        </h3>
-                                        {product.price && (
-                                            <p className="text-orange-600 font-semibold mt-2">
-                                                ₹{product.price.amount.toLocaleString()}
-                                            </p>
-                                        )}
-                                    </div>
-                                </Card>
-                            </Link>
+                                product={product as any}
+                            />
                         ))}
                     </div>
                 </div>

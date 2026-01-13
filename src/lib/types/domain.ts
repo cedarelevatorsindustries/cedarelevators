@@ -9,6 +9,7 @@ export interface ProductVariant {
     title: string
     sku: string
     price: number
+    compare_at_price?: number  // MRP or original price for discounts
     inventory_quantity: number
     options: Record<string, string>
     variant_title?: string

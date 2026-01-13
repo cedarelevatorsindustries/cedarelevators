@@ -42,7 +42,7 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                     </p>
                     <Link
                         href="/quotes/new"
-                        className="bg-cedar-orange text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-none"
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors"
                     >
                         Request a New Quote
                     </Link>
@@ -51,7 +51,6 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                 {/* Business Collections (Empty State - Mobile Only) */}
                 {collections.length > 0 && (
                     <div className="pt-8 border-t border-gray-100 md:hidden">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
                         <div className="space-y-8">
                             {collections.map((collection) => (
                                 <DynamicCollectionSection
@@ -61,7 +60,9 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                                         isActive: true, // Force active for display
                                         products: collection.products.map((p: any) => ({
                                             ...p,
-                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
+                                            compare_at_price: p.compare_at_price,
+                                            variants: p.product_variants || p.variants || []
                                         }))
                                     }}
                                     variant="mobile" /* Optimizing for mobile view as requested */
@@ -145,7 +146,6 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
             {
                 collections.length > 0 && (
                     <div className="pt-8 border-t border-gray-100 md:hidden">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Recommended for Business</h2>
                         <div className="space-y-8">
                             {collections.map((collection) => (
                                 <DynamicCollectionSection
@@ -155,7 +155,9 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                                         isActive: true, // Force active for display
                                         products: collection.products.map((p: any) => ({
                                             ...p,
-                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
+                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
+                                            compare_at_price: p.compare_at_price,
+                                            variants: p.product_variants || p.variants || []
                                         }))
                                     }}
                                     variant="mobile" /* Optimizing for mobile view as requested */

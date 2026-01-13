@@ -30,24 +30,32 @@ export default function CategoriesTab({
     icon: 'trending',
     viewAllLink: `/catalog?collection=${dbCollection.slug}`,
     products: (dbCollection.products || []).map((pc: any) => {
-      const product = pc.product
+      // Handle both formats: pc.product (nested) or pc (direct)
+      const product = pc.product || pc
       return {
         id: product.id,
-        title: product.name,
-        name: product.name,
+        title: product.name || product.title,
+        name: product.name || product.title,
         slug: product.slug,
         handle: product.slug,
-        thumbnail: product.thumbnail,
+        thumbnail: product.thumbnail_url || product.thumbnail,
         price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
-        variants: [],
-        metadata: { variant: 'special' }
+        compare_at_price: product.compare_at_price,
+        // Include variants from product_variants for stock display
+        variants: product.product_variants || []
       }
     }),
     isActive: dbCollection.is_active,
     sortOrder: dbCollection.sort_order,
-    showViewAll: true,
-    metadata: { variant: 'special' }
+    showViewAll: true
   }))
+
+  // Debug logging
+  console.log('[CategoriesTab] Collections data:', collections)
+  console.log('[CategoriesTab] Transformed collections:', transformedCollections)
+  if (transformedCollections.length > 0 && transformedCollections[0].products.length > 0) {
+    console.log('[CategoriesTab] Sample product:', transformedCollections[0].products[0])
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-12">

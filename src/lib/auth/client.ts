@@ -30,6 +30,7 @@ export interface EnhancedUser {
     email: string | null
     name: string | null
     imageUrl: string | null
+    phone?: string | null
     activeProfile: UserProfile | null
     business: Business | null
     userType: UserType

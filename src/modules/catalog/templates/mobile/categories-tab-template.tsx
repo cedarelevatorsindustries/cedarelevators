@@ -96,23 +96,102 @@ export default function CategoriesTabTemplate({ categories, products, elevatorTy
         </div>
       </div>
 
-      {/* 2. Collections from database - Next to categories */}
-      {collections.map((collection) => (
-        <DynamicCollectionSection
-          key={collection.id}
-          collection={{
-            ...collection,
-            products: collection.products.map((p: any) => ({
-              ...p,
-              price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined
-            }))
-          }}
-        />
-      ))}
+      {/* 2. Category-Specific Collections - From database */}
+      {collections.map((dbCollection) => {
+        // Transform to match desktop pattern
+        const transformedCollection = {
+          id: dbCollection.id,
+          title: dbCollection.title,
+          description: dbCollection.description,
+          slug: dbCollection.slug,
+          displayLocation: [],
+          layout: 'grid-4',
+          icon: 'trending',
+          viewAllLink: `/catalog?collection=${dbCollection.slug}`,
+          products: (dbCollection.products || []).map((pc: any) => {
+            // Handle both formats: pc.product (nested) or pc (direct)
+            const product = pc.product || pc
+            return {
+              id: product.id,
+              title: product.name || product.title,
+              name: product.name || product.title,
+              slug: product.slug,
+              handle: product.slug,
+              thumbnail: product.thumbnail_url || product.thumbnail,
+              price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
+              compare_at_price: product.compare_at_price,
+              // Include variants from product_variants for stock display
+              variants: product.product_variants || []
+            }
+          }),
+          isActive: dbCollection.is_active,
+          sortOrder: dbCollection.sort_order,
+          showViewAll: true
+        }
 
-      {/* 3. Shop by Elevator Type */}
+        return (
+          <DynamicCollectionSection
+            key={dbCollection.id}
+            collection={transformedCollection}
+            variant="mobile"
+          />
+        )
+      })}
+
+      {/* 3. Shop by Elevator Type - Desktop-style cards */}
       {elevatorTypes.length > 0 && (
-        <ElevatorTypesMobile elevatorTypes={elevatorTypes} />
+        <div className="bg-white py-6 px-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">Shop by Elevator Type</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {elevatorTypes.map((type) => (
+              <div key={type.id} className="flex flex-col">
+                {/* Card with Image */}
+                <a
+                  href={`/catalog?elevator_type=${type.slug}`}
+                  className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 aspect-square mb-3"
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0 bg-gray-200">
+                    {type.thumbnail_image ? (
+                      <img
+                        src={type.thumbnail_image}
+                        alt={type.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100" />
+                    )}
+
+                    {/* Dark Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/70 transition-all duration-300" />
+                  </div>
+                </a>
+
+                {/* Title and Description Below Image */}
+                <div className="mb-2">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">
+                    {type.title}
+                  </h3>
+                  {type.description && (
+                    <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3">
+                      {type.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Blue Shop Now Button */}
+                <a
+                  href={`/catalog?elevator_type=${type.slug}`}
+                  className="w-full text-center text-white font-semibold text-sm bg-blue-600 hover:bg-blue-700 rounded-lg py-2.5 transition-colors"
+                >
+                  Shop Now
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )

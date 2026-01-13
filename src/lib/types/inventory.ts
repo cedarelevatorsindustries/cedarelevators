@@ -12,6 +12,10 @@ export interface InventoryItem {
     reserved_quantity: number
     created_at: string
     updated_at: string
+    // Additional fields for admin view
+    price?: number | null
+    thumbnail?: string | null
+    product_id?: string
 }
 
 export interface InventoryAdjustment {
