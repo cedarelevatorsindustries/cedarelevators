@@ -1,4 +1,4 @@
-export type ProfileSection = 
+export type ProfileSection =
   | 'overview'
   | 'personal-info'
   | 'addresses'
@@ -48,6 +48,7 @@ export interface ProfileNavigationItem {
   label: string
   icon: string
   badge?: number | 'status'
+  activeMatch?: string
 }
 
 export interface ProfileNavigationGroup {

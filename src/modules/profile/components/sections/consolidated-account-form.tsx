@@ -10,7 +10,6 @@ interface ConsolidatedAccountFormProps {
     onUpdatePersonal: (updates: any) => Promise<void>
     onUpdateCompany: (updates: any) => Promise<void>
     onUploadAvatar: (file: File) => Promise<string>
-    onUploadLogo: (file: File) => Promise<string>
 }
 
 export default function ConsolidatedAccountForm({
@@ -18,8 +17,7 @@ export default function ConsolidatedAccountForm({
     companyProfile,
     onUpdatePersonal,
     onUpdateCompany,
-    onUploadAvatar,
-    onUploadLogo
+    onUploadAvatar
 }: ConsolidatedAccountFormProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [personalData, setPersonalData] = useState({
@@ -33,9 +31,7 @@ export default function ConsolidatedAccountForm({
         company_name: companyProfile?.company_name || '',
         tax_id: companyProfile?.tax_id || '',
         industry: companyProfile?.industry || '',
-        company_size: companyProfile?.company_size || '',
-        contact_email: companyProfile?.contact_email || '',
-        contact_phone: companyProfile?.contact_phone || ''
+        company_size: companyProfile?.company_size || ''
     })
 
     const handleSaveChanges = async () => {
@@ -60,9 +56,9 @@ export default function ConsolidatedAccountForm({
                 <div className="p-6 border-b border-gray-200">
                     <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                         <User className="w-5 h-5 text-blue-600" />
-                        Personal Information
+                        Profile
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">Update your photo and personal details here</p>
+                    <p className="text-sm text-gray-600 mt-1">Update your profile photo and personal details</p>
                 </div>
 
                 <div className="p-6 space-y-6">
@@ -91,6 +87,8 @@ export default function ConsolidatedAccountForm({
                             </div>
                         </div>
                     </div>
+
+
 
                     {/* Basic Information */}
                     <div>
@@ -153,35 +151,11 @@ export default function ConsolidatedAccountForm({
                             <Building2 className="w-5 h-5 text-orange-600" />
                             Company Information
                         </h2>
-                        <p className="text-sm text-gray-600 mt-1">Manage your company's legal details, addresses, and contact information.</p>
+                        <p className="text-sm text-gray-600 mt-1">Manage your company's legal details and business information.</p>
                     </div>
 
                     <div className="p-6 space-y-6">
-                        {/* Company Logo */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Company Logo</label>
-                            <div className="flex items-center gap-4">
-                                <div className="relative w-20 h-20 rounded-lg bg-gray-100 overflow-hidden border-2 border-gray-200">
-                                    {companyProfile?.company_logo ? (
-                                        <Image src={companyProfile.company_logo} alt="Company Logo" fill className="object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            <Building2 className="w-8 h-8" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        <Upload className="w-4 h-4" />
-                                        Upload Logo
-                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                                            if (e.target.files?.[0]) onUploadLogo(e.target.files[0])
-                                        }} />
-                                    </label>
-                                    <p className="text-xs text-gray-500 mt-1">Upload a JPG, PNG, or SVG. Max size of 5MB</p>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {/* Company Details */}
                         <div>
@@ -234,32 +208,6 @@ export default function ConsolidatedAccountForm({
                                         <option value="201-500">201-500 employees</option>
                                         <option value="500+">500+ employees</option>
                                     </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Contact Information */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4">Contact Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Primary Contact Email</label>
-                                    <input
-                                        type="email"
-                                        value={companyData.contact_email}
-                                        onChange={(e) => setCompanyData({ ...companyData, contact_email: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Primary Contact Phone</label>
-                                    <input
-                                        type="tel"
-                                        value={companyData.contact_phone}
-                                        onChange={(e) => setCompanyData({ ...companyData, contact_phone: e.target.value })}
-                                        placeholder="+91 XXXXX XXXXX"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
                                 </div>
                             </div>
                         </div>

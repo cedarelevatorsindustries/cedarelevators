@@ -63,7 +63,7 @@ export function getMobileProfileMenu(
       {
         title: 'Account',
         items: [
-          { label: 'Profile Overview', icon: 'User', href: '/profile' },
+          { label: 'Profile Overview', icon: 'User', href: '/profile?view=overview' },
           { label: 'Personal Info', icon: 'User', href: '/profile/personal-info' },
           { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
         ]
@@ -92,7 +92,7 @@ export function getMobileProfileMenu(
         {
           title: 'Business',
           items: [
-            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
+            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile?view=overview' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
             { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
           ]
@@ -117,7 +117,7 @@ export function getMobileProfileMenu(
         {
           title: 'Business',
           items: [
-            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
+            { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile?view=overview' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
             { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals' },
           ]

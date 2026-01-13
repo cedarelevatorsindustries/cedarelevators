@@ -58,17 +58,15 @@ export default function PersonalInfoSectionWrapper() {
     <ConsolidatedAccountForm
       user={user}
       companyProfile={companyProfile}
-      onUpdatePersonal={updateProfile}
+      onUpdatePersonal={async (updates) => {
+        await updateProfile(updates)
+      }}
       onUpdateCompany={async (updates) => {
         console.log('Update company info:', updates)
         // TODO: Implement company updates
       }}
       onUploadAvatar={uploadAvatar}
-      onUploadLogo={async (file) => {
-        console.log('Upload logo:', file)
-        // TODO: Implement logo upload
-        return ''
-      }}
+
     />
   )
 }

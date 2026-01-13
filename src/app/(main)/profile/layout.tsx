@@ -124,10 +124,13 @@ export default function ProfileLayout({
 
   const accountType: AccountType = (user.unsafeMetadata?.accountType as AccountType) || 'individual'
 
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
+  const isOverview = searchParams.get('view') === 'overview'
+
   // Show mobile logged-in view
   if (isMobile) {
-    // If on main profile page, show menu
-    if (pathname === '/profile') {
+    // If on main profile page without overview param, show menu
+    if (pathname === '/profile' && !isOverview) {
       return (
         <div className="min-h-screen bg-white pt-16 lg:pt-0">
           <ProfileMobileNew />
@@ -135,11 +138,19 @@ export default function ProfileLayout({
       )
     }
 
-    // If on sub-route, show page content
+    // If on sub-route OR main profile with overview param, show page content
     return (
       <div className="min-h-screen bg-white pt-16 lg:pt-0">
         {/* Page Content */}
         <div className="p-4">
+          {pathname === '/profile' && isOverview && (
+            <div className="mb-4">
+              <Link href="/profile" className="flex items-center text-sm text-gray-500 hover:text-gray-900">
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back to Menu
+              </Link>
+            </div>
+          )}
           {children}
         </div>
       </div>

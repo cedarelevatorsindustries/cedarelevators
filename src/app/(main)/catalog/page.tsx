@@ -12,16 +12,17 @@ import { auth } from "@clerk/nextjs/server"
 export async function generateMetadata({ searchParams }: CatalogPageProps): Promise<Metadata> {
   const params = await searchParams
 
-  // Search results page
-  if (params.search) {
+  // Search results page - support both 'q' and 'search' params
+  const searchQuery = params.q || params.search
+  if (searchQuery) {
     return {
-      title: `Search Results for "${params.search}" | Cedar Elevators`,
-      description: `Find ${params.search} and related elevator components. ISO certified quality with pan-India delivery. Browse our complete catalog of premium parts.`,
+      title: `Search Results for "${searchQuery}" | Cedar Elevators`,
+      description: `Find ${searchQuery} and related elevator components. ISO certified quality with pan-India delivery. Browse our complete catalog of premium parts.`,
       openGraph: {
-        title: `Search: ${params.search} | Cedar Elevators`,
-        description: `Find ${params.search} and related elevator components with ISO certified quality.`,
+        title: `Search: ${searchQuery} | Cedar Elevators`,
+        description: `Find ${searchQuery} and related elevator components with ISO certified quality.`,
       },
-      keywords: `${params.search}, elevator parts, elevator components, Cedar Elevators`,
+      keywords: `${searchQuery}, elevator parts, elevator components, Cedar Elevators`,
     }
   }
 
@@ -60,6 +61,7 @@ interface CatalogPageProps {
     application?: string
     collection?: string
     search?: string
+    q?: string
     view?: string
     tab?: string
     app?: string
@@ -76,8 +78,10 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   // Build query params based on search params
   const queryParams: any = { limit: 100 }
 
-  if (params.search) {
-    queryParams.q = params.search
+  // Support both 'q' and 'search' params for search
+  const searchQuery = params.q || params.search
+  if (searchQuery) {
+    queryParams.q = searchQuery
   }
 
   // Active category state
@@ -174,7 +178,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
           activeCollection={activeCollection}
-          searchParams={params}
+          searchParams={{ ...params, search: searchQuery }}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={applicationSlug}

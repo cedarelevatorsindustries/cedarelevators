@@ -6,7 +6,7 @@ export function getInitials(firstName: string, lastName: string): string {
   return `${first}${last}` || 'U'
 }
 
-export function getProfileNavigation(accountType: AccountType): ProfileNavigationGroup[] {
+export function getProfileNavigation(accountType: AccountType, isVerified: boolean = false): ProfileNavigationGroup[] {
   // INDIVIDUAL USER - Desktop matches mobile + density
   if (accountType === 'individual') {
     return [
@@ -50,6 +50,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             section: PROFILE_SECTIONS.SECURITY,
             label: 'Security',
             icon: 'Shield',
+            activeMatch: '/profile/security'
           },
         ],
       },
@@ -59,7 +60,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
 
   // BUSINESS USER - Desktop matches mobile + density
   if (accountType === 'business') {
-    return [
+    const navigation: ProfileNavigationGroup[] = [
       {
         title: 'Business Profile',
         icon: 'Building2',
@@ -89,18 +90,6 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
         ],
       },
       {
-        title: 'Operations',
-        icon: 'Package',
-        items: [
-          {
-            section: PROFILE_SECTIONS.ORDER_HISTORY,
-            label: 'Orders',
-            icon: 'Package',
-          },
-
-        ],
-      },
-      {
         title: 'Settings',
         icon: 'Settings',
         items: [
@@ -111,8 +100,44 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           },
         ],
       },
-
     ]
+
+    // Only show Operations/Orders if business is verified
+    if (isVerified) {
+      // Find the index to insert Operations before Settings (which is the last item now)
+      // Or just push it before Settings if we want specific order. 
+      // Current array: [Business Profile, Compliance, Settings]
+      // We want: [Business Profile, Compliance, Operations, Settings]
+
+      const settingsIndex = navigation.findIndex(g => g.title === 'Settings')
+      if (settingsIndex !== -1) {
+        navigation.splice(settingsIndex, 0, {
+          title: 'Operations',
+          icon: 'Package',
+          items: [
+            {
+              section: PROFILE_SECTIONS.ORDER_HISTORY,
+              label: 'Orders',
+              icon: 'Package',
+            },
+          ],
+        })
+      } else {
+        navigation.push({
+          title: 'Operations',
+          icon: 'Package',
+          items: [
+            {
+              section: PROFILE_SECTIONS.ORDER_HISTORY,
+              label: 'Orders',
+              icon: 'Package',
+            },
+          ],
+        })
+      }
+    }
+
+    return navigation
   }
 
   // GUEST - Should not reach here, but return empty

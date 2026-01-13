@@ -76,11 +76,13 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
     if (queryParams?.q) {
       console.log('[listProducts] Performing full-text search for:', queryParams.q)
 
-      const { data: searchResults, error: searchError, count: searchCount } = await supabase.rpc('search_products', {
+      const { data: searchResults, error: searchError } = await supabase.rpc('search_products', {
         search_query: queryParams.q,
-        category_filter: queryParams.category_id?.[0] || null, // RPC currently supports single category filter, taking first if multiple
-        page_number: Math.floor(offset / limit) + 1,
-        page_size: limit
+        result_limit: limit,
+        result_offset: offset,
+        category_filter: null,  // We handle category filtering via productIds already
+        min_price: null,
+        max_price: null
       })
 
       if (searchError) {
@@ -176,17 +178,13 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       // Let's implement a quick separate count query matching the search criteria
       // OR just update listProducts to return what we have.
 
-      // Get total count for pagination matching the RPC logic
-      const { count: totalCount } = await supabase
-        .from('products')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active')
-        .textSearch('search_vector', queryParams.q, { config: 'english', type: 'plain' })
+      // Get total count from search results (returned in each row)
+      const totalCount = searchResults && searchResults.length > 0 ? searchResults[0].total_count : 0
 
       return {
         response: {
           products: orderedProducts,
-          count: totalCount || searchCount || orderedProducts.length,
+          count: totalCount || orderedProducts.length,
           offset,
           limit
         }
