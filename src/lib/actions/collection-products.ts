@@ -116,6 +116,7 @@ export async function getCollectionProducts(collectionId: string) {
           thumbnail_url,
           thumbnail,
           price,
+          compare_at_price,
           status,
           allow_backorders,
           product_variants (

@@ -121,6 +121,7 @@ export async function getCollectionsWithProductsByDisplayContext(
                             slug,
                             thumbnail_url,
                             price,
+                            compare_at_price,
                             status,
                             product_variants (
                                 id,
@@ -149,13 +150,26 @@ export async function getCollectionsWithProductsByDisplayContext(
                         created_at: cp.created_at,
                         product: rawProduct ? {
                             ...rawProduct,
-                            // Convert price from rupees (database) to paise/cents (frontend)
-                            // Database: 480.00 = ₹480, Frontend expects: 48000 (divides by 100)
-                            price: rawProduct.price ? Math.round(rawProduct.price * 100) : null,
+                            // Prices are in rupees in database, product-card expects rupees  
+                            price: rawProduct.price || null,
+                            compare_at_price: rawProduct.compare_at_price || null,
                             // Include variants for stock display
-                            product_variants: rawProduct.product_variants || []
+                            // ProductCard checks product.variants, so map product_variants to variants
+                            product_variants: rawProduct.product_variants || [],
+                            variants: rawProduct.product_variants || []
                         } : null
                     }
+                })
+
+                // Server-side debug: Log variants BEFORE serialization
+                console.log('[SERVER collections-display-context] Product variants check:', {
+                    collectionId: collection.id,
+                    sampleProductId: products[0]?.product?.id,
+                    hasProduct: !!products[0]?.product,
+                    productKeys: products[0]?.product ? Object.keys(products[0].product) : [],
+                    hasVariantsKey: products[0]?.product ? 'variants' in products[0].product : false,
+                    variantsValue: products[0]?.product?.variants,
+                    variantsLength: products[0]?.product?.variants?.length || 0
                 })
 
                 return {

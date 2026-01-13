@@ -244,9 +244,12 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,
         thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
-        // Include variants for stock display
-        variants: p.product_variants || [],
-        // Extract categories from junctiontable
+        // Include variants for stock display - ensure inventory_quantity is included
+        variants: (p.product_variants || []).map((v: any) => ({
+          ...v,
+          inventory_quantity: v.inventory_quantity || 0
+        })),
+        // Extract categories from junction table
         categories: p.product_categories?.map((pc: any) => ({
           ...pc.category,
           name: pc.category?.title,

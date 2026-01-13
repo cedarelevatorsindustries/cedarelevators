@@ -32,6 +32,18 @@ export function FeaturedProductsSection({
         metadata: product.metadata || {}
     }))
 
+    // Debug: Check if variants are present
+    console.log('[FeaturedProductsSection] Sample product:', {
+        isMobile,
+        sampleProduct: randomProducts[0] ? {
+            id: randomProducts[0].id,
+            title: randomProducts[0].title,
+            hasVariants: !!(randomProducts[0] as any).variants,
+            variantsCount: ((randomProducts[0] as any).variants || []).length,
+            firstVariant: ((randomProducts[0] as any).variants || [])[0]
+        } : null
+    })
+
     // Don't show if no products
     if (randomProducts.length === 0) return null
 

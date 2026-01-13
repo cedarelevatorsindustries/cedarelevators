@@ -46,6 +46,7 @@ export async function getMegaMenuData() {
                     slug,
                     thumbnail_url,
                     price,
+                    compare_at_price,
                     short_description,
                     description,
                     sku,
@@ -101,11 +102,9 @@ export async function getMegaMenuData() {
                         title: p.name,
                         handle: p.slug,
                         thumbnail: p.thumbnail_url,
-                        price: {
-                            // Convert from rupees (database) to paise/cents (frontend)
-                            amount: p.price ? Math.round(p.price * 100) : 0,
-                            currency_code: 'INR'
-                        },
+                        // Prices are in rupees in database, product-card expects rupees
+                        price: p.price || null,
+                        compare_at_price: p.compare_at_price || null,
                         description: p.short_description || p.description,
                         sku: p.sku,
                         // Include variants for stock display

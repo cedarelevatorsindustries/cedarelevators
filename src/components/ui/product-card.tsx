@@ -62,10 +62,23 @@ export default function ProductCard({
   const isVerified = userState === 'business_verified'
 
   // Extract price and compare_at_price (MRP) from product or variants
-  const price = product.price?.amount || product.variants?.[0]?.price || (product as any).price
-  const compareAtPrice = product.variants?.[0]?.compare_at_price || (product as any).compare_at_price
+  // Handle both formats: direct number (50) or object ({amount: 50})
+  // Priority: Use product table price first (matches product detail page), then fallback to variant
+  // Prices are stored in rupees in the database (not paise)
 
-  // Format prices for display (prices are in rupees, not paise)
+  const rawPrice = (product as any).price || product.variants?.[0]?.price || 0
+  const rawCompareAtPrice = (product as any).compare_at_price || product.variants?.[0]?.compare_at_price
+
+  // Normalize: extract number from object if needed
+  const price = typeof rawPrice === 'object' && rawPrice?.amount !== undefined
+    ? rawPrice.amount
+    : (typeof rawPrice === 'number' ? rawPrice : 0)
+
+  const compareAtPrice = typeof rawCompareAtPrice === 'object' && rawCompareAtPrice?.amount !== undefined
+    ? rawCompareAtPrice.amount
+    : (typeof rawCompareAtPrice === 'number' ? rawCompareAtPrice : null)
+
+  // Format prices for display (prices are already in rupees)
   const formattedPrice = price ? `₹${Number(price).toLocaleString("en-IN")}` : null
   const formattedMRP = compareAtPrice && compareAtPrice > price ? `MRP ₹${Number(compareAtPrice).toLocaleString("en-IN")}` : null
 
@@ -136,17 +149,16 @@ export default function ProductCard({
   const totalInventory = variants.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0)
   const isOutOfStock = totalInventory === 0
 
-  // Debug logging for stock issues
-  if (typeof window !== 'undefined' && (window as any).__DEBUG_STOCK__) {
-    console.log('[ProductCard] Stock check:', {
+  // Debug: Log stock calculation for mobile
+  if (variant === 'mobile') {
+    console.log('[ProductCard Mobile] Stock check:', {
       productId: product.id,
       productName: product.title,
       hasVariants: !!product.variants,
-      hasProductVariants: !!(product as any).product_variants,
+      variantsArray: variants,
       variantsCount: variants.length,
       totalInventory,
-      isOutOfStock,
-      rawVariants: variants
+      isOutOfStock
     })
   }
 
