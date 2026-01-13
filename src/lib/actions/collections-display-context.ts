@@ -133,14 +133,22 @@ export async function getCollectionsWithProductsByDisplayContext(
                 }
 
                 // Map the response to match ProductInCollection type
-                const products = (collectionProducts || []).map((cp: any) => ({
-                    id: cp.id,
-                    product_id: cp.product_id,
-                    collection_id: cp.collection_id,
-                    position: cp.position,
-                    created_at: cp.created_at,
-                    product: Array.isArray(cp.product) ? cp.product[0] : cp.product
-                }))
+                const products = (collectionProducts || []).map((cp: any) => {
+                    const rawProduct = Array.isArray(cp.product) ? cp.product[0] : cp.product
+                    return {
+                        id: cp.id,
+                        product_id: cp.product_id,
+                        collection_id: cp.collection_id,
+                        position: cp.position,
+                        created_at: cp.created_at,
+                        product: rawProduct ? {
+                            ...rawProduct,
+                            // Convert price from rupees (database) to paise/cents (frontend)
+                            // Database: 480.00 = ₹480, Frontend expects: 48000 (divides by 100)
+                            price: rawProduct.price ? Math.round(rawProduct.price * 100) : null
+                        } : null
+                    }
+                })
 
                 return {
                     ...collection,

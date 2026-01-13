@@ -96,7 +96,8 @@ export async function getMegaMenuData() {
                         handle: p.slug,
                         thumbnail: p.thumbnail_url,
                         price: {
-                            amount: p.price || 0,
+                            // Convert from rupees (database) to paise/cents (frontend)
+                            amount: p.price ? Math.round(p.price * 100) : 0,
                             currency_code: 'INR'
                         },
                         description: p.short_description || p.description,
