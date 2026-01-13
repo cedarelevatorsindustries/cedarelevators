@@ -38,12 +38,33 @@ export async function getBusinessHubData(): Promise<
 
         const supabase = await createClerkSupabaseClient()
 
-        // Fetch user profile for verification status
-        const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('business_verified, business_verification_status, verification_completion_percentage')
+        // First get the user's Supabase ID from users table
+        const { data: userData } = await supabase
+            .from('users')
+            .select('id')
             .eq('clerk_user_id', userId)
             .single()
+
+        if (!userData) {
+            return { success: false, error: 'User not found' }
+        }
+
+        // Get business verification status from businesses table via business_members
+        // This is the source of truth for verification status
+        const { data: businessMember } = await supabase
+            .from('business_members')
+            .select('business:businesses(id, verification_status)')
+            .eq('user_id', userData.id)
+            .single()
+
+        // Also check if there's a pending verification in business_verifications
+        const { data: pendingVerification } = await supabase
+            .from('business_verifications')
+            .select('status')
+            .eq('user_id', userData.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
 
         // Fetch active quotes for action items and stats
         const { data: quotes } = await supabase
@@ -60,11 +81,20 @@ export async function getBusinessHubData(): Promise<
             .eq('clerk_user_id', userId)
             .in('status', ['pending', 'processing', 'confirmed'])
 
-        // Build verification data
+        // Build verification data from the actual business table
+        const businessVerificationStatus = (businessMember?.business as any)?.verification_status
+        console.log('[BusinessHub] Debug:', {
+            userId: userData.id,
+            businessMemberFound: !!businessMember,
+            businessVerificationStatus,
+            pendingStatus: pendingVerification?.status
+        })
+
         const verification = {
-            isVerified: profile?.business_verified || false,
-            isPending: profile?.business_verification_status === 'pending',
-            completionPercentage: profile?.verification_completion_percentage || 0
+            isVerified: businessVerificationStatus === 'verified',
+            isPending: pendingVerification?.status === 'pending' || pendingVerification?.status === 'in_review',
+            completionPercentage: businessVerificationStatus === 'verified' ? 100 :
+                pendingVerification?.status ? 80 : 0
         }
 
         // Build action items

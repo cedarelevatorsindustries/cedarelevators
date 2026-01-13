@@ -4,6 +4,7 @@ import { Product } from "@/lib/types/domain"
 import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
+import { getUserPricingState, canViewPrice } from "@/lib/utils/pricing-utils"
 import { useState, useEffect } from "react"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed"
@@ -47,18 +48,19 @@ export default function ProductCard({
 
   // NOTE: removed local state isWishlisted, using hook state
 
-  // Determine user type and verification status
-  const isGuest = !user
-  const metadata = user?.unsafeMetadata as any
-  const accountType = metadata?.accountType as string | undefined
-  const isIndividual = accountType === "individual"
-  const isBusiness = accountType === "business"
-  // Check both is_verified boolean AND verificationStatus = 'approved'
-  const verificationStatus = metadata?.verificationStatus as string | undefined
-  const isVerified = metadata?.is_verified === true || verificationStatus === 'approved'
+  // NOTE: removed local state isWishlisted, using hook state
 
-  // Pricing logic - only show for verified business
-  const showPrice = isBusiness && isVerified
+  // Determine user type and verification status using consistent utility
+  const userState = getUserPricingState(user)
+  const showPrice = canViewPrice(userState)
+
+  // Re-derive helpers for existing JSX logic
+  const isGuest = userState === 'guest'
+  const isIndividual = userState === 'individual'
+  // Business includes both verified and unverified for general "business" logic
+  const isBusiness = userState === 'business_unverified' || userState === 'business_verified'
+  const isVerified = userState === 'business_verified'
+
   const price = product.price?.amount || product.variants?.[0]?.price
   const formattedPrice = price ? `₹${(price / 100).toLocaleString("en-IN")}` : null
 

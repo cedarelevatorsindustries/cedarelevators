@@ -174,28 +174,17 @@ export async function approveVerification(
                 // It's already a Clerk ID
                 clerkIdToUpdate = supabaseUserId
             } else {
-                // It's a UUID, look up the clerk_user_id from user_profiles
-                const { data: userProfile } = await supabase
-                    .from('user_profiles')
+                // It's a UUID, look up the clerk_user_id from users table
+                // IMPORTANT: business_verifications.user_id = users.id (NOT user_profiles.id!)
+                const { data: user } = await supabase
+                    .from('users')
                     .select('clerk_user_id')
                     .eq('id', supabaseUserId)
                     .single()
 
-                if (userProfile?.clerk_user_id) {
-                    clerkIdToUpdate = userProfile.clerk_user_id
-                    console.log('[approveVerification] Found Clerk ID:', clerkIdToUpdate)
-                } else {
-                    // Also try matching by clerk_user_id column directly
-                    const { data: userProfileByClerk } = await supabase
-                        .from('user_profiles')
-                        .select('clerk_user_id')
-                        .eq('clerk_user_id', supabaseUserId)
-                        .single()
-
-                    if (userProfileByClerk?.clerk_user_id) {
-                        clerkIdToUpdate = userProfileByClerk.clerk_user_id
-                        console.log('[approveVerification] Found Clerk ID (by clerk_user_id column):', clerkIdToUpdate)
-                    }
+                if (user?.clerk_user_id) {
+                    clerkIdToUpdate = user.clerk_user_id
+                    console.log('[approveVerification] Found Clerk ID from users table:', clerkIdToUpdate)
                 }
             }
         }
@@ -215,6 +204,7 @@ export async function approveVerification(
                 console.log('[approveVerification] Updating Clerk metadata for:', clerkIdToUpdate)
                 await client.users.updateUserMetadata(clerkIdToUpdate, {
                     unsafeMetadata: {
+                        accountType: 'business',         // Ensure account type is set
                         verificationStatus: 'approved',  // camelCase to match frontend
                         is_verified: true
                     }

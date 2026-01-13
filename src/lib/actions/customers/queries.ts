@@ -275,7 +275,20 @@ export async function getCustomerById(
 
         // Get business verification if exists (need to map clerk_user_id to users.id first)
         let businessVerification = null
+        let accountType = 'individual' // Default
+
         if (userData?.id) {
+            // Get active profile to determine current account type
+            const { data: activeProfile } = await supabase
+                .from('user_profiles')
+                .select('profile_type')
+                .eq('user_id', userData.id)
+                .eq('is_active', true)
+                .maybeSingle()
+
+            // Set account type from active profile
+            accountType = (activeProfile?.profile_type || 'individual') as 'individual' | 'business'
+
             const { data: verifications } = await supabase
                 .from('business_verifications')
                 .select('*')
@@ -301,7 +314,6 @@ export async function getCustomerById(
             'Unknown'
         const customerEmail = latestQuote?.guest_email || userData?.email || ''
         const customerPhone = latestQuote?.guest_phone || ''
-        const accountType = latestQuote?.account_type || (hasVerification ? 'business' : 'individual')
 
         // Calculate stats
         const totalQuotes = quotes?.length || 0

@@ -21,13 +21,20 @@ export async function syncVerificationToClerk(targetUserId?: string) {
     try {
         const supabase = createAdminClient()
 
-        // Get the user's profile and verification status from database
+        // Get the user's ACTIVE profile and verification status from database
         // user_profiles has both the clerk_user_id and the Supabase UUID (id)
-        const { data: profile } = await supabase
+        // Filter by is_active to handle users with multiple profiles (individual + business)
+        const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
-            .select('id, clerk_user_id, business_id, account_type')
+            .select('id, clerk_user_id, profile_type')
             .eq('clerk_user_id', clerkUserId)
-            .single()
+            .eq('is_active', true)
+            .maybeSingle()
+
+        if (profileError) {
+            console.error('[syncVerificationToClerk] Profile query error:', profileError)
+            return { success: false, error: profileError.message }
+        }
 
         if (!profile) {
             console.log('[syncVerificationToClerk] User profile not found for:', clerkUserId)
@@ -35,7 +42,7 @@ export async function syncVerificationToClerk(targetUserId?: string) {
         }
 
         // If business account, check verification status
-        if (profile.account_type === 'business') {
+        if (profile.profile_type === 'business') {
             console.log('[syncVerificationToClerk] Checking verification for business user:', clerkUserId)
 
             // business_verifications.user_id stores the Supabase UUID (profile.id), NOT the Clerk ID!
@@ -48,7 +55,7 @@ export async function syncVerificationToClerk(targetUserId?: string) {
                 .eq('user_id', supabaseUserId)
                 .order('created_at', { ascending: false })
                 .limit(1)
-                .single()
+                .maybeSingle()
 
             console.log('[syncVerificationToClerk] Verification result:', verification)
 
@@ -61,7 +68,8 @@ export async function syncVerificationToClerk(targetUserId?: string) {
                 await client.users.updateUserMetadata(clerkUserId, {
                     unsafeMetadata: {
                         verificationStatus: 'approved',
-                        is_verified: true
+                        is_verified: true,
+                        accountType: 'business'  // Also set accountType for consistency
                     }
                 })
 

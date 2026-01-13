@@ -89,6 +89,18 @@ export default function ProfileSidebar({
     }
   }
 
+  // Filter navigation items and groups
+  const visibleNavigation = navigation.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      // Hide Verification tab if user is already verified
+      if (item.label === 'Verification' && verificationStatus === 'approved') {
+        return false
+      }
+      return true
+    })
+  })).filter(group => group.items.length > 0)
+
   return (
     <aside className={cn(
       'w-64 shrink-0 flex flex-col hidden lg:flex',
@@ -126,7 +138,7 @@ export default function ProfileSidebar({
 
       {/* Navigation - Scrollable */}
       <nav className="px-4 pt-2 flex-1 overflow-y-auto">
-        {navigation.map((group, groupIndex) => {
+        {visibleNavigation.map((group, groupIndex) => {
           const GroupIcon = iconMap[group.icon] || User
 
           return (

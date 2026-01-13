@@ -23,14 +23,26 @@ export default async function BusinessVerificationPage() {
         redirect('/sign-in?redirect=/profile/business/verification')
     }
 
-    // Get account type from Clerk metadata
+    // Get account type from Clerk metadata - check multiple possible keys
     const accountType = user.publicMetadata?.accountType as string ||
         user.unsafeMetadata?.accountType as string ||
+        user.publicMetadata?.account_type as string ||
+        user.unsafeMetadata?.account_type as string ||
         'individual'
 
-    // Only business accounts can access verification
-    if (accountType !== 'business') {
+    // Only individual accounts should be blocked from verification
+    if (accountType === 'individual') {
         redirect('/profile')
+    }
+
+    // Use shared utility to get user profile and verification status
+    // this ensures consistency with the rest of the application
+    const { getUserWithProfile } = await import('@/lib/services/auth-sync')
+    const userWithProfile = await getUserWithProfile(userId)
+
+    if (userWithProfile?.business?.verification_status === 'verified') {
+        // Already verified, redirect to profile with success message
+        redirect('/profile?verified=true')
     }
 
     return <BusinessVerificationSection />

@@ -116,11 +116,12 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
 
 
 
-        // Create default individual profile
+        // Create default individual profile with clerk_user_id for easy lookup
         const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
                 user_id: newUser.id,
+                clerk_user_id: clerkUserId,
                 profile_type: 'individual',
                 is_active: true
             })
@@ -353,10 +354,12 @@ export async function createBusinessProfile(
             .eq('profile_type', 'individual')
 
         // Create and activate business profile
+        // Include clerk_user_id for sync operations
         const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
                 user_id: userId,
+                clerk_user_id: (await supabase.from('users').select('clerk_user_id').eq('id', userId).single()).data?.clerk_user_id,
                 profile_type: 'business',
                 is_active: true // Auto-activate business profile
             })
@@ -364,6 +367,33 @@ export async function createBusinessProfile(
         if (profileError) {
             console.error('Error creating business profile:', profileError)
             return { success: false, error: 'Failed to create business profile' }
+        }
+
+        // Update Clerk metadata to reflect business account type
+        // This ensures the frontend and verification flows work correctly
+        try {
+            const { data: user } = await supabase
+                .from('users')
+                .select('clerk_user_id')
+                .eq('id', userId)
+                .single()
+
+            if (user?.clerk_user_id) {
+                const { clerkClient } = await import('@clerk/nextjs/server')
+                const client = await clerkClient()
+
+                await client.users.updateUserMetadata(user.clerk_user_id, {
+                    unsafeMetadata: {
+                        accountType: 'business',
+                        is_verified: false
+                    }
+                })
+
+                console.log('[createBusinessProfile] Updated Clerk metadata for:', user.clerk_user_id)
+            }
+        } catch (clerkError) {
+            console.error('[createBusinessProfile] Error updating Clerk metadata:', clerkError)
+            // Don't fail the operation if Clerk update fails
         }
 
         return { success: true, businessId: business.id }
