@@ -1,54 +1,58 @@
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
-import { getCollectionBySlug } from "@/lib/actions/collections"
+import { Product } from "@/lib/types/domain"
 
 interface FeaturedProductsSectionProps {
     variant?: 'desktop' | 'mobile'
+    products: Product[]
 }
 
 /**
- * Unified Featured Products Section
- * Responsive component that handles both mobile and desktop layouts
- * Uses the dynamic collection system with the "top-selling" collection from database
+ * Featured Products Section - Shows random products from catalog
+ * Refreshes random products on each page load
+ * Includes View All button to catalog page
  */
-export async function FeaturedProductsSection({
-    variant = 'desktop'
+export function FeaturedProductsSection({
+    variant = 'desktop',
+    products = []
 }: FeaturedProductsSectionProps) {
     const isMobile = variant === 'mobile'
 
-    // Get the top-selling collection from database
-    const { collection: dbCollection } = await getCollectionBySlug("top-selling")
+    // Shuffle products randomly
+    const shuffled = [...products].sort(() => Math.random() - 0.5)
 
-    // Transform to DisplayCollection format if exists
-    const featuredCollection = dbCollection ? {
-        id: dbCollection.id,
-        title: dbCollection.title,
-        description: dbCollection.description,
-        slug: dbCollection.slug,
+    // Take first 5-8 products after shuffling
+    const randomCount = isMobile ? 5 : 8
+    const randomProducts = shuffled.slice(0, randomCount).map((product: any) => ({
+        id: product.id,
+        title: product.title || product.name,
+        name: product.name,
+        slug: product.slug || product.handle,
+        handle: product.handle || product.slug,
+        thumbnail: product.thumbnail,
+        price: product.price,
+        variants: product.variants || [],
+        metadata: product.metadata || {}
+    }))
+
+    // Don't show if no products
+    if (randomProducts.length === 0) return null
+
+    const featuredCollection = {
+        id: 'featured-products',
+        title: 'Featured Products',
+        description: 'Discover our handpicked selection of premium elevator components',
+        slug: 'featured-products',
         displayLocation: [],
-        layout: isMobile ? 'horizontal-scroll' : 'grid-5',
-        icon: 'star',
-        viewAllLink: '/catalog?type=top-choice&sort=best-selling',
-        products: (dbCollection.products || []).map((pc: any) => {
-            const product = pc.product
-            return {
-                id: product.id,
-                title: product.name,
-                name: product.name,
-                slug: product.slug,
-                handle: product.slug,
-                thumbnail: product.thumbnail,
-                price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
-                variants: []
-            }
-        }),
-        isActive: dbCollection.is_active,
-        sortOrder: 0, // Default sort order
+        layout: isMobile ? 'horizontal-scroll' as const : 'grid-5' as const,
+        icon: 'none' as const,
+        viewAllLink: '/catalog',
+        products: randomProducts,
+        isActive: true,
+        sortOrder: 0,
         showViewAll: true,
-        ...(isMobile ? {} : { metadata: { priority: 'high' } })
-    } : null
-
-    // If collection doesn't exist or is inactive, don't render
-    if (!featuredCollection) return null
+        metadata: {},
+        emptyStateMessage: ''
+    }
 
     if (isMobile) {
         return (
@@ -69,4 +73,3 @@ export async function FeaturedProductsSection({
 }
 
 export default FeaturedProductsSection
-

@@ -307,13 +307,6 @@ export function SearchAutocomplete({
                                             {suggestion.category}
                                         </p>
                                     </div>
-
-                                    {/* Price */}
-                                    {suggestion.price && (
-                                        <span className="text-sm font-semibold text-gray-900 flex-shrink-0">
-                                            ₹{suggestion.price.toLocaleString('en-IN')}
-                                        </span>
-                                    )}
                                 </button>
                             ))}
 

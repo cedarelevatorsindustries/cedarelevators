@@ -50,7 +50,7 @@ export default function DesktopHomepage({
       {/* Featured Products */}
       {products.length > 0 && (
         <div className="mt-12">
-          <FeaturedProductsSection />
+          <FeaturedProductsSection products={products} />
         </div>
       )}
 

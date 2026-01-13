@@ -69,11 +69,7 @@ export default function CreateCollectionPage() {
         return
       }
 
-      // Validate category-specific collections have a category selected
-      if (formData.collection_type === 'category_specific' && !formData.category_id) {
-        toast.error('Please select a category for category-specific collections')
-        return
-      }
+      // No validation needed for category_specific collections
 
       // Create collection
       const result = await createMutation.mutateAsync(formData)
@@ -187,35 +183,10 @@ export default function CreateCollectionPage() {
                 </Select>
                 <p className="text-xs text-gray-500">
                   {formData.collection_type === 'general' && 'Shows on homepage for all users'}
-                  {formData.collection_type === 'category_specific' && 'Shows on specific category pages'}
+                  {formData.collection_type === 'category_specific' && 'Shows in Categories tab between Shop by Categories and Shop by Elevator Type'}
                   {formData.collection_type === 'business_specific' && 'Shows in business hub only'}
                 </p>
               </div>
-
-              {/* Category Selector (conditional) */}
-              {formData.collection_type === 'category_specific' && (
-                <div className="space-y-2">
-                  <Label htmlFor="category_id">Category *</Label>
-                  <Select
-                    value={formData.category_id || ''}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    This collection will only appear on the selected category page
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
 

@@ -26,6 +26,10 @@ const ApplicationsSection = dynamic(() => import("@/components/store/application
   loading: () => <div className="h-24 w-full animate-pulse bg-gray-100 rounded-lg mb-8" />,
   ssr: true
 })
+const FeaturedProductsSection = dynamic(() => import("@/components/shared/sections/featured-products-section").then(mod => mod.FeaturedProductsSection), {
+  loading: () => <div className="h-64 w-full animate-pulse bg-gray-100 rounded-lg mb-8" />,
+  ssr: true
+})
 
 interface DesktopHomepageLoggedInProps {
   products: Product[]
@@ -98,6 +102,14 @@ export default function DesktopHomepageLoggedIn({
             {applications.length > 0 && (
               <ApplicationsSection applications={applications} />
             )}
+
+            {/* Featured Products - After Applications */}
+            {products.length > 0 && (
+              <div className="mt-8">
+                <FeaturedProductsSection products={products} />
+              </div>
+            )}
+
             <ProductsTab products={products} collections={collections} />
           </>
         )}

@@ -11,7 +11,8 @@ import {
 import {
   ElevatorTypesSection,
   WhyCedarSection,
-  TestimonialsSection
+  TestimonialsSection,
+  FeaturedProductsSection
 } from "@/components/shared/sections"
 import { ApplicationsSection } from "@/components/store/applications-section"
 import CollectionSection from "@/components/store/collection-section"
@@ -43,6 +44,9 @@ export default function MobileHomepageGuest({
 
       {/* Categories - Horizontal scroll without scrollbar */}
       <CategoriesMobile categories={categories} />
+
+      {/* Featured Products */}
+      <FeaturedProductsSection variant="mobile" products={products} />
 
       {/* Shop by Elevator Type - 6 cards, 2 per row */}
       <ElevatorTypesSection variant="mobile" elevatorTypes={elevatorTypes} />

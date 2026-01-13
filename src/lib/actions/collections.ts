@@ -341,17 +341,21 @@ export async function toggleCollectionStatus(id: string) {
         // Get current status
         const { data: collection } = await supabase
             .from('collections')
-            .select('is_active')
+            .select('is_active, status')
             .eq('id', id)
             .single()
 
         if (!collection) throw new Error('Collection not found')
 
-        // Toggle status
+        // Toggle both is_active and status to keep them in sync
+        const newIsActive = !collection.is_active
+        const newStatus = newIsActive ? 'active' : 'draft'
+
         const { data, error } = await supabase
             .from('collections')
             .update({
-                is_active: !collection.is_active,
+                is_active: newIsActive,
+                status: newStatus,
                 updated_at: new Date().toISOString()
             })
             .eq('id', id)

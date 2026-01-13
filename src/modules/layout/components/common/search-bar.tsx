@@ -26,7 +26,7 @@ interface SearchBarProps {
 export function SearchBar({ className = "" }: SearchBarProps) {
   const router = useRouter()
   const { query, setQuery, suggestions, isLoading, clearSuggestions, clearQuery } = useSearch()
-  
+
   const [currentPlaceholder, setCurrentPlaceholder] = useState("")
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTyping, setIsTyping] = useState(true)
@@ -34,7 +34,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-  
+
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -263,7 +263,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 truncate">
                       {suggestion.name}
@@ -273,15 +273,9 @@ export function SearchBar({ className = "" }: SearchBarProps) {
                       {suggestion.category}
                     </p>
                   </div>
-                  
-                  {suggestion.price && (
-                    <span className="text-sm font-semibold text-gray-900 flex-shrink-0">
-                      ₹{suggestion.price.toLocaleString('en-IN')}
-                    </span>
-                  )}
                 </button>
               ))}
-              
+
               {query && (
                 <button
                   onClick={() => handleSubmit()}

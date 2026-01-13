@@ -49,6 +49,7 @@ export default function CatalogTemplate({
   categories,
   activeCategory,
   activeApplication,
+  activeCollection,
   collections = [],
   banners = [],
   searchParams = {},
@@ -336,6 +337,26 @@ export default function CatalogTemplate({
         </div>
       )}
 
+      {/* Collection Header - When viewing a specific collection */}
+      {catalogType === "browse-all" && activeCollection && (
+        <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {activeCollection.title || activeCollection.name}
+                </h1>
+                {activeCollection.description && (
+                  <p className="text-gray-600 mb-3">{activeCollection.description}</p>
+                )}
+                <p className="text-sm text-gray-500">
+                  {allDisplayProducts.length} {allDisplayProducts.length === 1 ? 'Product' : 'Products'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-8 py-8">

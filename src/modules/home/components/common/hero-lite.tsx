@@ -306,12 +306,6 @@ export default function HeroLite({ userType, categories = [], popularSearchTerms
                             {suggestion.category}
                           </p>
                         </div>
-
-                        {suggestion.price && (
-                          <span className="text-sm font-semibold text-gray-900 flex-shrink-0">
-                            ₹{suggestion.price.toLocaleString('en-IN')}
-                          </span>
-                        )}
                       </button>
                     ))}
 

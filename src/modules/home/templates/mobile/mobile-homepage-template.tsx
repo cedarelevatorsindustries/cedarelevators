@@ -34,7 +34,7 @@ export default function MobileHomepage({ products, categories, testimonials, ele
 
       {/* Featured Products */}
       {products.length > 0 && (
-        <FeaturedProductsSection variant="mobile" />
+        <FeaturedProductsSection variant="mobile" products={products} />
       )}
 
       {/* Category Blocks */}
