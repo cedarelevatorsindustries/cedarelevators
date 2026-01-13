@@ -34,7 +34,9 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
         slug: product.slug,
         handle: product.slug,
         thumbnail: product.thumbnail,
-        price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
+        // Convert price from rupees (database format) to paise/cents (frontend format)
+        // Database stores 480.00 for ₹480, frontend expects 48000 (divides by 100 for display)
+        price: product.price ? { amount: Math.round(product.price * 100), currency_code: 'INR' } : undefined,
         variants: [],
         metadata: { variant: 'business' }
       }

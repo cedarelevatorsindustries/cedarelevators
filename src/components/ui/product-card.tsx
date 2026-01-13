@@ -209,6 +209,12 @@ export default function ProductCard({
               <p className="text-xs font-medium text-orange-600">Price on request</p>
               <p className="text-[10px] text-gray-600">Verify account to see pricing</p>
             </div>
+          ) : isBusiness && isVerified ? (
+            // Verified Business but no price data for this product
+            <div className="py-0.5">
+              <p className="text-xs font-medium text-gray-700">Price not set</p>
+              <p className="text-[10px] text-gray-500">Request quote for pricing</p>
+            </div>
           ) : (
             // Fallback
             <div className="py-0.5">
@@ -323,6 +329,8 @@ export default function ProductCard({
               <span className="text-[10px] text-gray-500 font-medium">Starting from</span>
               {showPrice && formattedPrice ? (
                 <span className="text-sm font-bold text-gray-900">{formattedPrice}</span>
+              ) : isBusiness && isVerified ? (
+                <span className="text-xs font-bold text-gray-600">Quote</span>
               ) : (
                 <span className="text-xs font-bold text-orange-600">
                   {isBusiness && !isVerified ? "Verify for Price" : "Price on Request"}
@@ -441,6 +449,12 @@ export default function ProductCard({
           <div className="py-1 mt-2">
             <p className="text-sm font-medium text-orange-600">Price on request</p>
             <p className="text-xs text-gray-600">Verify account to see pricing</p>
+          </div>
+        ) : isBusiness && isVerified ? (
+          // Verified Business but no price data for this product
+          <div className="py-1 mt-2">
+            <p className="text-sm font-medium text-gray-700">Price not set</p>
+            <p className="text-xs text-gray-500">Request quote for pricing</p>
           </div>
         ) : (
           // Fallback
