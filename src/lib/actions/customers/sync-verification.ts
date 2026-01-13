@@ -9,12 +9,12 @@ import { createAdminClient } from '@/lib/supabase/server'
  * when their verification was approved.
  */
 export async function syncVerificationToClerk(targetUserId?: string) {
-    const { userId } = await auth()
+    const { userId: currentUserId } = await auth()
 
     // Only admins can sync other users, regular users can sync themselves
-    const userIdToSync = targetUserId || userId
+    const clerkUserId = targetUserId || currentUserId
 
-    if (!userIdToSync) {
+    if (!clerkUserId) {
         return { success: false, error: 'Not authenticated' }
     }
 
@@ -22,40 +22,50 @@ export async function syncVerificationToClerk(targetUserId?: string) {
         const supabase = createAdminClient()
 
         // Get the user's profile and verification status from database
+        // user_profiles has both the clerk_user_id and the Supabase UUID (id)
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('clerk_user_id, business_id, account_type')
-            .eq('clerk_user_id', userIdToSync)
+            .select('id, clerk_user_id, business_id, account_type')
+            .eq('clerk_user_id', clerkUserId)
             .single()
 
         if (!profile) {
+            console.log('[syncVerificationToClerk] User profile not found for:', clerkUserId)
             return { success: false, error: 'User profile not found' }
         }
 
         // If business account, check verification status
         if (profile.account_type === 'business') {
-            // Check business_verifications table
+            console.log('[syncVerificationToClerk] Checking verification for business user:', clerkUserId)
+
+            // business_verifications.user_id stores the Supabase UUID (profile.id), NOT the Clerk ID!
+            const supabaseUserId = profile.id
+
+            // Check business_verifications table using the Supabase UUID
             const { data: verification } = await supabase
                 .from('business_verifications')
-                .select('status')
-                .eq('user_id', userIdToSync)
+                .select('status, user_id')
+                .eq('user_id', supabaseUserId)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single()
+
+            console.log('[syncVerificationToClerk] Verification result:', verification)
 
             if (verification?.status === 'approved') {
                 // Update Clerk metadata with the correct verification status
                 const { clerkClient } = await import('@clerk/nextjs/server')
                 const client = await clerkClient()
 
-                await client.users.updateUserMetadata(userIdToSync, {
+                console.log('[syncVerificationToClerk] Updating Clerk metadata for:', clerkUserId)
+                await client.users.updateUserMetadata(clerkUserId, {
                     unsafeMetadata: {
                         verificationStatus: 'approved',
                         is_verified: true
                     }
                 })
 
-                console.log('[syncVerificationToClerk] Updated Clerk metadata for user:', userIdToSync)
+                console.log('[syncVerificationToClerk] Successfully updated Clerk metadata')
                 return { success: true, status: 'approved' }
             } else {
                 return { success: true, status: verification?.status || 'not_found' }

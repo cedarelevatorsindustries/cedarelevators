@@ -158,11 +158,49 @@ export async function approveVerification(
             }
         }
 
-        // Update customer_meta
-        // For business_verifications, we need the clerk user id. usually user_id key holds it.
-        // If not, we might need to look up user_profiles if userId is not the clerk id.
-        // Assuming profile.clerk_user_id or profile.user_id is the key.
-        const clerkIdToUpdate = profile.clerk_user_id || profile.user_id
+        // Update customer_meta and Clerk metadata
+        // IMPORTANT: business_verifications.user_id may contain UUID (from Supabase auth) 
+        // We need the Clerk user ID (starts with 'user_') to update Clerk metadata
+        let clerkIdToUpdate = profile.clerk_user_id || null
+        const supabaseUserId = profile.user_id
+
+        // If we don't have a clerk_user_id directly, look it up from user_profiles
+        if (!clerkIdToUpdate && supabaseUserId) {
+            console.log('[approveVerification] Looking up Clerk ID for Supabase user:', supabaseUserId)
+
+            // The user_id in business_verifications might be the clerk_user_id directly
+            // OR it might be a UUID that we need to look up
+            if (supabaseUserId.startsWith('user_')) {
+                // It's already a Clerk ID
+                clerkIdToUpdate = supabaseUserId
+            } else {
+                // It's a UUID, look up the clerk_user_id from user_profiles
+                const { data: userProfile } = await supabase
+                    .from('user_profiles')
+                    .select('clerk_user_id')
+                    .eq('id', supabaseUserId)
+                    .single()
+
+                if (userProfile?.clerk_user_id) {
+                    clerkIdToUpdate = userProfile.clerk_user_id
+                    console.log('[approveVerification] Found Clerk ID:', clerkIdToUpdate)
+                } else {
+                    // Also try matching by clerk_user_id column directly
+                    const { data: userProfileByClerk } = await supabase
+                        .from('user_profiles')
+                        .select('clerk_user_id')
+                        .eq('clerk_user_id', supabaseUserId)
+                        .single()
+
+                    if (userProfileByClerk?.clerk_user_id) {
+                        clerkIdToUpdate = userProfileByClerk.clerk_user_id
+                        console.log('[approveVerification] Found Clerk ID (by clerk_user_id column):', clerkIdToUpdate)
+                    }
+                }
+            }
+        }
+
+        console.log('[approveVerification] Final Clerk ID to update:', clerkIdToUpdate)
 
         if (clerkIdToUpdate) {
             await supabase
@@ -174,16 +212,20 @@ export async function approveVerification(
             try {
                 const { clerkClient } = await import('@clerk/nextjs/server')
                 const client = await clerkClient()
+                console.log('[approveVerification] Updating Clerk metadata for:', clerkIdToUpdate)
                 await client.users.updateUserMetadata(clerkIdToUpdate, {
                     unsafeMetadata: {
                         verificationStatus: 'approved',  // camelCase to match frontend
                         is_verified: true
                     }
                 })
+                console.log('[approveVerification] Successfully updated Clerk metadata')
             } catch (clerkError) {
-                console.error('Error updating Clerk metadata:', clerkError)
+                console.error('[approveVerification] Error updating Clerk metadata:', clerkError)
                 // Don't fail the entire operation if Clerk update fails
             }
+        } else {
+            console.error('[approveVerification] Could not find Clerk ID to update metadata!')
         }
 
         // Log the action
