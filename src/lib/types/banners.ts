@@ -43,6 +43,8 @@ export interface Banner {
     image_alt?: string | null
     mobile_image_url?: string | null
     placement: BannerPlacement
+    // Collection association (null = general catalog banner)
+    collection_id?: string | null
     // Link destination (required for carousel banners)
     link_type?: BannerLinkType | null  // Preferred: use this
     link_id?: string | null             // Preferred: use this
@@ -100,6 +102,7 @@ export interface BannerFormData {
     image_alt?: string
     mobile_image_url?: string
     placement?: BannerPlacement // Default to 'hero-carousel'
+    collection_id?: string | null // Collection association
     // Link destination (required for carousel)
     link_type?: BannerLinkType
     link_id?: string

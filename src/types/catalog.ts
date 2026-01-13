@@ -4,6 +4,7 @@ export type CatalogType =
   | "search"
   | "category"
   | "application"
+  | "collection"
   | "recently-viewed"
   | "recommended"
   | "top-choice"
@@ -103,6 +104,15 @@ export const CATALOG_CONFIGS: Record<CatalogType, CatalogConfig> = {
     showFilters: false,
     filterPrimaryProducts: false,
     fallbackToAll: false,
+  },
+  "collection": {
+    type: "collection",
+    title: "Collection Products",
+    showBanner: true,
+    showHeroLite: false,
+    showFilters: true,
+    filterPrimaryProducts: true,
+    fallbackToAll: true,
   },
   "recently-viewed": {
     type: "recently-viewed",

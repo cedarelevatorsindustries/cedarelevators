@@ -137,6 +137,7 @@ export async function getBannersByPlacement(
             .from('banners')
             .select('*')
             .eq('placement', 'hero-carousel') // Always use hero-carousel internally
+            .is('collection_id', null)  // Only general banners (not collection-specific)
             .eq('is_active', true)
             .order('position', { ascending: true })
 
@@ -161,6 +162,49 @@ export async function getBannersByPlacement(
         return { success: false, banners: [], error: error.message }
     }
 }
+
+/**
+ * Get banners for a specific collection
+ * Returns only active collection-specific banners
+ */
+export async function getBannersByCollection(
+    collectionId: string,
+    placement: BannerPlacement = 'hero-carousel'
+): Promise<{
+    success: boolean
+    banners: Banner[]
+    error?: string
+}> {
+    try {
+        const supabase = await createClerkSupabaseClient()
+
+        let query = supabase
+            .from('banners')
+            .select('*')
+            .eq('placement', 'hero-carousel')
+            .eq('collection_id', collectionId)  // Only banners for this collection
+            .eq('is_active', true)
+            .order('position', { ascending: true })
+
+        // Filter by current date (active banners only)
+        const now = new Date().toISOString()
+        query = query.or(`start_date.is.null,start_date.lte.${now}`)
+        query = query.or(`end_date.is.null,end_date.gte.${now}`)
+
+        const { data, error } = await query
+
+        if (error) {
+            console.error('Error fetching collection banners:', error)
+            return { success: false, banners: [], error: error.message }
+        }
+
+        return { success: true, banners: data as Banner[] }
+    } catch (error: any) {
+        console.error('Error in getBannersByCollection:', error)
+        return { success: false, banners: [], error: error.message }
+    }
+}
+
 
 /**
  * Create a new banner
@@ -214,6 +258,7 @@ export async function createBanner(data: BannerFormData): Promise<{
                 image_alt: data.image_alt,
                 mobile_image_url: data.mobile_image_url,
                 placement: placement,
+                collection_id: data.collection_id || null,  // Collection association
                 target_type: linkType,
                 target_id: linkId,
                 cta_text: data.cta_text,

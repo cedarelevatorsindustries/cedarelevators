@@ -173,7 +173,7 @@ export async function getCollectionBySlug(slug: string) {
         product_id,
         collection_id,
         position,
-        product:products(id, name, slug, thumbnail, price, status)
+        product:products(id, name, slug, thumbnail_url, price, status)
       `)
             .eq('collection_id', data.id)
             .order('position', { ascending: true })

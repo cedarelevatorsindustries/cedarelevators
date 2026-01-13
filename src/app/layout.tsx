@@ -4,6 +4,7 @@ import "@/styles/globals.css"
 import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
 import { Toaster } from "@/components/ui/sonner"
+import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
 
@@ -118,6 +119,7 @@ export default function RootLayout({
         </head>
         <body className={spaceGrotesk.variable}>
           {children}
+          <PwaInstallPrompt />
           <Toaster />
         </body>
       </html>

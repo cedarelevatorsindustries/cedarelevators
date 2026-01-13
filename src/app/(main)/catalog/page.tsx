@@ -5,7 +5,7 @@ import { getApplicationBySlug, listApplications } from "@/lib/data/applications"
 import { listElevatorTypes } from "@/lib/data/elevator-types"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
-import { getBannersByPlacement } from "@/lib/actions/banners"
+import { getBannersByPlacement, getBannersByCollection } from "@/lib/actions/banners"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { auth } from "@clerk/nextjs/server"
 
@@ -160,7 +160,23 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   })
 
   // Fetch banners for carousel
-  const { banners = [] } = await getBannersByPlacement('hero-carousel')
+  let banners: any[] = []
+
+  if (activeCollection) {
+    // Try to get collection-specific banners
+    const { banners: collectionBanners } = await getBannersByCollection(activeCollection.id)
+    if (collectionBanners && collectionBanners.length > 0) {
+      banners = collectionBanners
+    } else {
+      // Fallback to general banners
+      const { banners: generalBanners } = await getBannersByPlacement('hero-carousel')
+      banners = generalBanners || []
+    }
+  } else {
+    // General catalog - show general banners
+    const { banners: generalBanners } = await getBannersByPlacement('hero-carousel')
+    banners = generalBanners || []
+  }
 
   // Fetch all applications for mobile view
   const applications = await listApplications()

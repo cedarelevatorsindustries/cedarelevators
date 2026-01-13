@@ -38,6 +38,7 @@ export default function MobileCatalogTemplate({
   elevatorTypes = [],
   activeCategory,
   activeApplication,
+  activeCollection,
   collections = [],
   banners = [],
   tab,
@@ -189,7 +190,11 @@ export default function MobileCatalogTemplate({
       {/* Tab Content */}
       {activeTab === "products" && (
         <>
-          <ProductsTabTemplate products={filteredProducts} banners={banners} />
+          <ProductsTabTemplate
+            products={filteredProducts}
+            banners={banners}
+            activeCollection={activeCollection}
+          />
 
           {/* Filter Sidebar (only show if filters are available) */}
           {filterConfig && (

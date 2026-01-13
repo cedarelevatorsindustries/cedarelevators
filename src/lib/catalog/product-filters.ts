@@ -5,6 +5,8 @@ interface FilterContext {
   type: CatalogType
   category?: string
   application?: string
+  collection?: string
+  collectionProductIds?: string[]
   search?: string
   recentlyViewedIds?: string[]
 }
@@ -16,7 +18,7 @@ export function filterProductsByType(
   products: Product[],
   context: FilterContext
 ): { primary: Product[]; fallback: Product[] } {
-  const { type, category, application, search, recentlyViewedIds = [] } = context
+  const { type, category, application, collection, collectionProductIds = [], search, recentlyViewedIds = [] } = context
 
   let primary: Product[] = []
   let fallback: Product[] = []
@@ -46,6 +48,13 @@ export function filterProductsByType(
     case "application":
       // Server-side already filters by application's categories, so we just pass through
       primary = products
+      break
+
+    case "collection":
+      // Primary: products in this collection
+      // Fallback: all other products
+      primary = products.filter((p) => collectionProductIds.includes(p.id))
+      fallback = products.filter((p) => !collectionProductIds.includes(p.id))
       break
 
     case "recently-viewed":

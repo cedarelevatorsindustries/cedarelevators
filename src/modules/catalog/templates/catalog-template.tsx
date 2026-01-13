@@ -41,7 +41,6 @@ interface CatalogTemplateProps {
   app?: string
 }
 
-type SortOption = "relevance" | "name" | "price-low" | "price-high" | "newest"
 const ITEMS_PER_PAGE = 24
 
 export default function CatalogTemplate({
@@ -69,6 +68,7 @@ export default function CatalogTemplate({
   if (!resolvedType) {
     if (effectiveSearchParams.category) resolvedType = "category"
     else if (effectiveSearchParams.application) resolvedType = "application"
+    else if (activeCollection) resolvedType = "collection"
     else if (effectiveSearchParams.search) resolvedType = "search"
     else resolvedType = "browse-all"
   }
@@ -78,7 +78,6 @@ export default function CatalogTemplate({
   // State
   const [searchQuery, setSearchQuery] = useState(effectiveSearchParams.search || "")
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
-  const [sortBy, setSortBy] = useState<SortOption>("relevance")
   const [currentPage, setCurrentPage] = useState(1)
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([])
@@ -122,14 +121,36 @@ export default function CatalogTemplate({
 
   // Filter products by type
   const { primary: primaryProducts, fallback: fallbackProducts } = useMemo(() => {
+    // Extract collection product IDs if this is a collection catalog
+    const collectionProductIds = activeCollection?.products?.map((p: any) => {
+      // Handle both direct product_id and nested product.id
+      if (typeof p === 'object') {
+        return p.product_id || p.product?.id || p.id
+      }
+      return p
+    }).filter(Boolean) || []
+
+    // Debug logging
+    if (activeCollection) {
+      console.log('=== COLLECTION DEBUG ===')
+      console.log('Collection:', activeCollection.title || activeCollection.name)
+      console.log('Collection products array:', activeCollection.products)
+      console.log('Extracted collection product IDs:', collectionProductIds)
+      console.log('Total products available:', initialProducts.length)
+      console.log('Sample product IDs:', initialProducts.slice(0, 5).map(p => ({ id: p.id, title: p.title })))
+      console.log('Sample collection products:', activeCollection.products?.slice(0, 3))
+    }
+
     return filterProductsByType(initialProducts, {
       type: catalogType,
       category: effectiveSearchParams.category,
       application: effectiveSearchParams.application,
+      collection: activeCollection?.slug || activeCollection?.handle,
+      collectionProductIds,
       search: searchQuery || effectiveSearchParams.search,
       recentlyViewedIds,
     })
-  }, [initialProducts, catalogType, effectiveSearchParams, searchQuery, recentlyViewedIds])
+  }, [initialProducts, catalogType, effectiveSearchParams, searchQuery, recentlyViewedIds, activeCollection])
 
   // Get related keywords for search
   const relatedKeywords = useMemo(() => {
@@ -166,9 +187,17 @@ export default function CatalogTemplate({
 
   // Combine and filter products
   const allDisplayProducts = useMemo(() => {
+    console.log('=== FILTER DEBUG START ===')
+    console.log('Catalog Type:', catalogType)
+    console.log('Config:', config)
+
     const combined = config.fallbackToAll
       ? [...primaryProducts, ...fallbackProducts]
       : primaryProducts
+
+    console.log('Primary products count:', primaryProducts.length)
+    console.log('Fallback products count:', fallbackProducts.length)
+    console.log('Combined products count:', combined.length)
 
     let filtered = [...combined]
 
@@ -184,7 +213,12 @@ export default function CatalogTemplate({
       ))
     )
 
+    console.log('Selected category:', selectedCategory)
+    console.log('Is main category:', isMainCategory)
+    console.log('Selected subcategory:', selectedSubcategory)
+
     if (selectedCategory && !isMainCategory) {
+      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedCategory ||
@@ -192,7 +226,9 @@ export default function CatalogTemplate({
           cat.slug === selectedCategory
         )
       )
+      console.log('After category filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     } else if (selectedSubcategory) {
+      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedSubcategory ||
@@ -200,49 +236,27 @@ export default function CatalogTemplate({
           cat.slug === selectedSubcategory
         )
       )
+      console.log('After subcategory filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     }
 
     // Apply sidebar filters
+    console.log('Active filters:', activeFilters)
+
     if (activeFilters.category && activeFilters.category.length > 0) {
+      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some(cat =>
           activeFilters.category.includes(cat.handle || cat.id)
         )
       )
+      console.log('After sidebar category filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     }
 
-    // Sort products
-    const sorted = [...filtered]
-    switch (sortBy) {
-      case "name":
-        sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""))
-        break
-      case "price-low":
-        sorted.sort((a, b) => {
-          const priceA = a.price?.amount || a.variants?.[0]?.price || 0
-          const priceB = b.price?.amount || b.variants?.[0]?.price || 0
-          return priceA - priceB
-        })
-        break
-      case "price-high":
-        sorted.sort((a, b) => {
-          const priceA = a.price?.amount || a.variants?.[0]?.price || 0
-          const priceB = b.price?.amount || b.variants?.[0]?.price || 0
-          return priceB - priceA
-        })
-        break
-      case "newest":
-        sorted.sort((a, b) =>
-          new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-        )
-        break
-      case "relevance":
-      default:
-        break
-    }
+    console.log('Final filtered products count:', filtered.length)
+    console.log('=== FILTER DEBUG END ===')
 
-    return sorted
-  }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, sortBy, selectedCategory, selectedSubcategory])
+    return filtered
+  }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, selectedCategory, selectedSubcategory])
 
   // Pagination
   const totalPages = Math.ceil(allDisplayProducts.length / ITEMS_PER_PAGE)
@@ -259,7 +273,7 @@ export default function CatalogTemplate({
   // Reset to page 1 when filters change
   useMemo(() => {
     setCurrentPage(1)
-  }, [searchQuery, sortBy, activeFilters, catalogType])
+  }, [searchQuery, activeFilters, catalogType])
 
   // Handlers
   const handleFilterChange = (filters: Record<string, string[]>) => {
@@ -311,8 +325,8 @@ export default function CatalogTemplate({
         />
       )}
 
-      {/* Browse All Banner - Full Width (Only for browse-all type and when banners exist) */}
-      {config.showBanner && !activeApplication && !currentCategory && catalogType === "browse-all" && banners.length > 0 && (
+      {/* Browse All Banner - Full Width (Only for browse-all or collection type and when banners exist) */}
+      {config.showBanner && !activeApplication && !currentCategory && (catalogType === "browse-all" || catalogType === "collection") && banners.length > 0 && (
         <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
           <BannerCarousel banners={banners} />
         </div>
@@ -337,7 +351,7 @@ export default function CatalogTemplate({
         </div>
       )}
 
-      {/* Collection Header - When viewing a specific collection */}
+      {/* Collection Header - Only for browse-all type with collection (not for collection catalog) */}
       {catalogType === "browse-all" && activeCollection && (
         <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
@@ -387,67 +401,159 @@ export default function CatalogTemplate({
 
             {/* Products Column */}
             <div className="flex-1">
-              {/* Primary Section Header */}
-              {showPrimarySection && (
+              {/* Collection Title and Description for collection type */}
+              {catalogType === "collection" && activeCollection && (
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {activeCollection.title || activeCollection.name}
+                  </h1>
+                  {activeCollection.description && (
+                    <p className="text-gray-600 text-base">{activeCollection.description}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Primary Section Header - Only for non-collection types */}
+              {showPrimarySection && catalogType !== "collection" && (
                 <div className="mt-6 mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">{config.title}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {config.title}
+                  </h2>
                   <p className="text-gray-600 text-sm mt-1">{primaryCount} products</p>
                 </div>
               )}
 
-              {/* Product Grid */}
-              {paginatedProducts.length > 0 ? (
+              {/* Product Grid - Special handling for collection type */}
+              {catalogType === "collection" ? (
+                /* Collection Type: Show two separate sections */
                 <>
-                  <div className={`mt-6 grid ${getGridColumns()}`}>
-                    {paginatedProducts.map((product) => {
-                      const tag = getProductTag(product, catalogType)
-                      return (
-                        <div key={product.id} className="relative">
-                          <ProductCard
-                            product={product}
-                            variant="default"
-                            badge={getProductBadge(product)}
-                          />
-                          {tag && (
-                            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
-                              {tag}
+                  {/* Section 1: Collection Products */}
+                  {primaryProducts.length > 0 ? (
+                    <>
+                      <div className={`mt-6 grid ${getGridColumns()}`}>
+                        {primaryProducts.map((product) => {
+                          const tag = getProductTag(product, catalogType)
+                          return (
+                            <div key={product.id} className="relative">
+                              <ProductCard
+                                product={product}
+                                variant="default"
+                                badge={getProductBadge(product)}
+                              />
+                              {tag && (
+                                <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                                  {tag}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
+                          )
+                        })}
+                      </div>
 
-                  {/* Fallback Section Divider */}
-                  {showFallbackSection && showPrimarySection && currentPage === 1 && (
-                    <div className="my-12 border-t border-gray-300 pt-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">More Products</h2>
-                      <p className="text-gray-600 text-sm">Explore our full catalog</p>
-                    </div>
-                  )}
+                      {/* Section 2 Divider: ALL PRODUCTS */}
+                      {fallbackProducts.length > 0 && (
+                        <>
+                          <div className="my-12 border-t border-gray-300 pt-8">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                              ALL PRODUCTS
+                            </h2>
+                            <p className="text-gray-600 text-sm">
+                              Showing {fallbackProducts.length} products
+                            </p>
+                          </div>
 
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
+                          {/* Section 2 Grid: All Products */}
+                          <div className={`mt-6 grid ${getGridColumns()}`}>
+                            {fallbackProducts.map((product) => {
+                              const tag = getProductTag(product, catalogType)
+                              return (
+                                <div key={product.id} className="relative">
+                                  <ProductCard
+                                    product={product}
+                                    variant="default"
+                                    badge={getProductBadge(product)}
+                                  />
+                                  {tag && (
+                                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                                      {tag}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <EmptyState
+                      image="/empty-states/no-result-found.png"
+                      title="No products in this collection"
+                      description="This collection doesn't have any products yet."
+                      actionLabel="Browse All Products"
+                      onAction={() => {
+                        router.push('/catalog')
+                      }}
                     />
                   )}
                 </>
               ) : (
-                <EmptyState
-                  image="/empty-states/no-result-found.png"
-                  title="No results found."
-                  description="We couldn't find any elevator components matching your search. Try different keywords or browse all parts."
-                  actionLabel="Clear Search & Browse All"
-                  onAction={() => {
-                    setActiveFilters({})
-                    setSearchQuery("")
-                    // Also clear URL params by pushing to base catalog URL
-                    router.push('/catalog')
-                  }}
-                />
+                /* Standard catalog types: Show paginated products with normal sections */
+                <>
+                  {paginatedProducts.length > 0 ? (
+                    <>
+                      <div className={`mt-6 grid ${getGridColumns()}`}>
+                        {paginatedProducts.map((product) => {
+                          const tag = getProductTag(product, catalogType)
+                          return (
+                            <div key={product.id} className="relative">
+                              <ProductCard
+                                product={product}
+                                variant="default"
+                                badge={getProductBadge(product)}
+                              />
+                              {tag && (
+                                <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                                  {tag}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Fallback Section Divider */}
+                      {showFallbackSection && showPrimarySection && currentPage === 1 && (
+                        <div className="my-12 border-t border-gray-300 pt-8">
+                          <h2 className="text-2xl font-bold text-gray-900 mb-2">More Products</h2>
+                          <p className="text-gray-600 text-sm">Explore our full catalog</p>
+                        </div>
+                      )}
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <Pagination
+                          currentPage={currentPage}
+                          totalPages={totalPages}
+                          onPageChange={setCurrentPage}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <EmptyState
+                      image="/empty-states/no-result-found.png"
+                      title="No results found."
+                      description="We couldn't find any elevator components matching your search. Try different keywords or browse all parts."
+                      actionLabel="Clear Search & Browse All"
+                      onAction={() => {
+                        setActiveFilters({})
+                        setSearchQuery("")
+                        // Also clear URL params by pushing to base catalog URL
+                        router.push('/catalog')
+                      }}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>

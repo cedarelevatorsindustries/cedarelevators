@@ -29,6 +29,7 @@ export default function CreateBannerPage() {
     image_alt: "",
     mobile_image_url: "",
     placement: "hero-carousel" as BannerPlacement,
+    collection_id: "" as string | null,
     link_type: "" as BannerLinkType,
     link_id: "",
     cta_text: "",
@@ -71,6 +72,7 @@ export default function CreateBannerPage() {
         ...formData,
         start_date: formData.start_date || undefined,
         end_date: formData.end_date || undefined,
+        collection_id: formData.collection_id || null, // Pass collection_id
         image_url: mainImage,
         mobile_image_url: mainMobileImage || "",
         is_active: !isDraft,
@@ -181,6 +183,42 @@ export default function CreateBannerPage() {
                     rows={2}
                   />
                 </div>
+
+                {/* Scope / Collection Association */}
+                <div className="space-y-2 pt-4 border-t border-gray-100">
+                  <Label>Banner Scope (Where it displays)</Label>
+                  <Select
+                    value={formData.collection_id ? "collection" : "general"}
+                    onValueChange={(value) => setFormData({
+                      ...formData,
+                      collection_id: value === "general" ? null : formData.collection_id
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select banner scope" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General Catalog (Default)</SelectItem>
+                      <SelectItem value="collection">Specific Collection Page</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    General banners show on the main catalog. Collection banners ONLY show on that collection's page.
+                  </p>
+                </div>
+
+                {formData.collection_id !== null && (formData.collection_id || "collection") && (
+                  <div className={formData.collection_id === null ? "hidden" : "block"}>
+                    <div className="space-y-2 pl-4 border-l-2 border-orange-100">
+                      <Label>Select Collection *</Label>
+                      <EntitySelector
+                        type="collection"
+                        value={formData.collection_id || ""}
+                        onChange={(value) => setFormData({ ...formData, collection_id: value })}
+                      />
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
