@@ -68,9 +68,9 @@ export default async function HomePage() {
     })
   }))
 
-  // Fetch Business Hub data for business users
+  // Fetch Business Hub data for business users (both unverified and verified)
   let businessHubData = null
-  if (userType === "business") {
+  if (userType === "business" || userType === "verified") {
     const result = await getBusinessHubData()
     if (result.success) {
       businessHubData = result.data

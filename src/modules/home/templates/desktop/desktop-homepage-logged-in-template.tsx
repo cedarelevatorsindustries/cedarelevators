@@ -102,7 +102,7 @@ export default function DesktopHomepageLoggedIn({
           </>
         )}
         {activeTab === "categories" && <CategoriesTab categories={categories} elevatorTypes={elevatorTypes} collections={categoriesCollections} />}
-        {activeTab === "business-hub" && userType === "business" && businessHubData && <BusinessHubTab data={businessHubData} collections={businessHubCollections} />}
+        {activeTab === "business-hub" && (userType === "business" || userType === "verified") && businessHubData && <BusinessHubTab data={businessHubData} collections={businessHubCollections} />}
       </div>
     </div>
   )
