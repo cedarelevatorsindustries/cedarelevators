@@ -40,11 +40,6 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             label: 'Quotes',
             icon: 'FileText',
           },
-          {
-            section: PROFILE_SECTIONS.ORDER_HISTORY,
-            label: 'Orders',
-            icon: 'Package',
-          },
         ],
       },
       {
@@ -58,17 +53,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           },
         ],
       },
-      {
-        title: 'Support',
-        icon: 'CircleHelp',
-        items: [
-          {
-            section: PROFILE_SECTIONS.OVERVIEW, // Will be updated to help center
-            label: 'Help Center',
-            icon: 'CircleHelp',
-          },
-        ],
-      },
+
     ]
   }
 
@@ -83,11 +68,6 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             section: PROFILE_SECTIONS.OVERVIEW,
             label: 'Business Overview',
             icon: 'LayoutDashboard',
-          },
-          {
-            section: PROFILE_SECTIONS.BUSINESS_INFO,
-            label: 'Business Info',
-            icon: 'Building2',
           },
           {
             section: PROFILE_SECTIONS.ADDRESSES,
@@ -117,11 +97,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
             label: 'Orders',
             icon: 'Package',
           },
-          {
-            section: PROFILE_SECTIONS.INVOICES,
-            label: 'Invoices',
-            icon: 'FileText',
-          },
+
         ],
       },
       {
@@ -135,17 +111,7 @@ export function getProfileNavigation(accountType: AccountType): ProfileNavigatio
           },
         ],
       },
-      {
-        title: 'Support',
-        icon: 'CircleHelp',
-        items: [
-          {
-            section: PROFILE_SECTIONS.OVERVIEW, // Will be updated to help center
-            label: 'Help Center',
-            icon: 'CircleHelp',
-          },
-        ],
-      },
+
     ]
   }
 

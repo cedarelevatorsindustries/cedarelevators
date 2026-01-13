@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server"
 import { createClerkSupabaseClient } from "@/lib/supabase/server"
 import { getOrderById } from "@/lib/data/orders"
 import OrderDetailsTemplate from "@/modules/orders/templates/order-details-template"
+import AccessDenied from "@/modules/orders/components/access-denied"
 
 export const metadata = {
     title: "Order Details | Cedar B2B Storefront",
@@ -14,19 +15,37 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
         const { userId } = await auth()
         const { id } = params
 
+        // Redirect guests to sign-in
         if (!userId) {
             redirect("/sign-in?redirect=/profile/orders")
+        }
+
+        // Fetch user profile
+        const supabase = await createClerkSupabaseClient()
+        const { data: profile, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("id", userId)
+            .single()
+
+        // Check access permissions
+        if (profileError || !profile) {
+            return <AccessDenied userType="guest" />
+        }
+
+        if (profile.account_type !== 'business') {
+            return <AccessDenied userType="individual" />
+        }
+
+        if (!profile.is_verified) {
+            return <AccessDenied userType="business_unverified" />
         }
 
         // Fetch order details
         const order = await getOrderById(id)
 
-        // Verify ownership
-        // Note: getOrderById should ideally verify ownership, but checking here is safer 
-        // if using Supabase client with RLS properly, it handles it. 
-        // If not, we should check order.clerk_user_id === userId
-
-        if (!order) {
+        // Verify ownership - order should belong to this user
+        if (!order || order.clerk_user_id !== userId) {
             return (
                 <div className="container mx-auto py-12 px-4 text-center">
                     <h1 className="text-2xl font-bold text-gray-900">Order Not Found</h1>

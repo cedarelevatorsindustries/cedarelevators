@@ -51,7 +51,6 @@ export function getMobileProfileMenu(
       {
         title: 'Support',
         items: [
-          { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
           { label: 'About Cedar', icon: 'Info', href: '/about' },
         ]
       }
@@ -70,12 +69,6 @@ export function getMobileProfileMenu(
         ]
       },
       {
-        title: 'Activity',
-        items: [
-          { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
-        ]
-      },
-      {
         title: 'Settings',
         items: [
           { label: 'Security', icon: 'Shield', href: '/profile/security' },
@@ -84,7 +77,6 @@ export function getMobileProfileMenu(
       {
         title: 'Support & Auth',
         items: [
-          { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
           { label: 'Contact Support', icon: 'Headset', href: '/contact' },
           { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false },
         ]
@@ -101,15 +93,8 @@ export function getMobileProfileMenu(
           title: 'Business',
           items: [
             { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
-            { label: 'Business Info', icon: 'Building2', href: '/profile/business-info' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
             { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
-          ]
-        },
-        {
-          title: 'Activity',
-          items: [
-            { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
           ]
         },
         {
@@ -121,7 +106,6 @@ export function getMobileProfileMenu(
         {
           title: 'Support',
           items: [
-            { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
             { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false, isLogout: true },
           ]
@@ -134,7 +118,6 @@ export function getMobileProfileMenu(
           title: 'Business',
           items: [
             { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile' },
-            { label: 'Business Info', icon: 'Building2', href: '/profile/business-info' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
             { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals' },
           ]
@@ -142,7 +125,7 @@ export function getMobileProfileMenu(
         {
           title: 'Activity',
           items: [
-            { label: 'Orders', icon: 'Package', href: '/profile/order-history' },
+            { label: 'Orders', icon: 'Package', href: '/profile/orders' },
           ]
         },
         {
@@ -154,7 +137,6 @@ export function getMobileProfileMenu(
         {
           title: 'Support',
           items: [
-            { label: 'Help Center', icon: 'CircleHelp', href: '/help' },
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
             { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false, isLogout: true },
           ]

@@ -140,22 +140,7 @@ export default function ProfileSidebar({
                   const isActive = activeSection === item.section
                   const ItemIcon = iconMap[item.icon] || User
 
-                  // Handle Help Center as external link
-                  if (item.label === 'Help Center') {
-                    return (
-                      <a
-                        key={item.section}
-                        href="/help"
-                        className={cn(
-                          'w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
-                          'text-gray-700 hover:bg-white/50'
-                        )}
-                      >
-                        <ItemIcon size={20} className="flex-shrink-0" />
-                        <span className="flex-1 text-left whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
-                      </a>
-                    )
-                  }
+
 
                   return (
                     <button

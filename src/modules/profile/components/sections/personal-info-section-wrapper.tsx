@@ -1,7 +1,8 @@
 'use client'
 
 import { useProfile } from '@/lib/hooks/useProfile'
-import PersonalInfoSection from './personal-info-section'
+import { useUser } from '@/lib/auth/client'
+import ConsolidatedAccountForm from './consolidated-account-form'
 import { LoaderCircle } from 'lucide-react'
 
 export default function PersonalInfoSectionWrapper() {
@@ -11,6 +12,8 @@ export default function PersonalInfoSectionWrapper() {
     updateProfile,
     uploadAvatar,
   } = useProfile()
+
+  const { user: authUser } = useUser()
 
   if (isLoading) {
     return (
@@ -27,11 +30,45 @@ export default function PersonalInfoSectionWrapper() {
     return null
   }
 
+  const isBusinessUser = authUser?.activeProfile?.profile_type === 'business'
+
+  // Default empty address for business info
+  const emptyAddress = {
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: ''
+  }
+
+  const companyProfile = isBusinessUser ? {
+    company_name: authUser?.business?.name || authUser?.name || '',
+    company_logo: authUser?.imageUrl || undefined,
+    tax_id: '',  // TODO: Add GST field to businesses table if needed
+    industry: '',
+    company_size: '',
+    billing_address: emptyAddress,  // TODO: Add address fields to businesses table if needed
+    shipping_address: emptyAddress,
+    contact_email: authUser?.email || '',
+    contact_phone: ''  // TODO: Add contact_phone field to businesses table if needed
+  } : null
+
   return (
-    <PersonalInfoSection
+    <ConsolidatedAccountForm
       user={user}
-      onUpdate={updateProfile}
+      companyProfile={companyProfile}
+      onUpdatePersonal={updateProfile}
+      onUpdateCompany={async (updates) => {
+        console.log('Update company info:', updates)
+        // TODO: Implement company updates
+      }}
       onUploadAvatar={uploadAvatar}
+      onUploadLogo={async (file) => {
+        console.log('Upload logo:', file)
+        // TODO: Implement logo upload
+        return ''
+      }}
     />
   )
 }

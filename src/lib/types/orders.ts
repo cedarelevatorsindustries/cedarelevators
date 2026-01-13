@@ -6,10 +6,13 @@
 export interface OrderWithDetails {
     id: string
     user_id: string | null
+    clerk_user_id?: string | null
     guest_email: string | null
     guest_name: string | null
     guest_phone: string | null
+    order_number?: string
     order_status: string
+    status?: string  // Alias for order_status
     payment_status: string
     payment_method: string | null
     subtotal_amount: number
@@ -26,6 +29,14 @@ export interface OrderWithDetails {
     shipping_provider: string | null
     notes: string | null
     cancellation_reason: string | null
+    // Quote reference (if order came from quote)
+    quote_id?: string | null
+    quote_number?: string | null
+    // Order timeline timestamps
+    payment_confirmed_at?: string | null
+    processing_at?: string | null
+    shipped_at?: string | null
+    delivered_at?: string | null
     created_at: string
     updated_at: string
     order_items?: OrderItem[]
@@ -52,6 +63,7 @@ export interface BillingAddress {
     state: string
     pincode: string
     country: string
+    gstin?: string  // GST Identification Number for business invoicing
 }
 
 export interface OrderItem {

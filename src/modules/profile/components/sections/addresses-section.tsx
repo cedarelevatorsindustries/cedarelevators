@@ -93,7 +93,7 @@ export default function AddressesSection({
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
           >
             <Plus size={16} />
-            <span>Add Address</span>
+            <span>Add <span className="hidden sm:inline">Address</span></span>
           </button>
         )}
       </div>
@@ -124,7 +124,7 @@ export default function AddressesSection({
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
               >
                 <Plus size={16} />
-                <span>Add Address</span>
+                <span>Add <span className="hidden sm:inline">Address</span></span>
               </button>
             )}
           </div>

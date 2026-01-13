@@ -2,6 +2,7 @@
 
 import { useUser } from '@/lib/auth/client'
 import AccountOverviewSection from './account-overview-section'
+import BusinessInfoDisplay from './business-info-display'
 import { BusinessVerificationCard } from '@/components/business-verification-card'
 import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -61,6 +62,7 @@ export default function AccountOverviewWrapper() {
   }
 
   const accountType = user.activeProfile?.profile_type === 'business' ? 'business' : 'individual'
+  const isBusinessUser = accountType === 'business'
 
   return (
     <div className="space-y-6">
@@ -75,9 +77,18 @@ export default function AccountOverviewWrapper() {
         onNavigate={handleNavigate}
       />
 
-
+      {/* Show Read-Only Business Info for Business Users */}
+      {isBusinessUser && (
+        <BusinessInfoDisplay
+          companyName={user.business?.name || user.name || ''}
+          email={user.email || ''}
+          phone={user.phone}
+          taxId=""
+          industry=""
+          companySize=""
+        />
+      )}
     </div>
   )
 }
-
 

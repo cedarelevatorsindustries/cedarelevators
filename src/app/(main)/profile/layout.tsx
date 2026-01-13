@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import ProfileTopbar from '@/modules/profile/components/profile-topbar'
 import ProfileSidebarWrapper from '@/modules/profile/components/profile-sidebar-wrapper'
 import ProfileMobileNew from '@/modules/profile/templates/profile-mobile-new'
+import { ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
 
 type AccountType = 'individual' | 'business'
 
@@ -16,6 +18,7 @@ export default function ProfileLayout({
 }) {
   const { isLoaded, user } = useUser()
   const router = useRouter()
+  const pathname = usePathname()
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -123,9 +126,22 @@ export default function ProfileLayout({
 
   // Show mobile logged-in view
   if (isMobile) {
+    // If on main profile page, show menu
+    if (pathname === '/profile') {
+      return (
+        <div className="min-h-screen bg-white pt-16 lg:pt-0">
+          <ProfileMobileNew />
+        </div>
+      )
+    }
+
+    // If on sub-route, show page content
     return (
       <div className="min-h-screen bg-white pt-16 lg:pt-0">
-        <ProfileMobileNew />
+        {/* Page Content */}
+        <div className="p-4">
+          {children}
+        </div>
       </div>
     )
   }
