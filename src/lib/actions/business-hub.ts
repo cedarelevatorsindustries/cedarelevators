@@ -1,7 +1,7 @@
 'use server'
 
 import { auth } from '@clerk/nextjs/server'
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient, createClerkSupabaseClient } from '@/lib/supabase/server'
 
 export interface BusinessHubData {
     verification: {
@@ -36,10 +36,13 @@ export async function getBusinessHubData(): Promise<
             return { success: false, error: 'Unauthorized' }
         }
 
-        const supabase = await createClerkSupabaseClient()
+        // Use Admin client for user and business lookups to bypass RLS
+        // This ensures we can verify status even if RLS policies are strict
+        const adminSupabase = createAdminClient()
+        const userSupabase = await createClerkSupabaseClient()
 
         // First get the user's Supabase ID from users table
-        const { data: userData } = await supabase
+        const { data: userData } = await adminSupabase
             .from('users')
             .select('id')
             .eq('clerk_user_id', userId)
@@ -51,14 +54,15 @@ export async function getBusinessHubData(): Promise<
 
         // Get business verification status from businesses table via business_members
         // This is the source of truth for verification status
-        const { data: businessMember } = await supabase
+        const { data: businessMember } = await adminSupabase
             .from('business_members')
             .select('business:businesses(id, verification_status)')
             .eq('user_id', userData.id)
             .single()
 
         // Also check if there's a pending verification in business_verifications
-        const { data: pendingVerification } = await supabase
+        // Using admin client to ensure visibility
+        const { data: pendingVerification } = await adminSupabase
             .from('business_verifications')
             .select('status')
             .eq('user_id', userData.id)
@@ -67,7 +71,7 @@ export async function getBusinessHubData(): Promise<
             .maybeSingle()
 
         // Fetch active quotes for action items and stats
-        const { data: quotes } = await supabase
+        const { data: quotes } = await userSupabase
             .from('quotes')
             .select('id, quote_number, status, estimated_total, expires_at, created_at, items:quote_items(id)')
             .eq('clerk_user_id', userId)
@@ -75,7 +79,7 @@ export async function getBusinessHubData(): Promise<
             .order('created_at', { ascending: false })
 
         // Fetch active orders count
-        const { count: ordersCount } = await supabase
+        const { count: ordersCount } = await userSupabase
             .from('orders')
             .select('*', { count: 'exact', head: true })
             .eq('clerk_user_id', userId)
