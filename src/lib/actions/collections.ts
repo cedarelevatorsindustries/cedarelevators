@@ -123,7 +123,7 @@ export async function getCollectionById(id: string) {
         collection_id,
         position,
         created_at,
-        product:products(id, name, slug, thumbnail, price, status)
+        product:products(id, name, slug, thumbnail, price, status, product_variants(id, inventory_quantity))
       `)
             .eq('collection_id', id)
             .order('position', { ascending: true })

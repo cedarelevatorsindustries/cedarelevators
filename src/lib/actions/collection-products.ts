@@ -114,14 +114,33 @@ export async function getCollectionProducts(collectionId: string) {
           name,
           slug,
           thumbnail_url,
+          thumbnail,
           price,
-          status
+          status,
+          allow_backorders,
+          product_variants (
+            id,
+            inventory_quantity
+          )
         )
       `)
             .eq('collection_id', collectionId)
             .order('position', { ascending: true })
 
         if (error) throw error
+
+        // Debug logging to trace variant data
+        console.log('[getCollectionProducts] Fetched products:', {
+            collectionId,
+            productCount: data?.length || 0,
+            sampleProduct: data?.[0] ? {
+                id: (data[0] as any).product?.id,
+                name: (data[0] as any).product?.name,
+                hasProductVariants: !!(data[0] as any).product?.product_variants,
+                variantsCount: (data[0] as any).product?.product_variants?.length || 0,
+                sampleVariant: (data[0] as any).product?.product_variants?.[0]
+            } : null
+        })
 
         return {
             success: true,

@@ -214,3 +214,229 @@ export async function fulfillInventory(variantId: string, quantity: number): Pro
 
     return { success: true }
 }
+
+// ==========================================
+// Admin Inventory Server Actions
+// ==========================================
+
+export interface AdminInventoryItem {
+    id: string
+    variant_id: string
+    quantity: number
+    reserved: number
+    available_quantity: number
+    low_stock_threshold: number
+    last_restock_at?: string
+    created_at: string
+    updated_at: string
+    product_name: string
+    variant_name: string | null
+    sku: string | null
+    price: number | null
+    thumbnail: string | null
+    product_id: string
+}
+
+export interface InventoryStats {
+    totalItems: number
+    inStock: number
+    lowStock: number
+    outOfStock: number
+    totalValue: number
+}
+
+export interface LowStockItem {
+    id: string
+    variant_id: string
+    product_name: string
+    variant_name: string | null
+    sku: string | null
+    current_stock: number
+    threshold: number
+    thumbnail: string | null
+}
+
+/**
+ * Get admin inventory list with filtering and pagination
+ */
+export async function getAdminInventoryList(
+    filters: { stockStatus?: string; search?: string },
+    page: number = 1,
+    limit: number = 50
+): Promise<AdminInventoryItem[]> {
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('inventory_items')
+        .select(`
+            id,
+            variant_id,
+            quantity,
+            reserved,
+            available_quantity,
+            low_stock_threshold,
+            last_restock_at,
+            created_at,
+            updated_at,
+            product_variants!inner (
+                id,
+                name,
+                sku,
+                price,
+                image_url,
+                products!inner (
+                    id,
+                    name,
+                    thumbnail_url
+                )
+            )
+        `)
+        .range((page - 1) * limit, page * limit - 1)
+
+    if (error) {
+        logger.error('Error fetching admin inventory', error)
+        return []
+    }
+
+    // Transform to flat structure
+    let inventory = (data || []).map((item: any) => {
+        const variant = item.product_variants
+        const product = variant?.products
+        return {
+            id: item.id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+            reserved: item.reserved || 0,
+            available_quantity: item.available_quantity ?? (item.quantity - (item.reserved || 0)),
+            low_stock_threshold: item.low_stock_threshold || 10,
+            last_restock_at: item.last_restock_at,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            product_name: product?.name || 'Unknown Product',
+            variant_name: variant?.name,
+            sku: variant?.sku,
+            price: variant?.price,
+            thumbnail: variant?.image_url || product?.thumbnail_url,
+            product_id: product?.id
+        }
+    })
+
+    // Apply stock status filter
+    if (filters.stockStatus && filters.stockStatus !== 'all') {
+        inventory = inventory.filter((item: AdminInventoryItem) => {
+            if (filters.stockStatus === 'in_stock') return item.quantity > item.low_stock_threshold
+            if (filters.stockStatus === 'low_stock') return item.quantity > 0 && item.quantity <= item.low_stock_threshold
+            if (filters.stockStatus === 'out_of_stock') return item.quantity <= 0
+            return true
+        })
+    }
+
+    // Apply search filter
+    if (filters.search) {
+        const searchLower = filters.search.toLowerCase()
+        inventory = inventory.filter((item: AdminInventoryItem) =>
+            item.product_name.toLowerCase().includes(searchLower) ||
+            item.variant_name?.toLowerCase().includes(searchLower) ||
+            item.sku?.toLowerCase().includes(searchLower)
+        )
+    }
+
+    return inventory
+}
+
+/**
+ * Get inventory statistics for admin dashboard
+ */
+export async function getInventoryStats(): Promise<InventoryStats> {
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('inventory_items')
+        .select(`
+            quantity,
+            low_stock_threshold,
+            product_variants!inner (
+                price
+            )
+        `)
+
+    if (error) {
+        logger.error('Error fetching inventory stats', error)
+        return { totalItems: 0, inStock: 0, lowStock: 0, outOfStock: 0, totalValue: 0 }
+    }
+
+    const items = data || []
+    let inStock = 0, lowStock = 0, outOfStock = 0, totalValue = 0
+
+    for (const item of items) {
+        const threshold = item.low_stock_threshold || 10
+        const price = (item.product_variants as any)?.price || 0
+
+        if (item.quantity <= 0) {
+            outOfStock++
+        } else if (item.quantity <= threshold) {
+            lowStock++
+        } else {
+            inStock++
+        }
+        totalValue += item.quantity * price
+    }
+
+    return {
+        totalItems: items.length,
+        inStock,
+        lowStock,
+        outOfStock,
+        totalValue
+    }
+}
+
+/**
+ * Get low stock alerts for admin dashboard
+ */
+export async function getLowStockAlerts(): Promise<LowStockItem[]> {
+    const supabase = await createServerSupabase()
+
+    const { data, error } = await supabase
+        .from('inventory_items')
+        .select(`
+            id,
+            variant_id,
+            quantity,
+            low_stock_threshold,
+            product_variants!inner (
+                name,
+                sku,
+                image_url,
+                products!inner (
+                    name,
+                    thumbnail_url
+                )
+            )
+        `)
+        .lte('quantity', 10) // Low stock threshold
+        .limit(20)
+
+    if (error) {
+        logger.error('Error fetching low stock alerts', error)
+        return []
+    }
+
+    // Filter items where quantity <= low_stock_threshold
+    return (data || [])
+        .filter((item: any) => item.quantity <= (item.low_stock_threshold || 10))
+        .map((item: any) => {
+            const variant = item.product_variants
+            const product = variant?.products
+            return {
+                id: item.id,
+                variant_id: item.variant_id,
+                product_name: product?.name || 'Unknown Product',
+                variant_name: variant?.name,
+                sku: variant?.sku,
+                current_stock: item.quantity,
+                threshold: item.low_stock_threshold || 10,
+                thumbnail: variant?.image_url || product?.thumbnail_url
+            }
+        })
+}

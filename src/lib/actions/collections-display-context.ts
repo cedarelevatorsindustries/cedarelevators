@@ -121,7 +121,13 @@ export async function getCollectionsWithProductsByDisplayContext(
                             slug,
                             thumbnail_url,
                             price,
-                            status
+                            status,
+                            product_variants (
+                                id,
+                                price,
+                                compare_at_price,
+                                inventory_quantity
+                            )
                         )
                     `)
                     .eq('collection_id', collection.id)
@@ -145,7 +151,9 @@ export async function getCollectionsWithProductsByDisplayContext(
                             ...rawProduct,
                             // Convert price from rupees (database) to paise/cents (frontend)
                             // Database: 480.00 = ₹480, Frontend expects: 48000 (divides by 100)
-                            price: rawProduct.price ? Math.round(rawProduct.price * 100) : null
+                            price: rawProduct.price ? Math.round(rawProduct.price * 100) : null,
+                            // Include variants for stock display
+                            product_variants: rawProduct.product_variants || []
                         } : null
                     }
                 })

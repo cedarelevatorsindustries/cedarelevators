@@ -49,7 +49,13 @@ export async function getMegaMenuData() {
                     short_description,
                     description,
                     sku,
-                    status
+                    status,
+                    product_variants (
+                        id,
+                        price,
+                        compare_at_price,
+                        inventory_quantity
+                    )
                 )
             `)
             .in('category_id', categoryIds)
@@ -101,7 +107,9 @@ export async function getMegaMenuData() {
                             currency_code: 'INR'
                         },
                         description: p.short_description || p.description,
-                        sku: p.sku
+                        sku: p.sku,
+                        // Include variants for stock display
+                        variants: p.product_variants || []
                     }))
                 }
             })

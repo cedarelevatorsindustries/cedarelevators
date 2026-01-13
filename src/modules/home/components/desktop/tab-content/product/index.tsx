@@ -75,7 +75,8 @@ export default function ProductsTab({
           handle: product.slug,
           thumbnail: product.thumbnail_url || product.thumbnail,
           price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
-          variants: [],
+          // Include variants from product_variants for stock display
+          variants: product.product_variants || [],
           metadata: {}
         }
       }),

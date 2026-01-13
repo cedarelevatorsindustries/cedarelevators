@@ -119,6 +119,10 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
           *,
           product_categories(
             category:categories(*)
+          ),
+          product_variants(
+            id,
+            inventory_quantity
           )
         `)
         .in('id', productIds)
@@ -148,6 +152,8 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
             handle: p.slug,
             images: parsedImages,
             thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+            // Include variants for stock display
+            variants: p.product_variants || [],
             categories: p.product_categories?.map((pc: any) => ({
               ...pc.category,
               name: pc.category?.title || pc.category?.name,
@@ -193,11 +199,17 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
     let query = supabase
       .from('products')
-      // Fetch categories via product_categories junction table
+      // Fetch categories via product_categories junction table AND variants for stock display
       .select(`
         *,
         product_categories(
           category:categories(*)
+        ),
+        product_variants(
+          id,
+          price,
+          compare_at_price,
+          inventory_quantity
         )
       `, { count: 'exact' })
       .eq('status', 'active') // Only fetch active products
@@ -232,6 +244,8 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,
         thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        // Include variants for stock display
+        variants: p.product_variants || [],
         // Extract categories from junctiontable
         categories: p.product_categories?.map((pc: any) => ({
           ...pc.category,

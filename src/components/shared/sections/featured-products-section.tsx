@@ -17,12 +17,10 @@ export function FeaturedProductsSection({
 }: FeaturedProductsSectionProps) {
     const isMobile = variant === 'mobile'
 
-    // Shuffle products randomly
-    const shuffled = [...products].sort(() => Math.random() - 0.5)
-
-    // Take first 5-8 products after shuffling
+    // Take first 5-8 products (no random shuffle to avoid hydration mismatch)
+    // Random shuffling causes SSR/client mismatch because Math.random() differs
     const randomCount = isMobile ? 5 : 8
-    const randomProducts = shuffled.slice(0, randomCount).map((product: any) => ({
+    const randomProducts = products.slice(0, randomCount).map((product: any) => ({
         id: product.id,
         title: product.title || product.name,
         name: product.name,

@@ -131,3 +131,56 @@ export async function searchProductsForQuote(query: string): Promise<{
         return { success: false, error: error.message };
     }
 }
+
+export interface VariantOption {
+    value: string;
+    label: string;
+    sku: string | null;
+    price?: number;
+}
+
+/**
+ * Get variants for a specific product
+ * Used to populate variant dropdown in quote form after product selection
+ */
+export async function getProductVariants(productId: string): Promise<{
+    success: boolean;
+    variants?: VariantOption[];
+    error?: string;
+}> {
+    try {
+        if (!productId) {
+            return { success: true, variants: [] };
+        }
+
+        const supabase = await createServerSupabase();
+        const showPrices = await canUserSeePrices();
+
+        const { data, error } = await supabase
+            .from('product_variants')
+            .select('id, name, sku, price')
+            .eq('product_id', productId)
+            .order('name');
+
+        if (error) {
+            console.error('Error fetching product variants:', error);
+            return { success: false, error: error.message };
+        }
+
+        // Transform to dropdown format
+        const variants: VariantOption[] = (data || []).map(variant => ({
+            value: variant.id,
+            label: variant.name || `Variant ${variant.sku || variant.id.slice(0, 8)}`,
+            sku: variant.sku,
+            price: showPrices ? variant.price : undefined
+        }));
+
+        return {
+            success: true,
+            variants
+        };
+    } catch (error: any) {
+        console.error('Error fetching product variants:', error);
+        return { success: false, error: error.message };
+    }
+}

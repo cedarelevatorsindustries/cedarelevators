@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useFieldArray, Control, UseFormRegister, FieldErrors, Controller } from 'react-hook-form';
 import { Plus, X, Package, ChevronDown, AlertCircle, Search, Loader2 } from 'lucide-react';
 import { UserType } from '../types';
-import { getProductsForQuote, searchProductsForQuote, ProductOption } from '@/lib/actions/quote-products';
+import { getProductsForQuote, searchProductsForQuote, getProductVariants, ProductOption, VariantOption } from '@/lib/actions/quote-products';
 
 interface QuoteItemsInputProps {
     control: Control<any>;
@@ -118,6 +118,10 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
+    // Variant state - track variants for each item by index
+    const [variantOptionsMap, setVariantOptionsMap] = useState<Map<number, any[]>>(new Map());
+    const [loadingVariantsMap, setLoadingVariantsMap] = useState<Map<number, boolean>>(new Map());
+
     // Load initial products
     useEffect(() => {
         loadProducts();
@@ -163,6 +167,42 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
         }, 300);
 
         setSearchTimeout(timeout);
+    };
+
+    // Load variants for a specific product (called when product is selected)
+    const loadVariants = async (productId: string, index: number) => {
+        if (!productId) {
+            // Clear variants for this index
+            setVariantOptionsMap(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(index);
+                return newMap;
+            });
+            return;
+        }
+
+        // Set loading state
+        setLoadingVariantsMap(prev => {
+            const newMap = new Map(prev);
+            newMap.set(index, true);
+            return newMap;
+        });
+
+        const result = await getProductVariants(productId);
+
+        if (result.success && result.variants) {
+            setVariantOptionsMap(prev => {
+                const newMap = new Map(prev);
+                newMap.set(index, result.variants || []);
+                return newMap;
+            });
+        }
+
+        setLoadingVariantsMap(prev => {
+            const newMap = new Map(prev);
+            newMap.set(index, false);
+            return newMap;
+        });
     };
 
     // Guest User - Single Product Selection
@@ -257,7 +297,11 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
                                         render={({ field: { onChange, value } }) => (
                                             <CustomSelect
                                                 value={value}
-                                                onChange={onChange}
+                                                onChange={(newValue: string) => {
+                                                    onChange(newValue);
+                                                    // Load variants when product changes
+                                                    loadVariants(newValue, index);
+                                                }}
                                                 options={productOptions}
                                                 placeholder="Select product"
                                                 error={errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.product_id}
@@ -273,6 +317,35 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
                                         </p>
                                     )}
                                 </div>
+
+                                {/* Variant Selection - Shows when product has variants */}
+                                {variantOptionsMap.get(index) && (variantOptionsMap.get(index) || []).length > 0 && (
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                                            Variant <span className="text-gray-400">(optional)</span>
+                                        </label>
+                                        <Controller
+                                            control={control}
+                                            name={`items.${index}.variant_id`}
+                                            render={({ field: { onChange, value } }) => (
+                                                <CustomSelect
+                                                    value={value}
+                                                    onChange={onChange}
+                                                    options={variantOptionsMap.get(index) || []}
+                                                    placeholder="Select variant"
+                                                    error={null}
+                                                    isLoading={loadingVariantsMap.get(index) || false}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                )}
+                                {loadingVariantsMap.get(index) && (
+                                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        Loading variants...
+                                    </p>
+                                )}
 
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1.5">

@@ -61,8 +61,19 @@ export default function ProductCard({
   const isBusiness = userState === 'business_unverified' || userState === 'business_verified'
   const isVerified = userState === 'business_verified'
 
-  const price = product.price?.amount || product.variants?.[0]?.price
-  const formattedPrice = price ? `₹${(price / 100).toLocaleString("en-IN")}` : null
+  // Extract price and compare_at_price (MRP) from product or variants
+  const price = product.price?.amount || product.variants?.[0]?.price || (product as any).price
+  const compareAtPrice = product.variants?.[0]?.compare_at_price || (product as any).compare_at_price
+
+  // Format prices for display (prices are in rupees, not paise)
+  const formattedPrice = price ? `₹${Number(price).toLocaleString("en-IN")}` : null
+  const formattedMRP = compareAtPrice && compareAtPrice > price ? `MRP ₹${Number(compareAtPrice).toLocaleString("en-IN")}` : null
+
+  // Calculate discount percentage
+  const discountPercent = (price && compareAtPrice && compareAtPrice > price)
+    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
+    : null
+
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -120,8 +131,24 @@ export default function ProductCard({
   const badgeConfig = getBadgeConfig()
 
   // Check if product is out of stock
-  const totalInventory = product.variants?.reduce((sum, v) => sum + (v.inventory_quantity || 0), 0) || 0
+  // Handle both 'variants' (from some sources) and 'product_variants' (from Supabase relations)
+  const variants = product.variants || (product as any).product_variants || []
+  const totalInventory = variants.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0)
   const isOutOfStock = totalInventory === 0
+
+  // Debug logging for stock issues
+  if (typeof window !== 'undefined' && (window as any).__DEBUG_STOCK__) {
+    console.log('[ProductCard] Stock check:', {
+      productId: product.id,
+      productName: product.title,
+      hasVariants: !!product.variants,
+      hasProductVariants: !!(product as any).product_variants,
+      variantsCount: variants.length,
+      totalInventory,
+      isOutOfStock,
+      rawVariants: variants
+    })
+  }
 
   // Mobile Card Variant - Compact with cart icon left of quote button
   if (variant === "mobile") {
@@ -186,12 +213,22 @@ export default function ProductCard({
             )}
           </Link>
 
-          {/* Price Section - Role-based Display (Same as Desktop) */}
+          {/* Price Section - With MRP and Discount */}
           {showPrice && formattedPrice ? (
-            // Verified Business - Show Price
+            // Verified Business - Show Price with MRP and Discount
             <div className="py-0.5">
-              <p className="text-base font-bold text-gray-900">{formattedPrice}</p>
-              <p className="text-[10px] text-gray-500">Min. order: Contact for details</p>
+              <div className="flex items-center gap-1 flex-wrap">
+                <span className="text-base font-bold text-gray-900">{formattedPrice}</span>
+                {formattedMRP && (
+                  <span className="text-[10px] text-gray-400 line-through">{formattedMRP}</span>
+                )}
+                {discountPercent && discountPercent > 0 && (
+                  <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded">
+                    {discountPercent}%
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-500">(Inclusive of all taxes)</p>
             </div>
           ) : isGuest ? (
             // Guest - Login Required
@@ -233,18 +270,8 @@ export default function ProductCard({
             </p>
           )}
 
-          {/* CTA Buttons - Cart Icon + Quote Button */}
+          {/* CTA Buttons - Quote only (users add variants to cart from product detail page) */}
           <div className="flex gap-1.5 pt-1">
-            {/* Cart Button - Only for Verified Business */}
-            {showPrice && (
-              <button
-                onClick={handleAddToCart}
-                className="w-8 h-8 flex-shrink-0 rounded-lg bg-orange-500 hover:bg-orange-600 transition-colors flex items-center justify-center shadow-sm"
-              >
-                <ShoppingCart className="w-4 h-4 text-white" />
-              </button>
-            )}
-
             {/* Request Quote Button - For Everyone */}
             <button
               onClick={handleRequestQuote}
@@ -326,11 +353,20 @@ export default function ProductCard({
 
           {/* Price & Actions Row */}
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
-            {/* Price Display */}
+            {/* Price Display with MRP and Discount */}
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 font-medium">Starting from</span>
               {showPrice && formattedPrice ? (
-                <span className="text-sm font-bold text-gray-900">{formattedPrice}</span>
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-sm font-bold text-gray-900">{formattedPrice}</span>
+                  {formattedMRP && (
+                    <span className="text-[10px] text-gray-400 line-through">{formattedMRP}</span>
+                  )}
+                  {discountPercent && discountPercent > 0 && (
+                    <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1 py-0.5 rounded">
+                      {discountPercent}%
+                    </span>
+                  )}
+                </div>
               ) : isBusiness && isVerified ? (
                 <span className="text-xs font-bold text-gray-600">Quote</span>
               ) : (
@@ -340,17 +376,8 @@ export default function ProductCard({
               )}
             </div>
 
-            {/* Actions: Cart (only for verified) & Quote (for all) */}
+            {/* Actions: Quote only (users add variants to cart from product detail page) */}
             <div className="flex gap-1.5">
-              {showPrice && (
-                <button
-                  onClick={handleAddToCart}
-                  className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 transition-all flex items-center justify-center"
-                  title="Add to Cart"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
-              )}
               <button
                 onClick={handleRequestQuote}
                 className="w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 border border-orange-100 hover:border-orange-500 transition-all flex items-center justify-center"
@@ -429,10 +456,20 @@ export default function ProductCard({
 
         {/* Price Section - Role-based Display */}
         {showPrice && formattedPrice ? (
-          // Verified Business - Show Price
+          // Verified Business - Show Price with MRP and Discount
           <div className="py-1 mt-2">
-            <p className="text-lg font-bold text-gray-900">{formattedPrice}</p>
-            <p className="text-xs text-gray-500">Min. order: Contact for details</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-lg font-bold text-gray-900">{formattedPrice}</span>
+              {formattedMRP && (
+                <span className="text-sm text-gray-400 line-through">{formattedMRP}</span>
+              )}
+              {discountPercent && discountPercent > 0 && (
+                <span className="text-xs font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                  {discountPercent}%
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">(Inclusive of all taxes)</p>
           </div>
         ) : isGuest ? (
           // Guest - Login Required
@@ -474,23 +511,12 @@ export default function ProductCard({
           </p>
         )}
 
-        {/* CTA Buttons - Cart only for Verified Business */}
+        {/* CTA Buttons - Quote only (users add variants to cart from product detail page) */}
         <div className="flex gap-2 pt-2">
-          {/* Add to Cart - Only for Verified Business */}
-          {showPrice && (
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 py-2.5 rounded-lg font-medium text-sm bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Add to Cart
-            </button>
-          )}
-
           {/* Request Quote - For Everyone */}
           <button
             onClick={handleRequestQuote}
-            className={`${showPrice ? 'flex-1' : 'w-full'} py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-2`}
+            className="w-full py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4 h-4" />
             {isBusiness && !isVerified ? "Get Bulk Quote" : "Quote"}
