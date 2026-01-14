@@ -1,5 +1,6 @@
 "use server"
 
+import { cache } from 'react'
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 /**
@@ -8,8 +9,9 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
  * - Query 1: Fetch all active categories
  * - Query 2: Fetch all products for all categories in one query
  * - Group products by category in JS
+ * - CACHED per-request (multiple calls in same request return cached result)
  */
-export async function getMegaMenuData() {
+async function _fetchMegaMenuData() {
     try {
         const supabase = createServerSupabaseClient()
 
@@ -127,3 +129,8 @@ export async function getMegaMenuData() {
     }
 }
 
+/**
+ * getMegaMenuData (CACHED per-request)
+ * Multiple calls in same request return cached result
+ */
+export const getMegaMenuData = cache(_fetchMegaMenuData)

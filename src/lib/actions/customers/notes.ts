@@ -24,7 +24,7 @@ export async function getCustomerNotes(
         const { data: notes, error } = await supabase
             .from('customer_notes')
             .select('*')
-            .eq('customer_clerk_id', customerClerkId)
+            .eq('clerk_user_id', customerClerkId)
             .order('created_at', { ascending: false })
 
         if (error) {
@@ -61,7 +61,7 @@ export async function addCustomerNote(
         const adminUser = await getCurrentAdminUser()
 
         const { error } = await supabase.from('customer_notes').insert({
-            customer_clerk_id: customerClerkId,
+            clerk_user_id: customerClerkId,
             admin_clerk_id: adminUser?.clerk_user_id || 'system',
             admin_name: adminUser?.name || 'System Admin', // Fallback
             note_text: noteText,

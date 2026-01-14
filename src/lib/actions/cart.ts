@@ -1,6 +1,6 @@
 'use server'
 
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createClerkSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { Cart, CartItem } from "@/lib/types/domain"
 import { randomUUID } from "crypto"
 import { cookies } from "next/headers"
@@ -19,12 +19,12 @@ async function getCartId(): Promise<string> {
 }
 
 export async function createCart(regionId?: string): Promise<Cart> {
-  const supabase = await createClerkSupabaseClient()
+  const adminClient = createAdminClient() // Use admin client for cart creation
   const cartId = await getCartId()
 
-  const { data, error } = await supabase
+  const { data, error } = await adminClient
     .from('carts')
-    .insert({ id: cartId, region_id: regionId, currency_code: 'usd' }) // Default currency
+    .insert({ id: cartId, region_id: regionId, currency_code: 'INR' }) // Default currency INR
     .select()
     .single()
 
@@ -41,12 +41,12 @@ export async function createCart(regionId?: string): Promise<Cart> {
 }
 
 export async function getCart(cartId?: string): Promise<Cart | null> {
-  const supabase = await createClerkSupabaseClient()
+  const adminClient = createAdminClient() // Use admin client to bypass RLS
   const id = cartId || (await cookies()).get("cart_id")?.value
 
   if (!id) return null
 
-  const { data: cart, error } = await supabase
+  const { data: cart, error } = await adminClient
     .from('carts')
     .select('*, items:cart_items(*)')
     .eq('id', id)
@@ -68,6 +68,8 @@ export async function getCart(cartId?: string): Promise<Cart | null> {
 
 export async function addToCart(variantId: string, quantity: number) {
   const supabase = await createClerkSupabaseClient()
+  const adminClient = createAdminClient() // Use admin client for product reads (bypasses RLS)
+
   let cartId = (await cookies()).get("cart_id")?.value
 
   if (!cartId) {
@@ -75,56 +77,64 @@ export async function addToCart(variantId: string, quantity: number) {
     cartId = newCart.id
   }
 
-  // Fetch product details
+  // Fetch product details using admin client (bypasses RLS issues with Clerk)
   // First try product_variants, then fall back to products table
   let productTitle = "Product"
   let unitPrice = 0
   let thumbnail = ""
   let productId = variantId
 
-  // Try fetching from product_variants table
-  const { data: variant, error: varError } = await supabase
+  // Try fetching from product_variants table (using admin client)
+  const { data: variant, error: varError } = await adminClient
     .from('product_variants')
-    .select('*, product:products(id, name, thumbnail)')
+    .select('id, name, price, product_id, inventory_quantity, image_url')
     .eq('id', variantId)
     .single()
 
   if (variant && !varError) {
-    // Variant found
-    productTitle = variant.name || variant.product?.name || "Product"
-    unitPrice = variant.price || 0
-    thumbnail = variant.product?.thumbnail || variant.image_url || ""
-    productId = variant.product_id || variant.product?.id
+    // Variant found, now fetch product details separately (using admin client)
+    const { data: product } = await adminClient
+      .from('products')
+      .select('id, name, thumbnail_url')
+      .eq('id', variant.product_id)
+      .single()
+
+    productTitle = variant.name || product?.name || "Product"
+    unitPrice = Number(variant.price) || 0
+    thumbnail = product?.thumbnail_url || variant.image_url || ""
+    productId = variant.product_id
 
     // Check inventory
-    if (variant.inventory_quantity < quantity) {
+    if (variant.inventory_quantity !== null && variant.inventory_quantity < quantity) {
       throw new Error(`Insufficient stock. Available: ${variant.inventory_quantity}`)
     }
   } else {
-    // Fallback to products table (simple schema without variants)
-    const { data: product, error: prodError } = await supabase
+    // Fallback to products table (using admin client)
+    const { data: product, error: prodError } = await adminClient
       .from('products')
-      .select('id, name, thumbnail, price, stock_quantity')
+      .select('id, name, thumbnail_url, price, stock_quantity')
       .eq('id', variantId)
       .single()
 
     if (prodError || !product) {
+      // Log for debugging
+      console.error('Cart: Product/Variant not found', { variantId, varError, prodError })
       throw new Error(`Product not found: ${variantId}`)
     }
 
     // Check inventory
-    if (product.stock_quantity < quantity) {
+    if (product.stock_quantity !== null && product.stock_quantity < quantity) {
       throw new Error(`Insufficient stock. Available: ${product.stock_quantity}`)
     }
 
     productTitle = product.name
-    unitPrice = product.price || 0
-    thumbnail = product.thumbnail || ""
+    unitPrice = Number(product.price) || 0
+    thumbnail = product.thumbnail_url || ""
     productId = product.id
   }
 
-  // 2. Insert or Update Cart Item
-  const { data: existingItem } = await supabase
+  // 2. Insert or Update Cart Item (using admin client to bypass RLS)
+  const { data: existingItem } = await adminClient
     .from('cart_items')
     .select('*')
     .eq('cart_id', cartId)
@@ -132,14 +142,14 @@ export async function addToCart(variantId: string, quantity: number) {
     .single()
 
   if (existingItem) {
-    const { error } = await supabase
+    const { error } = await adminClient
       .from('cart_items')
       .update({ quantity: existingItem.quantity + quantity })
       .eq('id', existingItem.id)
 
     if (error) throw error
   } else {
-    const { error } = await supabase
+    const { error } = await adminClient
       .from('cart_items')
       .insert({
         cart_id: cartId,

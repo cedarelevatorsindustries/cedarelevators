@@ -162,10 +162,10 @@ export async function getUserActiveCart(
     const supabase = await createClerkSupabaseClient()
 
     const profile = profileType || context.profileType
-    const bizId = businessId || context.businessId
 
-    // Build query
-    let query = supabase
+    // Build query - Note: business_id column may not exist in carts table
+    // We filter by clerk_user_id and profile_type only
+    const { data: cart, error } = await supabase
       .from('carts')
       .select(`
         *,
@@ -174,15 +174,7 @@ export async function getUserActiveCart(
       .eq('clerk_user_id', context.userId)
       .eq('profile_type', profile)
       .eq('status', 'active')
-
-    // Add business_id filter if provided
-    if (bizId) {
-      query = query.eq('business_id', bizId)
-    } else {
-      query = query.is('business_id', null)
-    }
-
-    const { data: cart, error } = await query.maybeSingle()
+      .maybeSingle()
 
     if (error) {
       logger.error('getUserActiveCart error', error)
@@ -191,7 +183,7 @@ export async function getUserActiveCart(
 
     if (!cart) {
       // No active cart found, create one
-      return await getOrCreateCart(profile, bizId)
+      return await getOrCreateCart(profile, businessId)
     }
 
     return { success: true, data: cart as Cart }

@@ -1,5 +1,6 @@
 'use server'
 
+import { cache } from 'react'
 import { createServerSupabase } from '@/lib/supabase/server'
 import {
     StoreSettings,
@@ -20,18 +21,14 @@ import { logger } from '@/lib/services/logger'
  * Individual async functions for managing all admin settings modules
  */
 
-/**
- * Get store settings
- */
-export async function getStoreSettings(): Promise<{
+// Internal fetch function (not cached)
+async function _fetchStoreSettings(): Promise<{
     success: boolean
     data?: StoreSettings
     error?: string
 }> {
     try {
         const supabase = await createServerSupabase()
-
-        logger.info('Fetch store settings attempt')
 
         const { data, error } = await supabase
             .from('store_settings')
@@ -48,13 +45,18 @@ export async function getStoreSettings(): Promise<{
             return { success: false, error: error.message }
         }
 
-        logger.info('Store settings fetched successfully')
         return { success: true, data: data as StoreSettings }
     } catch (error: any) {
         logger.error('Exception in getStoreSettings', error)
         return { success: false, error: error.message || 'Failed to fetch settings' }
     }
 }
+
+/**
+ * Get store settings (CACHED per-request)
+ * Multiple calls in same request return cached result
+ */
+export const getStoreSettings = cache(_fetchStoreSettings)
 
 /**
  * Update store settings
