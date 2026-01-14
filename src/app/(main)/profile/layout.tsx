@@ -6,8 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import ProfileTopbar from '@/modules/profile/components/profile-topbar'
 import ProfileMobileNew from '@/modules/profile/templates/profile-mobile-template'
 import MobileBottomNavigation from '@/modules/layout/components/mobile/bottom-nav'
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
+
 
 type AccountType = 'individual' | 'business'
 
@@ -145,14 +144,6 @@ export default function ProfileLayout({
       <div className="min-h-screen bg-white pt-16 lg:pt-0 pb-16">
         {/* Page Content */}
         <div className="p-4">
-          {pathname === '/profile' && isOverview && (
-            <div className="mb-4">
-              <Link href="/profile" className="flex items-center text-sm text-gray-500 hover:text-gray-900">
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back to Menu
-              </Link>
-            </div>
-          )}
           {children}
         </div>
         <MobileBottomNavigation />
