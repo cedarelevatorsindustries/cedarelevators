@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ShoppingCart, Heart } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
+import { useCart } from "@/contexts/cart-context"
 import { ProfileMenu } from "./profile-menu"
 import { MoreMenu } from "./more-menu"
 import { DeliverToMenu } from "./deliver-to-menu"
@@ -24,12 +25,21 @@ interface NavbarActionsProps {
 export function NavbarActions({ config, isTransparent, pathname, isScrolled }: NavbarActionsProps) {
     const { user, isLoaded } = useUser()
     const { count: wishlistCount } = useWishlist()
-    const [cartItemCount] = useState(0) // TODO: Get from cart context
+    const { summary, derivedItems } = useCart()
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false)
 
-    // Mock cart data - TODO: Get from cart context
-    const cartItems: never[] = [] // Empty for now
-    const cartTotal = "₹0.00"
+    // Get cart data from context
+    const cartItemCount = summary.itemCount || 0
+    const cartTotal = `₹${summary.total.toLocaleString()}`
+
+    // Transform derivedItems to match CartHoverCardContent format
+    const cartItems = derivedItems.map(item => ({
+        id: item.id,
+        title: item.title,
+        image: item.thumbnail || undefined,
+        price: `₹${item.unit_price.toLocaleString()}`,
+        quantity: item.quantity
+    }))
 
     // Determine user type - hide cart for individual and guest users
     const userType: UserType = user?.userType === 'verified' ? 'business_verified' :

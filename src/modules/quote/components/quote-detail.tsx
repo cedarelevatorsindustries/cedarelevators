@@ -178,8 +178,26 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                 </div>
             )}
 
-            {/* Individual: Upgrade prompt */}
-            {showBusinessUpgrade && (
+            {/* Individual: Show checkout button if approved, else show upgrade prompt */}
+            {isIndividual && quote.status === 'approved' && (
+                <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg flex items-center justify-between">
+                    <div>
+                        <h3 className="font-semibold text-emerald-900">Quote Approved! Ready to Order</h3>
+                        <p className="text-emerald-800 text-sm mt-1">
+                            Your quote has been approved. You can now proceed to checkout.
+                        </p>
+                    </div>
+                    <Link
+                        href={`/quotes/${quote.id}/checkout`}
+                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                    >
+                        Proceed to Checkout <ArrowRight className="w-4 h-4" />
+                    </Link>
+                </div>
+            )}
+
+            {/* Individual: Show upgrade prompt only if NOT approved */}
+            {isIndividual && quote.status !== 'approved' && (
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
                     <h3 className="font-semibold text-purple-900 mb-1">Want to see pricing and place orders?</h3>
                     <p className="text-purple-800 text-sm mb-3">
