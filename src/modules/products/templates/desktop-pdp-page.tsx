@@ -20,7 +20,7 @@ import VariantSelector from "../components/product/variant-selector"
 import { useRef, useState, useEffect, useTransition } from "react"
 
 // Import actions
-import { addToCart } from "@/lib/actions/cart"
+import { addItemToCart } from "@/lib/actions/cart-v2"
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 
@@ -162,8 +162,16 @@ export default function ProductDetailPage({
     startTransition(async () => {
       try {
         const variantId = getSelectedVariantId()
-        await addToCart(variantId, quantity)
-        toast.success(`${product.title} added to cart`)
+        const result = await addItemToCart({
+          productId: product.id,
+          variantId: variantId || undefined,
+          quantity
+        })
+        if (result.success) {
+          toast.success(`${product.title} added to cart`)
+        } else {
+          toast.error(result.error || "Failed to add to cart")
+        }
       } catch (error: any) {
         toast.error(error.message || "Failed to add to cart")
       }
@@ -217,10 +225,10 @@ export default function ProductDetailPage({
     startTransition(async () => {
       try {
         // Add main product
-        await addToCart(product.id, 1)
+        await addItemToCart({ productId: product.id, quantity: 1 })
         // Add bundle products
         for (const bundleProduct of bundleProducts) {
-          await addToCart(bundleProduct.id, 1)
+          await addItemToCart({ productId: bundleProduct.id, quantity: 1 })
         }
         toast.success("Bundle added to cart")
       } catch (error: any) {

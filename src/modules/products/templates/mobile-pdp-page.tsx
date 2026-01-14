@@ -19,7 +19,7 @@ import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-to
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
 
 // Import actions
-import { addToCart } from "@/lib/actions/cart"
+import { addItemToCart } from "@/lib/actions/cart-v2"
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 
@@ -127,8 +127,15 @@ export default function MobileProductDetailPage({
   const handleAddToCart = (quantity: number) => {
     startTransition(async () => {
       try {
-        await addToCart(product.id, quantity)
-        toast.success(`${product.title} added to cart`)
+        const result = await addItemToCart({
+          productId: product.id,
+          quantity
+        })
+        if (result.success) {
+          toast.success(`${product.title} added to cart`)
+        } else {
+          toast.error(result.error || "Failed to add to cart")
+        }
       } catch (error: any) {
         toast.error(error.message || "Failed to add to cart")
       }
@@ -181,9 +188,9 @@ export default function MobileProductDetailPage({
   const handleAddBundle = () => {
     startTransition(async () => {
       try {
-        await addToCart(product.id, 1)
+        await addItemToCart({ productId: product.id, quantity: 1 })
         for (const bundleProduct of bundleProducts) {
-          await addToCart(bundleProduct.id, 1)
+          await addItemToCart({ productId: bundleProduct.id, quantity: 1 })
         }
         toast.success("Bundle added to cart")
       } catch (error: any) {
