@@ -14,7 +14,8 @@ export function useProductTypes(productId: string) {
     return useQuery({
         queryKey: ['product-types', productId],
         queryFn: () => getProductTypes(productId),
-        select: (data) => data.types
+        select: (data) => data.types,
+        staleTime: 1000 * 60 * 5,  // 5 minutes
     })
 }
 
@@ -25,7 +26,8 @@ export function useTypeProducts(typeId: string) {
     return useQuery({
         queryKey: ['type-products', typeId],
         queryFn: () => getTypeProducts(typeId),
-        select: (data) => data.products
+        select: (data) => data.products,
+        staleTime: 1000 * 60 * 5,  // 5 minutes
     })
 }
 

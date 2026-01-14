@@ -7,6 +7,7 @@ export function useProducts(filters: ProductFilters = {}) {
     return useQuery({
         queryKey: ['products', filters],
         queryFn: () => getProducts(filters, filters.page || 1),
+        staleTime: 1000 * 60 * 2,  // 2 minutes - product list cache
     })
 }
 
@@ -15,6 +16,7 @@ export function useProduct(id: string) {
         queryKey: ['product', id],
         queryFn: () => getProduct(id),
         enabled: !!id,
+        staleTime: 1000 * 60 * 5,  // 5 minutes - individual product cache
     })
 }
 
@@ -22,6 +24,7 @@ export function useProductStats() {
     return useQuery({
         queryKey: ['products-stats'],
         queryFn: () => getProductStats(),
+        staleTime: 1000 * 60 * 5,  // 5 minutes - stats cache
     })
 }
 

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useUser } from "@/lib/auth/client"
 import { toast } from "sonner"
 
@@ -33,63 +34,53 @@ export interface WishlistItem {
   }
 }
 
+interface WishlistData {
+  items: WishlistItem[]
+  count: number
+}
+
+// Fetch function - only called ONCE per cache key
+async function fetchWishlist(): Promise<WishlistData> {
+  const response = await fetch('/api/wishlist')
+  const data = await response.json()
+
+  if (data.success) {
+    return { items: data.items || [], count: data.count || 0 }
+  }
+
+  console.error('Wishlist fetch failed:', data.error)
+  return { items: [], count: 0 }
+}
+
+// Query key factory
+const wishlistKeys = {
+  all: ['wishlist'] as const,
+}
+
 export function useWishlist() {
   const { user } = useUser()
-  const [items, setItems] = useState<WishlistItem[]>([])
-  const [count, setCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const fetchWishlist = useCallback(async () => {
-    try {
-      const response = await fetch('/api/wishlist')
-      const data = await response.json()
+  // Single query - React Query deduplicates across all components
+  const { data, isLoading } = useQuery({
+    queryKey: wishlistKeys.all,
+    queryFn: fetchWishlist,
+    staleTime: 1000 * 60 * 2,  // 2 minutes - reduces refetching
+    gcTime: 1000 * 60 * 10,    // 10 minutes - keep in cache
+  })
 
-      if (data.success) {
-        setItems(data.items || [])
-        setCount(data.count || 0)
-      } else {
-        console.error('fetch failed:', data.error)
-      }
-    } catch (error) {
-      console.error('Error fetching wishlist:', error)
-      toast.error('Failed to load wishlist')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  const items = data?.items || []
+  const count = data?.count || 0
 
-  useEffect(() => {
-    fetchWishlist()
-  }, [fetchWishlist, user])
-
-  const addItem = async (
-    variantId: string,
-    productId: string,
-    title: string,
-    thumbnail: string | null,
-    price: number
-  ) => {
-
-    // Optimistic update with flat structure
-    const optimisticItem: WishlistItem = {
-      id: `temp_${Date.now()}`,
-      variant_id: variantId,
-      product_id: productId,
-      quantity: 1,
-      product_title: title,
-      product_thumbnail: thumbnail,
-      product_handle: '',
-      variant_title: '',
-      price: price
-    }
-
-    const previousItems = [...items]
-    const previousCount = count
-
-    setItems([optimisticItem, ...items])
-    setCount(count + 1)
-
-    try {
+  // Add item mutation
+  const addMutation = useMutation({
+    mutationFn: async ({ variantId, productId, title, thumbnail, price }: {
+      variantId: string
+      productId: string
+      title: string
+      thumbnail: string | null
+      price: number
+    }) => {
       const response = await fetch('/api/wishlist/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,7 +88,6 @@ export function useWishlist() {
           product_id: productId,
           variant_id: variantId,
           quantity: 1,
-          // Product snapshot data
           product_title: title,
           product_thumbnail: thumbnail,
           product_handle: '',
@@ -105,139 +95,175 @@ export function useWishlist() {
           price: price
         })
       })
-
       const data = await response.json()
+      if (!data.success) throw new Error(data.error || 'Failed to add item')
+      return data
+    },
+    onMutate: async ({ variantId, productId, title, thumbnail, price }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all })
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to add item')
-      }
+      // Snapshot previous value
+      const previous = queryClient.getQueryData<WishlistData>(wishlistKeys.all)
 
-      // Refresh to get accurate data (replace temp ID with real ID)
-      await fetchWishlist()
-      toast.success('Added to wishlist')
+      // Optimistic update
+      queryClient.setQueryData<WishlistData>(wishlistKeys.all, (old) => ({
+        items: [
+          {
+            id: `temp_${Date.now()}`,
+            variant_id: variantId,
+            product_id: productId,
+            quantity: 1,
+            product_title: title,
+            product_thumbnail: thumbnail,
+            product_handle: '',
+            variant_title: '',
+            price: price
+          },
+          ...(old?.items || [])
+        ],
+        count: (old?.count || 0) + 1
+      }))
 
-      return { items: data.items, count: data.count }
-    } catch (error) {
+      return { previous }
+    },
+    onError: (err, variables, context) => {
       // Rollback on error
-      console.error('add failed, rolling back:', error)
-      setItems(previousItems)
-      setCount(previousCount)
+      if (context?.previous) {
+        queryClient.setQueryData(wishlistKeys.all, context.previous)
+      }
       toast.error('Failed to add to wishlist')
-      throw error
+    },
+    onSuccess: () => {
+      toast.success('Added to wishlist')
+      // Refetch to get real ID
+      queryClient.invalidateQueries({ queryKey: wishlistKeys.all })
     }
-  }
+  })
 
-  const removeItem = async (variantId: string) => {
-    const itemToRemove = items.find(item => item.variant_id === variantId)
-    if (!itemToRemove) {
-      return
-    }
-
-    // Optimistic update
-    const previousItems = [...items]
-    const previousCount = count
-
-    setItems(items.filter(item => item.variant_id !== variantId))
-    setCount(count - 1)
-
-    try {
-      // If it's a temp item, we can't delete it from server yet, but checking for 'temp_' prefix is risky if ID format changes.
-      // However, fetchWishlist replaces temp IDs with real ones, so usually this is fine.
-      const response = await fetch(`/api/wishlist/items/${itemToRemove.id}`, {
+  // Remove item mutation
+  const removeMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const response = await fetch(`/api/wishlist/items/${itemId}`, {
         method: 'DELETE'
       })
-
       const data = await response.json()
+      if (!data.success) throw new Error(data.error || 'Failed to remove item')
+      return data
+    },
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all })
+      const previous = queryClient.getQueryData<WishlistData>(wishlistKeys.all)
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to remove item')
+      queryClient.setQueryData<WishlistData>(wishlistKeys.all, (old) => ({
+        items: (old?.items || []).filter(item => item.id !== itemId),
+        count: Math.max((old?.count || 0) - 1, 0)
+      }))
+
+      return { previous }
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(wishlistKeys.all, context.previous)
       }
-
-      toast.success('Removed from wishlist')
-      return { items: data.items, count: data.count }
-    } catch (error) {
-      // Rollback on error
-      console.error('delete failed, rolling back:', error)
-      setItems(previousItems)
-      setCount(previousCount)
       toast.error('Failed to remove from wishlist')
-      throw error
+    },
+    onSuccess: () => {
+      toast.success('Removed from wishlist')
     }
-  }
+  })
 
-  const isInWishlist = (variantId: string) => {
-    return items.some(item => item.variant_id === variantId)
-  }
-
-  const toggleItem = async (
-    variantId: string,
-    productId: string,
-    title: string,
-    thumbnail: string | null,
-    price: number
-  ) => {
-    if (isInWishlist(variantId)) {
-      return await removeItem(variantId)
-    } else {
-      return await addItem(variantId, productId, title, thumbnail, price)
+  // Clear wishlist mutation
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/wishlist/clear', {
+        method: 'DELETE'
+      })
+      const data = await response.json()
+      if (!data.success) throw new Error(data.error || 'Failed to clear wishlist')
+      return data
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all })
+      const previous = queryClient.getQueryData<WishlistData>(wishlistKeys.all)
+      queryClient.setQueryData<WishlistData>(wishlistKeys.all, { items: [], count: 0 })
+      return { previous }
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(wishlistKeys.all, context.previous)
+      }
+      toast.error('Failed to clear wishlist')
+    },
+    onSuccess: () => {
+      toast.success('Wishlist cleared')
     }
-  }
+  })
 
-  const mergeGuestWishlist = async () => {
-    if (!user) return
-
-    try {
+  // Merge guest wishlist mutation
+  const mergeMutation = useMutation({
+    mutationFn: async () => {
       const response = await fetch('/api/wishlist/merge', {
         method: 'POST'
       })
-
-      const data = await response.json()
-
+      return response.json()
+    },
+    onSuccess: (data) => {
       if (data.success) {
-        await fetchWishlist()
+        queryClient.invalidateQueries({ queryKey: wishlistKeys.all })
         if (data.count > 0) {
           toast.success(`Merged ${data.count} items from your guest wishlist`)
         }
       }
-    } catch (error) {
-      console.error('Error merging wishlist:', error)
     }
-  }
+  })
 
-  const clearWishlist = async () => {
-    const previousItems = [...items]
-    const previousCount = count
+  const addItem = useCallback(
+    (variantId: string, productId: string, title: string, thumbnail: string | null, price: number) => {
+      return addMutation.mutateAsync({ variantId, productId, title, thumbnail, price })
+    },
+    [addMutation]
+  )
 
-    setItems([])
-    setCount(0)
-
-    try {
-      const response = await fetch('/api/wishlist/clear', {
-        method: 'DELETE'
-      })
-
-      const data = await response.json()
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to clear wishlist')
+  const removeItem = useCallback(
+    (variantId: string) => {
+      const item = items.find(i => i.variant_id === variantId)
+      if (item) {
+        return removeMutation.mutateAsync(item.id)
       }
+    },
+    [items, removeMutation]
+  )
 
-      toast.success('Wishlist cleared')
-    } catch (error) {
-      setItems(previousItems)
-      setCount(previousCount)
-      console.error('Error clearing wishlist:', error)
-      toast.error('Failed to clear wishlist')
-      throw error
-    }
-  }
+  const isInWishlist = useCallback(
+    (variantId: string) => items.some(item => item.variant_id === variantId),
+    [items]
+  )
 
-  // Auto-merge on login
-  useEffect(() => {
+  const toggleItem = useCallback(
+    async (variantId: string, productId: string, title: string, thumbnail: string | null, price: number) => {
+      if (isInWishlist(variantId)) {
+        return removeItem(variantId)
+      } else {
+        return addItem(variantId, productId, title, thumbnail, price)
+      }
+    },
+    [isInWishlist, removeItem, addItem]
+  )
+
+  const mergeGuestWishlist = useCallback(() => {
     if (user) {
-      mergeGuestWishlist()
+      mergeMutation.mutate()
     }
-  }, [user?.id])
+  }, [user, mergeMutation])
+
+  const clearWishlist = useCallback(() => {
+    return clearMutation.mutateAsync()
+  }, [clearMutation])
+
+  const refresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: wishlistKeys.all })
+  }, [queryClient])
 
   return {
     items,
@@ -249,6 +275,6 @@ export function useWishlist() {
     isInWishlist,
     mergeGuestWishlist,
     clearWishlist,
-    refresh: fetchWishlist,
+    refresh,
   }
 }

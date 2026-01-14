@@ -32,6 +32,7 @@ export function useCollections(filters?: CollectionFilters) {
     return useQuery({
         queryKey: collectionKeys.list(filters),
         queryFn: () => getCollections(filters),
+        staleTime: 1000 * 60 * 5,  // 5 minutes - collections rarely change
     })
 }
 
@@ -40,6 +41,7 @@ export function useCollection(id: string) {
         queryKey: collectionKeys.detail(id),
         queryFn: () => getCollectionById(id),
         enabled: !!id,
+        staleTime: 1000 * 60 * 5,  // 5 minutes - collection detail cache
     })
 }
 

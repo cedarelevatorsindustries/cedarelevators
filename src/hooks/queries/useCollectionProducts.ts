@@ -15,7 +15,8 @@ export function useCollectionProducts(collectionId: string) {
     return useQuery({
         queryKey: ['collection-products', collectionId],
         queryFn: () => getCollectionProducts(collectionId),
-        select: (data) => data.products
+        select: (data) => data.products,
+        staleTime: 1000 * 60 * 5,  // 5 minutes
     })
 }
 
@@ -26,7 +27,8 @@ export function useProductCollections(productId: string) {
     return useQuery({
         queryKey: ['product-collections', productId],
         queryFn: () => getProductCollections(productId),
-        select: (data) => data.collections
+        select: (data) => data.collections,
+        staleTime: 1000 * 60 * 5,  // 5 minutes
     })
 }
 
