@@ -30,40 +30,11 @@ export default function PersonalInfoSectionWrapper() {
     return null
   }
 
-  const isBusinessUser = authUser?.activeProfile?.profile_type === 'business'
-
-  // Default empty address for business info
-  const emptyAddress = {
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: ''
-  }
-
-  const companyProfile = isBusinessUser ? {
-    company_name: authUser?.business?.name || authUser?.name || '',
-    company_logo: authUser?.imageUrl || undefined,
-    tax_id: '',  // TODO: Add GST field to businesses table if needed
-    industry: '',
-    company_size: '',
-    billing_address: emptyAddress,  // TODO: Add address fields to businesses table if needed
-    shipping_address: emptyAddress,
-    contact_email: authUser?.email || '',
-    contact_phone: ''  // TODO: Add contact_phone field to businesses table if needed
-  } : null
-
   return (
     <ConsolidatedAccountForm
       user={user}
-      companyProfile={companyProfile}
       onUpdatePersonal={async (updates) => {
         await updateProfile(updates)
-      }}
-      onUpdateCompany={async (updates) => {
-        console.log('Update company info:', updates)
-        // TODO: Implement company updates
       }}
       onUploadAvatar={uploadAvatar}
 

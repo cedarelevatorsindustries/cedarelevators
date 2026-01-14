@@ -87,12 +87,13 @@ export function getMobileProfileMenu(
   // BUSINESS USER MENU (based on verification)
   if (accountType === 'business') {
     if (!isVerified) {
-      // BUSINESS UNVERIFIED - Access verification through Account Overview CTA
+      // BUSINESS UNVERIFIED - Include verification link
       return [
         {
           title: 'Business',
           items: [
             { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile?view=overview' },
+            { label: 'Business Verification', icon: 'ShieldCheck', href: '/profile/business/verification', badge: 'Pending' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
           ]
         },
@@ -103,7 +104,7 @@ export function getMobileProfileMenu(
           ]
         },
         {
-          title: 'Support',
+          title: 'Support & Auth',
           items: [
             { label: 'Contact Support', icon: 'Headset', href: '/contact' },
             { label: 'Logout', icon: 'LogOut', onClick: 'logout', chevron: false, isLogout: true },

@@ -7,6 +7,7 @@ export interface UserProfile {
   phone?: string
   avatar_url?: string
   company_name?: string
+  company_id?: string
   company_role?: string
   verification_status?: 'pending' | 'approved' | 'rejected' | 'incomplete'
   verification_rejected_reason?: string

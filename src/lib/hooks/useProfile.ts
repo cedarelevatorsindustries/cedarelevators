@@ -68,6 +68,9 @@ export function useProfile() {
       email: clerkUser.primaryEmailAddress?.emailAddress || '',
       phone: clerkUser.primaryPhoneNumber?.phoneNumber || undefined,
       avatar_url: clerkUser.imageUrl || undefined,
+      verification_status: (clerkUser.unsafeMetadata?.verificationStatus as 'pending' | 'approved' | 'rejected' | 'incomplete') || 'incomplete',
+      company_name: clerkUser.unsafeMetadata?.companyName as string | undefined,
+      company_id: clerkUser.unsafeMetadata?.companyId as string | undefined,
       created_at: clerkUser.createdAt?.toISOString() || new Date().toISOString(),
       updated_at: clerkUser.updatedAt?.toISOString() || new Date().toISOString(),
     }

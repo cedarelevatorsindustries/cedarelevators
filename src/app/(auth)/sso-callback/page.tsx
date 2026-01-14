@@ -56,7 +56,7 @@ function SSOCallbackContent() {
               // If business user and not verified, redirect to profile verification page
               if (activeProfile?.profile_type === 'business' && !isVerified) {
                 console.log("Business user not verified - redirecting to profile")
-                router.push('/profile/business')
+                router.push('/profile/business/verification')
                 return
               }
             }

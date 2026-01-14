@@ -44,7 +44,7 @@ export default function LoginForm() {
 
             // If business user and not verified, redirect to profile verification page
             if (activeProfile?.profile_type === 'business' && !isVerified) {
-              router.push('/profile/business')
+              router.push('/profile/business/verification')
               return
             }
           }

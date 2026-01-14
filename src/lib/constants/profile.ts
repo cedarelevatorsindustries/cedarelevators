@@ -8,7 +8,6 @@ export type ProfileSection =
   | 'quotes'
   | 'order-history'
   | 'approvals'
-  | 'business-info'
   | 'team-management'
   | 'billing'
   | 'api-keys'
@@ -28,7 +27,6 @@ export const PROFILE_SECTIONS = {
   QUOTES: 'quotes' as ProfileSection,
   ORDER_HISTORY: 'order-history' as ProfileSection,
   APPROVALS: 'approvals' as ProfileSection,
-  BUSINESS_INFO: 'business-info' as ProfileSection,
   TEAM_MANAGEMENT: 'team-management' as ProfileSection,
   BILLING: 'billing' as ProfileSection,
   API_KEYS: 'api-keys' as ProfileSection,

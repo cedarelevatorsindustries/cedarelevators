@@ -11,6 +11,7 @@ import { AccountType } from '@/lib/constants/profile'
 import { useUser } from '@/lib/auth/client'
 import { toast } from 'sonner'
 import { logger } from '@/lib/services/logger'
+import GoldVerificationBadge from '../gold-verification-badge'
 
 interface AccountCardProps {
   user?: {
@@ -121,32 +122,39 @@ export default function AccountCard({ user, accountType, isVerified = false }: A
   return (
     <div className="bg-white p-6 flex flex-col items-center justify-center border-b border-gray-100">
       {/* Avatar */}
-      {user?.avatarUrl ? (
-        <Image
-          src={user.avatarUrl}
-          alt={displayName}
-          width={96}
-          height={96}
-          className="rounded-full mb-4"
-        />
-      ) : (
-        <div className={cn(
-          "h-24 w-24 rounded-full flex items-center justify-center mb-4",
-          isBusinessAccount ? "bg-purple-600" : "bg-blue-600"
-        )}>
-          {isBusinessAccount ? (
-            <Building2 className="h-12 w-12 text-white" strokeWidth={2} />
-          ) : (
-            <span className="text-3xl font-bold text-white">
-              {getInitials(firstName, lastName)}
-            </span>
-          )}
-        </div>
-      )}
+      <div className={cn(
+        "rounded-full flex items-center justify-center mb-4",
+        isVerified && isBusinessAccount ? "p-[2px] bg-gradient-to-tr from-[#FDE047] via-[#F59E0B] to-[#D97706]" : ""
+      )}>
+        {user?.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={displayName}
+            width={96}
+            height={96}
+            className={cn("rounded-full", isVerified && isBusinessAccount && "border-2 border-white")}
+          />
+        ) : (
+          <div className={cn(
+            "h-24 w-24 rounded-full flex items-center justify-center",
+            isBusinessAccount ? "bg-purple-600" : "bg-blue-600",
+            isVerified && isBusinessAccount && "border-2 border-white"
+          )}>
+            {isBusinessAccount ? (
+              <Building2 className="h-12 w-12 text-white" strokeWidth={2} />
+            ) : (
+              <span className="text-3xl font-bold text-white">
+                {getInitials(firstName, lastName)}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Name / Company Name */}
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
-        {isBusinessAccount && companyName ? companyName : displayName}
+      <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+        <span>{isBusinessAccount && companyName ? companyName : displayName}</span>
+        {isVerified && isBusinessAccount && <GoldVerificationBadge size={20} />}
       </h2>
 
       {/* Email */}
@@ -172,7 +180,7 @@ export default function AccountCard({ user, accountType, isVerified = false }: A
               ? 'bg-green-100 text-green-700'
               : 'bg-orange-100 text-orange-700'
           )}>
-            {isVerified ? '✓ Verified' : 'Verification Pending'}
+            {isVerified ? 'Verified' : 'Verification Pending'}
           </span>
         )}
       </div>

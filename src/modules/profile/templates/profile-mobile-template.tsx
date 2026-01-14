@@ -1,89 +1,73 @@
 'use client'
 
-import { UserProfile } from '@/lib/types/profile'
-import {
-  ProfileHeader,
-  ProfileStats,
-  AccountSection,
-  BusinessSection,
-  OrderToolsSection,
-  DownloadSection,
-  SupportSection,
-  PoliciesSection,
-  LogoutButton
-} from '../components/mobile'
-
-interface ProfileMobileTemplateProps {
-  user: UserProfile
-  accountType: 'individual' | 'business'
-  verificationStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
-  stats?: {
-    totalOrders: number
-    totalSpent: number
-    savedItems: number
-  }
-}
+import { useUser } from '@/lib/auth/client'
+import { LoaderCircle } from 'lucide-react'
+import { GuestMenu, IndividualMenu, BusinessMenu } from '../components/mobile'
+import type { UserProfile } from '@/lib/types/profile'
 
 /**
- * Mobile Profile Template
+ * New Mobile Profile Template
  * 
- * This template orchestrates all mobile profile sections in a modular way.
- * Each section is a separate component that can be reused or modified independently.
+ * Renders role-appropriate mobile profile menu:
+ * - Guest: Sign in prompts + minimal menu
+ * - Individual: Personal account menu
+ * - Business: Business account menu (with verification status)
  * 
- * Structure:
- * 1. ProfileHeader - User avatar, name, email, account type, verification badges
- * 2. ProfileStats - Total orders, total spend, saved items cards
- * 3. AccountSection - Edit Profile, Account Settings (no notifications - in top bar)
- * 4. BusinessSection - Business Profile, Verification (business accounts only)
- * 5. OrderToolsSection - My Orders, Track Order, Saved Items, Quick Reorder
- * 6. DownloadSection - Download Center
- * 7. SupportSection - Help & FAQ, Contact Sales, WhatsApp Support
- * 8. PoliciesSection - Warranty, Shipping, Returns, Privacy, Terms, Payment Terms
- * 9. LogoutButton - Red logout button at bottom
- * 
- * Note: Quote-related features (Request Quote, My Quotations, Bulk Orders) are in the Quote tab
+ * NO stats, NO dashboard, NO quick actions
+ * Pure navigation + identity + settings + history
  */
-export default function ProfileMobileTemplate({
-  user,
-  accountType,
-  verificationStatus = 'incomplete',
-  stats = { totalOrders: 0, totalSpent: 0, savedItems: 0 }
-}: ProfileMobileTemplateProps) {
-  return (
-    <div className="flex flex-col min-h-screen bg-white pb-20 relative z-0">
-      {/* User Profile Header with Avatar & Badges */}
-      <ProfileHeader 
-        user={user} 
-        accountType={accountType} 
-        verificationStatus={verificationStatus} 
-      />
-      
-      {/* Stats Cards - Orders, Spend, Saved Items */}
-      <ProfileStats stats={stats} />
-      
-      {/* My Account Menu */}
-      <AccountSection />
-      
-      {/* Business Section - Only for Business Accounts */}
-      {accountType === 'business' && (
-        <BusinessSection verificationStatus={verificationStatus} />
-      )}
-      
-      {/* Order Management Menu */}
-      <OrderToolsSection accountType={accountType} />
-      
-      {/* Download Center */}
-      <DownloadSection />
-      
-      {/* Support & Help Menu */}
-      <SupportSection />
-      
-      {/* Policies Menu */}
-      <PoliciesSection />
-      
-      {/* Logout Button */}
-      <LogoutButton />
-    </div>
-  )
+export default function ProfileMobileNew() {
+  const { user, isLoading } = useUser()
+
+  // Loading state
+  if (isLoading || user === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <LoaderCircle size={48} className="animate-spin text-orange-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Guest user
+  if (!user) {
+    return <GuestMenu />
+  }
+
+  // Determine account type
+  const accountType = user.userType || 'individual'
+
+  // Map user data to expected format
+  const mappedUser: UserProfile = {
+    id: user.id,
+    first_name: user.name?.split(' ')[0] || '',
+    last_name: user.name?.split(' ').slice(1).join(' ') || '',
+    email: user.email || '',
+    phone: user.phone || undefined,
+    avatar_url: user.imageUrl || undefined,
+    verification_status: (user.business?.verification_status === 'verified' ? 'approved' :
+      user.business?.verification_status === 'pending' ? 'pending' :
+        user.business?.verification_status === 'rejected' ? 'rejected' : 'incomplete') as 'pending' | 'approved' | 'rejected' | 'incomplete',
+    company_name: user.business?.name || undefined,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  // Individual user
+  if (accountType === 'individual') {
+    return <IndividualMenu user={mappedUser} />
+  }
+
+  // Business user
+  if (accountType === 'business' || accountType === 'verified') {
+    const isVerified = user.isVerified || false
+    return <BusinessMenu user={mappedUser} isVerified={isVerified} />
+  }
+
+  // Fallback (should never reach here)
+  return <GuestMenu />
 }
+
 

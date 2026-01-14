@@ -1,11 +1,13 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useUser } from '@/lib/auth/client'
 import AccountOverviewSection from './account-overview-section'
 import BusinessInfoDisplay from './business-info-display'
 import AddressesSectionWrapper from './addresses-section-wrapper'
 import OrdersLinkSection from './orders-link-section'
 import SecurityLinkSection from './security-link-section'
+import BusinessOverviewMobile from '../mobile/business-overview-mobile'
 import { BusinessVerificationCard } from '@/components/business-verification-card'
 import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -15,7 +17,6 @@ import { PROFILE_SECTIONS } from '@/lib/constants/profile'
 const sectionToRoute: Record<string, string> = {
   [PROFILE_SECTIONS.OVERVIEW]: '/profile',
   [PROFILE_SECTIONS.PERSONAL_INFO]: '/profile/account',
-  [PROFILE_SECTIONS.BUSINESS_INFO]: '/profile/business',
   [PROFILE_SECTIONS.ADDRESSES]: '/profile/addresses',
   [PROFILE_SECTIONS.NOTIFICATIONS]: '/profile/notifications',
   [PROFILE_SECTIONS.CHANGE_PASSWORD]: '/profile/password',
@@ -29,6 +30,17 @@ const sectionToRoute: Record<string, string> = {
 export default function AccountOverviewWrapper() {
   const router = useRouter()
   const { user, isLoading, clerkUser } = useUser()
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleNavigate = (section: string) => {
     const route = sectionToRoute[section]
@@ -67,6 +79,11 @@ export default function AccountOverviewWrapper() {
   const accountType = user.activeProfile?.profile_type === 'business' ? 'business' : 'individual'
   const isBusinessUser = accountType === 'business'
   const isVerified = user.business?.verification_status === 'verified'
+
+  // Show simplified mobile view for business users on mobile
+  if (isMobile && isBusinessUser) {
+    return <BusinessOverviewMobile user={user} />
+  }
 
   // Determine if user should see Orders link
   const showOrdersLink = accountType === 'individual' || (isBusinessUser && isVerified)

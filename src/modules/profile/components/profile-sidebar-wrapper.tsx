@@ -23,7 +23,6 @@ const routeToSection: Record<string, ProfileSection> = {
   '/profile/quotes': PROFILE_SECTIONS.QUOTES,
   '/profile/orders': PROFILE_SECTIONS.ORDER_HISTORY,
   '/profile/verification': PROFILE_SECTIONS.APPROVALS,
-  '/profile/business': PROFILE_SECTIONS.BUSINESS_INFO,
 }
 
 // Map sections to routes
@@ -37,7 +36,6 @@ const sectionToRoute: Partial<Record<ProfileSection, string>> = {
   [PROFILE_SECTIONS.QUOTES]: '/profile/quotes',
   [PROFILE_SECTIONS.ORDER_HISTORY]: '/profile/orders',
   [PROFILE_SECTIONS.APPROVALS]: '/profile/verification',
-  [PROFILE_SECTIONS.BUSINESS_INFO]: '/profile/business',
 }
 
 export default function ProfileSidebarWrapper({

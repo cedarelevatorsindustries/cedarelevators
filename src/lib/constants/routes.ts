@@ -41,7 +41,6 @@ export const ROUTES = {
     PROFILE_NOTIFICATIONS: '/profile/notifications',
     PROFILE_PASSWORD: '/profile/password',
     PROFILE_VERIFICATION: '/profile/business/verification',
-    PROFILE_BUSINESS: '/profile/business',
 
     // Information Pages
     ABOUT: '/about',
