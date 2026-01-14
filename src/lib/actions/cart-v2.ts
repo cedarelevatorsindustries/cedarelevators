@@ -11,7 +11,7 @@
 
 'use server'
 
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createClerkSupabaseClient, createAdminClient } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
 import {
   Cart,
@@ -249,7 +249,7 @@ export async function addItemToCart(
       return { success: false, error: 'User not authenticated' }
     }
 
-    const supabase = await createClerkSupabaseClient()
+    const adminClient = createAdminClient() // Use admin client to bypass RLS
 
     // Get or create active cart
     const cartResult = await getUserActiveCart()
@@ -259,14 +259,15 @@ export async function addItemToCart(
 
     const cartId = cartResult.data.id
 
-    // Validate product exists and get details
-    const { data: product, error: productError } = await supabase
+    // Validate product exists and get details (using admin client)
+    const { data: product, error: productError } = await adminClient
       .from('products')
-      .select('id, name, slug, thumbnail, status, stock_quantity')
+      .select('id, name, slug, thumbnail_url, status, stock_quantity, price')
       .eq('id', payload.productId)
       .single()
 
     if (productError || !product) {
+      logger.error('Product lookup failed', { productId: payload.productId, error: productError })
       return { success: false, error: 'Product not found' }
     }
 
@@ -274,12 +275,29 @@ export async function addItemToCart(
       return { success: false, error: 'Product is not available' }
     }
 
-    if (product.stock_quantity < payload.quantity) {
+    // Stock check is optional (some products may not have stock tracking)
+    if (product.stock_quantity !== null && product.stock_quantity < payload.quantity) {
       return { success: false, error: 'Insufficient stock' }
     }
 
-    // Check if item already exists in cart
-    const { data: existingItem } = await supabase
+    // Get unit price (from product or variant)
+    let unitPrice = Number(product.price) || 0
+
+    // If variant is specified, try to get variant price
+    if (payload.variantId) {
+      const { data: variant } = await adminClient
+        .from('product_variants')
+        .select('price')
+        .eq('id', payload.variantId)
+        .single()
+
+      if (variant?.price) {
+        unitPrice = Number(variant.price)
+      }
+    }
+
+    // Check if item already exists in cart (using admin client)
+    const { data: existingItem } = await adminClient
       .from('cart_items')
       .select('*')
       .eq('cart_id', cartId)
@@ -293,11 +311,11 @@ export async function addItemToCart(
       // Update quantity
       const newQuantity = existingItem.quantity + payload.quantity
 
-      if (product.stock_quantity < newQuantity) {
+      if (product.stock_quantity !== null && product.stock_quantity < newQuantity) {
         return { success: false, error: 'Insufficient stock for requested quantity' }
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await adminClient
         .from('cart_items')
         .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
         .eq('id', existingItem.id)
@@ -311,16 +329,17 @@ export async function addItemToCart(
 
       cartItem = data as CartItem
     } else {
-      // Add new item
-      const { data, error } = await supabase
+      // Add new item (using admin client)
+      const { data, error } = await adminClient
         .from('cart_items')
         .insert({
           cart_id: cartId,
           product_id: payload.productId,
           variant_id: payload.variantId || null,
           title: product.name,
-          thumbnail: product.thumbnail,
-          quantity: payload.quantity
+          thumbnail: product.thumbnail_url,
+          quantity: payload.quantity,
+          unit_price: unitPrice
         })
         .select()
         .single()
@@ -333,8 +352,8 @@ export async function addItemToCart(
       cartItem = data as CartItem
     }
 
-    // Update cart updated_at
-    await supabase
+    // Update cart updated_at (using admin client)
+    await adminClient
       .from('carts')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', cartId)

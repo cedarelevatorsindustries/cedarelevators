@@ -430,6 +430,7 @@ export async function sendAdminInviteEmail(to: string, role: string, inviteLink:
 export async function sendQuoteApprovedEmail(
   to: string,
   quoteData: {
+    quoteId: string
     quoteNumber: string
     customerName: string
     total: number
@@ -478,7 +479,7 @@ export async function sendQuoteApprovedEmail(
               ` : ''}
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/quotes" 
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/quotes/${quoteData.quoteId}" 
                    style="display: inline-block; background-color: #f97316; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
                   View Quote & Place Order
                 </a>

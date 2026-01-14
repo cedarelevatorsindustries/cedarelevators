@@ -15,6 +15,18 @@ export const navItems: NavItemConfig[] = [
 ]
 
 /**
+ * Get filtered nav items based on user type
+ * Hides cart for individual and guest users (they can only request quotes)
+ */
+export function getFilteredNavItems(userType: "guest" | "individual" | "business_unverified" | "business_verified"): NavItemConfig[] {
+  // Hide cart for individual and guest users
+  if (userType === "guest" || userType === "individual") {
+    return navItems.filter(item => item.href !== "/cart")
+  }
+  return navItems
+}
+
+/**
  * Get intelligent quote tab label based on user type
  * Single entry point principle: /quotes for all users
  */

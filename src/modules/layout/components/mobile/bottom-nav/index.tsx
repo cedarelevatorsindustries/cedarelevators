@@ -5,7 +5,8 @@ import { useEffect, useState } from "react"
 import { useUser } from "@/lib/auth/client"
 import { getNavbarVariant, mergeNavbarConfig, type NavbarConfig } from "../../desktop/navbar/config"
 import { NavItem } from "./components/nav-item"
-import { navItems, getQuoteTabLabel } from "./components/nav-items-config"
+import { getFilteredNavItems, getQuoteTabLabel } from "./components/nav-items-config"
+import type { UserType } from "@/types/cart.types"
 
 interface MobileBottomNavigationProps {
   className?: string
@@ -23,6 +24,11 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
 
   // Use enhanced auth hook for reactive updates
   const { user } = useUser()
+
+  // Determine user type for filtering nav items
+  const userType: UserType = user?.userType === 'verified' ? 'business_verified' :
+    user?.userType === 'business' ? 'business_unverified' :
+      user?.userType === 'individual' ? 'individual' : 'guest'
 
   useEffect(() => {
     if (user) {
@@ -50,10 +56,13 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
     return pathname.startsWith(href)
   }
 
+  // Get filtered nav items based on user type
+  const filteredNavItems = getFilteredNavItems(userType)
+
   return (
     <div className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 ${className}`}>
-      <div className="grid grid-cols-5 h-16">
-        {navItems.map((item) => (
+      <div className={`grid h-16`} style={{ gridTemplateColumns: `repeat(${filteredNavItems.length}, minmax(0, 1fr))` }}>
+        {filteredNavItems.map((item) => (
           <NavItem
             key={item.href}
             href={item.href}

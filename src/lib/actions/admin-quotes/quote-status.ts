@@ -183,6 +183,7 @@ export async function approveQuote(
         const customerName = quote.guest_name || 'Customer'
         if (customerEmail) {
             await sendQuoteApprovedEmail(customerEmail, {
+                quoteId: quoteId,
                 quoteNumber: quote.quote_number,
                 customerName,
                 total: quote.estimated_total,

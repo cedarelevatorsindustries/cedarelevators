@@ -12,6 +12,7 @@ import { LinkHoverCard } from "./link-hover-card"
 import { CartHoverCardContent } from "./cart-hover-card"
 import { WishlistHoverCardContent } from "./wishlist-hover-card"
 import type { NavbarConfig } from "../config"
+import type { UserType } from "@/types/cart.types"
 
 interface NavbarActionsProps {
     config: NavbarConfig
@@ -29,6 +30,13 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
     // Mock cart data - TODO: Get from cart context
     const cartItems: never[] = [] // Empty for now
     const cartTotal = "₹0.00"
+
+    // Determine user type - hide cart for individual and guest users
+    const userType: UserType = user?.userType === 'verified' ? 'business_verified' :
+        user?.userType === 'business' ? 'business_unverified' :
+            user?.userType === 'individual' ? 'individual' : 'guest'
+
+    const showCart = userType === 'business_verified' || userType === 'business_unverified'
 
     return (
         <div
@@ -53,21 +61,25 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
                 <WishlistHoverCardContent />
             </LinkHoverCard>
 
-            {/* Shopping Cart with Hover Card */}
-            <LinkHoverCard
-                href="/cart"
-                icon={<ShoppingCart size={20} />}
-                label="Shopping Cart"
-                text="Cart"
-                isTransparent={isTransparent}
-                badge={cartItemCount}
-                onHover={() => setIsMoreMenuOpen(false)}
-            >
-                <CartHoverCardContent items={cartItems} total={cartTotal} />
-            </LinkHoverCard>
+            {/* Shopping Cart with Hover Card - Only for business users */}
+            {showCart && (
+                <>
+                    <LinkHoverCard
+                        href="/cart"
+                        icon={<ShoppingCart size={20} />}
+                        label="Shopping Cart"
+                        text="Cart"
+                        isTransparent={isTransparent}
+                        badge={cartItemCount}
+                        onHover={() => setIsMoreMenuOpen(false)}
+                    >
+                        <CartHoverCardContent items={cartItems} total={cartTotal} />
+                    </LinkHoverCard>
 
-            {/* Divider */}
-            <div className={`h-6 w-px ${isTransparent ? 'bg-white/30' : 'bg-gray-300'}`} />
+                    {/* Divider */}
+                    <div className={`h-6 w-px ${isTransparent ? 'bg-white/30' : 'bg-gray-300'}`} />
+                </>
+            )}
 
             {/* User Profile - Icon Only or Login with Hover */}
             {isLoaded && user ? (
