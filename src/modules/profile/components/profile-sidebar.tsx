@@ -67,6 +67,9 @@ export default function ProfileSidebar({
 }: ProfileSidebarProps) {
   const { signOut } = useClerk()
   const router = useRouter()
+
+  console.log('ProfileSidebar Debug:', { accountType, verificationStatus, isVerified: verificationStatus === 'approved' })
+
   const navigation = getProfileNavigation(accountType, verificationStatus === 'approved')
 
   const handleSignOut = async () => {
@@ -89,17 +92,9 @@ export default function ProfileSidebar({
     }
   }
 
-  // Filter navigation items and groups
-  const visibleNavigation = navigation.map(group => ({
-    ...group,
-    items: group.items.filter(item => {
-      // Hide Verification tab if user is already verified
-      if (item.label === 'Verification' && verificationStatus === 'approved') {
-        return false
-      }
-      return true
-    })
-  })).filter(group => group.items.length > 0)
+  // Navigation is already filtered by getProfileNavigation based on verification status
+  const visibleNavigation = navigation
+
 
   return (
     <aside className={cn(

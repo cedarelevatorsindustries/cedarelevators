@@ -103,7 +103,7 @@ export default function RootLayout({
       dynamic={true}
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           {/* Structured Data */}
           <JsonLd data={generateOrganizationSchema()} />

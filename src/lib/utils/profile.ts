@@ -77,7 +77,11 @@ export function getProfileNavigation(accountType: AccountType, isVerified: boole
           },
         ],
       },
-      {
+    ]
+
+    // Only show Compliance section if business is NOT verified
+    if (!isVerified) {
+      navigation.push({
         title: 'Compliance',
         icon: 'CircleCheck',
         items: [
@@ -88,26 +92,27 @@ export function getProfileNavigation(accountType: AccountType, isVerified: boole
             badge: 'status',
           },
         ],
-      },
-      {
-        title: 'Settings',
-        icon: 'Settings',
-        items: [
-          {
-            section: PROFILE_SECTIONS.SECURITY,
-            label: 'Security',
-            icon: 'Shield',
-          },
-        ],
-      },
-    ]
+      })
+    }
+
+    // Add Settings section
+    navigation.push({
+      title: 'Settings',
+      icon: 'Settings',
+      items: [
+        {
+          section: PROFILE_SECTIONS.SECURITY,
+          label: 'Security',
+          icon: 'Shield',
+        },
+      ],
+    })
 
     // Only show Operations/Orders if business is verified
     if (isVerified) {
       // Find the index to insert Operations before Settings (which is the last item now)
-      // Or just push it before Settings if we want specific order. 
-      // Current array: [Business Profile, Compliance, Settings]
-      // We want: [Business Profile, Compliance, Operations, Settings]
+      // Current array: [Business Profile, Settings]
+      // We want: [Business Profile, Operations, Settings]
 
       const settingsIndex = navigation.findIndex(g => g.title === 'Settings')
       if (settingsIndex !== -1) {

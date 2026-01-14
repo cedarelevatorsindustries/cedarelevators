@@ -4,17 +4,22 @@ import { useState, useEffect } from "react";
 import { X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
     userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
+const PWA_PROMPT_SHOWN_KEY = "pwa-install-prompt-shown";
+const AUTO_DISMISS_DELAY = 8000; // 8 seconds
+
 export function PwaInstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         // Check if running in standalone mode (already installed)
@@ -28,15 +33,29 @@ export function PwaInstallPrompt() {
         const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
         setIsIOS(isIosDevice);
 
+        // Check if prompt has been shown before
+        const hasBeenShown = localStorage.getItem(PWA_PROMPT_SHOWN_KEY);
+
+        // Only show on homepage and if not shown before
+        const isHomepage = pathname === "/";
+
         // Handle beforeinstallprompt (Android/Chrome)
         const handleBeforeInstallPrompt = (e: Event) => {
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e as BeforeInstallPromptEvent);
-            // Update UI notify the user they can install the PWA
-            if (!isStandaloneMode) {
+
+            // Only show if on homepage, not in standalone mode, and hasn't been shown before
+            if (!isStandaloneMode && isHomepage && !hasBeenShown) {
                 setIsVisible(true);
+                // Mark as shown in localStorage
+                localStorage.setItem(PWA_PROMPT_SHOWN_KEY, "true");
+
+                // Auto-dismiss after delay
+                setTimeout(() => {
+                    setIsVisible(false);
+                }, AUTO_DISMISS_DELAY);
             }
         };
 
@@ -52,7 +71,7 @@ export function PwaInstallPrompt() {
         return () => {
             window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
         };
-    }, []);
+    }, [pathname]);
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
@@ -79,18 +98,13 @@ export function PwaInstallPrompt() {
     if (isStandalone) return null;
 
     // iOS specific prompt (since it doesn't support beforeinstallprompt)
-    // Only show generic IOS prompt if we haven't dismissed it in session (could use localStorage in real app)
-    // For now, focusing on the requested "Toast" style. 
-    // We'll show the standard prompt logic mainly, but can add iOS specific UI later if requested.
-    // Returning null for IOS for now to focus on the "Install Button" flow which relies on deferredPrompt.
-    // If user wants iOS instructions, we can add that logic, but standard Install Button only works with deferredPrompt.
     if (isIOS) return null;
 
     return (
         <div
             className={cn(
-                "fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-4 rounded-xl bg-gray-900 p-4 shadow-xl ring-1 ring-white/10 transition-all duration-300 md:left-auto md:right-4 md:w-96",
-                isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
+                "fixed top-4 left-4 right-4 z-50 flex items-center justify-between gap-4 rounded-xl bg-gray-900 p-4 shadow-xl ring-1 ring-white/10 transition-all duration-300 md:left-auto md:right-4 md:w-96",
+                isVisible ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
             )}
         >
             <div className="flex items-center gap-3">
@@ -107,8 +121,7 @@ export function PwaInstallPrompt() {
             <div className="flex items-center gap-2">
                 <Button
                     size="sm"
-                    variant="secondary"
-                    className="h-8 px-3 text-xs font-semibold"
+                    className="h-8 px-3 text-xs font-semibold bg-white text-gray-900 hover:bg-gray-100"
                     onClick={handleInstallClick}
                 >
                     Install
