@@ -161,17 +161,6 @@ export async function getCollectionsWithProductsByDisplayContext(
                     }
                 })
 
-                // Server-side debug: Log variants BEFORE serialization
-                console.log('[SERVER collections-display-context] Product variants check:', {
-                    collectionId: collection.id,
-                    sampleProductId: products[0]?.product?.id,
-                    hasProduct: !!products[0]?.product,
-                    productKeys: products[0]?.product ? Object.keys(products[0].product) : [],
-                    hasVariantsKey: products[0]?.product ? 'variants' in products[0].product : false,
-                    variantsValue: products[0]?.product?.variants,
-                    variantsLength: products[0]?.product?.variants?.length || 0
-                })
-
                 return {
                     ...collection,
                     product_count: products.length,

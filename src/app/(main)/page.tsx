@@ -64,6 +64,11 @@ export default async function HomePage() {
         handle: product.slug,
         thumbnail: product.thumbnail_url || product.thumbnail,
         price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
+        compare_at_price: product.compare_at_price,
+        // CRITICAL: Include variants for stock display
+        variants: product.variants || product.product_variants || [],
+        product_variants: product.product_variants || [],
+        metadata: product.metadata || {}
       }
     })
   }))

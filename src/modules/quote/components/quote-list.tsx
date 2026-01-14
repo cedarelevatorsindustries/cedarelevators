@@ -48,7 +48,6 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                     </Link>
                 </div>
 
-                {/* Business Collections (Empty State - Mobile Only) */}
                 {collections.length > 0 && (
                     <div className="pt-8 border-t border-gray-100 md:hidden">
                         <div className="space-y-8">
@@ -58,12 +57,23 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                                     collection={{
                                         ...collection,
                                         isActive: true, // Force active for display
-                                        products: collection.products.map((p: any) => ({
-                                            ...p,
-                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
-                                            compare_at_price: p.compare_at_price,
-                                            variants: p.product_variants || p.variants || []
-                                        }))
+                                        products: collection.products.map((pc: any) => {
+                                            // Handle nested structure: {product: {...}} from collections-display-context
+                                            const p = pc.product || pc;
+                                            return {
+                                                id: p.id,
+                                                title: p.name || p.title,
+                                                name: p.name || p.title,
+                                                slug: p.slug,
+                                                handle: p.slug,
+                                                thumbnail: p.thumbnail_url || p.thumbnail,
+                                                price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
+                                                compare_at_price: p.compare_at_price,
+                                                variants: p.variants || p.product_variants || [],
+                                                product_variants: p.product_variants || [],
+                                                metadata: p.metadata || {}
+                                            };
+                                        })
                                     }}
                                     variant="mobile" /* Optimizing for mobile view as requested */
                                 />
@@ -153,12 +163,23 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                                     collection={{
                                         ...collection,
                                         isActive: true, // Force active for display
-                                        products: collection.products.map((p: any) => ({
-                                            ...p,
-                                            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
-                                            compare_at_price: p.compare_at_price,
-                                            variants: p.product_variants || p.variants || []
-                                        }))
+                                        products: collection.products.map((pc: any) => {
+                                            // Handle nested structure: {product: {...}} from collections-display-context
+                                            const p = pc.product || pc;
+                                            return {
+                                                id: p.id,
+                                                title: p.name || p.title,
+                                                name: p.name || p.title,
+                                                slug: p.slug,
+                                                handle: p.slug,
+                                                thumbnail: p.thumbnail_url || p.thumbnail,
+                                                price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
+                                                compare_at_price: p.compare_at_price,
+                                                variants: p.variants || p.product_variants || [],
+                                                product_variants: p.product_variants || [],
+                                                metadata: p.metadata || {}
+                                            };
+                                        })
                                     }}
                                     variant="mobile" /* Optimizing for mobile view as requested */
                                 />

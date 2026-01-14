@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/auth/client'
 import { toast } from 'sonner'
 
@@ -28,6 +29,7 @@ export default function AccountOverviewSection({
 
   const { user: enhancedUser, switchProfile, createBusinessProfile } = useUser()
   const [isSwitching, setIsSwitching] = useState(false)
+  const router = useRouter()
 
   const isBusiness = enhancedUser?.activeProfile?.profile_type === 'business'
   const hasBusinessProfile = enhancedUser?.hasBusinessProfile
@@ -54,7 +56,10 @@ export default function AccountOverviewSection({
           toast.success('Business profile created! Complete your details below.')
         }
       }
-      window.location.href = window.location.href
+      // Force a complete server refresh to update all UI components
+      router.refresh()
+      // Small delay then hard reload to ensure all server components update
+      setTimeout(() => window.location.reload(), 100)
     } catch (error: any) {
       console.error("Error switching profile:", error)
       toast.error(error.message || "Failed to switch profile")
@@ -232,12 +237,13 @@ export default function AccountOverviewSection({
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-blue-900 mb-1">Upgrade to Business Account</h3>
                 <p className="text-blue-700 text-sm mb-4">Get access to wholesale pricing, custom quotes, bulk ordering, and dedicated account management.</p>
-                <Link
-                  href="/upgrade-to-business"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                <button
+                  onClick={handleSwitch}
+                  disabled={isSwitching}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
                 >
-                  Upgrade Now <ArrowRight size={16} />
-                </Link>
+                  {isSwitching ? 'Switching...' : 'Upgrade Now'} <ArrowRight size={16} />
+                </button>
               </div>
             </div>
           </div>

@@ -149,19 +149,6 @@ export default function ProductCard({
   const totalInventory = variants.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0)
   const isOutOfStock = totalInventory === 0
 
-  // Debug: Log stock calculation for mobile
-  if (variant === 'mobile') {
-    console.log('[ProductCard Mobile] Stock check:', {
-      productId: product.id,
-      productName: product.title,
-      hasVariants: !!product.variants,
-      variantsArray: variants,
-      variantsCount: variants.length,
-      totalInventory,
-      isOutOfStock
-    })
-  }
-
   // Mobile Card Variant - Compact with cart icon left of quote button
   if (variant === "mobile") {
     return (

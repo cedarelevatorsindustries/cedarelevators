@@ -114,8 +114,10 @@ export default function MobileHomepageLoggedIn({
           thumbnail: product.thumbnail_url || product.thumbnail,
           price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
           compare_at_price: product.compare_at_price,
-          // Include variants from product_variants for stock display
-          variants: product.product_variants || []
+          // CRITICAL FIX: Don't hardcode empty variants! Use actual data from server
+          variants: product.variants || product.product_variants || [],
+          product_variants: product.product_variants || [],
+          metadata: product.metadata || {}
         }
       }),
       isActive: dbCollection.is_active,
