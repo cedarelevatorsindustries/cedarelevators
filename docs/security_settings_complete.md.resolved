@@ -1,0 +1,298 @@
+# Security Settings Simplification - Complete Implementation
+
+## ✅ All Changes Completed Successfully
+
+### Database Migrations Applied ✓
+
+Using Supabase MCP, successfully applied migrations to add account deletion fields:
+
+#### Migration 1: user_profiles table
+```sql
+ALTER TABLE user_profiles
+ADD COLUMN scheduled_deletion_date TIMESTAMPTZ,
+ADD COLUMN deletion_requested_at TIMESTAMPTZ,
+ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+
+CREATE INDEX idx_user_profiles_scheduled_deletion 
+ON user_profiles(scheduled_deletion_date) 
+WHERE scheduled_deletion_date IS NOT NULL AND is_deleted = FALSE;
+```
+✅ **Status**: Successfully applied
+
+#### Migration 2: businesses table
+```sql
+ALTER TABLE businesses
+ADD COLUMN scheduled_deletion_date TIMESTAMPTZ,
+ADD COLUMN deletion_requested_at TIMESTAMPTZ,
+ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+
+CREATE INDEX idx_businesses_scheduled_deletion 
+ON businesses(scheduled_deletion_date) 
+WHERE scheduled_deletion_date IS NOT NULL AND is_deleted = FALSE;
+```
+✅ **Status**: Successfully applied
+
+---
+
+## File Changes Summary
+
+### 1. Security Section Component
+**File**: [src/modules/profile/components/sections/security-section.tsx](file:///d:/web%20development/cedar/cedarelevators/src/modules/profile/components/sections/security-section.tsx)
+
+**Removed**:
+- ❌ Two-Factor Authentication (2FA) section
+- ❌ Privacy Settings section  
+- ❌ "Save Privacy Settings" button
+- ❌ All privacy toggles and dropdowns
+
+**Added**:
+- ✅ Inline password change form
+- ✅ Password strength indicator
+- ✅ Save Password button (per section)
+- ✅ Danger Zone section
+- ✅ Account deletion with 30-day retention
+- ✅ Delete confirmation modal
+
+---
+
+### 2. Account Deletion API
+**File**: [src/app/api/account/delete/route.ts](file:///d:/web%20development/cedar/cedarelevators/src/app/api/account/delete/route.ts)
+
+**POST Endpoint** - Schedule Deletion:
+```typescript
+// Marks account for deletion 30 days in the future
+// Updates: user_profiles, businesses, Clerk metadata
+// Returns: scheduledDeletionDate
+```
+
+**DELETE Endpoint** - Permanent Deletion (Cron):
+```typescript
+// Permanently deletes accounts past their 30-day retention
+// Requires: Authorization header with CRON_SECRET
+// Deletes from: Clerk + marks is_deleted=true in DB
+```
+
+---
+
+### 3. Files Deleted
+- ❌ `src/app/(main)/profile/password/` - Entire folder removed
+- ❌ Password page route no longer exists
+
+---
+
+## New Security Page Structure
+
+```
+┌──────────────────────────────────────────────┐
+│ Section 1: Password Settings 🔐              │
+├──────────────────────────────────────────────┤
+│                                              │
+│ □ Current Password (if user has password)   │
+│ □ New Password                               │
+│ □ Confirm Password                           │
+│                                              │
+│ ┌──────────────────────────────────────────┐ │
+│ │ Password Strength: [====     ] Medium    │ │
+│ └──────────────────────────────────────────┘ │
+│                                              │
+│ ℹ️ Password Requirements:                    │
+│ • At least 8 characters                      │
+│ • Uppercase and lowercase                    │
+│ • At least one number                        │
+│ • At least one special character             │
+│                                              │
+│                      [Save Password] button  │
+└──────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────┐
+│ Section 2: Danger Zone ⚠️                     │
+├──────────────────────────────────────────────┤
+│                                              │
+│ Delete Account                               │
+│ Once deleted, account scheduled for          │
+│ permanent deletion after 30 days.            │
+│                                              │
+│                     [Delete Account] button  │
+└──────────────────────────────────────────────┘
+```
+
+---
+
+## 30-Day Deletion Flow
+
+### Step 1: User Clicks "Delete Account"
+1. Modal opens with warning
+2. User must type "DELETE" to confirm
+3. Shows 30-day retention notice
+
+### Step 2: Confirmation & Scheduling
+```typescript
+POST /api/account/delete
+{
+  userId: "clerk_user_id",
+  scheduledDeletionDate: "2026-02-13T..." // 30 days from now
+}
+```
+
+**Database Updates**:
+- `user_profiles.scheduled_deletion_date` = 30 days from now
+- `user_profiles.deletion_requested_at` = now
+- `user_profiles.is_deleted` = false
+- `businesses.scheduled_deletion_date` = 30 days from now
+- `businesses.deletion_requested_at` = now
+- `businesses.is_deleted` = false
+
+**Clerk Metadata Update**:
+```typescript
+publicMetadata: {
+  accountStatus: 'pending_deletion',
+  scheduledDeletionDate: '2026-02-13T...'
+}
+```
+
+**User Action**:
+- User is signed out immediately
+- Redirected to homepage
+
+### Step 3: 30-Day Grace Period
+- User can contact support to recover account
+- Account remains in database with `is_deleted = false`
+- User cannot log in (metadata shows pending deletion)
+
+### Step 4: Permanent Deletion (After 30 Days)
+**Cron Job** runs daily:
+```typescript
+DELETE /api/account/delete
+Authorization: Bearer <CRON_SECRET>
+```
+
+**For each expired account**:
+1. Delete from Clerk: `clerk.users.deleteUser(userId)`
+2. Mark in DB: `is_deleted = true`
+3. Business data: `is_deleted = true`
+
+---
+
+## Environment Variables Required
+
+Add to `.env.local`:
+```bash
+CRON_SECRET=your-secret-key-here
+```
+
+This secret is used to authenticate the cron job that permanently deletes expired accounts.
+
+---
+
+## Vercel Cron Job Setup
+
+Create `vercel.json` in project root:
+```json
+{
+  "crons": [{
+    "path": "/api/account/delete",
+    "schedule": "0 2 * * *"
+  }]
+}
+```
+
+This runs daily at 2 AM UTC.
+
+---
+
+## Database Schema Changes
+
+### user_profiles
+| Column | Type | Description |
+|--------|------|-------------|
+| scheduled_deletion_date | TIMESTAMPTZ | Date for permanent deletion (30 days after request) |
+| deletion_requested_at | TIMESTAMPTZ | When user requested deletion |
+| is_deleted | BOOLEAN | Whether permanently deleted |
+
+### businesses  
+| Column | Type | Description |
+|--------|------|-------------|
+| scheduled_deletion_date | TIMESTAMPTZ | Date for permanent deletion |
+| deletion_requested_at | TIMESTAMPTZ | When deletion requested |
+| is_deleted | BOOLEAN | Whether permanently deleted |
+
+---
+
+## User Experience
+
+### Individual User Flow:
+1. **Navigate to** `/profile/security`
+2. **See Section 1**: Change password form inline
+3. **See Section 2**: Danger Zone with delete button
+4. **Click Delete**: Modal opens
+5. **Type DELETE**: Confirm deletion
+6. **Account Scheduled**: Logged out, 30-day countdown begins
+
+### Business User Flow:
+- Same as individual
+- Business data also scheduled for deletion
+- Verification documents marked for deletion
+
+---
+
+## Testing Checklist
+
+- [x] Database migrations applied successfully
+- [x] Security page loads without errors
+- [x] Password form validates correctly
+- [x] Password change works (updates in Clerk)
+- [x] Delete button opens modal
+- [x] Modal requires "DELETE" confirmation
+- [x] Delete API schedules account properly
+- [x] User logged out after deletion
+- [x] Clerk metadata updated
+- [x] Database fields populated correctly
+- [ ] Cron job configured (requires deployment)
+- [ ] Test account recovery within 30 days
+- [ ] Test permanent deletion after 30 days
+
+---
+
+## Recovery Process (Within 30 Days)
+
+If user contacts support to recover account:
+
+1. **Verify Identity**: Confirm user identity
+2. **Update Database**:
+   ```sql
+   UPDATE user_profiles
+   SET scheduled_deletion_date = NULL,
+       deletion_requested_at = NULL,
+       is_deleted = FALSE
+   WHERE id = 'user_id';
+   
+   UPDATE businesses
+   SET scheduled_deletion_date = NULL,
+       deletion_requested_at = NULL,
+       is_deleted = FALSE
+   WHERE user_id = 'user_id';
+   ```
+3. **Update Clerk Metadata**:
+   ```typescript
+   clerk.users.updateUserMetadata(userId, {
+     publicMetadata: {
+       accountStatus: 'active',
+       scheduledDeletionDate: null
+     }
+   })
+   ```
+4. **Notify User**: Account recovered, can log in again
+
+---
+
+## Summary
+
+✅ **Security page simplified** to 2 sections only  
+✅ **Password change** inline with save button  
+✅ **Account deletion** with 30-day grace period  
+✅ **Database migrations** successfully applied  
+✅ **API endpoints** created and tested  
+✅ **Clerk integration** for auth management  
+✅ **Recovery process** documented  
+
+The security settings are now cleaner, simpler, and safer! 🎉
