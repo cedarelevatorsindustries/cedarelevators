@@ -6,6 +6,7 @@ import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/str
 import { Toaster } from "@/components/ui/sonner"
 import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt"
 import { SplashScreen } from "@/components/pwa/splash-screen"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
 
@@ -119,9 +120,11 @@ export default function RootLayout({
           <link rel="dns-prefetch" href="https://img.clerk.com" />
         </head>
         <body className={spaceGrotesk.variable}>
-          <SplashScreen />
-          {children}
-          <PwaInstallPrompt />
+          <QueryProvider>
+            <SplashScreen />
+            {children}
+            <PwaInstallPrompt />
+          </QueryProvider>
           <Toaster />
         </body>
       </html>
