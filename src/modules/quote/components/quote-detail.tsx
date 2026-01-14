@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Quote, UserType } from '../types';
 import { QuoteStatusBadge } from './quote-status-badge';
 import { Package, Download, BadgeCheck, Mail, ArrowRight, Check, Clock, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { convertQuoteToOrder } from '@/lib/actions/quotes';
+import { toast } from 'sonner';
 
 interface QuoteDetailProps {
     quote: Quote;
@@ -26,6 +29,9 @@ interface QuoteDetailProps {
  * | Actions          | ❌    | ❌          | ⚠️ Verify CTA only   | ✅ Convert          |
  */
 export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
+    const router = useRouter();
+    const [isConverting, setIsConverting] = useState(false);
+
     // Role-based visibility flags
     const isGuest = userType === 'guest';
     const isIndividual = userType === 'individual';
@@ -40,6 +46,24 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
 
     // Admin response (visible to all users except guest)
     const adminResponse = (quote as any).admin_response_message || quote.admin_response?.response_note;
+
+    // Handle quote to cart conversion
+    const handleConvertToCart = async () => {
+        setIsConverting(true);
+        try {
+            const result = await convertQuoteToOrder(quote.id);
+            if (result.success) {
+                toast.success('Quote items added to cart!');
+                router.push('/cart');
+            } else {
+                toast.error(result.error || 'Failed to convert quote');
+                setIsConverting(false);
+            }
+        } catch (error) {
+            toast.error('An error occurred');
+            setIsConverting(false);
+        }
+    };
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -187,12 +211,13 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                             Your quote has been approved. You can now proceed to checkout.
                         </p>
                     </div>
-                    <Link
-                        href={`/quotes/${quote.id}/checkout`}
-                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                    <button
+                        onClick={handleConvertToCart}
+                        disabled={isConverting}
+                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Proceed to Checkout <ArrowRight className="w-4 h-4" />
-                    </Link>
+                        {isConverting ? 'Adding to cart...' : 'Proceed to Checkout'} <ArrowRight className="w-4 h-4" />
+                    </button>
                 </div>
             )}
 
@@ -240,12 +265,13 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                             Your quote has been approved. You can now convert it to an order.
                         </p>
                     </div>
-                    <Link
-                        href={`/quotes/${quote.id}/checkout`}
-                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                    <button
+                        onClick={handleConvertToCart}
+                        disabled={isConverting}
+                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Convert to Order <ArrowRight className="w-4 h-4" />
-                    </Link>
+                        {isConverting ? 'Adding to cart...' : 'Convert to Order'} <ArrowRight className="w-4 h-4" />
+                    </button>
                 </div>
             )}
 
@@ -270,12 +296,13 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                                         Your quote has been approved. Convert it to an order now.
                                     </p>
                                 </div>
-                                <Link
-                                    href={`/quotes/${quote.id}/checkout`}
-                                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
+                                <button
+                                    onClick={handleConvertToCart}
+                                    disabled={isConverting}
+                                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Convert to Order <ArrowRight className="w-4 h-4" />
-                                </Link>
+                                    {isConverting ? 'Adding to cart...' : 'Convert to Order'} <ArrowRight className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
                     )}
