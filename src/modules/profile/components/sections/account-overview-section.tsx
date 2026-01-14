@@ -1,7 +1,7 @@
 'use client'
 
 import { UserProfile } from '@/lib/types/profile'
-import { CircleCheck, AlertCircle, ArrowRight, Building2, UserCircle, Edit2 } from 'lucide-react'
+import { CircleCheck, AlertCircle, ArrowRight, Building2, UserCircle, Edit2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { getInitials } from '@/lib/utils/profile'
@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/auth/client'
 import { toast } from 'sonner'
+import { useClerk } from '@clerk/nextjs'
+import GoldVerificationBadge from '../gold-verification-badge'
 
 interface AccountOverviewSectionProps {
   user: UserProfile
@@ -30,6 +32,7 @@ export default function AccountOverviewSection({
   const { user: enhancedUser, switchProfile, createBusinessProfile } = useUser()
   const [isSwitching, setIsSwitching] = useState(false)
   const router = useRouter()
+  const { signOut } = useClerk()
 
   const isBusiness = enhancedUser?.activeProfile?.profile_type === 'business'
   const hasBusinessProfile = enhancedUser?.hasBusinessProfile
@@ -68,36 +71,58 @@ export default function AccountOverviewSection({
     }
   }
 
+  const handleLogout = async () => {
+    await signOut()
+    router.push('/')
+  }
+
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Account Overview</h1>
-        <p className="text-gray-600 mt-1">Manage your account information and settings</p>
+      {/* Page Title with Logout Button */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Account Overview</h1>
+          <p className="text-gray-600 mt-1">Manage your account information and settings</p>
+        </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200 hover:border-red-300"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="font-medium">Logout</span>
+        </button>
       </div>
 
       {/* User Identity Card */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          {user.avatar_url ? (
-            <Image
-              src={user.avatar_url}
-              alt={`${user.first_name} ${user.last_name}`}
-              width={80}
-              height={80}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-semibold">
-              {getInitials(user.first_name, user.last_name)}
-            </div>
-          )}
+          <div className={cn(
+            "rounded-full",
+            isVerified && "ring-4 ring-yellow-400 ring-offset-2"
+          )}>
+            {user.avatar_url ? (
+              <Image
+                src={user.avatar_url}
+                alt={`${user.first_name} ${user.last_name}`}
+                width={80}
+                height={80}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-semibold">
+                {getInitials(user.first_name, user.last_name)}
+              </div>
+            )}
+          </div>
 
           {/* User Info */}
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {user.company_name || `${user.first_name} ${user.last_name}`.trim() || user.email}
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <span>{`${user.first_name} ${user.last_name}`.trim() || user.email}</span>
+              {isVerified && <GoldVerificationBadge size={20} />}
             </h2>
             <p className="text-gray-600 mt-1">{user.email}</p>
 
@@ -112,15 +137,20 @@ export default function AccountOverviewSection({
                 {accountType === 'business' ? 'Business Account' : 'Individual Account'}
               </span>
 
-              {/* Verification Badge (Business only) */}
-              {accountType === 'business' && (
+              {/* Verification Badge (Business only) - Only show "Verified" text for verified */}
+              {accountType === 'business' && verificationStatus === 'approved' && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                  Verified
+                </span>
+              )}
+
+              {/* Non-verified statuses */}
+              {accountType === 'business' && verificationStatus !== 'approved' && (
                 <span className={cn(
                   'px-3 py-1 rounded-full text-sm font-medium',
-                  verificationStatus === 'approved' && 'bg-green-100 text-green-700',
                   verificationStatus === 'pending' && 'bg-orange-100 text-orange-700',
                   (verificationStatus === 'incomplete' || verificationStatus === 'rejected') && 'bg-red-100 text-red-700'
                 )}>
-                  {verificationStatus === 'approved' && '✓ Verified'}
                   {verificationStatus === 'pending' && 'Pending Verification'}
                   {verificationStatus === 'incomplete' && 'Verification Required'}
                   {verificationStatus === 'rejected' && 'Verification Rejected'}

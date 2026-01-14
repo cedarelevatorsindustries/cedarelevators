@@ -21,6 +21,20 @@ export interface UserProfile {
     created_at: string
 }
 
+export interface BusinessVerificationData {
+    gstin?: string | null
+    tax_id?: string | null // For backward compatibility/consistency
+    legal_business_name?: string | null
+    contact_person_name?: string | null
+    contact_person_phone?: string | null
+    address_line_1?: string | null
+    address_line_2?: string | null
+    city?: string | null
+    state?: string | null
+    postal_code?: string | null
+    country?: string | null
+}
+
 export interface Business {
     id: string
     name: string
@@ -31,6 +45,7 @@ export interface Business {
     verified_by: string | null
     created_at: string
     updated_at: string
+    verification_data?: BusinessVerificationData // Added field
 }
 
 export interface UserWithProfile {
@@ -193,8 +208,6 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
         hasBusinessProfile = !!businessProfileCheck
 
         // If user has a business profile, try to load business data
-        // This is separate from the hasBusinessProfile check, so even if business data fails,
-        // we still know they have a business profile
         if (hasBusinessProfile) {
             try {
                 const { data: businessMember, error: businessError } = await supabase
@@ -212,18 +225,55 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
                         )
                     `)
                     .eq('user_id', user.id)
-                    .maybeSingle() // Use maybeSingle instead of single to handle 0 rows gracefully
+                    .maybeSingle()
 
-                // Only log error if it's not "no rows found"
-                if (businessError && businessError.code !== 'PGRST116') {
-                    console.error('Error loading business data:', businessError)
-                } else if (businessMember?.businesses) {
-                    // Supabase returns nested object, not array
+                if (businessMember?.businesses) {
                     business = businessMember.businesses as unknown as Business
+
+                    // Fetch additional verification data (GST, Phone, Address)
+                    if (business.id) {
+                        try {
+                            // 1. Fetch from business_verifications
+                            const { data: verificationData } = await supabase
+                                .from('business_verifications')
+                                .select('gstin, contact_person_phone, legal_business_name, contact_person_name')
+                                .eq('business_id', business.id)
+                                .order('created_at', { ascending: false })
+                                .limit(1)
+                                .maybeSingle()
+
+                            // 2. Fetch address from user_addresses
+                            // Prefer business address or default address
+                            const { data: addresses } = await supabase
+                                .from('user_addresses')
+                                .select('address_line_1, address_line_2, city, state, postal_code, country, phone')
+                                .eq('clerk_user_id', clerkUserId)
+                                .order('is_default', { ascending: false })
+                                .limit(1)
+
+                            const address = addresses?.[0]
+
+                            // Populate verification data
+                            business.verification_data = {
+                                gstin: verificationData?.gstin,
+                                tax_id: verificationData?.gstin, // Alias
+                                legal_business_name: verificationData?.legal_business_name,
+                                contact_person_name: verificationData?.contact_person_name,
+                                contact_person_phone: verificationData?.contact_person_phone || address?.phone,
+                                address_line_1: address?.address_line_1,
+                                address_line_2: address?.address_line_2,
+                                city: address?.city,
+                                state: address?.state,
+                                postal_code: address?.postal_code,
+                                country: address?.country
+                            }
+                        } catch (verificationFetchError) {
+                            console.error('Error fetching verification details:', verificationFetchError)
+                        }
+                    }
                 }
             } catch (businessLoadError) {
                 console.error('Exception loading business data:', businessLoadError)
-                // Continue - business will be undefined but hasBusinessProfile is true
             }
         }
 

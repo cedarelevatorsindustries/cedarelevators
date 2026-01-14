@@ -68,8 +68,6 @@ export default function ProfileSidebar({
   const { signOut } = useClerk()
   const router = useRouter()
 
-  console.log('ProfileSidebar Debug:', { accountType, verificationStatus, isVerified: verificationStatus === 'approved' })
-
   const navigation = getProfileNavigation(accountType, verificationStatus === 'approved')
 
   const handleSignOut = async () => {

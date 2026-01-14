@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Package, TrendingUp, Truck, DollarSign, ChevronRight } from 'lucide-react'
+import { Package, TrendingUp, Truck, Banknote, ChevronRight, ArrowRight, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import OrderStatusBadge from '../components/order-status-badge'
@@ -25,7 +25,8 @@ interface OrderSummary {
 interface OrderHistoryTemplateProps {
   orders: Order[]
   summary: OrderSummary
-  isBusinessUser: boolean
+  accountType: 'individual' | 'business'
+  isVerified: boolean
 }
 
 type OrderStatus = 'all' | 'processing' | 'delivered' | 'cancelled'
@@ -33,7 +34,8 @@ type OrderStatus = 'all' | 'processing' | 'delivered' | 'cancelled'
 export default function OrderHistoryTemplate({
   orders,
   summary,
-  isBusinessUser,
+  accountType,
+  isVerified,
 }: OrderHistoryTemplateProps) {
   const [activeTab, setActiveTab] = useState<OrderStatus>('all')
 
@@ -75,61 +77,86 @@ export default function OrderHistoryTemplate({
         </p>
       </div>
 
+      {/* Upgrade to Business Banner (Individual Users Only) */}
+      {accountType === 'individual' && (
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 border border-purple-200">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                <Building2 className="text-purple-600" size={24} />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-purple-900 mb-1">Unlock Business Benefits</h3>
+              <p className="text-purple-700 text-sm mb-4">
+                Upgrade to a Business account to access wholesale pricing, bulk ordering, custom quotes, and priority support.
+              </p>
+              <Link
+                href="/profile"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Upgrade to Business <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Total Orders</span>
-            <Package className="text-gray-400" size={20} />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Total Orders</span>
+            <Package className="text-gray-400" size={16} />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{summary.totalOrders}</p>
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{summary.totalOrders}</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Delivered</span>
-            <TrendingUp className="text-green-500" size={20} />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Delivered</span>
+            <TrendingUp className="text-green-500" size={16} />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{summary.delivered}</p>
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{summary.delivered}</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">In Transit</span>
-            <Truck className="text-blue-500" size={20} />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">In Transit</span>
+            <Truck className="text-blue-500" size={16} />
           </div>
-          <p className="text-3xl font-bold text-gray-900">{summary.inTransit}</p>
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{summary.inTransit}</p>
         </div>
 
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">Total Spent</span>
-            <DollarSign className="text-orange-500" size={20} />
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Total Spent</span>
+            <Banknote className="text-orange-500" size={16} />
           </div>
-          <p className="text-3xl font-bold text-gray-900">
-            {formatCurrency(summary.totalSpent)}
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">
+            {formatCurrency(summary.totalSpent).replace('₹', '₹ ')}
           </p>
         </div>
       </div>
 
       {/* Status Tabs */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="border-b border-gray-200 overflow-x-auto">
-          <div className="flex min-w-max">
+        <div className="border-b border-gray-200">
+          <div className="flex w-full">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
-                    ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                className={`flex-1 px-1 sm:px-6 py-3 text-[10px] sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${activeTab === tab.id
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
                   }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
                 {tab.count > 0 && (
-                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === tab.id
-                      ? 'bg-orange-100 text-orange-700'
-                      : 'bg-gray-100 text-gray-600'
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs ${activeTab === tab.id
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'bg-gray-100 text-gray-600'
                     }`}>
                     {tab.count}
                   </span>
@@ -155,12 +182,23 @@ export default function OrderHistoryTemplate({
             <p className="text-gray-600 mb-6">
               Start shopping to see your orders here
             </p>
-            <Link
-              href="/catalog"
-              className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Browse Products
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/catalog"
+                className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Browse Products
+              </Link>
+              {accountType === 'individual' && (
+                <Link
+                  href="/profile"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  <Building2 size={18} />
+                  Upgrade to Business
+                </Link>
+              )}
+            </div>
           </div>
         ) : (
           <>

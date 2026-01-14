@@ -8,6 +8,7 @@ import LocalizedClientLink from "@/components/ui/localized-client-link"
 import Image from "next/image"
 import { toast } from "sonner"
 import { logger } from "@/lib/services/logger"
+import { cn } from "@/lib/utils"
 
 interface ProfileMenuProps {
   isTransparent: boolean
@@ -46,6 +47,7 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
   const isIndividual = user?.activeProfile?.profile_type === 'individual'
   const isBusiness = user?.activeProfile?.profile_type === 'business'
   const hasBusinessProfile = user?.hasBusinessProfile
+  const isVerified = isBusiness && user?.isVerified
 
   const handleSwitch = async () => {
     if (isSwitching) return
@@ -99,28 +101,38 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <button
-        className="w-8 h-8 rounded-full overflow-hidden border-2 transition-all hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        aria-label="User menu"
-        aria-expanded={isOpen}
-        style={{
-          borderColor: isTransparent ? 'rgba(255, 255, 255, 0.5)' : '#e5e7eb'
-        }}
-      >
-        {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt={userName}
-            width={32}
-            height={32}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </button>
+      {/* Profile button with conditional gold ring for verified business users */}
+      <div className={cn(
+        "rounded-full flex items-center justify-center",
+        isVerified ? "p-[2px] bg-gradient-to-tr from-[#FDE047] via-[#F59E0B] to-[#D97706]" : ""
+      )}>
+        <button
+          className={cn(
+            "w-8 h-8 rounded-full overflow-hidden transition-all focus:outline-none",
+            !isVerified && "border-2 hover:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+            isVerified && "border-2 border-white" // Add white border between image and gradient
+          )}
+          aria-label="User menu"
+          aria-expanded={isOpen}
+          style={{
+            borderColor: !isVerified && isTransparent ? 'rgba(255, 255, 255, 0.5)' : undefined
+          }}
+        >
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt={userName}
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-semibold">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </button>
+      </div>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-3 z-50">

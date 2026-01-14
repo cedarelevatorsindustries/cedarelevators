@@ -3,6 +3,9 @@
 import { useUser } from '@/lib/auth/client'
 import AccountOverviewSection from './account-overview-section'
 import BusinessInfoDisplay from './business-info-display'
+import AddressesSectionWrapper from './addresses-section-wrapper'
+import OrdersLinkSection from './orders-link-section'
+import SecurityLinkSection from './security-link-section'
 import { BusinessVerificationCard } from '@/components/business-verification-card'
 import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -19,8 +22,8 @@ const sectionToRoute: Record<string, string> = {
   [PROFILE_SECTIONS.WISHLISTS]: '/profile/wishlist',
   [PROFILE_SECTIONS.QUOTES]: '/profile/quotes',
   [PROFILE_SECTIONS.ORDER_HISTORY]: '/profile/orders',
-  [PROFILE_SECTIONS.APPROVALS]: '/profile/business/verification',
-  [PROFILE_SECTIONS.SECURITY]: '/profile/password',
+  [PROFILE_SECTIONS.APPROVALS]: '/profile/verification',
+  [PROFILE_SECTIONS.SECURITY]: '/profile/security',
 }
 
 export default function AccountOverviewWrapper() {
@@ -63,32 +66,51 @@ export default function AccountOverviewWrapper() {
 
   const accountType = user.activeProfile?.profile_type === 'business' ? 'business' : 'individual'
   const isBusinessUser = accountType === 'business'
+  const isVerified = user.business?.verification_status === 'verified'
+
+  // Determine if user should see Orders link
+  const showOrdersLink = accountType === 'individual' || (isBusinessUser && isVerified)
 
   return (
-    <div className="space-y-6">
-      <AccountOverviewSection
-        user={userProfile as any}
-        accountType={accountType}
-        verificationStatus={
-          user.business?.verification_status === 'verified' ? 'approved' :
-            user.business?.verification_status === 'pending' ? 'pending' :
-              user.business?.verification_status === 'rejected' ? 'rejected' : 'incomplete'
-        }
-        onNavigate={handleNavigate}
-      />
-
-      {/* Show Read-Only Business Info for Business Users */}
-      {isBusinessUser && (
-        <BusinessInfoDisplay
-          companyName={user.business?.name || user.name || ''}
-          email={user.email || ''}
-          phone={user.phone ?? undefined}
-          taxId=""
-          industry=""
-          companySize=""
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+      <div className="p-6 sm:p-8 lg:p-10 space-y-8">
+        {/* 1. Account Overview Section */}
+        <AccountOverviewSection
+          user={userProfile as any}
+          accountType={accountType}
+          verificationStatus={
+            user.business?.verification_status === 'verified' ? 'approved' :
+              user.business?.verification_status === 'pending' ? 'pending' :
+                user.business?.verification_status === 'rejected' ? 'rejected' : 'incomplete'
+          }
+          onNavigate={handleNavigate}
         />
-      )}
+
+        {/* 2. Business Information Section (Verified Business Only) */}
+        {isBusinessUser && isVerified && (
+          <BusinessInfoDisplay
+            companyName={user.business?.verification_data?.legal_business_name || user.business?.name || user.name || ''}
+            email={user.email || ''}
+            phone={user.business?.verification_data?.contact_person_phone || user.phone || undefined}
+            taxId={user.business?.verification_data?.gstin || undefined}
+            industry="" // Placeholder, add to verification data if available
+            companySize="" // Placeholder
+          />
+        )}
+
+        {/* 3. Addresses Section (All Users) */}
+        <AddressesSectionWrapper verifiedBusinessData={user.business?.verification_data} />
+
+        {/* 4. Orders Link Section (Individual + Verified Business) */}
+        {showOrdersLink && (
+          <OrdersLinkSection />
+        )}
+
+        {/* 5. Security Link Section */}
+        <SecurityLinkSection />
+      </div>
     </div>
   )
 }
+
 

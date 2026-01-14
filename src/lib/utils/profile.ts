@@ -7,6 +7,7 @@ export function getInitials(firstName: string, lastName: string): string {
 }
 
 export function getProfileNavigation(accountType: AccountType, isVerified: boolean = false): ProfileNavigationGroup[] {
+
   // INDIVIDUAL USER - Desktop matches mobile + density
   if (accountType === 'individual') {
     return [
@@ -78,22 +79,6 @@ export function getProfileNavigation(accountType: AccountType, isVerified: boole
         ],
       },
     ]
-
-    // Only show Compliance section if business is NOT verified
-    if (!isVerified) {
-      navigation.push({
-        title: 'Compliance',
-        icon: 'CircleCheck',
-        items: [
-          {
-            section: PROFILE_SECTIONS.APPROVALS,
-            label: 'Verification',
-            icon: 'CircleCheck',
-            badge: 'status',
-          },
-        ],
-      })
-    }
 
     // Add Settings section
     navigation.push({

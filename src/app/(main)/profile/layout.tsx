@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, usePathname } from 'next/navigation'
 import ProfileTopbar from '@/modules/profile/components/profile-topbar'
-import ProfileSidebarWrapper from '@/modules/profile/components/profile-sidebar-wrapper'
 import ProfileMobileNew from '@/modules/profile/templates/profile-mobile-new'
+import MobileBottomNavigation from '@/modules/layout/components/mobile/bottom-nav'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -99,8 +99,9 @@ export default function ProfileLayout({
   if (!user) {
     if (isMobile) {
       return (
-        <div className="min-h-screen bg-white pt-16 lg:pt-0">
+        <div className="min-h-screen bg-white pt-16 lg:pt-0 pb-16">
           <ProfileMobileNew />
+          <MobileBottomNavigation />
         </div>
       )
     }
@@ -132,15 +133,16 @@ export default function ProfileLayout({
     // If on main profile page without overview param, show menu
     if (pathname === '/profile' && !isOverview) {
       return (
-        <div className="min-h-screen bg-white pt-16 lg:pt-0">
+        <div className="min-h-screen bg-white pt-16 lg:pt-0 pb-16">
           <ProfileMobileNew />
+          <MobileBottomNavigation />
         </div>
       )
     }
 
     // If on sub-route OR main profile with overview param, show page content
     return (
-      <div className="min-h-screen bg-white pt-16 lg:pt-0">
+      <div className="min-h-screen bg-white pt-16 lg:pt-0 pb-16">
         {/* Page Content */}
         <div className="p-4">
           {pathname === '/profile' && isOverview && (
@@ -153,6 +155,7 @@ export default function ProfileLayout({
           )}
           {children}
         </div>
+        <MobileBottomNavigation />
       </div>
     )
   }
@@ -176,47 +179,18 @@ export default function ProfileLayout({
           background-color: var(--navbar-bg) !important;
           border-bottom-color: var(--navbar-border) !important;
         }
-        
-        /* Footer only in main content area, not under sidebar */
-        body:has(.profile-layout-wrapper) footer {
-          margin-left: 16rem !important; /* 256px = w-64 */
-        }
-        
-        @media (max-width: 1024px) {
-          body:has(.profile-layout-wrapper) footer {
-            margin-left: 0 !important;
-          }
-        }
       `}</style>
 
       <div className="min-h-screen bg-gray-50 profile-layout-wrapper">
-        {/* Full Header - Always Visible - Part of Background */}
+        {/* Full Header - Always Visible */}
         <ProfileTopbar user={userProfile} accountType={accountType} />
 
-        <div className="flex">
-          {/* Background Sidebar - Fixed - Part of Background */}
-          <ProfileSidebarWrapper
-            user={userProfile}
-            accountType={accountType}
-            verificationStatus={userProfile.verification_status}
-            className="fixed top-16 left-0 bottom-0 z-10 w-64"
-          />
-
-          {/* Main Content Area - Starts after sidebar */}
-          <div className="flex-1 lg:ml-64">
-            <main className="py-6 px-4 sm:px-6 lg:px-8">
-              {/* ONE BIG WHITE FLOATING CARD - Alibaba Style */}
-              <div className="mx-auto max-w-7xl">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                  {/* Content inside card */}
-                  <div className="p-6 sm:p-8 lg:p-10">
-                    {children}
-                  </div>
-                </div>
-              </div>
-            </main>
+        {/* Main Content Area - Full Width */}
+        <main className="py-6 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            {children}
           </div>
-        </div>
+        </main>
       </div>
     </>
   )

@@ -1,5 +1,5 @@
+import SecuritySection from '@/modules/profile/components/sections/security-section'
 import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
     title: 'Security Settings | Cedar Elevators',
@@ -7,6 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function SecurityPage() {
-    // Redirect to the security section in profile
-    redirect('/profile/password')
+    return <SecuritySection />
 }

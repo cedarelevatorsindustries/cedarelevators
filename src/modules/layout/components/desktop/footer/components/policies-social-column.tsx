@@ -12,6 +12,7 @@ export function PoliciesSocialColumn() {
         <li><Link href="/policies/terms-of-service" className="hover:text-blue-600 transition-colors">Terms & Conditions</Link></li>
         <li><Link href="/policies/return-refund-policy" className="hover:text-blue-600 transition-colors">Return Policy</Link></li>
         <li><Link href="/policies/shipping-policy" className="hover:text-blue-600 transition-colors">Shipping Policy</Link></li>
+        <li><Link href="/legal" className="hover:text-blue-600 transition-colors">Additional Legal Pages</Link></li>
       </ul>
 
       {/* Follow Us Section */}

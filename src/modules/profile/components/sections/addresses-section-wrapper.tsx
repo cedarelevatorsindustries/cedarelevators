@@ -4,7 +4,13 @@ import { useProfile } from '@/lib/hooks/useProfile'
 import AddressesSection from './addresses-section'
 import { LoaderCircle } from 'lucide-react'
 
-export default function AddressesSectionWrapper() {
+import { BusinessVerificationData } from '@/lib/auth/client'
+
+interface AddressesSectionWrapperProps {
+  verifiedBusinessData?: BusinessVerificationData
+}
+
+export default function AddressesSectionWrapper({ verifiedBusinessData }: AddressesSectionWrapperProps) {
   const {
     addresses,
     accountType,
@@ -30,6 +36,7 @@ export default function AddressesSectionWrapper() {
     <AddressesSection
       addresses={addresses}
       accountType={accountType}
+      verifiedBusinessData={verifiedBusinessData}
       onAdd={addAddress}
       onUpdate={updateAddress}
       onDelete={deleteAddress}

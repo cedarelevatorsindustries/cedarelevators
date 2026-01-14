@@ -8,9 +8,12 @@ import { cn } from '@/lib/utils'
 import { IndividualAddressForm } from '../forms/individual-address-form'
 import { BusinessAddressForm } from '../forms/business-address-form'
 
+import { BusinessVerificationData } from '@/lib/auth/client'
+
 interface AddressesSectionProps {
   addresses: Address[]
   accountType: AccountType
+  verifiedBusinessData?: BusinessVerificationData
   onAdd: (address: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>
   onUpdate: (addressId: string, updates: Partial<Address>) => Promise<void>
   onDelete: (addressId: string) => Promise<void>
@@ -21,6 +24,7 @@ interface AddressesSectionProps {
 export default function AddressesSection({
   addresses,
   accountType,
+  verifiedBusinessData,
   onAdd,
   onUpdate,
   onDelete,
@@ -77,6 +81,36 @@ export default function AddressesSection({
   // Determine which form to use based on account type
   const AddressFormComponent = accountType === 'business' ? BusinessAddressForm : IndividualAddressForm
 
+  // Calculate initial data for new address (autofill from verification data)
+  const getInitialData = () => {
+    if (editingAddress) return editingAddress
+
+    // If adding new address and we have verification data, autofill
+    if (showAddForm && accountType === 'business' && verifiedBusinessData) {
+      return {
+        address_type: 'office',
+        company: verifiedBusinessData.legal_business_name || '',
+        gst_number: verifiedBusinessData.gstin || '',
+        phone: verifiedBusinessData.contact_person_phone || '',
+        // Split name if possible or put in first name
+        first_name: verifiedBusinessData.contact_person_name?.split(' ')[0] || '',
+        last_name: verifiedBusinessData.contact_person_name?.split(' ').slice(1).join(' ') || '',
+        address_line_1: verifiedBusinessData.address_line_1 || '',
+        address_line_2: verifiedBusinessData.address_line_2 || '',
+        city: verifiedBusinessData.city || '',
+        state: verifiedBusinessData.state || '',
+        postal_code: verifiedBusinessData.postal_code || '',
+        country: verifiedBusinessData.country || 'India',
+        label: 'Registered Office', // Helpful default label
+        is_default: addresses.length === 0 // Make default if it's the first address
+      }
+    }
+
+    return undefined
+  }
+
+
+
   return (
     <div className={cn('bg-white rounded-lg shadow-sm', className)}>
       {/* Header */}
@@ -104,7 +138,7 @@ export default function AddressesSection({
         {showAddForm && (
           <div className="mb-6">
             <AddressFormComponent
-              initialData={editingAddress}
+              initialData={getInitialData()}
               onSubmit={handleSubmit}
               onCancel={handleCancel}
               isEditing={!!editingId}

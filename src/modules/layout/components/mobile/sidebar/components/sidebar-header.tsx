@@ -2,7 +2,9 @@
 
 import Image from "next/image"
 import { User } from "lucide-react"
-import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs"
+import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import { useUser } from "@/lib/auth/client"
+import { cn } from "@/lib/utils"
 
 interface SidebarHeaderProps {
   isLoggedIn: boolean
@@ -12,25 +14,32 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ isLoggedIn, userName, onClose }: SidebarHeaderProps) {
   const { user } = useUser()
+  const isBusiness = user?.userType === 'business' || user?.activeProfile?.profile_type === 'business'
+  const isVerified = isBusiness && user?.isVerified
 
   if (isLoggedIn || user) {
     return (
       <div className="px-4 py-4 bg-blue-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <UserButton 
-              appearance={{
-                elements: {
-                  avatarBox: "w-12 h-12"
-                }
-              }}
-            />
+            <div className={cn(
+              "rounded-full flex items-center justify-center",
+              isVerified ? "p-[2px] bg-gradient-to-tr from-[#FDE047] via-[#F59E0B] to-[#D97706]" : ""
+            )}>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: cn("w-12 h-12", isVerified && "border-2 border-white")
+                  }
+                }}
+              />
+            </div>
             <div>
               <h3 className="font-semibold text-gray-900">
-                {user?.fullName || userName}
+                {user?.name || userName}
               </h3>
               <p className="text-sm text-gray-600">
-                {user?.primaryEmailAddress?.emailAddress || "john@company.com"}
+                {user?.email || "john@company.com"}
               </p>
             </div>
           </div>

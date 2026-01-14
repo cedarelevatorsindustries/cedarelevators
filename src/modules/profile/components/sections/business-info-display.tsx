@@ -81,7 +81,7 @@ export default function BusinessInfoDisplay({
                                 GST Number
                             </label>
                             <div className="flex items-center gap-2 text-gray-900">
-                                <span className="font-mono text-sm">{taxId}</span>
+                                <span className="font-mono text-sm uppercase bg-gray-100 px-2 py-0.5 rounded text-gray-700 border border-gray-200">{taxId}</span>
                             </div>
                         </div>
                     )}

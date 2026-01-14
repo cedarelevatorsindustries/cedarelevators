@@ -14,6 +14,20 @@ export interface UserProfile {
     is_active: boolean
 }
 
+export interface BusinessVerificationData {
+    gstin?: string | null
+    tax_id?: string | null
+    legal_business_name?: string | null
+    contact_person_name?: string | null
+    contact_person_phone?: string | null
+    address_line_1?: string | null
+    address_line_2?: string | null
+    city?: string | null
+    state?: string | null
+    postal_code?: string | null
+    country?: string | null
+}
+
 export interface Business {
     id: string
     name: string
@@ -22,6 +36,7 @@ export interface Business {
     verified_by: string | null
     created_at: string
     updated_at: string
+    verification_data?: BusinessVerificationData
 }
 
 export interface EnhancedUser {

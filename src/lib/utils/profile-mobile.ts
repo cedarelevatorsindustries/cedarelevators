@@ -24,8 +24,8 @@ export interface MobileMenuSection {
  * Rules:
  * - Guest: 5 items max
  * - Individual: 11 items (8 nav + 3 support)
- * - Business Unverified: 10 items (7 nav + 3 support)
- * - Business Verified: 11 items (8 nav + 3 support)
+ * - Business Unverified: 9 items (6 nav + 3 support) - Verification accessed via Account Overview CTA
+ * - Business Verified: 10 items (7 nav + 3 support)
  */
 export function getMobileProfileMenu(
   accountType: AccountType,
@@ -84,17 +84,16 @@ export function getMobileProfileMenu(
     ]
   }
 
-  // BUSINESS USER MENU (10-11 items based on verification)
+  // BUSINESS USER MENU (based on verification)
   if (accountType === 'business') {
     if (!isVerified) {
-      // BUSINESS UNVERIFIED
+      // BUSINESS UNVERIFIED - Access verification through Account Overview CTA
       return [
         {
           title: 'Business',
           items: [
             { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile?view=overview' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
-            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals', badge: 'Pending' },
           ]
         },
         {
@@ -119,7 +118,6 @@ export function getMobileProfileMenu(
           items: [
             { label: 'Business Overview', icon: 'LayoutDashboard', href: '/profile?view=overview' },
             { label: 'Addresses', icon: 'MapPin', href: '/profile/addresses' },
-            { label: 'Verification', icon: 'CircleCheck', href: '/profile/approvals' },
           ]
         },
         {
