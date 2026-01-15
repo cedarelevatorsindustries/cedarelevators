@@ -1,11 +1,12 @@
 /**
  * Cart Item Card Component
  * Displays individual cart item with actions
+ * Only for verified business users
  */
 
 'use client'
 
-import { DerivedCartItem, UserType, canSeePrice } from '@/types/cart.types'
+import { DerivedCartItem } from '@/types/cart.types'
 import { useCart } from '@/contexts/cart-context'
 import { Minus, Plus, Trash2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,13 +16,11 @@ import { useState } from 'react'
 
 interface CartItemCardProps {
   item: DerivedCartItem
-  userType: UserType
 }
 
-export function CartItemCard({ item, userType }: CartItemCardProps) {
+export function CartItemCard({ item }: CartItemCardProps) {
   const { updateQuantity, removeItem } = useCart()
   const [isUpdating, setIsUpdating] = useState(false)
-  const showPrice = canSeePrice(userType)
 
   const handleIncrement = async () => {
     if (isUpdating) return
@@ -96,8 +95,8 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
           </div>
         )}
 
-        {/* Price (if visible) */}
-        {showPrice && item.is_available && (
+        {/* Price (Always visible for verified users) */}
+        {item.is_available && (
           <div className="mt-2">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900">
@@ -117,13 +116,6 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
               )}
             </div>
           </div>
-        )}
-
-        {/* Sign in message for guest/unverified */}
-        {!showPrice && (
-          <p className="text-sm text-gray-500 mt-2">
-            {userType === 'guest' ? 'Sign in to view pricing' : 'Verify your business account to view pricing'}
-          </p>
         )}
       </div>
 
@@ -167,12 +159,6 @@ export function CartItemCard({ item, userType }: CartItemCardProps) {
           Remove
         </Button>
 
-        {/* Line Total */}
-        {showPrice && item.is_available && (
-          <div className="mt-2 font-semibold text-right" data-testid="item-line-total">
-            ₹{item.line_total.toLocaleString()}
-          </div>
-        )}
       </div>
     </div>
   )

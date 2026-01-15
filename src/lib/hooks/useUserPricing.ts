@@ -1,6 +1,6 @@
 "use client"
 
-import { useUser } from "@clerk/nextjs"
+import { useUser } from "@/lib/auth/client"
 import { useAccountType } from "./use-account-type"
 
 export type UserType = 'guest' | 'individual' | 'business'
@@ -17,19 +17,33 @@ export interface UserPricingInfo {
 }
 
 export function useUserPricing(): UserPricingInfo {
-  const { isSignedIn, user, isLoaded } = useUser()
+  const { user, isLoaded } = useUser()
   const { accountType, isBusiness, isIndividual, isGuest } = useAccountType()
 
-  // Get verification status from user metadata
-  const isVerified = user?.unsafeMetadata?.is_verified === true ||
-    user?.publicMetadata?.is_verified === true
+  // Get verification status from enhanced user object (from /api/auth/profile)
+  const isVerified = user?.business?.verification_status === 'verified'
 
-  const verificationStatus = (user?.unsafeMetadata?.verification_status as VerificationStatus) ||
-    (isVerified ? 'approved' : 'incomplete')
+  console.log('[useUserPricing] Debug:', {
+    isLoaded,
+    userExists: !!user,
+    accountType,
+    isBusiness,
+    isIndividual,
+    businessObject: user?.business,
+    verificationStatus: user?.business?.verification_status,
+    isVerified
+  })
+
+  // Map database verification status to component-friendly status
+  const dbStatus = user?.business?.verification_status
+  const verificationStatus: VerificationStatus =
+    dbStatus === 'verified' ? 'approved' :
+      dbStatus === 'pending' ? 'pending' :
+        dbStatus === 'rejected' ? 'rejected' : 'incomplete'
 
   // Determine user type
   let userType: UserType = 'guest'
-  if (isSignedIn) {
+  if (user) {
     userType = isBusiness ? 'business' : 'individual'
   }
 

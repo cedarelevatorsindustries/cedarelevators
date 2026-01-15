@@ -14,6 +14,16 @@ export function useAccountType() {
 
   const companyName = user?.unsafeMetadata?.company as string | undefined
 
+  console.log('[useAccountType] Debug:', {
+    isLoaded,
+    userExists: !!user,
+    unsafeMetadata: user?.unsafeMetadata,
+    accountType,
+    isBusiness,
+    isIndividual,
+    isGuest
+  })
+
   return {
     accountType,
     isBusiness,

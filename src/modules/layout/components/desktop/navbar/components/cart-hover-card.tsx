@@ -36,9 +36,11 @@ export function CartHoverCardContent({ items, total }: CartHoverCardContentProps
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">Shopping cart</h3>
       </div>
-      
-      <div className="max-h-96 overflow-y-auto">
-        {items.map((item) => (
+
+
+      {/* Show only first 3 items */}
+      <div className="max-h-[280px] overflow-y-auto">
+        {items.slice(0, 3).map((item) => (
           <div key={item.id} className="p-4 border-b border-gray-100 hover:bg-gray-50">
             <div className="flex gap-3">
               {item.image && (
@@ -54,7 +56,14 @@ export function CartHoverCardContent({ items, total }: CartHoverCardContentProps
           </div>
         ))}
       </div>
-      
+
+      {/* Show indicator if there are more items */}
+      {items.length > 3 && (
+        <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600 text-center border-b border-gray-200">
+          +{items.length - 3} more item{items.length - 3 !== 1 ? 's' : ''} in cart
+        </div>
+      )}
+
       <div className="p-4 border-t border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <span className="text-sm font-medium text-gray-700">Total:</span>

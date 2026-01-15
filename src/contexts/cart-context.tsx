@@ -24,7 +24,7 @@ import {
   getUserActiveCart,
   getCartItemCount,
   switchCartContext
-} from '@/lib/actions/cart-v2'
+} from '@/lib/actions/cart'
 import {
   checkCartLockStatus,
   CartLockStatus
@@ -51,8 +51,11 @@ interface CartContextState {
 
 const CartContext = createContext<CartContextState | undefined>(undefined)
 
+import { useUserPricing } from '@/lib/hooks/useUserPricing'
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { isSignedIn, userId } = useAuth()
+  const { userType: pricingUserType, isVerified } = useUserPricing()
 
   const [cart, setCart] = useState<Cart | null>(null)
   const [derivedItems, setDerivedItems] = useState<DerivedCartItem[]>([])
@@ -96,20 +99,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const fetchedCart = cartResult.data
       setCart(fetchedCart)
 
-      // Get user context (from cart or derive)
+      // Map pricing user type to cart user type
+      let userType: UserType = 'guest'
+      if (pricingUserType === 'business' && isVerified) {
+        userType = 'business_verified'
+      } else if (pricingUserType === 'business' && !isVerified) {
+        userType = 'business_unverified'
+      } else if (pricingUserType === 'individual') {
+        userType = 'individual'
+      }
+
+      // Get user context (from cart and pricing hook)
       const userContext: CartContextType = {
         userId: userId!,
         profileType: fetchedCart.profile_type,
         businessId: fetchedCart.business_id || undefined,
-        userType: 'individual', // TODO: Derive from user metadata
-        isVerified: false
+        userType: userType,
+        isVerified: isVerified
       }
       setContext(userContext)
+
+      console.log('[CartContext] User context:', userContext)
 
       // Get cart with pricing
       const { items, summary: calculatedSummary } = await getCartWithPricing(
         fetchedCart.id,
-        { userType: userContext.userType, businessId: userContext.businessId }
+        { userType: userContext.userType, businessId: userContext.businessId, isVerified: userContext.isVerified }
       )
 
       setDerivedItems(items)
@@ -121,7 +136,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [isSignedIn, userId])
+  }, [isSignedIn, userId, pricingUserType, isVerified])
 
   // Refresh lock status
   const refreshLockStatus = useCallback(async () => {
@@ -156,7 +171,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Add item to cart
   const addItem = useCallback(async (productId: string, variantId: string | null, quantity: number) => {
     try {
-      const result = await (await import('@/lib/actions/cart-v2')).addItemToCart({
+      const result = await (await import('@/lib/actions/cart')).addItemToCart({
         productId,
         variantId: variantId || undefined,
         quantity
@@ -175,7 +190,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Update item quantity
   const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
     try {
-      const result = await (await import('@/lib/actions/cart-v2')).updateCartItemQuantity({
+      const result = await (await import('@/lib/actions/cart')).updateCartItemQuantity({
         cartItemId: itemId,
         quantity
       })
@@ -193,7 +208,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Remove item from cart
   const removeItem = useCallback(async (itemId: string) => {
     try {
-      const result = await (await import('@/lib/actions/cart-v2')).removeCartItem(itemId)
+      const result = await (await import('@/lib/actions/cart')).removeCartItem(itemId)
       if (result.success) {
         await refreshCart()
       } else {
@@ -209,7 +224,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCartItems = useCallback(async () => {
     try {
       if (!cart?.id) return
-      const result = await (await import('@/lib/actions/cart-v2')).clearCart(cart.id)
+      const result = await (await import('@/lib/actions/cart')).clearCart(cart.id)
       if (result.success) {
         await refreshCart()
       } else {

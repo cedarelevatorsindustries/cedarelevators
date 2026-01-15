@@ -26,8 +26,8 @@ export function WishlistHoverCardContent() {
     )
   }
 
-  // Show max 5 items in the preview
-  const previewItems = items.slice(0, 5)
+  // Show max 3 items in the preview for compact view
+  const previewItems = items.slice(0, 3)
 
   const formatPrice = (price?: number) => {
     if (!price || price === 0) return "Price on request"
@@ -42,7 +42,7 @@ export function WishlistHoverCardContent() {
         </h3>
       </div>
 
-      <div className="max-h-96 overflow-y-auto">
+      <div className="max-h-[280px] overflow-y-auto">
         {previewItems.map((item) => (
           <div key={item.id} className="p-4 border-b border-gray-100 hover:bg-gray-50 group relative">
             <div className="flex gap-3">
@@ -88,6 +88,13 @@ export function WishlistHoverCardContent() {
           </div>
         ))}
       </div>
+
+      {/* Show indicator if there are more items */}
+      {count > 3 && (
+        <div className="px-4 py-3 bg-gray-50 text-sm text-gray-600 text-center border-b border-gray-200">
+          +{count - 3} more item{count - 3 !== 1 ? 's' : ''} in wishlist
+        </div>
+      )}
 
       <div className="p-4 border-t border-gray-200">
         <LocalizedClientLink

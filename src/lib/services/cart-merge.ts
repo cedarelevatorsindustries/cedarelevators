@@ -11,12 +11,12 @@
 'use server'
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
-import { 
-  GuestCartItem, 
+import {
+  GuestCartItem,
   CartMergeResult,
   ProfileType
 } from '@/types/cart.types'
-import { getOrCreateCart } from '@/lib/actions/cart-v2'
+import { getOrCreateCart } from '@/lib/actions/cart'
 import { logger } from '@/lib/services/logger'
 
 // =====================================================
@@ -88,7 +88,7 @@ export async function mergeGuestCartToUser(
         // Check if item already exists in user cart
         const existingItem = existingItems?.find(
           item => item.product_id === guestItem.product_id &&
-                  (item.variant_id || null) === (guestItem.variant_id || null)
+            (item.variant_id || null) === (guestItem.variant_id || null)
         )
 
         if (existingItem) {
@@ -103,7 +103,7 @@ export async function mergeGuestCartToUser(
 
           const { error: updateError } = await supabase
             .from('cart_items')
-            .update({ 
+            .update({
               quantity: newQuantity,
               updated_at: new Date().toISOString()
             })
@@ -184,10 +184,10 @@ export async function handlePostLoginMerge(
 ): Promise<CartMergeResult> {
   try {
     const guestItems: GuestCartItem[] = JSON.parse(guestCartData)
-    
+
     // Note: userId will be available from Clerk auth context
     // This function should be called from client after login
-    
+
     return await mergeGuestCartToUser(guestItems, '', 'individual')
 
   } catch (error) {

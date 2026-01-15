@@ -30,7 +30,7 @@ interface QuoteDetailProps {
  */
 export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
     const router = useRouter();
-    const [isConverting, setIsConverting] = useState(false);
+
 
     // Role-based visibility flags
     const isGuest = userType === 'guest';
@@ -47,22 +47,10 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
     // Admin response (visible to all users except guest)
     const adminResponse = (quote as any).admin_response_message || quote.admin_response?.response_note;
 
-    // Handle quote to cart conversion
+    // Handle quote checkout - redirect to unified checkout
     const handleConvertToCart = async () => {
-        setIsConverting(true);
-        try {
-            const result = await convertQuoteToOrder(quote.id);
-            if (result.success) {
-                toast.success('Quote items added to cart!');
-                router.push('/cart');
-            } else {
-                toast.error(result.error || 'Failed to convert quote');
-                setIsConverting(false);
-            }
-        } catch (error) {
-            toast.error('An error occurred');
-            setIsConverting(false);
-        }
+        // Redirect to checkout with quote source
+        router.push(`/checkout?source=quote&quoteId=${quote.id}`);
     };
 
     return (
@@ -213,10 +201,9 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                     </div>
                     <button
                         onClick={handleConvertToCart}
-                        disabled={isConverting}
-                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
                     >
-                        {isConverting ? 'Adding to cart...' : 'Proceed to Checkout'} <ArrowRight className="w-4 h-4" />
+                        Proceed to Checkout <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>
             )}
@@ -267,10 +254,9 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                     </div>
                     <button
                         onClick={handleConvertToCart}
-                        disabled={isConverting}
-                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"
                     >
-                        {isConverting ? 'Adding to cart...' : 'Convert to Order'} <ArrowRight className="w-4 h-4" />
+                        Convert to Order <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>
             )}
@@ -298,10 +284,9 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                                 </div>
                                 <button
                                     onClick={handleConvertToCart}
-                                    disabled={isConverting}
-                                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2 whitespace-nowrap"
                                 >
-                                    {isConverting ? 'Adding to cart...' : 'Convert to Order'} <ArrowRight className="w-4 h-4" />
+                                    Convert to Order <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>

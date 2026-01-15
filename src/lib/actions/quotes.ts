@@ -236,47 +236,30 @@ export async function convertQuoteToOrder(quoteId: string) {
     if (quoteError || !quote) throw new Error("Quote not found");
     if (quote.status !== 'approved') throw new Error("Quote must be approved to convert to order");
 
-    // 2. Create Cart
-    const cartId = crypto.randomUUID();
-    const { error: cartError } = await supabase
-      .from('carts')
-      .insert({
-        id: cartId,
-        clerk_user_id: userId,
-        currency_code: 'INR'
-      }); // Assuming 'carts' table structure from previous context
+    // 2. Get or create cart using the proper cart action
+    const { getOrCreateCart } = await import('./cart-v2');
+    const cartResult = await getOrCreateCart();
 
-    if (cartError) throw new Error("Failed to initialize cart");
+    if (!cartResult.success || !cartResult.data) {
+      throw new Error(cartResult.error || "Failed to initialize cart");
+    }
 
-    // 3. Add Items to Cart
+    const cartId = cartResult.data.id;
+
+    // 3. Add Items to Cart using the proper action
     if (quote.items && quote.items.length > 0) {
-      // Need product details (title, thumbnail) which are not in quote_items anymore in new schema
-      // We must fetch them or just insert basic and let cart expand it?
-      // Usually cart needs product_id.
-      // If `cart_items` requires title/thumbnail (denormalized), we have a problem.
-      // Let's assume we can fetch product details or insert minimal info.
-      // For now, I'll fetch product details here if possible, or just mock title to let Cart page handle it.
-      // Or use a join?
+      const { addItemToCart } = await import('./cart-v2');
 
-      // To do it properly, we should fetch product info.
-      // But to save time and complexity in this file, I'll assume cart_items triggers or simple insertion works.
-      // Using `product_id`.
+      for (const item of quote.items) {
+        const result = await addItemToCart({
+          productId: item.product_id,
+          variantId: item.variant_id || undefined,
+          quantity: item.quantity
+        });
 
-      const cartItems = quote.items.map((item: any) => ({
-        cart_id: cartId,
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-        quantity: item.quantity,
-        // These might be required by cart schema
-        title: "Quoted Item",
-        thumbnail: "",
-        unit_price: item.unit_price || 0
-      }));
-
-      const { error: ciError } = await supabase.from('cart_items').insert(cartItems);
-      if (ciError) {
-        console.error("Cart items error", ciError);
-        throw new Error("Failed to add items to cart");
+        if (!result.success) {
+          throw new Error(`Failed to add item to cart: ${result.error}`);
+        }
       }
     }
 

@@ -22,11 +22,13 @@ import { Button } from '@/components/ui/button'
 import { UserType, ProfileType } from '@/types/cart.types'
 import { useRouter } from 'next/navigation'
 import EmptyCartState from '@/modules/cart/templates/empty-cart-state'
+import { useUserPricing } from '@/lib/hooks/useUserPricing'
+import { useEffect } from 'react'
 
 export default function CartPage() {
   const router = useRouter()
   const { isSignedIn } = useAuth()
-  const { user } = useUser()
+  const { user, isLoaded: isUserLoaded } = useUser() // Get isLoaded from enhanced user hook
   const {
     derivedItems,
     summary,
@@ -37,20 +39,63 @@ export default function CartPage() {
     switchProfile
   } = useCart()
 
-  // Determine user type for display
+  // Use centralized user pricing hook for correct user type detection
+  const { userType: pricingUserType, isVerified } = useUserPricing()
+
+  // Debug logging - REMOVED
+
+
+  // Map pricing user type to cart user type
   const getUserType = (): UserType => {
     if (!isSignedIn) return 'guest'
-    const accountType = user?.publicMetadata?.accountType as string || 'individual'
-    if (accountType === 'business') {
-      const verificationStatus = user?.publicMetadata?.verificationStatus as string
-      return verificationStatus === 'verified' ? 'business_verified' : 'business_unverified'
-    }
+    if (pricingUserType === 'business' && isVerified) return 'business_verified'
+    if (pricingUserType === 'business' && !isVerified) return 'business_unverified'
     return 'individual'
   }
 
   const userType = getUserType()
-  const hasBusinessProfile = user?.publicMetadata?.accountType === 'business'
+  const hasBusinessProfile = pricingUserType === 'business'
   const currentProfileType = context?.profileType || 'individual'
+
+  console.log('[CartPage] Computed userType:', userType)
+
+  // Simple loading check - just wait for basic user data
+  // Don't wait for user.business since it may not load from enhanced hook
+  const isDataReady = isUserLoaded && pricingUserType !== 'guest'
+
+  // Redirect non-verified business users to catalog using useEffect
+  // Only verified business users can access cart
+  useEffect(() => {
+    if (!isDataReady) {
+      return
+    }
+
+    if (isSignedIn && userType !== 'business_verified') {
+      router.push('/catalog')
+    } else if (!isSignedIn) {
+      router.push('/sign-in?redirect=/cart')
+    }
+  }, [isSignedIn, userType, router, isDataReady])
+
+  // Don't render cart for non-verified users (but show loading while checking)
+  if (!isDataReady || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isSignedIn && userType !== 'business_verified') {
+    return null
+  }
+
+  if (!isSignedIn) {
+    return null
+  }
 
   const handleCheckout = () => {
     router.push('/checkout')
@@ -105,56 +150,11 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="cart-page">
-      <div className="max-w-[1400px] mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 mb-4 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Continue Shopping
-          </Link>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="cart-title">
-                Shopping Cart
-              </h1>
-              <p className="text-gray-600">
-                {summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'}
-                {summary.uniqueProducts > 1 && ` • ${summary.uniqueProducts} products`}
-              </p>
-            </div>
-
-            {/* Profile Switcher (for business users with both profiles) */}
-            {isSignedIn && hasBusinessProfile && (
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-gray-600">
-                  Shopping as:
-                </div>
-                <Button
-                  onClick={handleProfileSwitch}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  data-testid="profile-switcher-btn"
-                >
-                  {currentProfileType === 'individual' ? (
-                    <>
-                      <User className="w-4 h-4" />
-                      Individual
-                    </>
-                  ) : (
-                    <>
-                      <Building2 className="w-4 h-4" />
-                      Business
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+        <p className="text-gray-600 mt-2 mb-8">
+          {summary.itemCount} items • {summary.uniqueProducts} products
+        </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -182,40 +182,19 @@ export default function CartPage() {
                   <CartItemCard
                     key={item.id}
                     item={item}
-                    userType={userType}
                   />
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
+          {/* Order Summary Sidebar - Sticky on Desktop */}
+          <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:self-start">
             <CartSummary
               summary={summary}
-              userType={userType}
               onCheckout={handleCheckout}
               onRequestQuote={handleRequestQuote}
             />
-
-            {/* Alternative Quote Button for Authenticated Users */}
-            {isSignedIn && derivedItems.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-blue-900 mb-2">
-                  Need a Custom Quote?
-                </h4>
-                <p className="text-xs text-blue-700 mb-3">
-                  Get personalized pricing and bulk discounts for your order
-                </p>
-                <QuoteFromCartButton
-                  cartItems={derivedItems}
-                  variant="outline"
-                  size="sm"
-                  fullWidth
-                  className="border-blue-300 hover:bg-blue-100 hover:border-blue-400"
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>

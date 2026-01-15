@@ -20,7 +20,7 @@ import {
   removeCartItem,
   clearCart,
   getCartItemCount
-} from '@/lib/actions/cart-v2'
+} from '@/lib/actions/cart'
 import {
   lockCartForCheckout,
   unlockCart,
@@ -173,9 +173,10 @@ export function useAddToCart() {
       queryClient.setQueryData(cartKeys.count(userId), (old: number = 0) => old + payload.quantity)
     },
     onSuccess: () => {
-      // Invalidate and refetch cart
-      queryClient.invalidateQueries({ queryKey: cartKeys.cart(userId) })
-      queryClient.invalidateQueries({ queryKey: cartKeys.count(userId) })
+      // Invalidate all cart queries and explicitly refetch
+      queryClient.invalidateQueries({ queryKey: cartKeys.all })
+      // Force refetch to ensure cart appears in UI immediately
+      queryClient.refetchQueries({ queryKey: cartKeys.cart(userId) })
       toast.success('Added to cart')
     },
     onError: (error: Error) => {

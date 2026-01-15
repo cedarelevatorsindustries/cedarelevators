@@ -41,12 +41,9 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
         quantity: item.quantity
     }))
 
-    // Determine user type - hide cart for individual and guest users
-    const userType: UserType = user?.userType === 'verified' ? 'business_verified' :
-        user?.userType === 'business' ? 'business_unverified' :
-            user?.userType === 'individual' ? 'individual' : 'guest'
-
-    const showCart = userType === 'business_verified' || userType === 'business_unverified'
+    // Determine if user can access cart - Only verified business users
+    const isVerifiedBusiness = user?.business?.verification_status === 'verified'
+    const showCart = isVerifiedBusiness
 
     return (
         <div
@@ -71,7 +68,7 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
                 <WishlistHoverCardContent />
             </LinkHoverCard>
 
-            {/* Shopping Cart with Hover Card - Only for business users */}
+            {/* Shopping Cart with Hover Card - Only for verified business users */}
             {showCart && (
                 <>
                     <LinkHoverCard

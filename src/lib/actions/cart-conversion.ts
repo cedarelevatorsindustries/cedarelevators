@@ -7,7 +7,7 @@
 
 'use server'
 
-import { convertCart } from '@/lib/actions/cart-v2'
+import { convertCart } from '@/lib/actions/cart'
 import { CartActionResponse } from '@/types/cart.types'
 
 /**

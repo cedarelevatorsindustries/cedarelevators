@@ -12,6 +12,7 @@ interface PricingBlockSectionProps {
   className?: string
   isMobile?: boolean
   actionDisabled?: boolean
+  productId?: string
 }
 
 export default function PricingBlockSection({
@@ -21,7 +22,8 @@ export default function PricingBlockSection({
   onRequestQuote,
   className = '',
   isMobile = false,
-  actionDisabled = false
+  actionDisabled = false,
+  productId
 }: PricingBlockSectionProps) {
   const { user } = useUser()
   const userState = getUserPricingState(user)
@@ -36,6 +38,7 @@ export default function PricingBlockSection({
       className={className}
       isMobile={isMobile}
       actionDisabled={actionDisabled}
+      productId={productId}
     />
   )
 }

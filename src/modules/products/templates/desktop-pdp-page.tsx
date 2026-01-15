@@ -298,6 +298,7 @@ export default function ProductDetailPage({
                   onAddToCart={handleAddToCart}
                   onRequestQuote={handleRequestQuote}
                   actionDisabled={!allVariantsSelected}
+                  productId={product.id}
                 />
 
               </div>

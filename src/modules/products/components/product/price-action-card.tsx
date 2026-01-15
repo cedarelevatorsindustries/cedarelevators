@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { Lock, ShieldCheck, Package, Minus, Plus, ShoppingCart, FileText, Truck } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { UserPricingState, getPricingPermissions, formatPrice, calculateDiscount, getPrimaryCTAUrl } from '@/lib/utils/pricing-utils'
+import { useCartQuery } from '@/lib/hooks/use-cart-query'
 
 interface PriceActionCardProps {
     userState: UserPricingState
@@ -14,6 +16,7 @@ interface PriceActionCardProps {
     className?: string
     isMobile?: boolean
     actionDisabled?: boolean
+    productId?: string
 }
 
 export function PriceActionCard({
@@ -24,12 +27,20 @@ export function PriceActionCard({
     onRequestQuote,
     className = '',
     isMobile = false,
-    actionDisabled = false
+    actionDisabled = false,
+    productId
 }: PriceActionCardProps) {
     const [quantity, setQuantity] = useState(1)
+    const router = useRouter()
+    const { data: cart } = useCartQuery()
     const permissions = getPricingPermissions(userState)
     const discount = price && mrp ? calculateDiscount(price, mrp) : 0
     const primaryUrl = getPrimaryCTAUrl(userState)
+
+    // Check if this product is in cart
+    const isProductInCart = cart?.items?.some(
+        item => item.product_id === productId
+    ) ?? false
 
     const handleQuantityChange = (delta: number) => {
         setQuantity(prev => Math.max(1, prev + delta))
@@ -190,17 +201,27 @@ export function PriceActionCard({
 
                 {/* Action Buttons */}
                 <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-3`}>
-                    <button
-                        onClick={handlePrimaryAction}
-                        disabled={actionDisabled}
-                        className={`flex-1 font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] ${actionDisabled
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-orange-500 hover:bg-orange-600 text-white'
-                            }`}
-                    >
-                        <ShoppingCart className="w-5 h-5" />
-                        {permissions.primaryCTA}
-                    </button>
+                    {isProductInCart ? (
+                        <button
+                            onClick={() => router.push('/cart')}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
+                        >
+                            <ShoppingCart className="w-5 h-5" />
+                            Go to Cart
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handlePrimaryAction}
+                            disabled={actionDisabled}
+                            className={`flex-1 font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] ${actionDisabled
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-orange-500 hover:bg-orange-600 text-white'
+                                }`}
+                        >
+                            <ShoppingCart className="w-5 h-5" />
+                            {permissions.primaryCTA}
+                        </button>
+                    )}
 
                     <button
                         onClick={() => onRequestQuote?.(quantity)}
