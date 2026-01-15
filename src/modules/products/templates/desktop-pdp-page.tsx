@@ -20,7 +20,8 @@ import VariantSelector from "../components/product/variant-selector"
 import { useRef, useState, useEffect, useTransition } from "react"
 
 // Import actions
-import { addItemToCart } from "@/lib/actions/cart-v2"
+import { addItemToCart } from "@/lib/actions/cart"
+
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 

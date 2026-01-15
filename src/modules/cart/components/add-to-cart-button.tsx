@@ -5,7 +5,8 @@ import { ShoppingCart, LoaderCircle, Check } from "lucide-react"
 import { useCart } from "@/lib/hooks"
 
 interface AddToCartButtonProps {
-  variantId: string
+  productId: string
+  variantId?: string
   quantity?: number
   disabled?: boolean
   className?: string
@@ -14,6 +15,7 @@ interface AddToCartButtonProps {
 }
 
 export default function AddToCartButton({
+  productId,
   variantId,
   quantity = 1,
   disabled = false,
@@ -36,10 +38,10 @@ export default function AddToCartButton({
 
     setIsLoading(true)
     try {
-      await addItem(variantId, quantity)
+      await addItem(productId, variantId, quantity)
       setShowSuccess(true)
       onSuccess?.()
-      
+
       // Reset success state after 2 seconds
       setTimeout(() => setShowSuccess(false), 2000)
     } catch (error) {

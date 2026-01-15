@@ -5,7 +5,7 @@
  * Minimal checkout module with only unique checkout functions.
  * Cart CRUD operations → @/lib/actions/cart
  * Quote management → @/lib/actions/quotes
- * Order retrieval → @/lib/actions/orders
+ * Order retrieval → @/lib/actions/orders (re-exported for convenience)
  */
 
 // Types
@@ -34,3 +34,7 @@ export {
     updateBusinessAddress,
     deleteBusinessAddress
 } from './addresses'
+
+// Re-export getOrder for convenience (from orders.ts)
+export { getOrder as getOrderById } from '../orders'
+

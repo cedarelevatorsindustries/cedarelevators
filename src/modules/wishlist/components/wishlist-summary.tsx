@@ -35,11 +35,9 @@ export function WishlistSummary({ items }: WishlistSummaryProps) {
             // Ideally backend should support bulk add, but we'll loop for now
             for (const item of items) {
                 try {
-                    // Check if variant_id exists, otherwise fall back to product_id if feasible or skip
-                    // useCart addItem expects variantId. 
-                    // item.variant_id is required in database but let's be safe
-                    if (item.variant_id) {
-                        await addItem(item.variant_id, item.quantity || 1)
+                    // addItem now requires productId as first param
+                    if (item.product_id) {
+                        await addItem(item.product_id, item.variant_id || undefined, item.quantity || 1)
                         addedCount++
                     }
                 } catch (err) {

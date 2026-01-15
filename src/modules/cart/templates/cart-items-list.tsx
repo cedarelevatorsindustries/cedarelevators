@@ -19,9 +19,10 @@ export default function CartItemsList({ items, userType }: CartItemsListProps) {
     return (
         <div className="space-y-4">
             {items.map((item) => (
-                <CartItemCard key={item.id} item={item} userType={userType} />
+                <CartItemCard key={item.id} item={item} />
             ))}
         </div>
     )
+
 }
 

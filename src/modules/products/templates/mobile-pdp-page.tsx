@@ -19,7 +19,8 @@ import FrequentlyBoughtTogetherSection from "../sections/12-frequently-bought-to
 import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed-section"
 
 // Import actions
-import { addItemToCart } from "@/lib/actions/cart-v2"
+import { addItemToCart } from "@/lib/actions/cart"
+
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 

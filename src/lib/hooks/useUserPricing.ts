@@ -10,11 +10,13 @@ export interface UserPricingInfo {
   userType: UserType
   verificationStatus?: VerificationStatus
   isVerified: boolean
+  isLoaded: boolean
   canSeePrices: boolean
   canAddToCart: boolean
   canCheckout: boolean
   canRequestQuote: boolean
 }
+
 
 export function useUserPricing(): UserPricingInfo {
   const { user, isLoaded } = useUser()
@@ -69,10 +71,12 @@ export function useUserPricing(): UserPricingInfo {
     userType,
     verificationStatus,
     isVerified,
+    isLoaded,
     canSeePrices,
     canAddToCart,
     canCheckout,
     canRequestQuote,
   }
+
 }
 

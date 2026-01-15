@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser } from "@/lib/auth/client" // Assuming this exists or is Clerk wrapper
-import { Cart } from "@/lib/types/domain"
+import { useUser } from "@/lib/auth/client"
+import type { Cart } from "@/types/cart.types"
 import {
-  getCart,
-  addToCart,
-  updateLineItem,
-  removeLineItem,
+  getUserActiveCart,
+  addItemToCart,
+  updateCartItemQuantity,
+  removeCartItem,
   clearCart as clearCartAction
 } from "@/lib/actions/cart"
 import { toast } from "sonner"
@@ -20,8 +20,10 @@ export function useCart() {
 
   const refreshCart = async () => {
     try {
-      const data = await getCart()
-      setCart(data)
+      const response = await getUserActiveCart()
+      if (response.success && response.data) {
+        setCart(response.data)
+      }
     } catch (error) {
       logger.error("Error refreshing cart", error)
     } finally {
@@ -33,13 +35,21 @@ export function useCart() {
     refreshCart()
   }, [user])
 
-  const addItem = async (variantId: string, quantity: number = 1) => {
+  const addItem = async (productId: string, variantId?: string, quantity: number = 1) => {
     try {
       setIsLoading(true)
-      const updatedCart = await addToCart(variantId, quantity)
-      setCart(updatedCart)
-      toast.success("Item added to cart")
-      return updatedCart
+      const response = await addItemToCart({
+        productId,
+        variantId,
+        quantity
+      })
+      if (response.success) {
+        await refreshCart()
+        toast.success("Item added to cart")
+      } else {
+        toast.error(response.error || "Failed to add item")
+      }
+      return response
     } catch (error) {
       logger.error("Error adding item", error)
       toast.error("Failed to add item")
@@ -49,12 +59,20 @@ export function useCart() {
     }
   }
 
-  const updateQuantity = async (lineId: string, quantity: number) => {
+  const updateQuantity = async (cartItemId: string, quantity: number) => {
     try {
       setIsLoading(true)
-      const updatedCart = await updateLineItem(lineId, quantity)
-      setCart(updatedCart)
-      return updatedCart
+      const response = await updateCartItemQuantity({
+        cartItemId,
+        quantity
+      })
+      if (response.success) {
+        await refreshCart()
+      } else {
+        toast.error(response.error || "Failed to update quantity")
+      }
+      return response
+
     } catch (error) {
       logger.error("Error updating quantity", error)
       toast.error("Failed to update quantity")
@@ -64,13 +82,17 @@ export function useCart() {
     }
   }
 
-  const removeItem = async (lineId: string) => {
+  const removeItem = async (cartItemId: string) => {
     try {
       setIsLoading(true)
-      const updatedCart = await removeLineItem(lineId)
-      setCart(updatedCart)
-      toast.success("Item removed")
-      return updatedCart
+      const response = await removeCartItem(cartItemId)
+      if (response.success) {
+        await refreshCart()
+        toast.success("Item removed")
+      } else {
+        toast.error(response.error || "Failed to remove item")
+      }
+      return response
     } catch (error) {
       logger.error("Error removing item", error)
       toast.error("Failed to remove item")
@@ -83,9 +105,15 @@ export function useCart() {
   const clearCart = async () => {
     try {
       setIsLoading(true)
-      const updatedCart = await clearCartAction()
-      setCart(updatedCart)
-      toast.success("Cart cleared")
+      if (cart?.id) {
+        const response = await clearCartAction(cart.id)
+        if (response.success) {
+          await refreshCart()
+          toast.success("Cart cleared")
+        } else {
+          toast.error(response.error || "Failed to clear cart")
+        }
+      }
     } catch (error) {
       logger.error("Error clearing cart", error)
       toast.error("Failed to clear cart")
@@ -108,4 +136,3 @@ export function useCart() {
     refresh: refreshCart,
   }
 }
-

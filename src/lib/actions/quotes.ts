@@ -237,7 +237,8 @@ export async function convertQuoteToOrder(quoteId: string) {
     if (quote.status !== 'approved') throw new Error("Quote must be approved to convert to order");
 
     // 2. Get or create cart using the proper cart action
-    const { getOrCreateCart } = await import('./cart-v2');
+    const { getOrCreateCart } = await import('./cart');
+
     const cartResult = await getOrCreateCart();
 
     if (!cartResult.success || !cartResult.data) {
@@ -248,7 +249,8 @@ export async function convertQuoteToOrder(quoteId: string) {
 
     // 3. Add Items to Cart using the proper action
     if (quote.items && quote.items.length > 0) {
-      const { addItemToCart } = await import('./cart-v2');
+      const { addItemToCart } = await import('./cart');
+
 
       for (const item of quote.items) {
         const result = await addItemToCart({

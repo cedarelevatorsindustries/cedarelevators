@@ -25,9 +25,10 @@ interface BaseProps {
 interface HookModeProps extends BaseProps {
     /** Mode: use built-in cart hook */
     mode?: 'hook'
-    /** Variant ID for cart hook mode */
-    variantId: string
-    productId?: never
+    /** Product ID for cart hook mode */
+    productId: string
+    /** Variant ID for cart hook mode (optional) */
+    variantId?: string
     onAddToCart?: never
 }
 
@@ -78,7 +79,7 @@ export function AddToCartButton(props: AddToCartButtonProps) {
         try {
             if (mode === 'hook') {
                 const hookProps = props as HookModeProps
-                await addItem(hookProps.variantId, quantity)
+                await addItem(hookProps.productId, hookProps.variantId, quantity)
             } else {
                 const callbackProps = props as CallbackModeProps
                 await callbackProps.onAddToCart(callbackProps.productId, quantity)

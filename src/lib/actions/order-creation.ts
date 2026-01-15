@@ -54,14 +54,15 @@ export async function createOrderFromCart(
 
     // 1. Get cart with items
     console.log('📦 [Order Creation] Step 1: Fetching cart')
-    const cart = await getCart(input.cartId)
+    const cartResponse = await getCart(input.cartId)
 
-    if (!cart || !cart.items || cart.items.length === 0) {
+    if (!cartResponse.success || !cartResponse.data || !cartResponse.data.items || cartResponse.data.items.length === 0) {
       console.log('❌ [Order Creation] Cart is empty')
       return { success: false, error: 'Cart is empty' }
     }
 
-    console.log(`📋 [Order Creation] Cart has ${cart.items.length} items`)
+    const cart = cartResponse.data
+    console.log(`📋 [Order Creation] Cart has ${cart.items!.length} items`)
 
     // 2. Validate inventory
     console.log('🔍 [Order Creation] Step 2: Validating inventory')
@@ -172,7 +173,7 @@ export async function createOrderFromCart(
     // 7. Create order items
     console.log('📦 [Order Creation] Step 7: Creating order items')
 
-    const orderItems = cart.items.map(item => ({
+    const orderItems = cart.items!.map((item: any) => ({
       order_id: order.id,
       product_id: item.product_id,
       variant_id: item.variant_id,
@@ -202,7 +203,7 @@ export async function createOrderFromCart(
     // 8. Decrement inventory
     console.log('📉 [Order Creation] Step 8: Decrementing inventory')
 
-    for (const item of cart.items) {
+    for (const item of cart.items!) {
       const productId = item.product_id
       const variantId = item.variant_id
       const quantity = item.quantity

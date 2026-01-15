@@ -7,7 +7,8 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getOrderById } from '@/lib/actions/checkout'
+import { getOrder } from '@/lib/actions/orders'
+
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Package, MapPin, Calendar, Download, Phone, Loader2 } from 'lucide-react'
@@ -46,13 +47,15 @@ function OrderConfirmationContent() {
       }
 
       try {
-        const result = await getOrderById(orderId)
-        
-        if (!result.success || !result.data) {
-          throw new Error(result.error || 'Failed to load order')
-        }
+        const result = await getOrder(orderId)
 
-        setOrder(result.data)
+
+        if (!result.success || !result.order) {
+          setError(result.error || 'Order not found')
+          return
+        }
+        setOrder(result.order)
+
       } catch (err: any) {
         console.error('Load order error:', err)
         setError(err.message || 'Failed to load order details')

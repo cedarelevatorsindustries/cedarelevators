@@ -10,18 +10,18 @@ import { getCart } from './cart'
  */
 export async function migrateGuestCart(guestCartId: string) {
   console.log('🔄 [Cart Migration] Starting guest cart migration:', guestCartId)
-  
+
   try {
     const supabase = await createClerkSupabaseClient()
     const { userId } = await auth()
-    
+
     if (!userId) {
       console.log('❌ [Cart Migration] No user ID found, cannot migrate')
       return { success: false, error: 'User not authenticated' }
     }
 
     console.log('👤 [Cart Migration] User ID:', userId)
-    
+
     // Check if user already has a cart
     const { data: existingUserCart } = await supabase
       .from('carts')
@@ -31,7 +31,7 @@ export async function migrateGuestCart(guestCartId: string) {
 
     if (existingUserCart) {
       console.log('📦 [Cart Migration] User already has cart:', existingUserCart.id)
-      
+
       // Merge guest cart items into user cart
       const { data: guestItems } = await supabase
         .from('cart_items')
@@ -40,7 +40,7 @@ export async function migrateGuestCart(guestCartId: string) {
 
       if (guestItems && guestItems.length > 0) {
         console.log(`🔀 [Cart Migration] Merging ${guestItems.length} items from guest cart`)
-        
+
         for (const item of guestItems) {
           // Check if item already exists in user cart
           const { data: existingItem } = await supabase
@@ -81,12 +81,12 @@ export async function migrateGuestCart(guestCartId: string) {
     } else {
       // Simply update guest cart to associate with user
       console.log('🔗 [Cart Migration] Associating guest cart with user')
-      
+
       const { error } = await supabase
         .from('carts')
         .update({ clerk_user_id: userId, guest_id: null })
         .eq('id', guestCartId)
-      
+
       if (error) {
         console.error('❌ [Cart Migration] Error:', error)
         throw error
@@ -94,7 +94,7 @@ export async function migrateGuestCart(guestCartId: string) {
 
       console.log('✅ [Cart Migration] Cart successfully associated with user')
     }
-    
+
     return { success: true }
   } catch (error: any) {
     console.error('❌ [Cart Migration] Failed:', error)
@@ -108,38 +108,38 @@ export async function migrateGuestCart(guestCartId: string) {
  */
 export async function validateCartInventory(cartId: string) {
   console.log('🔍 [Cart Validation] Validating inventory for cart:', cartId)
-  
+
   try {
     const supabase = await createClerkSupabaseClient()
-    
+
     // Get cart items
     const { data: items, error } = await supabase
       .from('cart_items')
       .select('id, variant_id, product_id, quantity, title')
       .eq('cart_id', cartId)
-    
+
     if (error) throw error
-    
+
     if (!items || items.length === 0) {
       console.log('✅ [Cart Validation] Cart is empty, validation passed')
       return { valid: true, issues: [] }
     }
 
     console.log(`📋 [Cart Validation] Validating ${items.length} items`)
-    
+
     const issues = []
-    
+
     for (const item of items) {
       // Try variant first, then product
       let available = 0
-      
+
       if (item.variant_id) {
         const { data: variant } = await supabase
           .from('product_variants')
           .select('inventory_quantity')
           .eq('id', item.variant_id)
           .single()
-        
+
         available = variant?.inventory_quantity || 0
       } else if (item.product_id) {
         const { data: product } = await supabase
@@ -147,10 +147,10 @@ export async function validateCartInventory(cartId: string) {
           .select('stock_quantity')
           .eq('id', item.product_id)
           .single()
-        
+
         available = product?.stock_quantity || 0
       }
-      
+
       if (item.quantity > available) {
         console.log(`⚠️  [Cart Validation] Insufficient stock for "${item.title}": requested ${item.quantity}, available ${available}`)
         issues.push({
@@ -161,10 +161,10 @@ export async function validateCartInventory(cartId: string) {
         })
       }
     }
-    
+
     const isValid = issues.length === 0
     console.log(isValid ? '✅ [Cart Validation] All items validated successfully' : `❌ [Cart Validation] Found ${issues.length} issues`)
-    
+
     return {
       valid: isValid,
       issues: issues
@@ -185,30 +185,30 @@ export async function validateCartInventory(cartId: string) {
  */
 export async function clearCart(cartId: string) {
   console.log('🧹 [Cart Clear] Clearing cart:', cartId)
-  
+
   try {
     const supabase = await createClerkSupabaseClient()
-    
+
     // Delete all items
     const { error: itemsError } = await supabase
       .from('cart_items')
       .delete()
       .eq('cart_id', cartId)
-    
+
     if (itemsError) throw itemsError
-    
+
     console.log('🗑️  [Cart Clear] Cart items deleted')
-    
+
     // Mark cart as completed
     const { error: cartError } = await supabase
       .from('carts')
       .update({ completed_at: new Date().toISOString() })
       .eq('id', cartId)
-    
+
     if (cartError) throw cartError
-    
+
     console.log('✅ [Cart Clear] Cart marked as completed')
-    
+
     return { success: true }
   } catch (error: any) {
     console.error('❌ [Cart Clear] Error:', error)
@@ -222,37 +222,39 @@ export async function clearCart(cartId: string) {
  */
 export async function getCartSummary(cartId: string) {
   console.log('💰 [Cart Summary] Calculating summary for cart:', cartId)
-  
+
   try {
-    const cart = await getCart(cartId)
-    
-    if (!cart || !cart.items || cart.items.length === 0) {
+    const cartResponse = await getCart(cartId)
+
+    if (!cartResponse.success || !cartResponse.data || !cartResponse.data.items || cartResponse.data.items.length === 0) {
       console.log('⚠️  [Cart Summary] Cart is empty')
       return {
         success: false,
         error: 'Cart is empty'
       }
     }
-    
+
+    const cart = cartResponse.data
+
     // Calculate subtotal
-    const subtotal = cart.items.reduce((sum, item) => {
+    const subtotal = cart.items!.reduce((sum: number, item: any) => {
       return sum + (item.unit_price * item.quantity)
     }, 0)
-    
+
     // Calculate tax (18% GST for India)
     const tax = subtotal * 0.18
-    
+
     // Calculate shipping (free over ₹5000)
     const shippingCost = subtotal > 5000 ? 0 : 100
-    
+
     // Calculate total
     const total = subtotal + tax + shippingCost
-    
+
     console.log('💵 [Cart Summary] Subtotal:', subtotal.toFixed(2))
     console.log('💵 [Cart Summary] Tax (18%):', tax.toFixed(2))
     console.log('💵 [Cart Summary] Shipping:', shippingCost.toFixed(2))
     console.log('💵 [Cart Summary] Total:', total.toFixed(2))
-    
+
     return {
       success: true,
       summary: {
@@ -261,8 +263,8 @@ export async function getCartSummary(cartId: string) {
         shippingCost: Number(shippingCost.toFixed(2)),
         discount: 0,
         total: Number(total.toFixed(2)),
-        itemCount: cart.items.length,
-        items: cart.items
+        itemCount: cart.items!.length,
+        items: cart.items!
       }
     }
   } catch (error: any) {
@@ -273,4 +275,5 @@ export async function getCartSummary(cartId: string) {
     }
   }
 }
+
 
