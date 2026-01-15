@@ -1,334 +1,291 @@
-"use client"
+/**
+ * Complete Checkout Template - Redesigned
+ * Supports cart and quote flows with role-based permissions
+ */
+
+'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCart } from '@/lib/hooks'
-import { useAccountType } from '@/lib/hooks'
-import { ArrowLeft, Check, ShoppingBag } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { logger } from "@/lib/services/logger"
-
-// Sections
-import ProgressBarSection from '../sections/01-progress-bar-section'
-import GuestEmailCaptureSection from '../sections/02-guest-email-capture-section'
-import CheckoutBlockedSection from '../sections/03-checkout-blocked-section'
-import ShippingAddressSection from '../sections/04-shipping-address-section'
-import BillingAddressSection from '../sections/05-billing-address-section'
-import DeliveryOptionsSection from '../sections/06-delivery-options-section'
-import PaymentMethodSection from '../sections/07-payment-method-section'
-import OrderSummarySection from '../sections/08-order-summary-section'
 
 // Components
-import CartSummarySticky from '../components/cart-summary-sticky'
-import TrustBadges from '../components/trust-badges'
-import WhatsAppButton from '../components/whatsapp-button'
-import ExitIntentPopup from '../components/exit-intent-popup'
+import { CheckoutHeader } from '../components/checkout-header'
+import { ItemsSummaryLocked } from '../components/items-summary-locked'
+import { PricingSummaryLocked } from '../components/pricing-summary-locked'
+import { BusinessInfoDisplay } from '../components/business-info-display'
+import { ShippingMethodSelector } from '../components/shipping-method-selector'
+import { PaymentMethodSelector } from '../components/payment-method-selector'
+import { CheckoutActionPanel } from '../components/checkout-action-panel'
+import { MobileStickyCTA } from '../components/mobile-sticky-cta'
 
 // Types
 import type {
+  CheckoutSource,
+  CheckoutPermission,
+  ShippingMethod,
   CheckoutAddress,
-  DeliveryOption,
-  PaymentMethod,
-  UserCheckoutType,
-  CheckoutStep,
-  OrderSummary
-} from '../types'
+  ShippingOption,
+  PickupLocation
+} from '../types/checkout-ui'
+
+// Actions
+import { getCheckoutFromQuote } from '@/lib/actions/checkout/core'
+import { validateIndividualOrder } from '@/lib/actions/checkout/individual-validation'
+
+// Mock pickup locations - replace with actual data fetch
+const PICKUP_LOCATIONS: PickupLocation[] = [
+  {
+    id: '1',
+    name: 'Cedar Store – Chennai',
+    address: 'T. Nagar',
+    city: 'Chennai',
+    state: 'Tamil Nadu',
+    phone: '+91-44-1234-5678',
+    hours: 'Mon-Sat: 9 AM - 7 PM',
+    is_active: true
+  },
+  {
+    id: '2',
+    name: 'Cedar Store – Bangalore',
+    address: 'Whitefield',
+    city: 'Bangalore',
+    state: 'Karnataka',
+    phone: '+91-80-1234-5678',
+    hours: 'Mon-Sat: 9 AM - 7 PM',
+    is_active: true
+  }
+]
 
 export default function CheckoutTemplate() {
   const router = useRouter()
-  const { cart, items, itemCount } = useCart()
-  const { isGuest, isBusiness, user, isLoaded } = useAccountType()
+  const searchParams = useSearchParams()
+  const { user, isLoaded } = useUser()
 
-  // Check verification status
-  const isVerified = user?.publicMetadata?.verified === true ||
-    user?.unsafeMetadata?.verified === true
-
-  // Determine user checkout type
-  const getUserType = (): UserCheckoutType => {
-    if (isGuest) return 'guest'
-    if (!isBusiness) return 'individual'
-    return isVerified ? 'business_verified' : 'business_unverified'
-  }
-
-  const userType = getUserType()
-  const showPrices = userType === 'business_verified'
-
-  // Determine initial step
-  const getInitialStep = (): CheckoutStep => {
-    if (userType === 'guest') return 'email_capture'
-    if (userType === 'individual' || userType === 'business_unverified') return 'blocked'
-    return 'shipping'
-  }
+  // Detect source and IDs from URL
+  const source = (searchParams.get('source') as CheckoutSource) || 'cart'
+  const quoteId = searchParams.get('quoteId') || ''
 
   // State
-  const [step, setStep] = useState<CheckoutStep>(getInitialStep())
-  const [guestEmail, setGuestEmail] = useState('')
-  const [guestPhone, setGuestPhone] = useState('')
-  const [shippingAddress, setShippingAddress] = useState<CheckoutAddress | undefined>()
-  const [billingAddress, setBillingAddress] = useState<CheckoutAddress | undefined>()
-  const [sameAsShipping, setSameAsShipping] = useState(true)
-  const [deliveryOption, setDeliveryOption] = useState<DeliveryOption | undefined>()
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | undefined>()
-  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [checkoutData, setCheckoutData] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>()
+  const [pickupLocationId, setPickupLocationId] = useState<string>()
+  const [shippingAddress, setShippingAddress] = useState<CheckoutAddress>()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [showExitPopup, setShowExitPopup] = useState(false)
+  const [limitViolations, setLimitViolations] = useState<string[]>([])
 
-  // Steps for progress calculation
-  const steps: CheckoutStep[] = ['email_capture', 'blocked', 'shipping', 'payment', 'review']
+  // Determine user type and permission
+  const userType = !user
+    ? 'guest'
+    : !user.publicMetadata?.businessProfile
+      ? 'individual'
+      : user.publicMetadata?.verified
+        ? 'business_verified'
+        : 'business_unverified'
 
-  // Update step when user type changes
+  const permission: CheckoutPermission = !user
+    ? 'blocked_signin'
+    : userType === 'business_unverified'
+      ? 'blocked_verify'
+      : userType === 'business_verified'
+        ? 'full_checkout'
+        : 'individual_checkout'
+
+  // Load checkout data
   useEffect(() => {
-    if (isLoaded) {
-      setStep(getInitialStep())
+    if (!isLoaded) return
+
+    async function loadData() {
+      setIsLoading(true)
+      try {
+        if (source === 'quote' && quoteId) {
+          const result = await getCheckoutFromQuote(quoteId)
+          if (result.success) {
+            setCheckoutData(result.data)
+
+            // Validate individual limits if needed
+            if (permission === 'individual_checkout' && result.data) {
+              const validation = await validateIndividualOrder(
+                result.data.items,
+                result.data.summary.total
+              )
+              setLimitViolations(validation.violations)
+            }
+          }
+        }
+        // Cart flow would go here
+      } catch (error) {
+        console.error('Checkout load error:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [isLoaded, userType])
 
-  // Build order summary
-  // Note: CartItem doesn't have prices, we'd need to join with products table
-  // For now, using placeholders
-  const subtotal = 0
-  const tax = subtotal * 0.18
-  const shipping = deliveryOption?.price || 0
-  const discount = 0
-  const total = subtotal + tax + shipping - discount
+    loadData()
+  }, [isLoaded, source, quoteId, permission])
 
-  const orderSummary: OrderSummary = {
-    items: items.map(item => ({
-      id: item.id,
-      title: item.title,
-      thumbnail: item.thumbnail || null,
-      quantity: item.quantity,
-      unitPrice: 0, // CartItem doesn't have price
-      subtotal: 0,
-    })),
-    subtotal,
-    discount,
-    shipping,
-    tax,
-    total,
-    showPrices,
+  // Handlers
+  const handlePlaceOrder = async () => {
+    if (!shippingMethod || isProcessing) return
+    if (shippingMethod === 'doorstep' && !shippingAddress) return
+    if (shippingMethod === 'pickup' && !pickupLocationId) return
+
+    setIsProcessing(true)
+    try {
+      const shippingOption: ShippingOption = {
+        method: shippingMethod,
+        pickupLocationId: shippingMethod === 'pickup' ? pickupLocationId : undefined,
+        address: shippingMethod === 'doorstep' ? shippingAddress : undefined
+      }
+
+      // TODO: Call backend order creation
+      // const result = await createOrder(source, sourceId, shippingOption, 'cod')
+
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Mock delay
+      router.push('/orders')
+    } catch (error) {
+      console.error('Order placement error:', error)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
-  // Empty cart check
-  if (isLoaded && itemCount === 0) {
+  // Loading state
+  if (!isLoaded || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShoppingBag className="w-10 h-10 text-gray-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-6">Add products to your cart before checkout.</p>
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Browse Products
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-orange-600 animate-spin" />
+      </div>
+    )
+  }
+
+  // Blocked states
+  if (permission === 'blocked_signin') {
+    router.push('/sign-in?redirect=/checkout')
+    return null
+  }
+
+  if (permission === 'blocked_verify') {
+    router.push('/profile/business/verify')
+    return null
+  }
+
+  // No data
+  if (!checkoutData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Checkout Data</h2>
+          <p className="text-gray-600 mb-4">Unable to load checkout information.</p>
+          <Link href="/" className="text-orange-600 hover:underline">
+            Return to Home
           </Link>
         </div>
       </div>
     )
   }
 
-  // Loading state
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    )
-  }
+  const canProceed = !!shippingMethod &&
+    (shippingMethod === 'pickup' ? !!pickupLocationId : !!shippingAddress) &&
+    limitViolations.length === 0
 
-  // Handlers
-  const handleGuestEmailSubmit = (data: { email: string; phone: string }) => {
-    setGuestEmail(data.email)
-    setGuestPhone(data.phone)
-    // After email capture, show blocked state for guests
-    setStep('blocked')
-  }
-
-  const handleRequestQuote = async () => {
-    setIsProcessing(true)
-    try {
-      // TODO: Implement quote request API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      router.push('/order-confirmation/quote-123?type=quote')
-    } catch (error) {
-      logger.error('Quote request failed', error)
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const handlePlaceOrder = async () => {
-    if (!termsAccepted || userType !== 'business_verified') return
-
-    setIsProcessing(true)
-    try {
-      // Place order via Supabase
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      router.push('/order-confirmation/order-123?type=order')
-    } catch (error) {
-      logger.error('Order placement failed', error)
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const canProceedToPayment = !!shippingAddress && !!deliveryOption
-  const canPlaceOrder = canProceedToPayment && !!paymentMethod && termsAccepted
-
-  // Render based on step/user type
-  // Step 1: Guest Email Capture
-  if (step === 'email_capture' && userType === 'guest') {
-    return (
-      <>
-        <GuestEmailCaptureSection onSubmit={handleGuestEmailSubmit} />
-        <WhatsAppButton floating />
-      </>
-    )
-  }
-
-  // Step 2: Blocked State (Guest after email, Individual, Unverified Business)
-  if (step === 'blocked' || userType === 'individual' || userType === 'business_unverified' ||
-    (userType === 'guest' && guestEmail)) {
-    return (
-      <>
-        <CheckoutBlockedSection
-          userType={userType === 'guest' ? 'guest' : userType}
-          onRequestQuote={handleRequestQuote}
-          isLoading={isProcessing}
-        />
-        <WhatsAppButton floating />
-      </>
-    )
-  }
-
-  // Step 3: Full Checkout (Verified Dealers Only)
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Progress Bar */}
-      <ProgressBarSection currentStep={steps.indexOf(step) + 1} userType={userType} />
-
+    <div className="min-h-screen bg-gray-50 pb-32 lg:pb-8">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Back Link */}
         <Link
-          href="/cart"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 mb-6"
+          href={source === 'quote' ? `/quotes/${quoteId}` : '/cart'}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Cart
+          Back to {source === 'quote' ? 'Quote' : 'Cart'}
         </Link>
 
+        {/* 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Forms */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Shipping Address */}
-            <ShippingAddressSection
-              selectedAddress={shippingAddress}
-              onSelectAddress={setShippingAddress}
-              onAddNewAddress={(addr) => setShippingAddress(addr)}
+            <CheckoutHeader
+              source={source}
+              sourceId={quoteId}
+              quoteNumber={checkoutData.quoteNumber}
+              userType={userType}
+              permission={permission}
             />
 
-            {/* Billing Address */}
-            {shippingAddress && (
-              <BillingAddressSection
-                shippingAddress={shippingAddress}
-                billingAddress={billingAddress}
-                sameAsShipping={sameAsShipping}
-                onSameAsShippingChange={setSameAsShipping}
-                onBillingAddressChange={setBillingAddress}
+            <ItemsSummaryLocked
+              items={checkoutData.items}
+              source={source}
+            />
+
+            <PricingSummaryLocked
+              summary={checkoutData.summary}
+              source={source}
+              permission={permission}
+            />
+
+            {/* Business Info (verified business only) */}
+            {permission === 'full_checkout' && checkoutData.businessInfo && (
+              <BusinessInfoDisplay info={checkoutData.businessInfo} />
+            )}
+
+            {/* Shipping Method (all checkout users) */}
+            {(permission === 'full_checkout' || permission === 'individual_checkout') && (
+              <ShippingMethodSelector
+                selectedMethod={shippingMethod}
+                selectedPickupLocation={pickupLocationId}
+                pickupLocations={PICKUP_LOCATIONS}
+                onSelectMethod={setShippingMethod}
+                onSelectPickupLocation={setPickupLocationId}
               />
             )}
 
-            {/* Delivery Options */}
-            {shippingAddress && (
-              <DeliveryOptionsSection
-                selectedOption={deliveryOption}
-                onSelectOption={setDeliveryOption}
-                showPrices={showPrices}
-                options={[]}
-              />
-            )}
-
-            {/* Payment Method */}
-            {deliveryOption && (
-              <PaymentMethodSection
-                selectedMethod={paymentMethod}
-                onSelectMethod={setPaymentMethod}
-                isVerifiedDealer={userType === 'business_verified'}
-                methods={[]}
-              />
-            )}
-
-            {/* Terms & Place Order */}
-            {paymentMethod && (
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                {/* Terms Checkbox */}
-                <label className="flex items-start gap-3 mb-6 cursor-pointer">
-                  <div
-                    className={`
-                      w-6 h-6 rounded border-2 flex items-center justify-center mt-0.5 transition-colors
-                      ${termsAccepted ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}
-                    `}
-                    onClick={() => setTermsAccepted(!termsAccepted)}
-                  >
-                    {termsAccepted && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    I agree to the{' '}
-                    <Link href="/terms" className="text-blue-600 hover:underline">Terms & Conditions</Link>
-                    {' '}and{' '}
-                    <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
-                  </span>
-                </label>
-
-                {/* Place Order Button */}
-                <button
-                  onClick={handlePlaceOrder}
-                  disabled={!canPlaceOrder || isProcessing}
-                  className="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg
-                    hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                    flex items-center justify-center gap-2"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    'Place Order'
-                  )}
-                </button>
+            {/* Address Selector (doorstep delivery) */}
+            {shippingMethod === 'doorstep' && (
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Delivery Address</h2>
+                <p className="text-sm text-gray-500">
+                  Address selector component - reuse existing or create new
+                </p>
+                {/* TODO: Import and use AddressSelector component */}
               </div>
             )}
 
-            {/* Trust Badges */}
-            <TrustBadges />
+            {/* Payment Method (COD only) */}
+            {(permission === 'full_checkout' || permission === 'individual_checkout') && (
+              <PaymentMethodSelector />
+            )}
           </div>
 
-          {/* Right Column - Order Summary */}
+          {/* Right Column - Action Panel */}
           <div className="lg:col-span-1">
-            <CartSummarySticky
-              summary={orderSummary}
-              showBulkCalculator={showPrices}
+            <CheckoutActionPanel
+              permission={permission}
+              onPlaceOrder={handlePlaceOrder}
+              onVerify={() => router.push('/profile/business/verify')}
+              onRegister={() => router.push('/profile/business')}
+              onSignIn={() => router.push('/sign-in')}
+              isProcessing={isProcessing}
+              total={checkoutData.summary.total}
+              limitViolations={limitViolations}
+              canProceed={canProceed}
             />
           </div>
         </div>
       </div>
 
-      {/* WhatsApp Button */}
-      <WhatsAppButton floating />
-
-      {/* Exit Intent Popup */}
-      {showExitPopup && (
-        <ExitIntentPopup
-          onClose={() => setShowExitPopup(false)}
-          onApplyDiscount={(code) => logger.info('Apply discount attempt', { code })}
-        />
-      )}
+      {/* Mobile Sticky CTA */}
+      <MobileStickyCTA
+        permission={permission}
+        total={checkoutData.summary.total}
+        onAction={handlePlaceOrder}
+        actionLabel="Place Order"
+        isProcessing={isProcessing}
+        canProceed={canProceed}
+      />
     </div>
   )
 }
-
