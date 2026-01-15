@@ -1,6 +1,6 @@
 'use server'
 
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createClerkSupabaseClient, createAdminClient } from "@/lib/supabase/server"
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { revalidatePath } from "next/cache"
 
@@ -22,6 +22,7 @@ export interface Review {
     images?: string[]
     status: 'pending' | 'approved' | 'rejected'
     created_at: string
+    avatar_url?: string
 }
 
 /**
@@ -34,7 +35,7 @@ export async function submitReview(
     try {
         const { userId } = await auth()
         const user = await currentUser()
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Validate input
         if (!data.rating || data.rating < 1 || data.rating > 5) {
@@ -52,6 +53,7 @@ export async function submitReview(
                 .from('order_items')
                 .select('id, order:orders!inner(clerk_user_id)')
                 .eq('product_id', productId)
+                .eq('order.clerk_user_id', userId)
                 .limit(1)
 
             verifiedPurchase = (orders?.length || 0) > 0
@@ -65,10 +67,11 @@ export async function submitReview(
                 clerk_user_id: userId,
                 rating: data.rating,
                 reviewer_name: data.name || user?.firstName || 'Anonymous',
+                reviewer_avatar_url: user?.imageUrl || null,
                 comment: data.comment.trim(),
                 verified_purchase: verifiedPurchase,
                 helpful_count: 0,
-                status: 'pending' // Reviews go to moderation queue
+                status: 'approved' // TODO: Phase 2 - Re-enable moderation (change back to 'pending')
             })
 
         if (error) {
@@ -92,7 +95,7 @@ export async function getProductReviews(
     productId: string
 ): Promise<{ success: boolean; reviews?: Review[]; error?: string }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('product_reviews')
@@ -117,7 +120,8 @@ export async function getProductReviews(
             helpful_count: r.helpful_count,
             images: r.images,
             status: r.status,
-            created_at: r.created_at
+            created_at: r.created_at,
+            avatar_url: r.reviewer_avatar_url
         }))
 
         return { success: true, reviews }
@@ -135,7 +139,7 @@ export async function markReviewHelpful(
     reviewId: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase.rpc('increment_review_helpful', {
             review_id: reviewId

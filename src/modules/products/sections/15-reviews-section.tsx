@@ -1,30 +1,31 @@
 "use client"
 
-import { useState, forwardRef, useTransition } from "react"
+import { useState, forwardRef, useTransition, useEffect } from "react"
 import { Star, ThumbsUp, CircleCheck, ChevronDown, ChevronUp, Image as ImageIcon, Filter, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import { submitReview, markReviewHelpful } from "@/lib/actions/reviews"
+import { submitReview, markReviewHelpful, Review } from "@/lib/actions/reviews"
+import { format } from "date-fns"
+import { useUser } from "@/lib/auth/client"
 
-interface Review {
-  id: string
-  name: string
-  rating: number
-  comment: string
-  date: string
-  verified?: boolean
-  helpful?: number
-  images?: string[]
-}
+
 
 interface ReviewsSectionProps {
   reviews: Review[]
   productId: string
+  showReviewForm?: boolean
+  setShowReviewForm?: (show: boolean) => void
 }
 
 const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
-  ({ reviews, productId }, ref) => {
+  ({ reviews, productId, showReviewForm: propShowReviewForm, setShowReviewForm: propSetShowReviewForm }, ref) => {
+    // Internal state fallback if props not provided
+    const [internalShowReviewForm, setInternalShowReviewForm] = useState(false)
+
+    // Use props if available, otherwise internal state
+    const showReviewForm = propShowReviewForm !== undefined ? propShowReviewForm : internalShowReviewForm
+    const setShowReviewForm = propSetShowReviewForm || setInternalShowReviewForm
+
     const [showAll, setShowAll] = useState(false)
-    const [showReviewForm, setShowReviewForm] = useState(false)
     const [filterRating, setFilterRating] = useState<number | 'all' | 'images'>('all')
     const [sortBy, setSortBy] = useState<'relevant' | 'recent' | 'helpful'>('relevant')
     const [newReview, setNewReview] = useState({
@@ -33,8 +34,21 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
       comment: ''
     })
     const [isPending, startTransition] = useTransition()
+    const { user } = useUser()
+
+    // Auto-fill name for logged-in users
+    useEffect(() => {
+      if (user?.name) {
+        setNewReview(prev => ({ ...prev, name: user.name || '' }))
+      }
+    }, [user])
 
     const INITIAL_DISPLAY_COUNT = 3
+
+    // Hide section if no reviews and form not open
+    if (reviews.length === 0 && !showReviewForm) {
+      return null
+    }
 
     // Filter reviews
     const filteredReviews = reviews.filter(review => {
@@ -45,8 +59,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
 
     // Sort reviews
     const sortedReviews = [...filteredReviews].sort((a, b) => {
-      if (sortBy === 'helpful') return (b.helpful || 0) - (a.helpful || 0)
-      if (sortBy === 'recent') return new Date(b.date).getTime() - new Date(a.date).getTime()
+      if (sortBy === 'helpful') return (b.helpful_count || 0) - (a.helpful_count || 0)
+      if (sortBy === 'recent') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       return 0 // relevant - default order
     })
 
@@ -136,8 +150,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                     >
                       <Star
                         className={`w-8 h-8 ${star <= newReview.rating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                           }`}
                       />
                     </button>
@@ -150,15 +164,37 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                 <label htmlFor="reviewName" className="block text-sm font-medium text-gray-700 mb-2">
                   Your Name *
                 </label>
-                <input
-                  id="reviewName"
-                  type="text"
-                  required
-                  value={newReview.name}
-                  onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your name"
-                />
+                {user ? (
+                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
+                    {user.imageUrl ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                        <img
+                          src={user.imageUrl}
+                          alt={user.name || "User"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
+                        {user.name?.charAt(0) || "U"}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Posting as</p>
+                      <p className="text-sm text-gray-900 font-semibold">{user.name || "User"}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <input
+                    id="reviewName"
+                    type="text"
+                    required
+                    value={newReview.name}
+                    onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter your name"
+                  />
+                )}
               </div>
 
               {/* Comment */}
@@ -210,8 +246,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                       <Star
                         key={star}
                         className={`w-5 h-5 ${star <= Math.round(averageRating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
                           }`}
                       />
                     ))}
@@ -249,8 +285,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
               <button
                 onClick={() => setFilterRating('all')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filterRating === 'all'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 All
@@ -259,8 +295,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
               <button
                 onClick={() => setFilterRating('images')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${filterRating === 'images'
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -272,8 +308,8 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                   key={rating}
                   onClick={() => setFilterRating(rating)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${filterRating === rating
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   {rating} <Star className="w-3 h-3 fill-current" />
@@ -302,14 +338,24 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                   {/* Review Header */}
                   <div className="flex items-start gap-3 mb-3">
                     {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                      {review.name?.charAt(0) || "?"}
-                    </div>
+                    {review.avatar_url ? (
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
+                        <img
+                          src={review.avatar_url}
+                          alt={review.name || "Reviewer"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                        {review.name?.charAt(0) || "?"}
+                      </div>
+                    )}
 
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-semibold text-gray-900">{review.name || "Anonymous"}</p>
-                        {review.verified && (
+                        {review.verified_purchase && (
                           <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                             <CircleCheck className="w-3 h-3" />
                             Verified Purchase
@@ -322,13 +368,13 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                             <Star
                               key={star}
                               className={`w-4 h-4 ${star <= review.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
                                 }`}
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-gray-500">{review.date}</span>
+                        <span className="text-sm text-gray-500">{format(new Date(review.created_at), 'MMMM d, yyyy')}</span>
                       </div>
                     </div>
                   </div>
@@ -354,10 +400,10 @@ const ReviewsSection = forwardRef<HTMLDivElement, ReviewsSectionProps>(
                   )}
 
                   {/* Helpful Button */}
-                  {review.helpful !== undefined && (
+                  {review.helpful_count !== undefined && (
                     <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
                       <ThumbsUp className="w-4 h-4" />
-                      Helpful ({review.helpful})
+                      Helpful ({review.helpful_count})
                     </button>
                   )}
                 </div>

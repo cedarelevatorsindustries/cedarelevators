@@ -4,18 +4,22 @@ import { FilterGroup } from "./FilterGroup"
 import { StockFilter } from "./StockFilter"
 import { SortFilter } from "./SortFilter"
 import { VariantOptionFilter } from "./VariantOptionFilter"
+import { PriceRangeSlider } from "./PriceRangeSlider"
+import { RatingFilter } from "./RatingFilter"
 import type { PLPFilters, AvailablePLPOptions } from "@/lib/types/filters"
 
 interface PLPFiltersProps {
     filters: PLPFilters
     onChange: (filters: PLPFilters) => void
     availableOptions: AvailablePLPOptions
+    hideExtraFilters?: boolean
 }
 
 export function PLPFiltersComponent({
     filters,
     onChange,
-    availableOptions
+    availableOptions,
+    hideExtraFilters = false
 }: PLPFiltersProps) {
     const handleAvailabilityChange = (value: 'all' | 'in_stock' | 'out_of_stock') => {
         onChange({
@@ -29,6 +33,14 @@ export function PLPFiltersComponent({
             ...filters,
             sort: value === 'default' ? undefined : value as PLPFilters['sort']
         })
+    }
+
+    const handlePriceChange = (min: number, max: number) => {
+        onChange({ ...filters, priceRange: { min, max } })
+    }
+
+    const handleRatingChange = (rating: number | undefined) => {
+        onChange({ ...filters, minRating: rating })
     }
 
     const handleVariantOptionChange = (optionName: string, selected: string[]) => {
@@ -47,12 +59,14 @@ export function PLPFiltersComponent({
     return (
         <div className="space-y-4">
             {/* Sort */}
-            <FilterGroup title="Sort By" defaultExpanded>
-                <SortFilter
-                    value={filters.sort || 'default'}
-                    onChange={handleSortChange}
-                />
-            </FilterGroup>
+            {!hideExtraFilters && (
+                <FilterGroup title="Sort By" defaultExpanded>
+                    <SortFilter
+                        value={filters.sort || 'default'}
+                        onChange={handleSortChange}
+                    />
+                </FilterGroup>
+            )}
 
             {/* Availability */}
             <FilterGroup title="Availability" defaultExpanded>
@@ -76,6 +90,29 @@ export function PLPFiltersComponent({
                     />
                 </FilterGroup>
             ))}
+
+            {/* Price Range */}
+            {!hideExtraFilters && (
+                <FilterGroup title="Price Range" defaultExpanded>
+                    <PriceRangeSlider
+                        min={availableOptions.priceRange.min}
+                        max={availableOptions.priceRange.max}
+                        currentMin={filters.priceRange?.min}
+                        currentMax={filters.priceRange?.max}
+                        onChange={handlePriceChange}
+                    />
+                </FilterGroup>
+            )}
+
+            {/* Rating */}
+            {!hideExtraFilters && (
+                <FilterGroup title="Customer Rating">
+                    <RatingFilter
+                        selectedRating={filters.minRating}
+                        onChange={handleRatingChange}
+                    />
+                </FilterGroup>
+            )}
         </div>
     )
 }

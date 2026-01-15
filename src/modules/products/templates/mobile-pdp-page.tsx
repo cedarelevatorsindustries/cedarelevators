@@ -24,6 +24,8 @@ import { addItemToCart } from "@/lib/actions/cart"
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
 
+import { Review } from "@/lib/actions/reviews"
+
 interface CatalogContext {
   from?: string
   category?: string
@@ -36,13 +38,15 @@ interface MobileProductDetailPageProps {
   relatedProducts?: Product[]
   bundleProducts?: Product[]
   catalogContext?: CatalogContext
+  reviews?: Review[]
 }
 
 export default function MobileProductDetailPage({
   product,
   relatedProducts = [],
   bundleProducts = [],
-  catalogContext
+  catalogContext,
+  reviews = []
 }: MobileProductDetailPageProps) {
   const { user } = useUser()
   const router = useRouter()
@@ -85,7 +89,7 @@ export default function MobileProductDetailPage({
   const specifications = product.metadata?.specifications as any[] || [
     { label: "How Numbers", value: product.category_id || "N/A" }
   ]
-  const reviews = product.metadata?.reviews as any[] || []
+  // const reviews = product.metadata?.reviews as any[] || []
   const features = product.metadata?.features as string[] || []
 
   // Transform variants from product.variants using options JSONB
@@ -524,7 +528,7 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
               badges={badges}
               description={product.description || ""}
               sku={product.metadata?.sku as string}
-              rating={reviews.length > 0 ? (product.metadata?.rating as number) || 0 : undefined}
+              rating={reviews.length > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : undefined}
               reviewCount={reviews.length}
               onClickReviews={scrollToReviews}
             />

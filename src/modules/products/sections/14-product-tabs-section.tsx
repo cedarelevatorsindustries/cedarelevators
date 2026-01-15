@@ -8,14 +8,7 @@ interface Specification {
   value: string
 }
 
-interface Review {
-  id: string
-  name: string
-  rating: number
-  comment: string
-  date: string
-  verified?: boolean
-}
+import { Review } from "@/lib/actions/reviews"
 
 interface ProductTabsSectionProps {
   description: string
@@ -23,6 +16,7 @@ interface ProductTabsSectionProps {
   specifications: Specification[]
   reviews?: Review[]
   onScrollToReviews?: () => void
+  onOpenReviewForm?: () => void
 }
 
 export default function ProductTabsSection({
@@ -30,12 +24,17 @@ export default function ProductTabsSection({
   features = [],
   specifications,
   reviews = [],
-  onScrollToReviews
+  onScrollToReviews,
+  onOpenReviewForm
 }: ProductTabsSectionProps) {
   const [activeTab, setActiveTab] = useState<'description' | 'attributes' | 'reviews'>('description')
 
   const handleReviewsClick = () => {
-    onScrollToReviews?.()
+    if (reviews.length === 0) {
+      onOpenReviewForm?.()
+    } else {
+      onScrollToReviews?.()
+    }
   }
 
   return (

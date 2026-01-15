@@ -9,6 +9,7 @@ import { headers } from 'next/headers'
 import ProductDetailPage from '@/modules/products/templates/desktop-pdp-page'
 import MobileProductDetailPage from '@/modules/products/templates/mobile-pdp-page'
 import { getProductByHandle, listProducts } from '@/lib/data/products'
+import { getProductReviews } from '@/lib/actions/reviews'
 
 interface ProductPageProps {
   params: Promise<{
@@ -24,9 +25,9 @@ interface ProductPageProps {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params
-  
+
   const product = await getProductByHandle(handle)
-  
+
   if (!product) {
     return {
       title: 'Product Not Found - Cedar Elevators'
@@ -48,15 +49,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params, searchParams }: ProductPageProps) {
   const { handle } = await params
   const catalogContext = await searchParams
-  
+
   // Detect mobile device from user-agent
   const headersList = await headers()
   const userAgent = headersList.get('user-agent') || ''
   const isMobile = /mobile|android|iphone|ipad|phone/i.test(userAgent)
-  
+
   // Get product from Medusa
   const product = await getProductByHandle(handle)
-  
+
   if (!product) {
     notFound()
   }
@@ -71,16 +72,21 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
         limit: 5
       }
     })
-    
+
     // Filter out current product
     relatedProducts.push(...response.products.filter(p => p.id !== product.id).slice(0, 4))
   }
 
   // Get bundle products (other products)
+  // Get bundle products (other products)
   const { response: bundleResponse } = await listProducts({
     queryParams: { limit: 4 }
   })
   const bundleProducts = bundleResponse.products.filter(p => p.id !== product.id).slice(0, 3)
+
+  // Get reviews
+  const { reviews } = await getProductReviews(product.id)
+  const productReviews = reviews || []
 
   if (isMobile) {
     return (
@@ -89,6 +95,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
         relatedProducts={relatedProducts}
         bundleProducts={bundleProducts}
         catalogContext={catalogContext}
+        reviews={productReviews}
       />
     )
   }
@@ -99,6 +106,7 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
       relatedProducts={relatedProducts}
       bundleProducts={bundleProducts}
       catalogContext={catalogContext}
+      reviews={productReviews}
     />
   )
 }

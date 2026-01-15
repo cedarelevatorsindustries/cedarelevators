@@ -397,7 +397,7 @@ export default function CatalogTemplate({
           /* Two-Column Layout with Filters */
           <div className="flex gap-8">
             {/* Filter Sidebar */}
-            <UnifiedFilterSidebar />
+            <UnifiedFilterSidebar isApplicationPage={!!activeApplication} />
 
             {/* Products Column */}
             <div className="flex-1">

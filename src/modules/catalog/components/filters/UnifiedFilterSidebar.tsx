@@ -13,7 +13,7 @@ interface UnifiedFilterSidebarProps {
     className?: string
 }
 
-export function UnifiedFilterSidebar({ className }: UnifiedFilterSidebarProps) {
+export function UnifiedFilterSidebar({ className, isApplicationPage = false }: { className?: string, isApplicationPage?: boolean }) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -88,7 +88,7 @@ export function UnifiedFilterSidebar({ className }: UnifiedFilterSidebarProps) {
         }
     }
 
-    const updateURL = () => {
+    const applyFiltersToURL = (newCatalogFilters: CatalogFiltersType, newPLPFilters: PLPFiltersType) => {
         const params = new URLSearchParams(searchParams.toString())
 
         // Clear old params
@@ -102,36 +102,66 @@ export function UnifiedFilterSidebar({ className }: UnifiedFilterSidebarProps) {
         params.delete('min_rating')
 
         // Add catalog filters
-        if (catalogFilters.applications?.length) params.set('applications', catalogFilters.applications.join(','))
-        if (catalogFilters.elevatorTypes?.length) params.set('elevator_types', catalogFilters.elevatorTypes.join(','))
-        if (catalogFilters.categories?.length) params.set('categories', catalogFilters.categories.join(','))
-        if (catalogFilters.subcategories?.length) params.set('subcategories', catalogFilters.subcategories.join(','))
+        if (newCatalogFilters.applications?.length) params.set('applications', newCatalogFilters.applications.join(','))
+        if (newCatalogFilters.elevatorTypes?.length) params.set('elevator_types', newCatalogFilters.elevatorTypes.join(','))
+        if (newCatalogFilters.categories?.length) params.set('categories', newCatalogFilters.categories.join(','))
+        if (newCatalogFilters.subcategories?.length) params.set('subcategories', newCatalogFilters.subcategories.join(','))
 
         // Add PLP filters
-        if (plpFilters.availability) params.set('availability', plpFilters.availability)
-        if (plpFilters.priceRange) {
-            params.set('price_min', String(plpFilters.priceRange.min))
-            params.set('price_max', String(plpFilters.priceRange.max))
+        if (newPLPFilters.availability) params.set('availability', newPLPFilters.availability)
+        if (newPLPFilters.priceRange) {
+            params.set('price_min', String(newPLPFilters.priceRange.min))
+            params.set('price_max', String(newPLPFilters.priceRange.max))
         }
-        if (plpFilters.minRating) params.set('min_rating', String(plpFilters.minRating))
+        if (newPLPFilters.minRating) params.set('min_rating', String(newPLPFilters.minRating))
 
         router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
     const handleCatalogChange = (filters: CatalogFiltersType) => {
         setCatalogFilters(filters)
-        setTimeout(updateURL, 0)
+        // Use the new filters directly + current PLP filters
+        applyFiltersToURL(filters, plpFilters)
     }
 
     const handlePLPChange = (filters: PLPFiltersType) => {
         setPLPFilters(filters)
-        setTimeout(updateURL, 0)
+        // Use current catalog filters + new PLP filters
+        applyFiltersToURL(catalogFilters, filters)
     }
 
     const handleClearAll = () => {
         setCatalogFilters({})
         setPLPFilters({})
         router.push(pathname, { scroll: false })
+    }
+
+    // Active chips helpers
+    const getActiveChips = () => {
+        const chips: any[] = []
+
+        if (catalogFilters.applications?.length) chips.push({ key: 'applications', label: `Apps: ${catalogFilters.applications.length}`, value: catalogFilters.applications })
+        if (catalogFilters.elevatorTypes?.length) chips.push({ key: 'elevator_types', label: `Types: ${catalogFilters.elevatorTypes.length}`, value: catalogFilters.elevatorTypes })
+        if (catalogFilters.categories?.length) chips.push({ key: 'categories', label: `Cats: ${catalogFilters.categories.length}`, value: catalogFilters.categories })
+        if (plpFilters.availability) chips.push({ key: 'availability', label: plpFilters.availability === 'in_stock' ? 'In Stock' : 'Out of Stock', value: plpFilters.availability })
+        if (plpFilters.minRating) chips.push({ key: 'min_rating', label: `${plpFilters.minRating}+ Stars`, value: plpFilters.minRating })
+
+        return chips
+    }
+
+    const handleRemoveChip = (key: string) => {
+        const newCatalog = { ...catalogFilters }
+        const newPLP = { ...plpFilters }
+
+        if (key === 'applications') delete newCatalog.applications
+        if (key === 'elevator_types') delete newCatalog.elevatorTypes
+        if (key === 'categories') delete newCatalog.categories
+        if (key === 'availability') delete newPLP.availability
+        if (key === 'min_rating') delete newPLP.minRating
+
+        setCatalogFilters(newCatalog)
+        setPLPFilters(newPLP)
+        applyFiltersToURL(newCatalog, newPLP)
     }
 
     const hasActiveFilters =
@@ -160,6 +190,12 @@ export function UnifiedFilterSidebar({ className }: UnifiedFilterSidebarProps) {
                     )}
                 </div>
 
+                <ActiveFilterChips
+                    filters={getActiveChips()}
+                    onRemove={handleRemoveChip}
+                    onClearAll={handleClearAll}
+                />
+
                 <div className="space-y-6">
                     {/* Catalog Filters */}
                     <CatalogFiltersComponent
@@ -175,6 +211,7 @@ export function UnifiedFilterSidebar({ className }: UnifiedFilterSidebarProps) {
                         filters={plpFilters}
                         onChange={handlePLPChange}
                         availableOptions={plpOptions}
+                        hideExtraFilters={isApplicationPage}
                     />
                 </div>
             </div>

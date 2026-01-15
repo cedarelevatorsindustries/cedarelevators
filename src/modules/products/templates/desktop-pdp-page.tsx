@@ -32,24 +32,29 @@ interface CatalogContext {
   search?: string
 }
 
+import { Review } from "@/lib/actions/reviews"
+
 interface ProductDetailPageProps {
   product: Product
   relatedProducts?: Product[]
   bundleProducts?: Product[]
   catalogContext?: CatalogContext
+  reviews?: Review[]
 }
 
 export default function ProductDetailPage({
   product,
   relatedProducts = [],
   bundleProducts = [],
-  catalogContext
+  catalogContext,
+  reviews = []
 }: ProductDetailPageProps) {
   const { user } = useUser()
   const router = useRouter()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const [isFavorite, setIsFavorite] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   // User type and pricing logic - Use hook for correct pricing visibility
@@ -74,13 +79,18 @@ export default function ProductDetailPage({
   const images = product.images || []
   const allImages = [product.thumbnail, ...images.map(img => img.url)].filter(Boolean) as string[]
 
+  // Calculate average rating from reviews
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0
+
   // Extract metadata
   const badges = product.metadata?.badges as any[] || []
   const specifications = product.specifications?.map(s => ({ label: s.key, value: s.value })) || [
     { label: "SKU", value: product.id },
     { label: "Category", value: product.category_id || "N/A" }
   ]
-  const reviews = product.metadata?.reviews as any[] || []
+  // const reviews = product.metadata?.reviews as any[] || []
   const features = product.tags || []
 
   // Transform variants for selector
@@ -243,6 +253,11 @@ export default function ProductDetailPage({
     )
   }
 
+  const handleOpenReviewForm = () => {
+    setShowReviewForm(true)
+    reviewsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <>
       {/* Desktop Back Navigation */}
@@ -281,6 +296,9 @@ export default function ProductDetailPage({
                   badges={badges}
                   sku={product.id}
                   description={product.description || ""}
+                  rating={reviews.length > 0 ? averageRating : undefined}
+                  reviewCount={reviews.length}
+                  onClickReviews={scrollToReviews}
                 />
 
                 {/* Variant Selector */}
@@ -311,6 +329,7 @@ export default function ProductDetailPage({
                 specifications={specifications}
                 reviews={reviews}
                 onScrollToReviews={scrollToReviews}
+                onOpenReviewForm={handleOpenReviewForm}
               />
             </div>
           </div>
@@ -322,6 +341,8 @@ export default function ProductDetailPage({
               ref={reviewsSectionRef}
               reviews={reviews}
               productId={product.id}
+              showReviewForm={showReviewForm}
+              setShowReviewForm={setShowReviewForm}
             />
 
             {/* Frequently Bought Together */}
