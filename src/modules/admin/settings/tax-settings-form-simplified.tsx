@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getTaxSettings, updateTaxSettings } from "@/lib/services/settings"
 import { TaxSettings } from "@/lib/types/settings"
 import { toast } from "sonner"
-import { Save, LoaderCircle } from "lucide-react"
+import { Save, LoaderCircle, Info } from "lucide-react"
 import { useSettings } from "@/modules/admin/settings/settings-context"
 
 const GST_RATES = [0, 5, 12, 18, 28]
@@ -93,86 +93,126 @@ export function TaxSettingsFormSimplified() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-10">
-      {/* GST Configuration */}
+      {/* Pricing Mode - Step 1: Always Visible */}
       <div className="space-y-6">
         <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
-          GST Configuration
-        </h3>
-
-        <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
-          <div>
-            <Label className="text-base font-medium text-gray-900">Enable GST</Label>
-            <p className="text-sm text-gray-500 mt-1">Apply GST to all transactions</p>
-          </div>
-          <Switch
-            checked={formData.gst_enabled}
-            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, gst_enabled: checked }))}
-          />
-        </div>
-
-        <div className="space-y-3">
-          <Label className="text-base font-medium">Default GST Rate (%)</Label>
-          <Select
-            value={formData.default_gst_percentage.toString()}
-            onValueChange={(value) => setFormData(prev => ({ ...prev, default_gst_percentage: parseFloat(value) }))}
-          >
-            <SelectTrigger className="max-w-sm h-12 text-base">
-              <SelectValue placeholder="Select GST rate" />
-            </SelectTrigger>
-            <SelectContent position="popper" align="start">
-              {GST_RATES.map((rate) => (
-                <SelectItem key={rate} value={rate.toString()}>
-                  {rate}% GST
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Tax Structure */}
-      <div className="space-y-6">
-        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
-          Tax Structure
-        </h3>
-
-        <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl">
-          <div>
-            <Label className="text-base font-medium text-gray-900">CGST / SGST Split</Label>
-            <p className="text-sm text-gray-500 mt-1">Calculate intra-state (CGST+SGST) vs inter-state (IGST)</p>
-          </div>
-          <Switch
-            checked={formData.use_cgst_sgst_igst}
-            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, use_cgst_sgst_igst: checked }))}
-          />
-        </div>
-      </div>
-
-      {/* Pricing Mode */}
-      <div className="space-y-6">
-        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
-          Pricing Mode
+          1. Pricing Mode
         </h3>
 
         <RadioGroup
           value={formData.prices_include_tax ? "inclusive" : "exclusive"}
-          onValueChange={(value) => setFormData(prev => ({ ...prev, prices_include_tax: value === "inclusive" }))}
+          onValueChange={(value) => setFormData(prev => ({
+            ...prev,
+            prices_include_tax: value === "inclusive",
+            // Implicitly enable GST if switching modes, though backend likely handles this.
+            // keeping current state or defaulting to true could be safe.
+            gst_enabled: true
+          }))}
           className="space-y-4"
         >
-          <div className="flex items-center space-x-4 py-4 px-5 bg-gray-50 rounded-xl">
-            <RadioGroupItem value="exclusive" id="exclusive" className="h-5 w-5" />
-            <Label htmlFor="exclusive" className="text-lg font-semibold text-gray-900 cursor-pointer">
-              Prices exclusive of tax
-            </Label>
+          <div className={`flex items-center space-x-4 py-4 px-5 rounded-xl transition-all ${formData.prices_include_tax
+            ? 'bg-orange-50 border-orange-200 border'
+            : 'bg-gray-50 border-transparent border hover:bg-gray-100'
+            }`}>
+            <RadioGroupItem value="inclusive" id="inclusive" className="h-5 w-5 text-orange-600 border-gray-400" />
+            <div className="flex-1">
+              <Label htmlFor="inclusive" className="text-lg font-semibold text-gray-900 cursor-pointer block">
+                Prices inclusive of tax
+              </Label>
+              <p className="text-sm text-gray-500 mt-1">
+                Prices displayed to customers already include GST. Tax is calculated backwards from the total.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center space-x-4 py-4 px-5 bg-gray-50 rounded-xl">
-            <RadioGroupItem value="inclusive" id="inclusive" className="h-5 w-5" />
-            <Label htmlFor="inclusive" className="text-lg font-semibold text-gray-900 cursor-pointer">
-              Prices inclusive of tax
-            </Label>
+
+          <div className={`flex items-center space-x-4 py-4 px-5 rounded-xl transition-all ${!formData.prices_include_tax
+            ? 'bg-orange-50 border-orange-200 border'
+            : 'bg-gray-50 border-transparent border hover:bg-gray-100'
+            }`}>
+            <RadioGroupItem value="exclusive" id="exclusive" className="h-5 w-5 text-orange-600 border-gray-400" />
+            <div className="flex-1">
+              <Label htmlFor="exclusive" className="text-lg font-semibold text-gray-900 cursor-pointer block">
+                Prices exclusive of tax
+              </Label>
+              <p className="text-sm text-gray-500 mt-1">
+                Prices displayed are without tax. GST is added on top during checkout.
+              </p>
+            </div>
           </div>
         </RadioGroup>
       </div>
+
+      {/* Step 2: Conditional Logic */}
+      {formData.prices_include_tax ? (
+        // Inclusive Mode UI
+        <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-4">
+          <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+            <Info className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-blue-900">Tax Included</h4>
+            <p className="text-blue-700 mt-1">
+              Prices already include applicable taxes. GST breakdown will be calculated automatically for invoices.
+              No further configuration is required.
+            </p>
+          </div>
+        </div>
+      ) : (
+        // Exclusive Mode UI
+        <div className="space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
+          {/* GST Rate */}
+          <div className="space-y-6">
+            <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+              2. Global GST Rate
+            </h3>
+
+            <div className="space-y-4">
+              <div className="flex flex-col space-y-2">
+                <Label className="text-base font-medium">Default GST Rate (%)</Label>
+                <Select
+                  value={formData.default_gst_percentage.toString()}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, default_gst_percentage: parseFloat(value) }))}
+                >
+                  <SelectTrigger className="max-w-sm h-12 text-base bg-white">
+                    <SelectValue placeholder="Select GST rate" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" align="start">
+                    {GST_RATES.map((rate) => (
+                      <SelectItem key={rate} value={rate.toString()}>
+                        {rate}% GST
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-500">
+                  This rate applies globally to all products unless specified otherwise.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Structure / Split */}
+          <div className="space-y-6">
+            <h3 className="text-base font-semibold text-gray-900 border-b border-gray-100 pb-3">
+              3. GST Structure
+            </h3>
+
+            <div className="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <Label className="text-base font-medium text-gray-900">CGST / SGST Split</Label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Automatically calculate intra-state (CGST+SGST) vs inter-state (IGST) split based on customer location.
+                </p>
+              </div>
+              <Switch
+                checked={formData.use_cgst_sgst_igst}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, use_cgst_sgst_igst: checked }))}
+                className="data-[state=checked]:bg-orange-600"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Button */}
       <div className="pt-6 border-t border-gray-100">

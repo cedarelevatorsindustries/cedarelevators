@@ -14,10 +14,19 @@ import {
 import { logger } from '@/lib/services/logger'
 
 // =====================================================
+// Types
+// =====================================================
+
+export interface TaxSettings {
+    gst_enabled: boolean
+    default_gst_percentage: number | string  // Database may return string
+    use_cgst_sgst_igst: boolean
+}
+
+// =====================================================
 // Constants
 // =====================================================
 
-export const GST_RATE = 0.18 // 18% GST (9% CGST + 9% SGST or 18% IGST)
 export const DEFAULT_CURRENCY = 'INR'
 
 // =====================================================
@@ -40,6 +49,7 @@ export function calculateCartSubtotal(items: DerivedCartItem[]): number {
 export function calculateTax(
     subtotal: number,
     shipping: number = 0,
+    taxSettings: TaxSettings | null,
     isSameState: boolean = true // For CGST+SGST vs IGST
 ): {
     cgst: number
@@ -47,10 +57,38 @@ export function calculateTax(
     igst: number
     total: number
 } {
-    const taxableAmount = subtotal + shipping
-    const totalTax = taxableAmount * GST_RATE
+    // If tax is disabled or no settings, return zero tax
+    if (!taxSettings || !taxSettings.gst_enabled) {
+        console.log('[Tax Debug] Tax disabled or no settings:', {
+            hasTaxSettings: !!taxSettings,
+            gst_enabled: taxSettings?.gst_enabled
+        })
+        return {
+            cgst: 0,
+            sgst: 0,
+            igst: 0,
+            total: 0
+        }
+    }
 
-    if (isSameState) {
+    const taxableAmount = subtotal + shipping
+    // Convert to number in case database returns string
+    const gstPercentage = typeof taxSettings.default_gst_percentage === 'string'
+        ? parseFloat(taxSettings.default_gst_percentage)
+        : taxSettings.default_gst_percentage
+    const gstRate = gstPercentage / 100
+    const totalTax = taxableAmount * gstRate
+
+    console.log('[Tax Debug] Calculating tax:', {
+        taxableAmount,
+        gstPercentage,
+        gstRate,
+        totalTax,
+        taxSettings
+    })
+
+    // Check if CGST/SGST split is enabled
+    if (taxSettings.use_cgst_sgst_igst && isSameState) {
         // Within same state: CGST + SGST
         return {
             cgst: totalTax / 2,
@@ -58,8 +96,16 @@ export function calculateTax(
             igst: 0,
             total: totalTax
         }
-    } else {
+    } else if (taxSettings.use_cgst_sgst_igst && !isSameState) {
         // Different state: IGST
+        return {
+            cgst: 0,
+            sgst: 0,
+            igst: totalTax,
+            total: totalTax
+        }
+    } else {
+        // Split disabled, just return total as GST
         return {
             cgst: 0,
             sgst: 0,
@@ -98,6 +144,7 @@ export function calculateShipping(
 export async function calculateCartSummary(
     items: DerivedCartItem[],
     pricingContext: PricingContext,
+    taxSettings: TaxSettings | null,
     deliveryOption?: 'standard' | 'express' | 'custom',
     shippingAddress?: { state: string }
 ): Promise<CartSummary> {
@@ -116,7 +163,7 @@ export async function calculateCartSummary(
 
         // Calculate tax (assuming same state for now)
         const isSameState = true // TODO: Implement state comparison with business address
-        const tax = calculateTax(subtotal, shipping, isSameState).total
+        const tax = calculateTax(subtotal, shipping, taxSettings, isSameState).total
 
         // Calculate total
         const total = subtotal - discount + shipping + tax

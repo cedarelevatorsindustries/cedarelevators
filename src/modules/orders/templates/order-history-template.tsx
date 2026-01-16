@@ -10,9 +10,9 @@ interface Order {
   id: string
   order_number: string
   created_at: string
-  status: string
-  total: number
-  items: any[]
+  order_status: string
+  total_amount: number
+  order_items?: any[]
 }
 
 interface OrderSummary {
@@ -58,13 +58,13 @@ export default function OrderHistoryTemplate({
   // Filter orders by status
   const filteredOrders = activeTab === 'all'
     ? orders
-    : orders.filter(order => order.status.toLowerCase() === activeTab)
+    : orders.filter(order => order.order_status?.toLowerCase() === activeTab)
 
   const tabs: { id: OrderStatus; label: string; count: number }[] = [
     { id: 'all', label: 'All Orders', count: orders.length },
-    { id: 'processing', label: 'Processing', count: orders.filter(o => o.status === 'processing').length },
-    { id: 'delivered', label: 'Delivered', count: orders.filter(o => o.status === 'delivered').length },
-    { id: 'cancelled', label: 'Cancelled', count: orders.filter(o => o.status === 'cancelled').length },
+    { id: 'processing', label: 'Processing', count: orders.filter(o => o.order_status === 'processing').length },
+    { id: 'delivered', label: 'Delivered', count: orders.filter(o => o.order_status === 'delivered').length },
+    { id: 'cancelled', label: 'Cancelled', count: orders.filter(o => o.order_status === 'cancelled').length },
   ]
 
   return (
@@ -238,11 +238,11 @@ export default function OrderHistoryTemplate({
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <OrderStatusBadge status={order.status} />
+                        <OrderStatusBadge status={order.order_status} />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <span className="text-sm font-bold text-gray-900">
-                          {formatCurrency(order.total)}
+                          {formatCurrency(order.total_amount || 0)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -277,11 +277,11 @@ export default function OrderHistoryTemplate({
                         {formatDate(order.created_at)}
                       </p>
                     </div>
-                    <OrderStatusBadge status={order.status} />
+                    <OrderStatusBadge status={order.order_status} />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-gray-900">
-                      {formatCurrency(order.total)}
+                      {formatCurrency(order.total_amount || 0)}
                     </span>
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600">
                       View

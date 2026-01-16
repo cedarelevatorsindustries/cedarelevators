@@ -41,6 +41,6 @@ export async function validateIndividualOrder(
     }
 }
 
-export function getIndividualLimits() {
+export async function getIndividualLimits() {
     return INDIVIDUAL_LIMITS
 }

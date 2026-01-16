@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase, createAdminClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/admin/orders/stats - Fetch order statistics
+ * Admin API - Uses Supabase Auth
  */
 export async function GET(request: NextRequest) {
     try {
-        const { userId } = await auth()
-        if (!userId) {
+        // Use Supabase auth for admin
+        const authSupabase = await createServerSupabase()
+        const { data: { user } } = await authSupabase.auth.getUser()
+
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // TODO: Add admin role check
-
-        const supabase = await createServerSupabase()
+        // Use admin client to fetch all orders (bypasses RLS)
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('orders')

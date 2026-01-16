@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 // Notifications removed
 import { sendOrderStatusUpdate } from '@/lib/services/email'
 import type { OrderWithDetails } from '@/lib/types/orders'
@@ -11,7 +11,8 @@ import type { OrderWithDetails } from '@/lib/types/orders'
  */
 export async function getOrder(orderId: string): Promise<{ success: boolean; order?: OrderWithDetails; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        // Use admin client to bypass RLS for order fetching
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('orders')
@@ -52,7 +53,7 @@ export async function updateOrderStatus(
     status: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         // Get order details first
         const { data: order } = await supabase
@@ -107,7 +108,7 @@ export async function bulkUpdateOrderStatus(
     status: string
 ): Promise<{ success: boolean; updated?: number; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('orders')
@@ -140,7 +141,7 @@ export async function addTrackingInfo(
     trackingUrl?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         const updateData: any = {
             tracking_number: trackingNumber,
@@ -178,7 +179,7 @@ export async function cancelOrder(
     reason: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('orders')
@@ -242,7 +243,7 @@ export async function fetchOrders(filters?: {
     error?: string
 }> {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createAdminClient()
 
         const page = filters?.page || 1
         const limit = filters?.limit || 20

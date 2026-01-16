@@ -1,6 +1,7 @@
 'use server'
 
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import {
     CartItem,
     DerivedCartItem,
@@ -221,8 +222,29 @@ export async function getCartWithPricing(
         // Derive items with pricing
         const derivedItems = await deriveCartItems(cartItems as CartItem[], pricingContext)
 
-        // Calculate summary
-        const summary = await calculateCartSummary(derivedItems, pricingContext)
+        // Fetch tax settings using public client (tax settings are global, not user-specific)
+        const publicSupabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        const { data: taxSettings, error: taxError } = await publicSupabase
+            .from('tax_settings')
+            .select('gst_enabled, default_gst_percentage, use_cgst_sgst_igst')
+            .single()
+
+        if (taxError) {
+            console.error('[Pricing Debug] Error fetching tax settings:', taxError)
+        }
+
+        console.log('[Pricing Debug] Fetched tax settings:', taxSettings)
+
+        // Calculate summary with tax settings
+        const summary = await calculateCartSummary(
+            derivedItems,
+            pricingContext,
+            taxSettings || null
+        )
 
         return { items: derivedItems, summary }
 

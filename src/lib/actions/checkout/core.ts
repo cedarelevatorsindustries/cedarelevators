@@ -51,9 +51,12 @@ export async function checkCheckoutEligibility(cartId: string): Promise<ActionRe
 }
 
 /**
- * Get checkout summary for cart
+ * Get checkout data from cart
  */
-export async function getCheckoutSummary(cartId: string): Promise<ActionResponse<CheckoutSummary>> {
+export async function getCheckoutFromCart(cartId: string): Promise<ActionResponse<{
+    items: any[]
+    summary: CheckoutSummary
+}>> {
     try {
         const { userId } = await auth()
         if (!userId) return { success: false, error: 'Not authenticated' }
@@ -61,12 +64,42 @@ export async function getCheckoutSummary(cartId: string): Promise<ActionResponse
         const supabase = await createServerSupabase()
         const { data: cartItems } = await supabase
             .from('cart_items')
-            .select('*, products (price)')
+            .select(`
+                *,
+                products (
+                    id,
+                    title,
+                    price,
+                    thumbnail,
+                    slug
+                )
+            `)
             .eq('cart_id', cartId)
 
+        if (!cartItems || cartItems.length === 0) {
+            return {
+                success: true,
+                data: {
+                    items: [],
+                    summary: { subtotal: 0, tax: 0, gst_percentage: 18, shipping: 0, discount: 0, total: 0, currency: 'INR' }
+                }
+            }
+        }
+
+        // Map items to standard format
+        const items = cartItems.map((item: any) => ({
+            id: item.products?.id,
+            title: item.products?.title,
+            thumbnail: item.products?.thumbnail,
+            quantity: item.quantity,
+            unit_price: item.products?.price || 0,
+            subtotal: (item.products?.price || 0) * item.quantity
+        }))
+
+        // Calculate summary
         let subtotal = 0
-        cartItems?.forEach((item: any) => {
-            subtotal += (item.products?.price || 0) * item.quantity
+        items.forEach((item: any) => {
+            subtotal += item.subtotal
         })
 
         const shipping = 0
@@ -77,11 +110,23 @@ export async function getCheckoutSummary(cartId: string): Promise<ActionResponse
 
         return {
             success: true,
-            data: { subtotal, tax, gst_percentage, shipping, discount, total, currency: 'INR' }
+            data: {
+                items,
+                summary: { subtotal, tax, gst_percentage, shipping, discount, total, currency: 'INR' }
+            }
         }
     } catch (error: any) {
-        return { success: false, error: error.message }
+        return { success: false, error: error.message || 'Failed to get cart checkout data' }
     }
+}
+
+/**
+ * Get checkout summary for cart (Legacy)
+ */
+export async function getCheckoutSummary(cartId: string): Promise<ActionResponse<CheckoutSummary>> {
+    const result = await getCheckoutFromCart(cartId)
+    if (!result.success || !result.data) return { success: false, error: result.error }
+    return { success: true, data: result.data.summary }
 }
 
 /**

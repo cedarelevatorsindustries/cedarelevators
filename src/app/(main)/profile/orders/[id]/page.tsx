@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { auth } from "@clerk/nextjs/server"
-import { createClerkSupabaseClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { getOrderById } from "@/lib/data/orders"
 import OrderDetailsTemplate from "@/modules/orders/templates/order-details-template"
 import AccessDenied from "@/modules/orders/components/access-denied"
@@ -20,25 +20,29 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
             redirect("/sign-in?redirect=/profile/orders")
         }
 
-        // Fetch user profile
-        const supabase = await createClerkSupabaseClient()
-        const { data: profile, error: profileError } = await supabase
-            .from("user_profiles")
-            .select("*")
-            .eq("id", userId)
+        // Use admin client to get user profile data
+        const supabase = createAdminClient()
+
+        // Get user profile from business_profiles (joined with users)
+        const { data: businessProfile } = await supabase
+            .from("business_profiles")
+            .select("*, users!inner(clerk_user_id)")
+            .eq("clerk_user_id", userId)
             .single()
 
-        // Check access permissions
-        if (profileError || !profile) {
-            return <AccessDenied userType="guest" />
-        }
+        // Check if business is verified
+        const isVerified = businessProfile?.verification_status === 'verified'
+        const isBusiness = !!businessProfile
 
-        if (profile.account_type !== 'business') {
-            return <AccessDenied userType="individual" />
-        }
-
-        if (!profile.is_verified) {
-            return <AccessDenied userType="business_unverified" />
+        // Allow access for verified business users OR all individual users
+        if (!isVerified) {
+            // Check if individual user (no business profile is OK)
+            if (!businessProfile) {
+                // Individual user - can view their own orders
+            } else {
+                // Business user but not verified
+                return <AccessDenied userType="business_unverified" />
+            }
         }
 
         // Fetch order details
