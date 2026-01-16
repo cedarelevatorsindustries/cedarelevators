@@ -14,3 +14,15 @@ export function getSlugFromPath(path: string): string {
 
     return slugMap[path] || path.replace("/", "")
 }
+
+/**
+ * Generate a URL-friendly slug from a title
+ */
+export function generateSlug(title: string): string {
+    return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim()
+}

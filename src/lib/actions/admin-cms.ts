@@ -178,17 +178,6 @@ export async function unpublishCMSPage(id: string): Promise<{ success: boolean; 
     return updateCMSPage(id, { is_published: false })
 }
 
-/**
- * Generate a URL-friendly slug from a title
- */
-export function generateSlug(title: string): string {
-    return title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim()
-}
 
 /**
  * Duplicate a CMS page
