@@ -47,7 +47,7 @@ export const loggedInShoppingItems: MenuItem[] = [
 ]
 
 export const loggedInActivityItems: MenuItem[] = [
-  { icon: FileText, label: "My Orders", href: "/account/orders" },
+  { icon: FileText, label: "My Orders", href: "/profile/orders" },
   { icon: Truck, label: "Track Order", href: "/track" },
   { icon: Bell, label: "My Notifications", href: "/notifications" },
 

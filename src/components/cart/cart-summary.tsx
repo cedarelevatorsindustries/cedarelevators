@@ -16,9 +16,10 @@ interface CartSummaryProps {
   summary: CartSummaryType
   onCheckout?: () => void
   onRequestQuote?: () => void
+  gstPercentage?: number  // Optional GST percentage to display
 }
 
-export function CartSummary({ summary, onCheckout, onRequestQuote }: CartSummaryProps) {
+export function CartSummary({ summary, onCheckout, onRequestQuote, gstPercentage }: CartSummaryProps) {
   const router = useRouter()
 
   const handleCheckout = () => {
@@ -30,6 +31,10 @@ export function CartSummary({ summary, onCheckout, onRequestQuote }: CartSummary
   const handleRequestQuote = () => {
     onRequestQuote?.() || router.push('/quotes/new')
   }
+
+  // Calculate GST percentage from tax and subtotal if not provided
+  const displayGstPercentage = gstPercentage ||
+    (summary.subtotal > 0 ? Math.round((summary.tax / summary.subtotal) * 100) : 18)
 
   return (
     <div className="bg-gray-50 rounded-lg p-6 sticky top-4" data-testid="cart-summary">
@@ -52,16 +57,16 @@ export function CartSummary({ summary, onCheckout, onRequestQuote }: CartSummary
       {/* Shipping */}
       <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-600">Shipping</span>
-        <span className="font-medium">
-          {summary.shipping === 0 ? 'FREE' : `₹${summary.shipping.toLocaleString()}`}
+        <span className="font-medium text-gray-600">
+          {summary.shipping === 0 ? 'Paid on delivery' : `₹${summary.shipping.toLocaleString()}`}
         </span>
       </div>
 
       {/* Tax */}
       {summary.tax > 0 && (
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-600">GST (18%)</span>
-          <span className="font-medium">₹{summary.tax.toLocaleString()}</span>
+          <span className="text-gray-600">GST ({displayGstPercentage}%)</span>
+          <span className="font-medium">₹{Math.round(summary.tax).toLocaleString()}</span>
         </div>
       )}
 
@@ -70,7 +75,7 @@ export function CartSummary({ summary, onCheckout, onRequestQuote }: CartSummary
       {/* Total */}
       <div className="flex justify-between text-lg font-bold mb-6">
         <span>Total</span>
-        <span data-testid="cart-total">₹{summary.total.toLocaleString()}</span>
+        <span data-testid="cart-total">₹{Math.round(summary.total).toLocaleString()}</span>
       </div>
 
       {/* Warnings */}

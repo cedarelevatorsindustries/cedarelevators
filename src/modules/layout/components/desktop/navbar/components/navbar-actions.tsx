@@ -30,7 +30,7 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
 
     // Get cart data from context
     const cartItemCount = summary.itemCount || 0
-    const cartTotal = `₹${summary.total.toLocaleString()}`
+    const cartTotal = `₹${Math.round(summary.total).toLocaleString()}`
 
     // Transform derivedItems to match CartHoverCardContent format
     const cartItems = derivedItems.map(item => ({
@@ -80,7 +80,13 @@ export function NavbarActions({ config, isTransparent, pathname, isScrolled }: N
                         badge={cartItemCount}
                         onHover={() => setIsMoreMenuOpen(false)}
                     >
-                        <CartHoverCardContent items={cartItems} total={cartTotal} />
+                        <CartHoverCardContent
+                            items={cartItems}
+                            total={cartTotal}
+                            subtotal={summary.subtotal}
+                            shipping={summary.shipping}
+                            tax={summary.tax}
+                        />
                     </LinkHoverCard>
 
                     {/* Divider */}

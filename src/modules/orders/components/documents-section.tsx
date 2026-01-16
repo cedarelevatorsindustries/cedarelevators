@@ -18,8 +18,7 @@ export default function DocumentsSection({ orderId, quoteId, quoteNumber }: Docu
                 {/* Invoice */}
                 <a
                     href={`/api/orders/${orderId}/invoice`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    download
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors group"
                 >
                     <div className="flex items-center gap-3">

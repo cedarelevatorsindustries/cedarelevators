@@ -46,6 +46,19 @@ export async function createOrderFromCheckout(input: CreateOrderInput): Promise<
     error?: string
 }> {
     try {
+        console.log('=== ORDER CREATION START ===')
+        console.log('Input cartItems:', JSON.stringify(input.cartItems, null, 2))
+        console.log('Input summary:', JSON.stringify(input.summary, null, 2))
+
+        // Validate cart items
+        if (!input.cartItems || input.cartItems.length === 0) {
+            console.error('ERROR: Cart items array is empty or undefined')
+            return {
+                success: false,
+                error: 'Cart is empty. Please add items to your cart before checking out.'
+            }
+        }
+
         const { userId } = await auth()
         if (!userId) {
             return { success: false, error: 'Not authenticated' }
@@ -141,13 +154,19 @@ export async function createOrderFromCheckout(input: CreateOrderInput): Promise<
             total_price: item.unit_price * item.quantity
         }))
 
-        const { error: itemsError } = await supabase
+        console.log('Creating order items:', orderItems)
+
+        const { data: createdItems, error: itemsError } = await supabase
             .from('order_items')
             .insert(orderItems)
+            .select()
 
         if (itemsError) {
             console.error('Failed to create order items:', itemsError)
+            console.error('Order items that failed:', orderItems)
             // Order was created, but items failed - still return success
+        } else {
+            console.log('Successfully created order items:', createdItems)
         }
 
         // Clear cart items after successful order

@@ -20,6 +20,9 @@ export interface OrderWithDetails {
     shipping_amount: number
     discount_amount: number
     total_amount: number
+    gst_percentage?: number  // GST percentage (e.g., 18)
+    shipping_method?: string  // 'doorstep' | 'pickup'
+    pickup_location_id?: string | null  // ID of pickup location if shipping_method is 'pickup'
     shipping_address: ShippingAddress | null
     billing_address: BillingAddress | null
     tracking_number: string | null

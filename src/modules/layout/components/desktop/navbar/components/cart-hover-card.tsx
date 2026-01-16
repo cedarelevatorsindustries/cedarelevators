@@ -13,9 +13,12 @@ interface CartItem {
 interface CartHoverCardContentProps {
   items: CartItem[]
   total: string
+  subtotal?: number
+  shipping?: number
+  tax?: number
 }
 
-export function CartHoverCardContent({ items, total }: CartHoverCardContentProps) {
+export function CartHoverCardContent({ items, total, subtotal = 0, shipping = 0, tax = 0 }: CartHoverCardContentProps) {
   if (items.length === 0) {
     return (
       <div className="w-80 p-6">

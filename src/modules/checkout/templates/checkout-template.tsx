@@ -60,6 +60,8 @@ export default function CheckoutTemplate() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [limitViolations, setLimitViolations] = useState<string[]>([])
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([])
+  const [defaultAddress, setDefaultAddress] = useState<any>(null)
+  const [isLoadingAddress, setIsLoadingAddress] = useState(true)
 
   const userType = !isPricingLoaded || !user
     ? 'guest'
@@ -82,6 +84,32 @@ export default function CheckoutTemplate() {
     }
     loadPickupLocations()
   }, [])
+
+  // Fetch default address
+  useEffect(() => {
+    async function loadDefaultAddress() {
+      if (!user) {
+        setIsLoadingAddress(false)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/addresses/default')
+        if (response.ok) {
+          const data = await response.json()
+          setDefaultAddress(data.address)
+        }
+      } catch (error) {
+        console.error('Failed to load default address:', error)
+      } finally {
+        setIsLoadingAddress(false)
+      }
+    }
+
+    if (isLoaded) {
+      loadDefaultAddress()
+    }
+  }, [isLoaded, user])
 
   useEffect(() => {
     if (!isLoaded) return
@@ -146,6 +174,20 @@ export default function CheckoutTemplate() {
 
   const handlePlaceOrder = async () => {
     if (isProcessing || !checkoutData) return
+
+    // Validate address - required for both doorstep and pickup (billing purposes)
+    if (!defaultAddress) {
+      const addressType = shippingMethod === 'doorstep' ? 'delivery' : 'billing'
+      toast.error(`Please add a ${addressType} address to continue`)
+      return
+    }
+
+    // Validate pickup location for pickup
+    if (shippingMethod === 'pickup' && !pickupLocationId) {
+      toast.error('Please select a pickup location to continue')
+      return
+    }
+
     setIsProcessing(true)
 
     try {
@@ -179,6 +221,11 @@ export default function CheckoutTemplate() {
       toast.error(error.message || 'Failed to place order')
       setIsProcessing(false)
     }
+  }
+
+  const handleAddressAction = () => {
+    // Redirect to profile addresses page
+    router.push('/profile/addresses?redirect=/checkout')
   }
 
   if (!isLoaded || isLoading) {
@@ -344,23 +391,63 @@ export default function CheckoutTemplate() {
                 </label>
               </div>
 
-              {shippingMethod === 'doorstep' && (
-                <div className="mt-6 p-4 border border-[#f4ede7] rounded-lg bg-[#f8f7f5]">
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="font-bold text-sm uppercase tracking-wide">Shipping Address</p>
-                    <button className="text-orange-600 text-sm font-bold flex items-center gap-1">
-                      Change Address
-                    </button>
-                  </div>
+              {/* Address Section - Always shown, label changes based on shipping method */}
+              <div className="mt-6 p-4 border border-[#f4ede7] rounded-lg bg-[#f8f7f5]">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="font-bold text-sm uppercase tracking-wide">
+                    {shippingMethod === 'doorstep' ? 'Shipping Address' : 'Billing Address'}
+                  </p>
+                  <button
+                    onClick={handleAddressAction}
+                    className="text-orange-600 text-sm font-bold flex items-center gap-1 hover:underline"
+                  >
+                    {defaultAddress ? 'Edit Address' : 'Add Address'}
+                  </button>
+                </div>
+                {isLoadingAddress ? (
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-400" />
+                    <MapPin className="w-5 h-5 text-gray-400 animate-pulse" />
                     <div>
-                      <p className="font-medium">Delivery Address</p>
-                      <p className="text-[#9c7349] text-sm">Please select or add address</p>
+                      <p className="text-[#9c7349] text-sm">Loading address...</p>
                     </div>
                   </div>
-                </div>
-              )}
+                ) : defaultAddress ? (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-orange-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">{defaultAddress.name || 'Delivery Address'}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {defaultAddress.address_line1 || defaultAddress.address_line_1}
+                        {(defaultAddress.address_line2 || defaultAddress.address_line_2) && `, ${defaultAddress.address_line2 || defaultAddress.address_line_2}`}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {defaultAddress.city}, {defaultAddress.state} - {defaultAddress.pincode || defaultAddress.postal_code}
+                      </p>
+                      {defaultAddress.phone && (
+                        <p className="text-sm text-gray-500 mt-1">{defaultAddress.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-4 text-center">
+                    <MapPin className="w-12 h-12 text-gray-300 mb-3" />
+                    <p className="font-medium text-gray-900 mb-1">
+                      {shippingMethod === 'doorstep' ? 'No Delivery Address' : 'No Billing Address'}
+                    </p>
+                    <p className="text-sm text-[#9c7349] mb-4">
+                      {shippingMethod === 'doorstep'
+                        ? 'Please add a delivery address to place your order'
+                        : 'Please add a billing address to continue'}
+                    </p>
+                    <button
+                      onClick={handleAddressAction}
+                      className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-lg hover:bg-orange-700 transition-colors"
+                    >
+                      Add Address
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {shippingMethod === 'pickup' && (
                 <div className="mt-6 space-y-3">
@@ -456,14 +543,14 @@ export default function CheckoutTemplate() {
                   {checkoutData.summary.tax > 0 && (
                     <div className="flex justify-between text-base">
                       <span className="text-[#9c7349]">GST</span>
-                      <span className="font-medium">₹{checkoutData.summary.tax.toLocaleString('en-IN')}</span>
+                      <span className="font-medium">₹{Math.round(checkoutData.summary.tax).toLocaleString('en-IN')}</span>
                     </div>
                   )}
 
                   <div className="h-px bg-[#f4ede7] my-2"></div>
                   <div className="flex justify-between text-xl font-black">
                     <span>Total</span>
-                    <span className="text-orange-600">₹{checkoutData.summary.total.toLocaleString('en-IN')}</span>
+                    <span className="text-orange-600">₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
@@ -477,12 +564,22 @@ export default function CheckoutTemplate() {
 
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={hasViolations || isProcessing}
-                  className="w-full mt-6 bg-orange-600 hover:bg-orange-600/90 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20"
+                  disabled={hasViolations || isProcessing || !defaultAddress || (shippingMethod === 'pickup' && !pickupLocationId)}
+                  className="w-full mt-6 bg-orange-600 hover:bg-orange-600/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20"
                 >
                   {isProcessing ? 'Processing...' : 'Place Order'}
                   <ChevronRight className="w-5 h-5" />
                 </button>
+                {!defaultAddress && !isLoadingAddress && (
+                  <p className="text-xs text-red-600 mt-2 text-center">
+                    Please add a {shippingMethod === 'doorstep' ? 'delivery' : 'billing'} address to place your order
+                  </p>
+                )}
+                {shippingMethod === 'pickup' && !pickupLocationId && (
+                  <p className="text-xs text-red-600 mt-2 text-center">
+                    Please select a pickup location to place your order
+                  </p>
+                )}
               </div>
 
               {/* Upgrade Nudge (Individual only) */}

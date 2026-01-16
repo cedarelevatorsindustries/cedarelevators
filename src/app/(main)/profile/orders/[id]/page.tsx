@@ -6,14 +6,14 @@ import OrderDetailsTemplate from "@/modules/orders/templates/order-details-templ
 import AccessDenied from "@/modules/orders/components/access-denied"
 
 export const metadata = {
-    title: "Order Details | Cedar B2B Storefront",
+    title: "Order Detail | Cedar B2B Storefront",
     description: "View order details and status",
 }
 
-export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     try {
         const { userId } = await auth()
-        const { id } = params
+        const { id } = await params
 
         // Redirect guests to sign-in
         if (!userId) {
@@ -48,6 +48,17 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
         // Fetch order details
         const order = await getOrderById(id)
 
+        // Fetch pickup location if order has one
+        let pickupLocation = null
+        if (order?.pickup_location_id) {
+            const { data: location } = await supabase
+                .from('pickup_locations')
+                .select('*')
+                .eq('id', order.pickup_location_id)
+                .single()
+            pickupLocation = location
+        }
+
         // Verify ownership - order should belong to this user
         if (!order || order.clerk_user_id !== userId) {
             return (
@@ -59,7 +70,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
             )
         }
 
-        return <OrderDetailsTemplate order={order} />
+        return <OrderDetailsTemplate order={order} pickupLocation={pickupLocation} />
 
     } catch (error) {
         console.error("Error loading order details:", error)

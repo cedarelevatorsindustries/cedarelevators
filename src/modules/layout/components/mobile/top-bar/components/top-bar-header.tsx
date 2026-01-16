@@ -42,6 +42,7 @@ export function TopBarHeader({
     if (pathname === '/quotes/new') return 'Quote'
     if (pathname.startsWith('/quotes/') && pathname !== '/quotes/new') return 'Quote Details'
     if (pathname === '/profile' || pathname === '/account') return 'My Cedar'
+    if (pathname.startsWith('/profile/orders/') && pathname !== '/profile/orders') return 'Order Detail'
 
     // For other pages, format the pathname
     // Remove leading slash, split by slash, take last segment, capital case

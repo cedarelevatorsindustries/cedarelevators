@@ -81,7 +81,24 @@ export async function getOrderById(orderId: string): Promise<OrderWithDetails | 
       return null
     }
 
-    return data as OrderWithDetails
+    console.log('Raw order data:', JSON.stringify(data, null, 2))
+    console.log('Order items count:', data.order_items?.length || 0)
+
+    // Map database field names to OrderWithDetails interface
+    const orderWithDetails: OrderWithDetails = {
+      ...data,
+      // Map database fields to interface fields
+      subtotal_amount: data.subtotal || 0,
+      tax_amount: data.tax || data.gst_amount || 0,
+      shipping_amount: data.shipping_cost || 0,
+      discount_amount: data.discount || 0,
+      // Keep original fields as well
+      order_items: data.order_items || []
+    }
+
+    console.log('Mapped order with details:', JSON.stringify(orderWithDetails, null, 2))
+
+    return orderWithDetails
   } catch (error) {
     console.error('Error fetching order by ID:', error)
     return null

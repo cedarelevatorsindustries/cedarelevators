@@ -19,13 +19,22 @@ import SupportCTA from "../components/support-cta"
 
 interface OrderDetailsTemplateProps {
     order: OrderWithDetails
+    pickupLocation?: any | null
 }
 
-export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProps) {
+export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDetailsTemplateProps) {
     // Determine current step index based on status
     const status = (order.order_status || order.status)?.toLowerCase()
+    const paymentMethod = order.payment_method?.toLowerCase()
+    const isCOD = paymentMethod === 'cod'
 
-    const steps = [
+    // Different steps for COD vs prepaid
+    const steps = isCOD ? [
+        { id: 'placed', label: 'Order Placed', icon: Package, date: order.created_at },
+        { id: 'processing', label: 'Processing', icon: Package, date: order.processing_at },
+        { id: 'shipped', label: 'Shipped', icon: Truck, date: order.shipped_at },
+        { id: 'delivered', label: 'Delivered', icon: CheckCircle, date: order.delivered_at },
+    ] : [
         { id: 'placed', label: 'Order Placed', icon: Package, date: order.created_at },
         { id: 'payment', label: 'Payment Confirmed', icon: CheckCircle, date: order.payment_confirmed_at },
         { id: 'processing', label: 'Processing', icon: Package, date: order.processing_at },
@@ -34,11 +43,20 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
     ]
 
     let currentStep = 0
-    if (status === 'payment_confirmed' || status === 'paid') currentStep = 1
-    if (status === 'processing') currentStep = 2
-    if (status === 'shipped') currentStep = 3
-    if (status === 'delivered') currentStep = 4
-    if (status === 'cancelled') currentStep = -1
+    if (isCOD) {
+        // COD status mapping (no payment step)
+        if (status === 'processing') currentStep = 1
+        if (status === 'shipped') currentStep = 2
+        if (status === 'delivered') currentStep = 3
+        if (status === 'cancelled') currentStep = -1
+    } else {
+        // Prepaid status mapping
+        if (status === 'payment_confirmed' || status === 'paid') currentStep = 1
+        if (status === 'processing') currentStep = 2
+        if (status === 'shipped') currentStep = 3
+        if (status === 'delivered') currentStep = 4
+        if (status === 'cancelled') currentStep = -1
+    }
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-8">
@@ -47,7 +65,7 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                 <div className="flex items-center gap-3">
                     <Link
                         href="/profile/orders"
-                        className="p-2 -ml-2 text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 transition-colors"
+                        className="hidden md:block p-2 -ml-2 text-gray-500 hover:text-gray-900 rounded-full hover:bg-gray-100 transition-colors"
                     >
                         <ChevronLeft size={20} />
                     </Link>
@@ -55,13 +73,20 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                         <h1 className="text-2xl font-bold text-gray-900">
                             Order #{order.order_number || order.id?.slice(0, 8).toUpperCase()}
                         </h1>
-                        <p className="text-gray-500 text-sm flex items-center gap-2 mt-1">
-                            <Clock className="w-4 h-4" />
-                            Placed on {formatOrderDate(order.created_at)}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <p className="text-gray-500 text-sm flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Placed on {formatOrderDate(order.created_at)}
+                            </p>
+                            <div className="md:hidden">
+                                <OrderStatusBadge status={order.order_status || order.status || 'pending'} className="text-xs px-2 py-0.5" />
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <OrderStatusBadge status={status || 'processing'} />
+                <div className="hidden md:block">
+                    <OrderStatusBadge status={order.order_status || order.status || 'pending'} />
+                </div>
             </div>
 
             {/* Order Status */}
@@ -142,29 +167,30 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                         </div>
                         <div className="divide-y divide-gray-100">
                             {order.order_items?.map((item: any) => (
-                                <div key={item.id} className="p-4 flex gap-4">
-                                    <div className="relative w-20 h-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            <Package size={24} />
+                                <div key={item.id} className="flex items-center gap-4 px-6 py-4 justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                <Package size={24} />
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <h4 className="text-base font-semibold leading-tight">
+                                                {item.product_name}
+                                            </h4>
+                                            {item.variant_name && (
+                                                <p className="text-sm text-gray-500 mt-1">
+                                                    {item.variant_name}
+                                                </p>
+                                            )}
+                                            <p className="text-gray-600 text-sm mt-1">
+                                                Quantity: {item.quantity}
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="font-medium text-gray-900 line-clamp-2">
-                                            {item.product_name}
-                                        </h4>
-                                        {item.variant_name && (
-                                            <p className="text-sm text-gray-500 mt-1">
-                                                {item.variant_name}
-                                            </p>
-                                        )}
-                                        <div className="flex justify-between items-end mt-2">
-                                            <p className="text-sm text-gray-600">
-                                                Qty: <span className="font-medium text-gray-900">{item.quantity}</span>
-                                            </p>
-                                            <p className="font-bold text-gray-900">
-                                                {convertToLocale(item.unit_price * item.quantity, 'INR')}
-                                            </p>
-                                        </div>
+                                    <div className="text-right">
+                                        <p className="text-base font-medium">₹{(item.unit_price * item.quantity).toLocaleString('en-IN')}</p>
+                                        <p className="text-sm text-gray-500">₹{item.unit_price.toLocaleString('en-IN')} / unit</p>
                                     </div>
                                 </div>
                             ))}
@@ -177,21 +203,21 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
-                                <span>{convertToLocale(order.subtotal_amount, 'INR')}</span>
+                                <span>₹{Math.round(order.subtotal_amount).toLocaleString('en-IN')}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
-                                <span>Tax (GST 18%)</span>
-                                <span>{convertToLocale(order.tax_amount, 'INR')}</span>
+                                <span>Tax (GST {order.gst_percentage || 18}%)</span>
+                                <span>₹{Math.round(order.tax_amount).toLocaleString('en-IN')}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Shipping</span>
                                 <span className="text-green-600 font-medium">
-                                    {order.shipping_amount > 0 ? convertToLocale(order.shipping_amount, 'INR') : 'FREE'}
+                                    {order.shipping_amount > 0 ? `₹${Math.round(order.shipping_amount).toLocaleString('en-IN')}` : 'Paid on delivery'}
                                 </span>
                             </div>
                             <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg text-gray-900">
                                 <span>Grand Total</span>
-                                <span>{convertToLocale(order.total_amount, 'INR')}</span>
+                                <span>₹{Math.round(order.total_amount).toLocaleString('en-IN')}</span>
                             </div>
                         </div>
                     </div>
@@ -199,48 +225,88 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
 
                 {/* Sidebar - Address, Payment, Documents, Support */}
                 <div className="space-y-6">
-                    {/* Address Details */}
+                    {/* Address Details or Pickup Location */}
                     <div className="bg-white rounded-xl border border-gray-200 p-6">
                         <div className="flex items-center gap-2 mb-4 text-gray-900 font-semibold">
                             <MapPin size={18} className="text-gray-400" />
-                            Address Details
+                            {order.shipping_method === 'pickup' ? 'Pickup Location' : 'Address Details'}
                         </div>
 
-                        {/* Shipping Address */}
-                        <div className="mb-4">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                Shipping Address
-                            </p>
-                            {order.shipping_address ? (
-                                <address className="not-italic text-sm text-gray-600 leading-relaxed">
-                                    <p className="font-medium text-gray-900">
-                                        {order.shipping_address.name}
+                        {order.shipping_method === 'pickup' ? (
+                            /* Pickup Location Display */
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                    In-Store Pickup
+                                </p>
+                                <div className="text-sm text-gray-600 leading-relaxed">
+                                    <p className="font-medium text-gray-900 mb-2">
+                                        You selected in-store pickup
                                     </p>
-                                    <p>{order.shipping_address.address_line1}</p>
-                                    {order.shipping_address.address_line2 && <p>{order.shipping_address.address_line2}</p>}
-                                    <p>
-                                        {order.shipping_address.city}, {order.shipping_address.state}
+                                    {pickupLocation && (
+                                        <div className="bg-gray-50 p-3 rounded-lg mb-3 border border-gray-200">
+                                            <p className="font-semibold text-gray-900">{pickupLocation.name}</p>
+                                            <p className="text-sm text-gray-600 mt-1">{pickupLocation.address}</p>
+                                            <p className="text-sm text-gray-600">{pickupLocation.city}</p>
+                                            {pickupLocation.phone && (
+                                                <p className="text-sm text-gray-500 mt-1">📞 {pickupLocation.phone}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                    <p className="mt-3 text-xs bg-blue-50 text-blue-700 p-3 rounded-lg">
+                                        Please collect your order from our store location. You will receive pickup details via email.
                                     </p>
-                                    <p>{order.shipping_address.pincode}</p>
-                                    <p className="mt-2 text-gray-500">{order.shipping_address.phone}</p>
-                                </address>
-                            ) : (
-                                <p className="text-sm text-gray-500">No shipping address provided</p>
-                            )}
-                        </div>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Shipping Address Display */
+                            <div className="mb-4">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                    Shipping Address
+                                </p>
+                                {order.shipping_address ? (
+                                    <address className="not-italic text-sm text-gray-600 leading-relaxed">
+                                        <p className="font-medium text-gray-900">
+                                            {order.shipping_address.name}
+                                        </p>
+                                        <p>{order.shipping_address.address_line1}</p>
+                                        {order.shipping_address.address_line2 && <p>{order.shipping_address.address_line2}</p>}
+                                        <p>
+                                            {order.shipping_address.city}, {order.shipping_address.state}
+                                        </p>
+                                        <p>{order.shipping_address.pincode}</p>
+                                        <p className="mt-2 text-gray-500">{order.shipping_address.phone}</p>
+                                    </address>
+                                ) : (
+                                    <p className="text-sm text-gray-500">No shipping address provided</p>
+                                )}
+                            </div>
+                        )}
 
-                        {/* Billing Address */}
-                        {order.billing_address && (
-                            <div className="pt-4 border-t border-gray-200">
+                        {/* Billing Address - Always show for pickup, conditionally for doorstep */}
+                        {(order.shipping_method === 'pickup' || order.billing_address) && (
+                            <div className={order.shipping_method === 'pickup' ? 'pt-4' : 'pt-4 border-t border-gray-200'}>
                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                                     Billing Address
                                 </p>
-                                <address className="not-italic text-sm text-gray-600 leading-relaxed">
-                                    <p className="font-medium text-gray-900">
-                                        {order.billing_address.name}
-                                    </p>
-                                    <p>GSTIN: {order.billing_address.gstin || 'N/A'}</p>
-                                </address>
+                                {order.billing_address ? (
+                                    <address className="not-italic text-sm text-gray-600 leading-relaxed">
+                                        <p className="font-medium text-gray-900">
+                                            {order.billing_address.name}
+                                        </p>
+                                        <p>{order.billing_address.address_line1}</p>
+                                        {order.billing_address.address_line2 && <p>{order.billing_address.address_line2}</p>}
+                                        <p>
+                                            {order.billing_address.city}, {order.billing_address.state}
+                                        </p>
+                                        <p>{order.billing_address.pincode}</p>
+                                        <p className="mt-2 text-gray-500">{order.billing_address.phone}</p>
+                                        {order.billing_address.gstin && (
+                                            <p className="mt-2 text-xs text-gray-500">GSTIN: {order.billing_address.gstin}</p>
+                                        )}
+                                    </address>
+                                ) : (
+                                    <p className="text-sm text-gray-500">No billing address provided</p>
+                                )}
                             </div>
                         )}
                     </div>
@@ -254,13 +320,20 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                         <div className="text-sm space-y-2">
                             <div className="flex justify-between">
                                 <span className="text-gray-600">Payment Status</span>
-                                <span className="font-medium capitalize px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
-                                    {order.payment_status || 'Paid'}
+                                <span className={`font-medium capitalize px-2 py-0.5 rounded text-xs ${order.payment_status === 'paid'
+                                    ? 'bg-green-50 text-green-700'
+                                    : order.payment_status === 'pending'
+                                        ? 'bg-yellow-50 text-yellow-700'
+                                        : 'bg-gray-50 text-gray-700'
+                                    }`}>
+                                    {order.payment_status || 'Pending'}
                                 </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-600">Method</span>
-                                <span className="font-medium text-gray-900">Prepaid / Online</span>
+                                <span className="font-medium text-gray-900 uppercase">
+                                    {order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method || 'Prepaid / Online'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -276,6 +349,6 @@ export default function OrderDetailsTemplate({ order }: OrderDetailsTemplateProp
                     <SupportCTA orderId={order.id} />
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
