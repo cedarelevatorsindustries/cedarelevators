@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { QuoteStatus, QuotePriority } from '@/types/b2b/quote'
 import { getCurrentAdminUser, canApproveQuotes } from '@/lib/auth/admin-roles'
 import { logQuoteAction } from './quote-audit'
-import { sendQuoteApprovedEmail } from '@/lib/services/email'
+import { sendQuoteApprovedEmail, sendQuoteRejectedEmail } from '@/lib/services/email'
 
 /**
  * Update quote status (Admin)
@@ -261,6 +261,21 @@ export async function rejectQuote(
                 quote_number: quote.quote_number,
             }
         })
+
+        // Send rejection email to customer
+        const { data: quoteDetails, error: detailsError } = await supabase
+            .from('quotes')
+            .select('guest_email, guest_name')
+            .eq('id', quoteId)
+            .single()
+
+        if (!detailsError && quoteDetails?.guest_email) {
+            await sendQuoteRejectedEmail(quoteDetails.guest_email, {
+                quoteNumber: quote.quote_number,
+                customerName: quoteDetails.guest_name || 'Customer',
+                reason: reason
+            })
+        }
 
         revalidatePath('/admin/quotes')
         revalidatePath(`/admin/quotes/${quoteId}`)

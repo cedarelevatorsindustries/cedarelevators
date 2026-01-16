@@ -5,6 +5,16 @@ import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { generateQuoteNumber } from '@/lib/utils/quote-number-generator'
 
+// Helper function to determine quote priority based on user tier
+function getQuotePriority(accountType: 'guest' | 'individual' | 'business', verificationStatus?: string | null): 'low' | 'normal' | 'medium' | 'high' {
+  if (accountType === 'guest') return 'low';
+  if (accountType === 'individual') return 'normal';
+  if (accountType === 'business') {
+    return verificationStatus === 'verified' ? 'high' : 'medium';
+  }
+  return 'normal';
+}
+
 interface CreateQuoteInput {
   items: {
     product_id: string;
@@ -41,9 +51,23 @@ export async function createQuote(data: CreateQuoteInput) {
     const supabase = userId ? await createClerkSupabaseClient() : createServerSupabaseClient();
     if (!supabase) throw new Error("Database connection failed");
 
+    // Get user verification status for priority calculation
+    let verificationStatus: string | null = null;
+    if (userId && data.account_type === 'business') {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('verification_status')
+        .eq('id', userId)
+        .single();
+      verificationStatus = userData?.verification_status || null;
+    }
+
     // Generate enterprise-grade quote number
     // Format: CED-QT-{TYPE}-{YYMMDD}-{SEQ}
     const quoteNumber = await generateQuoteNumber(data.account_type);
+
+    // Determine priority based on user tier
+    const priority = getQuotePriority(data.account_type, verificationStatus);
 
     // Create Quote
     const quoteData: any = {
@@ -51,6 +75,7 @@ export async function createQuote(data: CreateQuoteInput) {
       user_id: userId || null,
       account_type: data.account_type,
       status: 'reviewing',  // Initial state - database constraint doesn't allow 'pending'
+      priority: priority,  // Add priority field
       notes: data.notes,
     };
 

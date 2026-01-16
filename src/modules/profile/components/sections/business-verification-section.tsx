@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Upload, FileText, CircleCheck, XCircle, Clock, AlertCircle, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { invalidateProfileCache } from '@/lib/auth/client'
 
 // Use internal status type for the component's state management
 type InternalVerificationStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
@@ -31,6 +33,7 @@ interface Document {
 export default function BusinessVerificationSection({
   className,
 }: BusinessVerificationSectionProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [status, setStatus] = useState<InternalVerificationStatus>('incomplete')
@@ -109,6 +112,10 @@ export default function BusinessVerificationSection({
         toast.success('Verification submitted successfully!')
         setVerificationId(data.verification_id)
         setStatus('pending')
+
+        // Invalidate profile cache so all pages show updated status
+        invalidateProfileCache()
+        router.refresh()
       } else {
         toast.error(data.error || 'Failed to submit verification')
       }

@@ -1,75 +1,83 @@
 'use client'
 
-import { FileText, Store, BookOpen } from 'lucide-react'
-import SuccessAnimation from '@/modules/checkout/components/success-animation'
-import ConfirmationTemplate from '@/modules/checkout/components/confirmation-template'
+import { useUser } from '@/lib/auth/client'
+import { getUserPricingState } from '@/lib/utils/pricing-utils'
+import QuoteConfirmationPage from '@/modules/checkout/components/quote-confirmation-page'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function QuoteSuccessPage() {
-    // In a real implementation, you would fetch the quote ID from URL params or session
-    const quoteId = 'QT-10435'
-    const submittedDate = new Date().toLocaleDateString('en-IN', {
+function QuoteSuccessContent() {
+    const { user } = useUser()
+    const userState = getUserPricingState(user)
+    const searchParams = useSearchParams()
+
+    // Get both UUID and formatted quote number
+    const quoteId = searchParams.get('quoteId') || 'UNKNOWN'
+    const quoteNumber = searchParams.get('quoteNumber') || quoteId
+
+    // Determine account type display text
+    const getAccountTypeText = () => {
+        switch (userState) {
+            case 'guest':
+                return 'Guest'
+            case 'individual':
+                return 'Individual Account'
+            case 'business_unverified':
+                return 'Business Account'
+            case 'business_verified':
+                return 'Verified Business'
+            default:
+                return 'Guest'
+        }
+    }
+
+    // Determine priority level
+    const getPriority = () => {
+        switch (userState) {
+            case 'guest':
+                return 'Low Priority'
+            case 'individual':
+                return 'Standard'
+            case 'business_unverified':
+                return 'Standard Business'
+            case 'business_verified':
+                return 'High Priority'
+            default:
+                return 'Standard'
+        }
+    }
+
+    const now = new Date()
+    const submittedDate = now.toLocaleDateString('en-IN', {
         day: 'numeric',
-        month: 'long',
+        month: 'short',
         year: 'numeric',
     })
+    const submittedTime = now.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }) + ' IST'
 
     return (
-        <SuccessAnimation>
-            <ConfirmationTemplate
-                type="quote"
-                id={quoteId}
-                title="Quote Request Submitted!"
-                subtitle="Your request has been successfully sent to our sales department. We've sent a confirmation email to your inbox."
-                summaryDetails={[
-                    {
-                        label: 'Quote ID',
-                        value: `#${quoteId}`,
-                        icon: <FileText className="w-4 h-4" />,
-                    },
-                    {
-                        label: 'Submitted On',
-                        value: submittedDate,
-                    },
-                    {
-                        label: 'Account Type',
-                        value: 'Business Account',
-                    },
-                ]}
-                steps={[
-                    {
-                        number: 1,
-                        title: 'Admin Review',
-                        description: 'Our sales team is currently reviewing your inventory requirements.',
-                        badge: 'IN PROCESS',
-                        badgeColor: 'orange',
-                    },
-                    {
-                        number: 2,
-                        title: 'Pricing Updates',
-                        description: 'Custom pricing and discounts will be applied to your quote items.',
-                    },
-                    {
-                        number: 3,
-                        title: 'Notification via Email',
-                        description: "You'll receive an email as soon as your quote is ready for approval.",
-                    },
-                ]}
-                actions={[
-                    {
-                        label: 'View All Quotes',
-                        href: '/quotes',
-                        variant: 'default',
-                        icon: <BookOpen className="w-4 h-4" />,
-                    },
-                    {
-                        label: 'Back to Store',
-                        href: '/catalog',
-                        variant: 'outline',
-                        icon: <Store className="w-4 h-4" />,
-                    },
-                ]}
-                helpLink="/contact"
-            />
-        </SuccessAnimation>
+        <QuoteConfirmationPage
+            quoteId={quoteId}
+            quoteNumber={quoteNumber}
+            submittedDate={submittedDate}
+            submittedTime={submittedTime}
+            accountType={getAccountTypeText()}
+            isVerified={userState === 'business_verified'}
+            itemsCount={2}
+            priority={getPriority()}
+            expectedResponseTime="24–48 business hours"
+        />
+    )
+}
+
+export default function QuoteSuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+            <QuoteSuccessContent />
+        </Suspense>
     )
 }

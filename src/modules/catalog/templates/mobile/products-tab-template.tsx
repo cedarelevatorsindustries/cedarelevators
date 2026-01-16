@@ -13,9 +13,10 @@ interface ProductsTabProps {
   products: Product[]
   banners?: BannerWithSlides[]
   activeCollection?: any
+  activeType?: any
 }
 
-export default function ProductsTabTemplate({ products, banners = [], activeCollection }: ProductsTabProps) {
+export default function ProductsTabTemplate({ products, banners = [], activeCollection, activeType }: ProductsTabProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [showSort, setShowSort] = useState(false)
 
@@ -44,6 +45,35 @@ export default function ProductsTabTemplate({ products, banners = [], activeColl
       {banners.length > 0 && (
         <div className="p-4">
           <BannerCarousel banners={banners} />
+        </div>
+      )}
+
+      {/* Elevator Type Banner - Desktop Style */}
+      {activeType && (
+        <div className="relative">
+          {activeType.banner_image && (
+            <div className="relative h-48 overflow-hidden">
+              <img
+                src={activeType.banner_image}
+                alt={activeType.title}
+                className="w-full h-full object-cover"
+              />
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/40" />
+
+              {/* Centered content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  {activeType.title}
+                </h1>
+                {(activeType.subtitle || activeType.description) && (
+                  <p className="text-white/90 text-sm md:text-base max-w-md">
+                    {activeType.subtitle || activeType.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

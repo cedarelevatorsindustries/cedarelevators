@@ -48,6 +48,7 @@ export default function CatalogTemplate({
   categories,
   activeCategory,
   activeApplication,
+  activeType,
   activeCollection,
   collections = [],
   banners = [],
@@ -73,7 +74,15 @@ export default function CatalogTemplate({
     else resolvedType = "browse-all"
   }
   const catalogType = resolvedType as CatalogType
-  const config = CATALOG_CONFIGS[catalogType] || CATALOG_CONFIGS["browse-all"]
+  // Create a copy of the config to allow overrides
+  let config = { ...(CATALOG_CONFIGS[catalogType] || CATALOG_CONFIGS["browse-all"]) }
+
+  // Override config for elevator types
+  if (activeType) {
+    config.showFilters = false
+    config.title = activeType.title || config.title
+    config.showBanner = true
+  }
 
   // State
   const [searchQuery, setSearchQuery] = useState(effectiveSearchParams.search || "")
@@ -325,6 +334,19 @@ export default function CatalogTemplate({
         />
       )}
 
+      {/* Elevator Type Banner - Full Width */}
+      {config.showBanner && activeType && !activeApplication && !currentCategory && (
+        <CatalogBanner
+          title={activeType.title}
+          subtitle={activeType.subtitle || activeType.description}
+          backgroundImage={activeType.banner_image || activeType.thumbnail_image || "/images/image.png"}
+          categories={[]}
+          type="elevator-type"
+          slug={activeType.slug}
+          variant={config.bannerVariant || "full"}
+        />
+      )}
+
       {/* Browse All Banner - Full Width (Only for browse-all or collection type and when banners exist) */}
       {config.showBanner && !activeApplication && !currentCategory && (catalogType === "browse-all" || catalogType === "collection") && banners.length > 0 && (
         <div className="max-w-[1400px] mx-auto px-8 pt-8 mt-[70px]">
@@ -397,7 +419,7 @@ export default function CatalogTemplate({
           /* Two-Column Layout with Filters */
           <div className="flex gap-8">
             {/* Filter Sidebar */}
-            <UnifiedFilterSidebar isApplicationPage={!!activeApplication} />
+            <UnifiedFilterSidebar hideExtraFilters={!!activeApplication || catalogType === 'category' || catalogType === 'browse-all'} />
 
             {/* Products Column */}
             <div className="flex-1">

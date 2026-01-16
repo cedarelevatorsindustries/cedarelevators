@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFieldArray, Control, UseFormRegister, FieldErrors, Controller } from 'react-hook-form';
-import { Plus, X, Package, ChevronDown, AlertCircle, Search, Loader2 } from 'lucide-react';
+import { useFieldArray, Control, UseFormRegister, FieldErrors, Controller, UseFormSetValue, UseFormSetError, UseFormClearErrors, UseFormWatch } from 'react-hook-form';
+import { Plus, X, Package, AlertCircle, Loader2 } from 'lucide-react';
 import { UserType } from '../types';
-import { getProductsForQuote, searchProductsForQuote, getProductVariants, ProductOption, VariantOption } from '@/lib/actions/quote-products';
+import { getProductsForQuote, searchProductsForQuote, getProductVariants, ProductOption } from '@/lib/actions/quote-products';
+import { QuoteSelect } from './quote-select';
+import { VariantSelectors } from './variant-selectors';
+import { PricingVisibility } from './pricing-visibility';
 
 interface QuoteItemsInputProps {
     control: Control<any>;
@@ -17,97 +20,14 @@ interface QuoteItemsInputProps {
         sku?: string;
         price?: number;
     } | null;
+    setValue: UseFormSetValue<any>;
+    setError: UseFormSetError<any>;
+    clearErrors: UseFormClearErrors<any>;
+    watch: UseFormWatch<any>;
+    verificationStatus?: string | null;
 }
 
-// Custom Dropdown Component with Search
-function CustomSelect({ value, onChange, options, placeholder, error, onSearch, isLoading }: any) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const selectedOption = options.find((opt: any) => opt.value === value);
-
-    const filteredOptions = searchQuery
-        ? options.filter((opt: any) =>
-            opt.label.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : options;
-
-    return (
-        <div className="relative">
-            <button
-                type="button"
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-full px-4 py-3 bg-gray-50 border ${error ? 'border-red-300' : 'border-gray-300'} rounded-lg text-left flex items-center justify-between focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none`}
-            >
-                <span className={selectedOption ? 'text-gray-900 truncate' : 'text-gray-500'}>
-                    {selectedOption ? selectedOption.label : placeholder}
-                </span>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isOpen && (
-                <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-80 overflow-hidden">
-                        {/* Search Input */}
-                        <div className="p-3 border-b border-gray-200 bg-gray-50">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        if (onSearch) {
-                                            onSearch(e.target.value);
-                                        }
-                                    }}
-                                    placeholder="Search products..."
-                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                                {isLoading && (
-                                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Options List */}
-                        <div className="max-h-60 overflow-auto">
-                            {filteredOptions.length > 0 ? (
-                                filteredOptions.map((option: any) => (
-                                    <button
-                                        key={option.value}
-                                        type="button"
-                                        onClick={() => {
-                                            onChange(option.value);
-                                            setIsOpen(false);
-                                            setSearchQuery('');
-                                        }}
-                                        className={`w-full px-4 py-3 text-left hover:bg-orange-50 transition-colors text-sm ${value === option.value ? 'bg-orange-100 text-orange-900 font-medium' : 'text-gray-700'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span className="truncate">{option.label}</span>
-                                            {option.price && (
-                                                <span className="text-xs text-gray-500 ml-2">₹{option.price.toLocaleString()}</span>
-                                            )}
-                                        </div>
-                                    </button>
-                                ))
-                            ) : (
-                                <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                                    {isLoading ? 'Searching...' : 'No products found'}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-}
-
-export function QuoteItemsInput({ control, register, errors, userType, prefilledProduct }: QuoteItemsInputProps) {
+export function QuoteItemsInput({ control, register, errors, userType, prefilledProduct, setValue, setError, clearErrors, watch, verificationStatus }: QuoteItemsInputProps) {
     const { fields, append, remove } = useFieldArray({
         control,
         name: "items"
@@ -118,14 +38,76 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-    // Variant state - track variants for each item by index
+    // Variant state - track variants for each item by index (and for guest user)
     const [variantOptionsMap, setVariantOptionsMap] = useState<Map<number, any[]>>(new Map());
     const [loadingVariantsMap, setLoadingVariantsMap] = useState<Map<number, boolean>>(new Map());
+
+    // Guest user variant state
+    const [guestVariants, setGuestVariants] = useState<any[]>([]);
+    const [isLoadingGuestVariants, setIsLoadingGuestVariants] = useState(false);
+
+    // Validation Effects
+    const guestVariantId = watch('variant_id');
+    const items = watch('items');
+
+    // Validate Guest Variant
+    useEffect(() => {
+        if (!isGuest || !guestVariants.length) {
+            if (isGuest) clearErrors('variant_id');
+            return;
+        }
+
+        if (!guestVariantId) {
+            setError('variant_id', {
+                type: 'manual',
+                message: 'Please select a variant'
+            });
+        } else {
+            clearErrors('variant_id');
+        }
+    }, [isGuest, guestVariants, guestVariantId, setError, clearErrors]);
+
+    // Validate Items Variants
+    useEffect(() => {
+        if (isGuest) return;
+
+        // Ensure we have items to validate
+        if (!items || items.length === 0) return;
+
+        items.forEach((item: any, index: number) => {
+            const variants = variantOptionsMap.get(index) || [];
+            if (variants.length > 0) {
+                if (!item.variant_id) {
+                    setError(`items.${index}.variant_id`, {
+                        type: 'manual',
+                        message: 'Please select a variant'
+                    });
+                } else {
+                    clearErrors(`items.${index}.variant_id`);
+                }
+            } else {
+                clearErrors(`items.${index}.variant_id`);
+            }
+        });
+    }, [isGuest, items, variantOptionsMap, setError, clearErrors]);
 
     // Load initial products
     useEffect(() => {
         loadProducts();
     }, []);
+
+    // Load variants for prefilled product (both guest and logged-in users)
+    useEffect(() => {
+        if (prefilledProduct?.id) {
+            if (isGuest) {
+                // Load variants for guest user
+                loadGuestVariants(prefilledProduct.id);
+            } else {
+                // Load variants for first item (index 0) for logged-in users
+                loadVariants(prefilledProduct.id, 0);
+            }
+        }
+    }, [prefilledProduct?.id, isGuest]);
 
     const loadProducts = async (query?: string) => {
         setIsLoadingProducts(true);
@@ -205,8 +187,29 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
         });
     };
 
+    // Load variants for guest user
+    const loadGuestVariants = async (productId: string) => {
+        if (!productId) {
+            setGuestVariants([]);
+            return;
+        }
+
+        setIsLoadingGuestVariants(true);
+        const result = await getProductVariants(productId);
+
+        if (result.success && result.variants) {
+            setGuestVariants(result.variants || []);
+        } else {
+            setGuestVariants([]);
+        }
+
+        setIsLoadingGuestVariants(false);
+    };
+
     // Guest User - Single Product Selection
     if (isGuest) {
+        const hasOptions = guestVariants.some(v => v.options && Object.keys(v.options).length > 0);
+
         return (
             <div className="space-y-6">
                 <div>
@@ -217,9 +220,15 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
                         control={control}
                         name="product_id"
                         render={({ field: { onChange, value } }) => (
-                            <CustomSelect
+                            <QuoteSelect
                                 value={value}
-                                onChange={onChange}
+                                onChange={(newValue: string) => {
+                                    onChange(newValue);
+                                    // Reset variant when product changes
+                                    setValue('variant_id', '');
+                                    // Load variants when product changes
+                                    loadGuestVariants(newValue);
+                                }}
                                 options={productOptions}
                                 placeholder="Select a product"
                                 error={errors.product_id}
@@ -234,7 +243,64 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
                             {errors.product_id.message as string}
                         </p>
                     )}
+
+                    {/* Price visibility indicator */}
+                    {watch('product_id') && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <PricingVisibility
+                                userType={userType}
+                                verificationStatus={verificationStatus}
+                                price={productOptions.find(p => p.value === watch('product_id'))?.price}
+                            />
+                        </div>
+                    )}
                 </div>
+
+                {/* Variant Selection - Shows when product has variants */}
+                {guestVariants.length > 0 && (
+                    <div>
+                        {!hasOptions && (
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Variant <span className="text-red-500">*</span>
+                            </label>
+                        )}
+
+                        <Controller
+                            control={control}
+                            name="variant_id"
+                            render={({ field: { onChange, value } }) => (
+                                hasOptions ? (
+                                    <VariantSelectors
+                                        variants={guestVariants}
+                                        value={value}
+                                        onChange={onChange}
+                                    />
+                                ) : (
+                                    <QuoteSelect
+                                        value={value}
+                                        onChange={onChange}
+                                        options={guestVariants}
+                                        placeholder="Select variant"
+                                        error={errors.variant_id}
+                                        isLoading={isLoadingGuestVariants}
+                                    />
+                                )
+                            )}
+                        />
+                        {errors.variant_id && (
+                            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                <AlertCircle className="w-4 h-4" />
+                                {errors.variant_id.message as string}
+                            </p>
+                        )}
+                    </div>
+                )}
+                {isLoadingGuestVariants && (
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading variants...
+                    </p>
+                )}
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -277,110 +343,133 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
             </div>
 
             <div className="space-y-3">
-                {fields.map((field, index) => (
-                    <div key={field.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-orange-300 transition-colors">
-                        <div className="flex gap-4 items-start">
-                            {/* Product Icon */}
-                            <div className="w-12 h-12 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Package className="w-6 h-6 text-gray-400" />
-                            </div>
+                {fields.map((field, index) => {
+                    const variants = variantOptionsMap.get(index) || [];
+                    const hasOptions = variants.some((v: any) => v.options && Object.keys(v.options).length > 0);
 
-                            {/* Product Selection */}
-                            <div className="flex-1 space-y-3">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                        Product {index + 1}
-                                    </label>
-                                    <Controller
-                                        control={control}
-                                        name={`items.${index}.product_id`}
-                                        render={({ field: { onChange, value } }) => (
-                                            <CustomSelect
-                                                value={value}
-                                                onChange={(newValue: string) => {
-                                                    onChange(newValue);
-                                                    // Load variants when product changes
-                                                    loadVariants(newValue, index);
-                                                }}
-                                                options={productOptions}
-                                                placeholder="Select product"
-                                                error={errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.product_id}
-                                                onSearch={handleSearch}
-                                                isLoading={isLoadingProducts}
-                                            />
-                                        )}
-                                    />
-                                    {errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.product_id && (
-                                        <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                                            <AlertCircle className="w-3 h-3" />
-                                            {((errors.items as any)[index]?.product_id?.message as string)}
-                                        </p>
-                                    )}
+                    return (
+                        <div key={field.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-orange-300 transition-colors">
+                            <div className="flex gap-4 items-start">
+                                {/* Product Icon */}
+                                <div className="w-12 h-12 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Package className="w-6 h-6 text-gray-400" />
                                 </div>
 
-                                {/* Variant Selection - Shows when product has variants */}
-                                {variantOptionsMap.get(index) && (variantOptionsMap.get(index) || []).length > 0 && (
+                                {/* Product Selection */}
+                                <div className="flex-1 space-y-3">
                                     <div>
                                         <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                            Variant <span className="text-gray-400">(optional)</span>
+                                            Product {index + 1}
                                         </label>
                                         <Controller
                                             control={control}
-                                            name={`items.${index}.variant_id`}
+                                            name={`items.${index}.product_id`}
                                             render={({ field: { onChange, value } }) => (
-                                                <CustomSelect
+                                                <QuoteSelect
                                                     value={value}
-                                                    onChange={onChange}
-                                                    options={variantOptionsMap.get(index) || []}
-                                                    placeholder="Select variant"
-                                                    error={null}
-                                                    isLoading={loadingVariantsMap.get(index) || false}
+                                                    onChange={(newValue: string) => {
+                                                        onChange(newValue);
+                                                        // Reset variant when product changes
+                                                        setValue(`items.${index}.variant_id`, '');
+                                                        // Load variants when product changes
+                                                        loadVariants(newValue, index);
+                                                    }}
+                                                    options={productOptions}
+                                                    placeholder="Select product"
+                                                    error={errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.product_id}
+                                                    onSearch={handleSearch}
+                                                    isLoading={isLoadingProducts}
                                                 />
                                             )}
                                         />
+                                        {errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.product_id && (
+                                            <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {((errors.items as any)[index]?.product_id?.message as string)}
+                                            </p>
+                                        )}
                                     </div>
-                                )}
-                                {loadingVariantsMap.get(index) && (
-                                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                        Loading variants...
-                                    </p>
-                                )}
 
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                                        Quantity
-                                    </label>
-                                    <input
-                                        type="number"
-                                        {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                        placeholder="Qty"
-                                        min={1}
-                                    />
-                                    {errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.quantity && (
-                                        <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                                            <AlertCircle className="w-3 h-3" />
-                                            {((errors.items as any)[index]?.quantity?.message as string)}
+                                    {/* Variant Selection - Shows when product has variants */}
+                                    {variants.length > 0 && (
+                                        <div>
+                                            {!hasOptions && (
+                                                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                                                    Variant <span className="text-red-500">*</span>
+                                                </label>
+                                            )}
+                                            <Controller
+                                                control={control}
+                                                name={`items.${index}.variant_id`}
+                                                render={({ field: { onChange, value } }) => (
+                                                    hasOptions ? (
+                                                        <VariantSelectors
+                                                            variants={variants}
+                                                            value={value}
+                                                            onChange={onChange}
+                                                        />
+                                                    ) : (
+                                                        <QuoteSelect
+                                                            value={value}
+                                                            onChange={onChange}
+                                                            options={variants}
+                                                            placeholder="Select variant"
+                                                            error={errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.variant_id}
+                                                            isLoading={loadingVariantsMap.get(index) || false}
+                                                        />
+                                                    )
+                                                )}
+                                            />
+                                            {errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.variant_id && (
+                                                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {((errors.items as any)[index]?.variant_id?.message as string)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
+                                    {loadingVariantsMap.get(index) && (
+                                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Loading variants...
                                         </p>
                                     )}
-                                </div>
-                            </div>
 
-                            {/* Remove Button */}
-                            {fields.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => remove(index)}
-                                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                    title="Remove item"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            )}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                                            Quantity
+                                        </label>
+                                        <input
+                                            type="number"
+                                            {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                            placeholder="Qty"
+                                            min={1}
+                                        />
+                                        {errors.items && Array.isArray(errors.items) && (errors.items as any)[index]?.quantity && (
+                                            <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {((errors.items as any)[index]?.quantity?.message as string)}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Remove Button */}
+                                {fields.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => remove(index)}
+                                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        title="Remove item"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {errors.items && typeof errors.items.message === 'string' && (

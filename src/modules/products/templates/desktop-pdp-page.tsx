@@ -195,6 +195,13 @@ export default function ProductDetailPage({
       productName: product.title || "",
       quantity: quantity.toString()
     })
+
+    // Add variant_id if a variant is selected
+    const selectedVariantId = getSelectedVariantId()
+    if (selectedVariantId) {
+      params.set('variantId', selectedVariantId)
+    }
+
     router.push(`/quotes/new?${params.toString()}`)
   }
 

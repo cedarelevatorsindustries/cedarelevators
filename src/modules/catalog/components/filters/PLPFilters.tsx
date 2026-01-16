@@ -59,14 +59,7 @@ export function PLPFiltersComponent({
     return (
         <div className="space-y-4">
             {/* Sort */}
-            {!hideExtraFilters && (
-                <FilterGroup title="Sort By" defaultExpanded>
-                    <SortFilter
-                        value={filters.sort || 'default'}
-                        onChange={handleSortChange}
-                    />
-                </FilterGroup>
-            )}
+
 
             {/* Availability */}
             <FilterGroup title="Availability" defaultExpanded>
@@ -92,27 +85,10 @@ export function PLPFiltersComponent({
             ))}
 
             {/* Price Range */}
-            {!hideExtraFilters && (
-                <FilterGroup title="Price Range" defaultExpanded>
-                    <PriceRangeSlider
-                        min={availableOptions.priceRange.min}
-                        max={availableOptions.priceRange.max}
-                        currentMin={filters.priceRange?.min}
-                        currentMax={filters.priceRange?.max}
-                        onChange={handlePriceChange}
-                    />
-                </FilterGroup>
-            )}
+
 
             {/* Rating */}
-            {!hideExtraFilters && (
-                <FilterGroup title="Customer Rating">
-                    <RatingFilter
-                        selectedRating={filters.minRating}
-                        onChange={handleRatingChange}
-                    />
-                </FilterGroup>
-            )}
+
         </div>
     )
 }

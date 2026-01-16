@@ -1,6 +1,8 @@
 "use client"
 
-import { CheckCircle, Package, Calendar, DollarSign } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
+import { Package, Calendar, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -58,6 +60,17 @@ export default function ConfirmationTemplate({
     actions,
     helpLink,
 }: ConfirmationTemplateProps) {
+    const [animationData, setAnimationData] = useState<any>(null)
+    const lottieRef = useRef<LottieRefCurrentProps>(null)
+
+    useEffect(() => {
+        // Fetch the animation data from public folder
+        fetch('/animation/Tick Animation.json')
+            .then(res => res.json())
+            .then(data => setAnimationData(data))
+            .catch(err => console.error('Failed to load animation:', err))
+    }, [])
+
     const getBadgeStyles = (color?: 'orange' | 'gray' | 'green') => {
         switch (color) {
             case 'orange':
@@ -74,8 +87,16 @@ export default function ConfirmationTemplate({
             <div className="max-w-xl mx-auto">
                 {/* Success Icon */}
                 <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <CheckCircle className="w-10 h-10 text-white" strokeWidth={3} />
+                    <div className="w-24 h-24 flex items-center justify-center mx-auto mb-2">
+                        {animationData && (
+                            <Lottie
+                                lottieRef={lottieRef}
+                                animationData={animationData}
+                                loop={false}
+                                autoplay={true}
+                                style={{ width: 120, height: 120 }}
+                            />
+                        )}
                     </div>
 
                     {/* Title */}

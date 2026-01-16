@@ -216,7 +216,7 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                         Register as a business to view pricing and convert quotes to orders.
                     </p>
                     <Link
-                        href="/profile/upgrade"
+                        href="/profile"
                         className="inline-flex items-center gap-1 text-sm font-medium text-purple-700 hover:text-purple-900"
                     >
                         Upgrade to Business Account <ArrowRight className="w-4 h-4" />

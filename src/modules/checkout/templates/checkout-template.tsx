@@ -41,6 +41,7 @@ import { getCheckoutFromQuote } from '@/lib/actions/checkout/core'
 import { validateIndividualOrder } from '@/lib/actions/checkout/individual-validation'
 import { createOrderFromCheckout } from '@/lib/actions/checkout/create-order'
 import { toast } from 'sonner'
+import SuccessAnimation from '@/modules/checkout/components/success-animation'
 
 export default function CheckoutTemplate() {
   const router = useRouter()
@@ -62,6 +63,9 @@ export default function CheckoutTemplate() {
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([])
   const [defaultAddress, setDefaultAddress] = useState<any>(null)
   const [isLoadingAddress, setIsLoadingAddress] = useState(true)
+
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null)
 
   const userType = !isPricingLoaded || !user
     ? 'guest'
@@ -210,8 +214,8 @@ export default function CheckoutTemplate() {
       })
 
       if (result.success && result.orderId) {
-        toast.success('Order placed successfully!')
-        router.push(`/order-confirmation?orderId=${result.orderId}`)
+        setSuccessOrderId(result.orderId)
+        setShowSuccessAnimation(true)
       } else {
         toast.error(result.error || 'Failed to place order')
         setIsProcessing(false)
@@ -226,6 +230,23 @@ export default function CheckoutTemplate() {
   const handleAddressAction = () => {
     // Redirect to profile addresses page
     router.push('/profile/addresses?redirect=/checkout')
+  }
+
+  const handleAnimationComplete = () => {
+    if (successOrderId) {
+      router.push(`/order-confirmation?orderId=${successOrderId}`)
+    }
+  }
+
+  if (showSuccessAnimation) {
+    return (
+      <SuccessAnimation onAnimationComplete={handleAnimationComplete}>
+        {/* We render nothing here as the redirect happens immediately after animation */}
+        <div className="min-h-screen bg-[#f8f7f5] flex items-center justify-center">
+          <p className="text-gray-500 animate-pulse">Redirecting to order confirmation...</p>
+        </div>
+      </SuccessAnimation>
+    )
   }
 
   if (!isLoaded || isLoading) {

@@ -23,8 +23,8 @@ export interface MenuItem {
 
 // Guest user more menu items
 export const guestMoreMenuItems: MenuItem[] = [
-  { icon: Package, label: "Bulk Order", href: "/bulk-orders" },
-  { icon: Truck, label: "Track Order", href: "/track" },
+
+
 
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
@@ -33,7 +33,7 @@ export const guestMoreMenuItems: MenuItem[] = [
 
 // Logged-in user more menu items (Contact and Help Center included for sticky navbar)
 export const loggedInMoreMenuItems: MenuItem[] = [
-  { icon: Truck, label: "Track Order", href: "/track" },
+  { icon: Truck, label: "Track Order", href: "/profile/orders" },
 
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
@@ -67,7 +67,7 @@ export const legalPolicyItems: MenuItem[] = [
 // Mobile hamburger menu items - Guest user
 export const guestShoppingItems: MenuItem[] = [
   { icon: Package, label: "Browse Products", href: "/catalog" },
-  { icon: ClipboardList, label: "Bulk Order (Quick Quote)", href: "/bulk-orders" },
+
   { icon: ShoppingCart, label: "View Cart (0 items)", href: "/cart" }
 ]
 

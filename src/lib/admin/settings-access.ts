@@ -99,13 +99,43 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     group: 'access'
   },
   {
-    id: 'policies',
-    title: 'Policies',
-    href: '/admin/settings/policies',
-    description: 'Privacy, Terms, Return policies',
+    id: 'about-us',
+    title: 'About Us',
+    href: '/admin/settings/cms/about',
+    description: 'Company description page',
     tier: 'operational',
     allowedRoles: TIER_2_ROLES,
     icon: 'FileText',
+    group: 'cms'
+  },
+  {
+    id: 'policies',
+    title: 'Policies',
+    href: '/admin/settings/cms/policies',
+    description: 'Privacy, Terms, Return, Shipping',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'FileText',
+    group: 'cms'
+  },
+  {
+    id: 'warranty-info',
+    title: 'Warranty Info',
+    href: '/admin/settings/cms/warranty',
+    description: 'Warranty information page',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'Shield',
+    group: 'cms'
+  },
+  {
+    id: 'why-choose',
+    title: 'Why Choose Cedar',
+    href: '/admin/settings/cms/why-choose',
+    description: 'Why choose us page',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'Star',
     group: 'cms'
   },
   {

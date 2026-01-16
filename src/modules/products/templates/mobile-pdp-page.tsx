@@ -153,6 +153,19 @@ export default function MobileProductDetailPage({
       productName: product.title || "",
       quantity: quantity.toString()
     })
+
+    // Add variant_id if a variant is selected (mobile uses selectedVariants state)
+    if (Object.keys(selectedVariants).length > 0) {
+      // Find matching variant based on selected options
+      const matchingVariant = product.variants?.find((v: any) => {
+        if (!v.options) return false
+        return Object.entries(selectedVariants).every(([key, value]) => v.options[key] === value)
+      })
+      if (matchingVariant) {
+        params.set('variantId', matchingVariant.id)
+      }
+    }
+
     router.push(`/quotes/new?${params.toString()}`)
   }
 

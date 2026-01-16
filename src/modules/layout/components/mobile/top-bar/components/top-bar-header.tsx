@@ -2,7 +2,7 @@
 
 import { Menu, Heart, ChevronLeft } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
 
 interface TopBarHeaderProps {
@@ -20,6 +20,7 @@ export function TopBarHeader({
   isTransparent = false
 }: TopBarHeaderProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { count } = useWishlist()
 
   // Define root pages where Hamburger menu is shown
@@ -36,8 +37,19 @@ export function TopBarHeader({
     // Homepage - Brand Name
     if (pathname === '/') return 'Cedar Elevator Industries'
 
-    // Explicit mapping for known root pages
-    if (pathname === '/catalog') return 'Catalog'
+    // Check for elevator type in catalog page
+    if (pathname === '/catalog') {
+      const typeParam = searchParams?.get('type')
+      if (typeParam) {
+        // Convert slug to title (e.g., 'commercial-elevator' -> 'Commercial Elevator')
+        return typeParam
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      }
+      return 'Catalog'
+    }
+
     if (pathname === '/cart') return 'Cart'
     if (pathname === '/quotes/new') return 'Quote'
     if (pathname.startsWith('/quotes/') && pathname !== '/quotes/new') return 'Quote Details'

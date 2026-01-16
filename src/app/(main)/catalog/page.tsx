@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { listProducts } from "@/lib/data/products"
 import { listCategories } from "@/lib/data/categories"
 import { getApplicationBySlug, listApplications } from "@/lib/data/applications"
-import { listElevatorTypes } from "@/lib/data/elevator-types"
+import { listElevatorTypes, getElevatorTypeBySlug } from "@/lib/data/elevator-types"
 import CatalogTemplate from "@/modules/catalog/templates/catalog-template"
 import { MobileCatalogTemplate } from "@/modules/catalog/templates/mobile"
 import { getBannersByPlacement, getBannersByCollection } from "@/lib/actions/banners"
@@ -40,6 +40,15 @@ export async function generateMetadata({ searchParams }: CatalogPageProps): Prom
     return {
       title: `${appName} Components - Cedar Elevators`,
       description: `Premium elevator components for ${appName.toLowerCase()}. ISO certified quality with pan-India delivery.`,
+    }
+  }
+
+  // Elevator type page
+  if (params.type) {
+    const typeName = params.type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    return {
+      title: `${typeName} - Cedar Elevators | Premium Components`,
+      description: `Browse premium components for ${typeName.toLowerCase()}. ISO certified quality with pan-India delivery.`,
     }
   }
 
@@ -138,6 +147,18 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     }
   }
 
+  // If elevator type is provided, fetch the type and filter by type
+  let activeType: any = undefined
+  if (params.type) {
+    const elevatorType = await getElevatorTypeBySlug(params.type)
+    if (elevatorType) {
+      // Filter products by this elevator type
+      queryParams.type = params.type
+
+      activeType = elevatorType
+    }
+  }
+
   // If collection slug is provided, fetch products from that collection
   let activeCollection: any = undefined
   if (params.collection) {
@@ -209,6 +230,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
           activeCollection={activeCollection}
+          activeType={activeType}
           searchParams={{ ...params, search: searchQuery }}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
@@ -227,6 +249,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
           activeCategory={activeCategory || undefined}
           activeApplication={activeApplication}
           activeCollection={activeCollection}
+          activeType={activeType}
           banners={banners as BannerWithSlides[]}
           tab={params.tab}
           app={applicationSlug}

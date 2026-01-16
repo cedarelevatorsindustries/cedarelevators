@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { CheckCircle } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
 
 interface SuccessAnimationProps {
     children: React.ReactNode
@@ -19,11 +19,20 @@ interface SuccessAnimationProps {
  */
 export default function SuccessAnimation({ children, onAnimationComplete }: SuccessAnimationProps) {
     const [phase, setPhase] = useState<'green' | 'icon' | 'fade' | 'content'>('green')
+    const [animationData, setAnimationData] = useState<any>(null)
+    const lottieRef = useRef<LottieRefCurrentProps>(null)
 
     useEffect(() => {
+        // Fetch the animation data from public folder
+        fetch('/animation/Tick Animation.json')
+            .then(res => res.json())
+            .then(data => setAnimationData(data))
+            .catch(err => console.error('Failed to load animation:', err))
+
         // Phase 1: Green background (0-800ms)
         const iconTimer = setTimeout(() => {
             setPhase('icon')
+            lottieRef.current?.play()
         }, 800)
 
         // Phase 2: Show icon, start fade transition (1500ms)
@@ -59,7 +68,7 @@ export default function SuccessAnimation({ children, onAnimationComplete }: Succ
                     willChange: 'background-color, opacity',
                 }}
             >
-                {/* Orange checkmark icon */}
+                {/* Orange checkmark icon container */}
                 <div
                     className={`
             transition-all duration-700 ease-out
@@ -67,11 +76,20 @@ export default function SuccessAnimation({ children, onAnimationComplete }: Succ
           `}
                     style={{
                         willChange: 'transform, opacity',
+                        // Use CSS animation for the container pop-in, Lottie handles the internal animation
                         animation: phase === 'icon' || phase === 'fade' ? 'bounceIn 0.7s ease-out' : 'none',
                     }}
                 >
-                    <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center shadow-2xl">
-                        <CheckCircle className="w-16 h-16 text-white" strokeWidth={3} />
+                    <div className="w-40 h-40 flex items-center justify-center">
+                        {animationData && (
+                            <Lottie
+                                lottieRef={lottieRef}
+                                animationData={animationData}
+                                loop={false}
+                                autoplay={false} // We play it programmatically when phase becomes 'icon'
+                                style={{ width: 160, height: 160 }}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

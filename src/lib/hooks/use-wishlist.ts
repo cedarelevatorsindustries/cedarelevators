@@ -23,6 +23,7 @@ export interface WishlistItem {
     title: string
     thumbnail: string | null
     handle: string
+    description?: string
   }
   variants?: {
     id: string

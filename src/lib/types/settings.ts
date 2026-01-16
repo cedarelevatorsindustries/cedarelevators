@@ -32,26 +32,7 @@ export interface StoreSettings {
     updated_at: string
 }
 
-export interface UpdateStoreSettingsData {
-    store_name: string
-    legal_name?: string
-    support_email?: string
-    support_phone?: string
-    gst_number?: string
-    invoice_prefix: string
-    whatsapp_number?: string
-    currency: string
-    timezone: string
-    about_cedar?: string
-    address_line1?: string
-    address_line2?: string
-    city?: string
-    state?: string
-    postal_code?: string
-    country?: string
-    business_hours?: Record<string, string>
-    social_media?: Record<string, string>
-}
+export type UpdateStoreSettingsData = Partial<Omit<StoreSettings, 'id' | 'created_at' | 'updated_at'>>
 
 // =====================================================
 // PAYMENT SETTINGS

@@ -227,19 +227,13 @@ export function UnifiedFiltersComponent({
                 {renderSubcategories()}
                 {renderAvailability()}
                 {renderVariantOptions()}
-                {renderPrice()}
-                {renderSort()}
                 {renderApplications()}
-                {renderRating()}
             </div>
         )
     } else {
         // Catalog Order: Sort -> Price -> Review -> Availability -> Variant Options -> Elevator Types
         return (
             <div className="space-y-4 pl-4">
-                {renderSort()}
-                {renderPrice()}
-                {renderRating()}
                 {renderAvailability()}
                 {renderVariantOptions()}
                 {renderElevatorTypes()}

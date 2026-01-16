@@ -67,6 +67,15 @@ let profileCache: { data: EnhancedUser | null; timestamp: number } | null = null
 const CACHE_DURATION = 60000 // 60 seconds
 
 /**
+ * Invalidate the profile cache to force a fresh fetch
+ * Call this after actions that change user profile data (e.g., verification submission)
+ */
+export function invalidateProfileCache() {
+    profileCache = null
+    profileFetchPromise = null
+}
+
+/**
  * Enhanced useUser hook with profile management
  */
 export function useUser() {

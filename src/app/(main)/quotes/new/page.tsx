@@ -24,11 +24,15 @@ export default async function NewQuotePage(props: PageProps) {
     const quantityParam = typeof searchParams.quantity === 'string' ? parseInt(searchParams.quantity, 10) : undefined;
     const prefillQuantity = quantityParam && !isNaN(quantityParam) ? quantityParam : 1;
 
+    // Get variantId from URL params if provided
+    const variantId = typeof searchParams.variantId === 'string' ? searchParams.variantId : undefined;
+
     // Optional: Get price from params if needed, but safer to let it be fetched or optional
     const prefilledProduct = productId && productName ? {
         id: productId,
         name: productName,
-        quantity: prefillQuantity
+        quantity: prefillQuantity,
+        variantId: variantId // Include variant if provided from PDP
     } : null;
 
     let userType: 'guest' | 'individual' | 'business' | 'verified' = 'guest';

@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FileText, Upload, AlertCircle, Loader2, Info, TrendingUp, Shield, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createQuote } from '@/lib/actions/quotes';
 import {
     guestQuoteSchema,
@@ -16,6 +16,12 @@ import {
 import { QuoteItemsInput } from './quote-items-input';
 import { getQuotePermissions } from '../utils/quote-permissions';
 import { FileUpload } from '@/components/common/file-upload';
+import { UserTierBadge } from './user-tier-badge';
+import { VerificationAlert, VerifiedBadge } from './verification-alert';
+import { UpgradeNudge } from './upgrade-nudge';
+import { z } from 'zod';
+import SuccessAnimation from '@/modules/checkout/components/success-animation';
+import { toast } from 'sonner'; // Assuming toast is from sonner
 
 interface QuoteFormProps {
     userType?: 'guest' | 'individual' | 'business' | 'verified';
@@ -40,11 +46,16 @@ interface UploadedFile {
     publicId?: string;
 }
 
+type QuoteFormData = z.infer<typeof guestQuoteSchema> | z.infer<typeof individualQuoteSchema> | z.infer<typeof businessUnverifiedQuoteSchema> | z.infer<typeof businessVerifiedQuoteSchema>;
+
 export function QuoteForm({ userType = 'guest', verificationStatus = null, prefilledProduct = null, userProfile = null }: QuoteFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null); // This will be replaced by toast
     const [attachments, setAttachments] = useState<UploadedFile[]>([]);
     const router = useRouter();
+
+    const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+    const [successData, setSuccessData] = useState<{ id: string; quoteNumber: string } | null>(null);
 
     const getSchema = () => {
         switch (userType) {
@@ -55,15 +66,27 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
         }
     };
 
-    const schema = getSchema();
+    const quoteSchema = getSchema(); // Renamed to avoid conflict with 'schema' in useForm
     const permissions = getQuotePermissions(userType, verificationStatus);
 
-    const { register, control, handleSubmit, formState: { errors } } = useForm<any>({
-        resolver: zodResolver(schema),
+    const form = useForm<any>({
+        resolver: zodResolver(quoteSchema),
         defaultValues: userType === 'guest'
-            ? { product_id: prefilledProduct?.id || "", quantity: prefilledProduct?.quantity || 1, name: "", email: "", phone: "", notes: "" }
+            ? {
+                product_id: prefilledProduct?.id || "",
+                variant_id: (prefilledProduct as any)?.variantId || "",
+                quantity: prefilledProduct?.quantity || 1,
+                name: "",
+                email: "",
+                phone: "",
+                notes: ""
+            }
             : {
-                items: [{ product_id: prefilledProduct?.id || "", quantity: prefilledProduct?.quantity || 1 }],
+                items: [{
+                    product_id: prefilledProduct?.id || "",
+                    variant_id: (prefilledProduct as any)?.variantId || "",
+                    quantity: prefilledProduct?.quantity || 1
+                }],
                 bulk_pricing_requested: false,
                 notes: "",
                 // Pre-fill contact info from user profile for logged-in users
@@ -73,15 +96,17 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
             }
     });
 
+    const { register, control, handleSubmit, setValue, setError, clearErrors, watch, formState: { errors } } = form;
+
     const onSubmit = async (data: any) => {
         setIsSubmitting(true);
-        setSubmitError(null);
+        setSubmitError(null); // This will be replaced by toast
 
         try {
             // Transform data to match createQuote input format
             const quoteData = userType === 'guest'
                 ? {
-                    items: [{ product_id: data.product_id, quantity: data.quantity }],
+                    items: [{ product_id: data.product_id, quantity: data.quantity, variant_id: data.variant_id }],
                     account_type: 'guest' as const,
                     notes: data.notes,
                     name: data.name,
@@ -111,41 +136,59 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
             const result = await createQuote(quoteData);
 
             if (result.success) {
-                // Redirect logic based on user type and device
-                if (userType === 'guest') {
-                    // Guest users go to success page
-                    router.push(`/quotes/success?id=${result.id}`);
-                } else if (userType === 'business' || userType === 'verified') {
-                    // Business users: Desktop -> Home (Business Hub), Mobile -> Quotes
-                    const isMobile = window.innerWidth < 768; // md breakpoint
-                    if (isMobile) {
-                        router.push('/quotes');
-                    } else {
-                        router.push('/?tab=business'); // Business Hub tab
-                    }
-                } else {
-                    // Individual users go to quotes page
-                    router.push('/quotes');
-                }
+                setSuccessData({
+                    id: result.id,
+                    quoteNumber: result.quote_number || result.id
+                });
+                setShowSuccessAnimation(true);
             } else {
-                setSubmitError(result.error || 'Failed to submit quote');
+                toast.error(result.error || 'Failed to submit quote request');
             }
         } catch (error: any) {
-            setSubmitError(error.message || 'An unexpected error occurred');
+            toast.error(error.message || 'An unexpected error occurred');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const handleAnimationComplete = () => {
+        if (!successData) return;
+
+        // Redirect logic based on user type and device
+        if (userType === 'guest') {
+            // Guest users go to success page
+            router.push(`/quotes/success?quoteId=${successData.id}&quoteNumber=${encodeURIComponent(successData.quoteNumber)}`);
+        } else if (userType === 'business' || userType === 'verified') {
+            // Business users: Desktop -> Home (Business Hub), Mobile -> Quotes
+            const isMobile = window.innerWidth < 768; // md breakpoint
+            if (isMobile) {
+                router.push('/quotes');
+            } else {
+                router.push('/?tab=business'); // Business Hub tab
+            }
+        } else {
+            // Individual users go to quotes page
+            router.push('/quotes');
+        }
+    };
+
+    if (showSuccessAnimation) {
+        return (
+            <SuccessAnimation onAnimationComplete={handleAnimationComplete}>
+                {/* We render nothing here as the redirect happens immediately after animation */}
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                    <p className="text-gray-500 animate-pulse">Redirecting...</p>
+                </div>
+            </SuccessAnimation>
+        );
+    }
+
     return (
         <div className="max-w-4xl mx-auto">
             {/* Header Section */}
             <div className="mb-8">
-                <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FileText className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex-1">
                         <h1 className="text-3xl font-bold text-gray-900">
                             {userType === 'guest' ? 'Get a Custom Quote' :
                                 userType === 'verified' ? 'Create Bulk Quote' : 'Request New Quote'}
@@ -155,97 +198,30 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                                 'Fill out the details below to receive a formal quotation.'}
                         </p>
                     </div>
+                    {userType !== 'guest' && (
+                        <UserTierBadge
+                            userType={userType}
+                            verificationStatus={verificationStatus}
+                        />
+                    )}
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* User Type Specific Prompts */}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Tier-Specific Alerts & Nudges */}
+                {userType === 'verified' && <VerifiedBadge />}
+
+                {userType === 'business' && (
+                    <VerificationAlert verificationStatus={verificationStatus} />
+                )}
+
                 {userType === 'guest' && (
-                    <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-900">Want to track your quotes?</p>
-                            <p className="text-sm text-blue-700 mt-1">
-                                Create an account to view quote history, save drafts, and get faster responses.
-                            </p>
-                            <Link
-                                href="/sign-up"
-                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                            >
-                                Create Free Account
-                            </Link>
-                        </div>
-                    </div>
+                    <UpgradeNudge currentTier="guest" variant="banner" />
                 )}
 
                 {userType === 'individual' && (
-                    <div className="bg-purple-50 border-l-4 border-purple-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <TrendingUp className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-purple-900">Upgrade to Business Account</p>
-                            <p className="text-sm text-purple-700 mt-1">
-                                Get access to bulk pricing, priority support, credit terms, and exclusive business features.
-                            </p>
-                            <Link
-                                href="/profile?tab=business"
-                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-                            >
-                                Upgrade to Business
-                            </Link>
-                        </div>
-                    </div>
+                    <UpgradeNudge currentTier="individual" variant="banner" dismissible />
                 )}
-
-                {/* Business Verification Banners */}
-                {userType === 'business' && verificationStatus === 'pending' && (
-                    <div className="bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-orange-900">Verification in Progress</p>
-                            <p className="text-sm text-orange-700 mt-1">
-                                Our team is reviewing your documents. You'll receive an email once approved (usually within 24 hours).
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {userType === 'business' && verificationStatus === 'rejected' && (
-                    <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-red-900">Verification Rejected</p>
-                            <p className="text-sm text-red-700 mt-1">
-                                Please review the rejection reason and resubmit your documents.
-                            </p>
-                            <Link
-                                href="/profile?tab=business"
-                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                            >
-                                Resubmit Documents
-                            </Link>
-                        </div>
-                    </div>
-                )}
-
-                {userType === 'business' && (!verificationStatus || verificationStatus === 'unverified') && (
-                    <div className="bg-orange-50 border-l-4 border-orange-500 rounded-r-lg p-4 flex items-start gap-3">
-                        <Shield className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm font-medium text-orange-900">Complete Business Verification</p>
-                            <p className="text-sm text-orange-700 mt-1">
-                                Verify your business to unlock checkout, view pricing, convert quotes to orders, and access credit terms.
-                            </p>
-                            <Link
-                                href="/profile?tab=business"
-                                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
-                            >
-                                Complete Verification
-                            </Link>
-                        </div>
-                    </div>
-                )}
-
-
 
                 {/* Items Section */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -260,6 +236,11 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                             errors={errors}
                             userType={userType}
                             prefilledProduct={prefilledProduct}
+                            setValue={setValue}
+                            setError={setError}
+                            clearErrors={clearErrors}
+                            watch={watch}
+                            verificationStatus={verificationStatus}
                         />
                     </div>
                 </div>

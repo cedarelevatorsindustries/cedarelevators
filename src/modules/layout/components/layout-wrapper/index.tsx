@@ -43,7 +43,7 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
 
         {/* Desktop Footer - Hidden on mobile */}
         <div className="hidden md:block">
-          <Footer />
+          <Footer isAuthenticated={isLoggedIn} />
         </div>
 
         {/* Mobile Footer - Hidden on desktop */}

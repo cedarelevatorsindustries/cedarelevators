@@ -13,7 +13,7 @@ interface UnifiedFilterSidebarProps {
     className?: string
 }
 
-export function UnifiedFilterSidebar({ className, isApplicationPage = false }: { className?: string, isApplicationPage?: boolean }) {
+export function UnifiedFilterSidebar({ className, hideExtraFilters = false }: { className?: string, hideExtraFilters?: boolean }) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -211,7 +211,7 @@ export function UnifiedFilterSidebar({ className, isApplicationPage = false }: {
                         filters={plpFilters}
                         onChange={handlePLPChange}
                         availableOptions={plpOptions}
-                        hideExtraFilters={isApplicationPage}
+                        hideExtraFilters={hideExtraFilters}
                     />
                 </div>
             </div>

@@ -137,6 +137,8 @@ export interface VariantOption {
     label: string;
     sku: string | null;
     price?: number;
+    options?: Record<string, string>;
+    variant_title?: string | null;
 }
 
 /**
@@ -158,7 +160,7 @@ export async function getProductVariants(productId: string): Promise<{
 
         const { data, error } = await supabase
             .from('product_variants')
-            .select('id, name, sku, price')
+            .select('id, name, sku, price, options, variant_title')
             .eq('product_id', productId)
             .order('name');
 
@@ -168,12 +170,31 @@ export async function getProductVariants(productId: string): Promise<{
         }
 
         // Transform to dropdown format
-        const variants: VariantOption[] = (data || []).map(variant => ({
-            value: variant.id,
-            label: variant.name || `Variant ${variant.sku || variant.id.slice(0, 8)}`,
-            sku: variant.sku,
-            price: showPrices ? variant.price : undefined
-        }));
+        const variants: VariantOption[] = (data || []).map(variant => {
+            let label = variant.variant_title;
+
+            // If no variant title, try to construct from options
+            if (!label && variant.options && typeof variant.options === 'object') {
+                const values = Object.values(variant.options);
+                if (values.length > 0) {
+                    label = values.join(' / ');
+                }
+            }
+
+            // Fallback to name or generated ID
+            if (!label) {
+                label = variant.name || `Variant ${variant.sku || variant.id.slice(0, 8)}`;
+            }
+
+            return {
+                value: variant.id,
+                label: label,
+                sku: variant.sku,
+                price: showPrices ? variant.price : undefined,
+                options: variant.options,
+                variant_title: variant.variant_title
+            };
+        });
 
         return {
             success: true,

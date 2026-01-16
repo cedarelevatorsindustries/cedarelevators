@@ -38,6 +38,7 @@ export default function MobileCatalogTemplate({
   elevatorTypes = [],
   activeCategory,
   activeApplication,
+  activeType,
   activeCollection,
   collections = [],
   banners = [],
@@ -182,6 +183,8 @@ export default function MobileCatalogTemplate({
     )
   }
 
+  // Note: activeType is handled in the products tab with banner display
+
   return (
     <div className="min-h-screen bg-gray-50 pt-14">
       {/* Tabs - Sticky below topbar - Only show when there are multiple tabs */}
@@ -194,6 +197,7 @@ export default function MobileCatalogTemplate({
             products={filteredProducts}
             banners={banners}
             activeCollection={activeCollection}
+            activeType={activeType}
           />
 
           {/* Filter Sidebar (only show if filters are available) */}

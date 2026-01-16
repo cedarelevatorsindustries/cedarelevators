@@ -19,7 +19,9 @@ import {
   LogOut,
   User,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Shield,
+  Star
 } from "lucide-react"
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
 import { AdminProfile } from '@/lib/admin-auth-client'
@@ -41,7 +43,9 @@ const ICON_MAP: Record<string, any> = {
   Users,
   Settings,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Shield,
+  Star
 }
 
 interface SettingsSidebarProps {

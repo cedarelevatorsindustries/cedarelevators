@@ -11,7 +11,7 @@ interface CatalogBannerProps {
     subtitle?: string
     backgroundImage?: string
     categories?: ProductCategory[]
-    type: "application" | "category"
+    type: "application" | "category" | "elevator-type"
     slug?: string
     variant?: "full" | "simple"
 }
@@ -41,9 +41,9 @@ export function CatalogBanner({
     // Simple variant - compact rounded banner without category bar
     if (variant === "simple") {
         return (
-            <div className="w-full mt-0">
+            <div className="w-full mt-8">
                 <div
-                    className="relative h-[240px] rounded-2xl mx-8 overflow-hidden"
+                    className="relative h-[360px] rounded-2xl mx-8 overflow-hidden"
                     style={{
                         backgroundImage: `url(${backgroundImage || "/images/image.png"})`,
                         backgroundSize: "cover",
@@ -133,7 +133,7 @@ export function CatalogBanner({
                                     ref={scrollRef}
                                     className="overflow-x-auto scrollbar-hide -mx-2"
                                 >
-                                    <div className="flex gap-8 px-2 pb-2">
+                                    <div className="flex gap-8 px-2 pb-2 pt-4">
                                         {categories.map((category) => (
                                             <Link
                                                 key={category.id}

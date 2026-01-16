@@ -32,7 +32,7 @@ export default function ShopByTypeSection({ hasProducts = false, elevatorTypes =
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {elevatorTypes.map((type) => {
                         const imageSrc = type.thumbnail_image || type.banner_image || '/images/image.png'
-                        const href = `/products?type=${type.slug}`
+                        const href = `/catalog?type=${type.slug}`
 
                         return (
                             <Link
