@@ -232,7 +232,12 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
 }>> {
     try {
         const { userId } = await auth()
-        if (!userId) return { success: false, error: 'Not authenticated' }
+        console.log('[getCheckoutFromQuote] Starting - quoteId:', quoteId, 'userId:', userId)
+
+        if (!userId) {
+            console.error('[getCheckoutFromQuote] No userId found')
+            return { success: false, error: 'Not authenticated' }
+        }
 
         const supabase = await createServerSupabase()
 
@@ -258,12 +263,21 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             .eq('clerk_user_id', userId)
             .single()
 
+        console.log('[getCheckoutFromQuote] Query result:', {
+            hasQuote: !!quote,
+            quoteError: quoteError?.message,
+            quoteStatus: quote?.status,
+            itemCount: quote?.quote_items?.length
+        })
+
         if (quoteError || !quote) {
+            console.error('[getCheckoutFromQuote] Quote not found:', quoteError)
             return { success: false, error: 'Quote not found or access denied' }
         }
 
         // Check if quote is approved
         if (quote.status !== 'approved') {
+            console.warn('[getCheckoutFromQuote] Quote not approved, status:', quote.status)
             return {
                 success: true,
                 data: {
@@ -290,6 +304,8 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             sku: item.product_sku
         }))
 
+        console.log('[getCheckoutFromQuote] Mapped items:', items.length, 'items')
+
         // Calculate summary
         let subtotal = 0
         items.forEach((item: any) => { subtotal += item.subtotal || 0 })
@@ -299,6 +315,8 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
         const tax = Math.round((subtotal + shipping) * (gst_percentage / 100) * 100) / 100
         const discount = 0
         const total = subtotal + tax + shipping - discount
+
+        console.log('[getCheckoutFromQuote] Success - total:', total)
 
         return {
             success: true,
@@ -310,6 +328,7 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             }
         }
     } catch (error: any) {
+        console.error('[getCheckoutFromQuote] Exception:', error)
         return { success: false, error: error.message || 'Failed to get quote checkout data' }
     }
 }
