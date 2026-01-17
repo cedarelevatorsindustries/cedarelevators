@@ -246,6 +246,8 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
           product_id,
           variant_id,
           product_name,
+          product_sku,
+          product_thumbnail,
           variant_name,
           quantity,
           unit_price,
@@ -274,10 +276,23 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             }
         }
 
+        // Map quote items to checkout format
+        const items = (quote.quote_items || []).map((item: any) => ({
+            id: item.product_id,
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            title: item.product_name,
+            thumbnail: item.product_thumbnail || null,
+            quantity: item.quantity,
+            unit_price: item.unit_price || 0,
+            subtotal: item.total_price || (item.unit_price * item.quantity),
+            variant_name: item.variant_name,
+            sku: item.product_sku
+        }))
+
         // Calculate summary
         let subtotal = 0
-        const items = quote.quote_items || []
-        items.forEach((item: any) => { subtotal += item.total_price || 0 })
+        items.forEach((item: any) => { subtotal += item.subtotal || 0 })
 
         const shipping = 0
         const gst_percentage = 18
