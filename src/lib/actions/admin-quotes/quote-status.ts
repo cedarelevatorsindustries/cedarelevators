@@ -52,7 +52,11 @@ export async function updateQuoteStatus(
         }
 
         if (status === 'approved') {
-            updateData.approved_by = adminUser?.id
+            // Ensure we have a valid admin user before setting approved_by
+            if (!adminUser?.id) {
+                return { success: false, error: 'Unable to determine admin user for approval' }
+            }
+            updateData.approved_by = adminUser.id
             updateData.approved_at = new Date().toISOString()
         }
 
@@ -147,6 +151,12 @@ export async function approveQuote(
         }
 
         const adminUser = await getCurrentAdminUser()
+
+        // Ensure we have a valid admin user before approving
+        if (!adminUser?.id) {
+            return { success: false, error: 'Unable to determine admin user for approval. Please ensure you are logged in as an admin.' }
+        }
+
         const validUntil = new Date()
         validUntil.setDate(validUntil.getDate() + (options.validUntilDays || 30))
 
@@ -154,7 +164,7 @@ export async function approveQuote(
             .from('quotes')
             .update({
                 status: 'approved',
-                approved_by: adminUser?.id,
+                approved_by: adminUser.id,
                 approved_at: new Date().toISOString(),
                 valid_until: validUntil.toISOString(),
                 admin_notes: options.adminNotes || quote.admin_notes,

@@ -71,21 +71,9 @@ export function UnifiedFilterSidebar({ className, hideExtraFilters = false }: { 
     }, [catalogFilters])
 
     const fetchFilterOptions = async () => {
-        try {
-            const params = new URLSearchParams()
-            if (catalogFilters.applications) params.set('applications', catalogFilters.applications.join(','))
-            if (catalogFilters.categories) params.set('categories', catalogFilters.categories.join(','))
-
-            const response = await fetch(`/api/store/filters/options?${params.toString()}`)
-            const data = await response.json()
-
-            if (data.success) {
-                setCatalogOptions(data.catalogOptions || catalogOptions)
-                setPLPOptions(data.plpOptions || plpOptions)
-            }
-        } catch (error) {
-            console.error('Failed to fetch filter options:', error)
-        }
+        // TODO: Implement filter options API endpoint
+        // Filters work client-side for now
+        return
     }
 
     const applyFiltersToURL = (newCatalogFilters: CatalogFiltersType, newPLPFilters: PLPFiltersType) => {

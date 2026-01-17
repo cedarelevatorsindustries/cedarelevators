@@ -70,23 +70,9 @@ export function CatalogFilterDrawer({ variant = 'default' }: { variant?: 'defaul
     }, [open, catalogFilters.applications, catalogFilters.categories, catalogFilters.elevatorTypes])
 
     const fetchFilterOptions = async () => {
-        try {
-            const params = new URLSearchParams()
-            if (catalogFilters.applications) params.set('applications', catalogFilters.applications.join(','))
-            if (catalogFilters.categories) params.set('categories', catalogFilters.categories.join(','))
-            if (catalogFilters.elevatorTypes) params.set('elevator_types', catalogFilters.elevatorTypes.join(','))
-
-            const url = `/api/store/filters/options?${params.toString()}`
-            const response = await fetch(url)
-            const data = await response.json()
-
-            if (data.success) {
-                if (data.catalogOptions) setCatalogOptions(data.catalogOptions)
-                if (data.plpOptions) setPLPOptions(data.plpOptions)
-            }
-        } catch (error) {
-            console.error('Failed to fetch filter options:', error)
-        }
+        // TODO: Implement filter options API endpoint
+        // Filters work client-side for now
+        return
     }
 
     const applyFilters = () => {

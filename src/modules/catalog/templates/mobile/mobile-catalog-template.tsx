@@ -183,7 +183,28 @@ export default function MobileCatalogTemplate({
     )
   }
 
-  // Note: activeType is handled in the products tab with banner display
+  // If activeType exists, convert to category format and show QuickCommerce UI
+  if (activeType) {
+    const typeAsCategory: ProductCategory = {
+      id: activeType.id,
+      name: activeType.name,
+      handle: activeType.slug,
+      slug: activeType.slug,
+      description: activeType.description,
+      category_children: [],
+      thumbnail: activeType.thumbnail_image || activeType.image_url
+    }
+
+    return (
+      <QuickCommerceSubcategoryTemplate
+        category={typeAsCategory}
+        products={products}
+        allCategories={categories}
+        collections={collections}
+        onBack={() => router.push('/catalog')}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14">

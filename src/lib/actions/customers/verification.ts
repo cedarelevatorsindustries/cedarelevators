@@ -138,25 +138,35 @@ export async function approveVerification(
             }
         }
 
+
+
         // Update businesses table when verification is approved
         // CRITICAL: Update both verification_status AND status columns
         if (targetTable === 'business_verifications' && businessId) {
             console.log('[approveVerification] Updating businesses table for business_id:', businessId)
-            const { error: businessUpdateError } = await supabase
-                .from('businesses')
-                .update({
-                    status: 'verified',
-                    verification_status: 'verified',
-                    verified_at: updateTime
-                })
-                .eq('id', businessId)
+
+            // Ensure we have a valid admin user ID
+            if (!adminUser?.id) {
+                console.error('[approveVerification] Cannot update businesses table: admin user ID is missing')
+                return { success: false, error: 'Unable to determine admin user for verification approval' }
+            }
+
+            // Use database function to ensure proper UUID type handling
+            const { error: businessUpdateError } = await supabase.rpc('update_business_verification_status', {
+                p_business_id: businessId,
+                p_admin_user_id: adminUser.id,
+                p_update_time: updateTime
+            })
 
             if (businessUpdateError) {
                 console.error('[approveVerification] Error updating businesses:', businessUpdateError)
-            } else {
-                console.log('[approveVerification] Successfully updated businesses table')
+                return { success: false, error: businessUpdateError.message }
             }
+
+            console.log('[approveVerification] Successfully updated businesses table')
         }
+
+
 
         // Update customer_meta and Clerk metadata
         // IMPORTANT: business_verifications.user_id may contain UUID (from Supabase auth) 

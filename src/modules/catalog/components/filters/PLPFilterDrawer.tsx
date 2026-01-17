@@ -71,22 +71,9 @@ export function PLPFilterDrawer({ variant = 'default' }: { variant?: 'default' |
     }, [open, catalogFilters.categories, catalogFilters.applications, catalogFilters.elevatorTypes])
 
     const fetchFilterOptions = async () => {
-        try {
-            const params = new URLSearchParams()
-            if (catalogFilters.applications) params.set('applications', catalogFilters.applications.join(','))
-            if (catalogFilters.categories) params.set('categories', catalogFilters.categories.join(','))
-            if (catalogFilters.elevatorTypes) params.set('elevator_types', catalogFilters.elevatorTypes.join(','))
-
-            const response = await fetch(`/api/store/filters/options?${params.toString()}`)
-            const data = await response.json()
-
-            if (data.success) {
-                if (data.plpOptions) setPLPOptions(data.plpOptions)
-                if (data.catalogOptions) setCatalogOptions(data.catalogOptions)
-            }
-        } catch (error) {
-            console.error('Failed to fetch filter options:', error)
-        }
+        // TODO: Implement filter options API endpoint
+        // Filters work client-side for now
+        return
     }
 
     const applyFilters = () => {
