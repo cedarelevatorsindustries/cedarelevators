@@ -253,7 +253,6 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
           product_name,
           product_sku,
           product_thumbnail,
-          variant_name,
           quantity,
           unit_price,
           total_price
@@ -300,7 +299,6 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             quantity: item.quantity,
             unit_price: item.unit_price || 0,
             subtotal: item.total_price || (item.unit_price * item.quantity),
-            variant_name: item.variant_name,
             sku: item.product_sku
         }))
 
