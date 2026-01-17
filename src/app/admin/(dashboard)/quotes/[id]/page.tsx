@@ -98,7 +98,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
             return sum + discountAmount
         }, 0)
         const subtotalAfterDiscount = subtotal - discount
-        const tax = taxEnabled ? subtotalAfterDiscount * 0.18 : 0 // 18% GST if enabled
+        const tax = taxEnabled ? Math.round(subtotalAfterDiscount * 0.18) : 0 // 18% GST if enabled (Rounded)
         const total = subtotalAfterDiscount + tax
 
         return { subtotal, discount, tax, total }

@@ -32,14 +32,24 @@ export function WelcomeSection({ userType }: WelcomeSectionProps) {
                         </h1>
                     </div>
 
-                    {/* Right: Request Quote Button */}
-                    <Link
-                        href="/quotes/new"
-                        className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
-                    >
-                        <MessageSquare className="w-4 h-4" />
-                        Request for Quotation
-                    </Link>
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-3">
+                        {userType === 'individual' && (
+                            <Link
+                                href="/quotes"
+                                className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                Quote Hub
+                            </Link>
+                        )}
+                        <Link
+                            href="/quotes/new"
+                            className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                            Request for Quotation
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

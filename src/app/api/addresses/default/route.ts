@@ -12,23 +12,31 @@ export async function GET() {
 
         const supabase = createAdminClient()
 
-        // Get default address for this user
-        const { data: address, error } = await supabase
+        // Try user_addresses first (for individual users)
+        const { data: userAddress } = await supabase
+            .from('user_addresses')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .eq('is_default', true)
+            .single()
+
+        if (userAddress) {
+            return NextResponse.json({ address: userAddress })
+        }
+
+        // Fall back to business_addresses (for business users)
+        const { data: businessAddress, error } = await supabase
             .from('business_addresses')
             .select('*')
             .eq('clerk_user_id', userId)
             .eq('is_default', true)
             .single()
 
-        if (error) {
-            // If no default address found, return null
-            if (error.code === 'PGRST116') {
-                return NextResponse.json({ address: null })
-            }
+        if (error && error.code !== 'PGRST116') {
             throw error
         }
 
-        return NextResponse.json({ address })
+        return NextResponse.json({ address: businessAddress || null })
     } catch (error: any) {
         console.error('Error fetching default address:', error)
         return NextResponse.json(

@@ -4,9 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Quote, UserType } from '../types';
-import { QuoteStatusBadge } from './quote-status-badge'; // We need to create this
+import { QuoteStatusBadge } from './quote-status-badge';
 import Image from 'next/image';
 import DynamicCollectionSection from '@/components/common/DynamicCollectionSection';
+import { LayoutDashboard, Plus, Clock, CheckCircle2, AlertCircle, ChevronRight, Package, FileText } from 'lucide-react';
 
 interface QuoteListProps {
     userType: UserType | 'verified';
@@ -16,18 +17,29 @@ interface QuoteListProps {
 }
 
 export function QuoteList({ userType, quotes, isLoading, collections = [] }: QuoteListProps) {
-    const isVerified = userType === 'verified' || (userType === 'business' /* && check status */);
-    // Simplified prop for now, assuming parent passes refined userType
+    // 1. Calculate Stats
+    const stats = {
+        total: quotes.length,
+        approved: quotes.filter(q => q.status === 'approved').length,
+        pending: quotes.filter(q => ['pending', 'submitted', 'reviewing'].includes(q.status)).length,
+        rejected: quotes.filter(q => q.status === 'rejected').length
+    };
 
     if (isLoading) {
-        return <div className="p-8 text-center text-neutral-500">Loading quotes...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-neutral-500">
+                <div className="animate-spin w-8 h-8 border-4 border-industrial-blue border-t-transparent rounded-full mb-4"></div>
+                <p>Loading your quote hub...</p>
+            </div>
+        );
     }
 
+    // Empty State
     if (quotes.length === 0) {
         return (
             <div className="space-y-8">
-                <div className="flex flex-col items-center justify-center py-12 px-4 rounded-lg bg-white">
-                    <div className="relative w-64 h-64 mb-6">
+                <div className="flex flex-col items-center justify-center py-16 px-4 rounded-xl bg-white border border-dashed border-gray-300">
+                    <div className="relative w-48 h-48 mb-6 opacity-80">
                         <Image
                             src="/empty-states/empty-quotes.png"
                             alt="No quotes found"
@@ -36,18 +48,20 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                             priority
                         />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No quotes requested yet</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Quote Hub Empty</h3>
                     <p className="text-gray-500 mb-8 text-center max-w-sm">
-                        It looks like you haven't requested any quotes. Browse our products and request a quote to get started.
+                        You haven't requested any quotes yet. Build your project list and request a custom quote today.
                     </p>
                     <Link
                         href="/quotes/new"
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-medium shadow-sm transition-colors"
+                        className="flex items-center gap-2 bg-industrial-blue hover:bg-industrial-blue-dark text-white px-8 py-3 rounded-lg font-medium shadow-md transition-all transform hover:-translate-y-0.5"
                     >
-                        Request a New Quote
+                        <Plus className="w-5 h-5" />
+                        Request New Quote
                     </Link>
                 </div>
 
+                {/* Mobile Collections Fallback */}
                 {collections.length > 0 && (
                     <div className="pt-8 border-t border-gray-100 md:hidden">
                         <div className="space-y-8">
@@ -56,26 +70,10 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
                                     key={collection.id}
                                     collection={{
                                         ...collection,
-                                        isActive: true, // Force active for display
-                                        products: collection.products.map((pc: any) => {
-                                            // Handle nested structure: {product: {...}} from collections-display-context
-                                            const p = pc.product || pc;
-                                            return {
-                                                id: p.id,
-                                                title: p.name || p.title,
-                                                name: p.name || p.title,
-                                                slug: p.slug,
-                                                handle: p.slug,
-                                                thumbnail: p.thumbnail_url || p.thumbnail,
-                                                price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
-                                                compare_at_price: p.compare_at_price,
-                                                variants: p.variants || p.product_variants || [],
-                                                product_variants: p.product_variants || [],
-                                                metadata: p.metadata || {}
-                                            };
-                                        })
+                                        isActive: true,
+                                        products: mapCollectionProducts(collection.products)
                                     }}
-                                    variant="mobile" /* Optimizing for mobile view as requested */
+                                    variant="mobile"
                                 />
                             ))}
                         </div>
@@ -86,109 +84,209 @@ export function QuoteList({ userType, quotes, isLoading, collections = [] }: Quo
     }
 
     return (
-        <div className="space-y-6">
-            {/* Unverified Business Banner */}
-            {userType === 'business' && (
-                <div className="bg-orange-50 border border-orange-200 p-4 rounded-md flex justify-between items-center text-orange-800">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl">⚠️</span>
-                        <div>
-                            <p className="font-semibold">Business Verification Pending</p>
-                            <p className="text-sm">Verify your business to unlock checkout and full features.</p>
-                        </div>
-                    </div>
-                    <Link href="/profile" className="text-sm font-medium underline">Verify Now</Link>
+        <div className="space-y-8">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        Quote Hub
+                    </h1>
+                    <p className="text-gray-500 mt-1">Manage, track, and approve your quote requests.</p>
                 </div>
-            )}
-
-            {/* Filters (Verified Only) */}
-            {userType === 'verified' && (
-                <div className="flex gap-2 pb-2 overflow-x-auto">
-                    <button className="px-3 py-1 bg-industrial-blue text-white rounded-full text-sm">All</button>
-                    <button className="px-3 py-1 bg-white border border-neutral-300 text-neutral-600 rounded-full text-sm">Approved</button>
-                    <button className="px-3 py-1 bg-white border border-neutral-300 text-neutral-600 rounded-full text-sm">Pending</button>
-                    <button className="px-3 py-1 bg-white border border-neutral-300 text-neutral-600 rounded-full text-sm">Drafts</button>
-                </div>
-            )}
-
-            {/* Quote Grid */}
-            <div className="grid gap-4">
-                {quotes.map((quote) => (
-                    <Link
-                        key={quote.id}
-                        href={`/quotes/${quote.id}`}
-                        className="block bg-white p-4 rounded-lg border border-neutral-200 hover:border-cedar-orange transition-colors group"
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 className="font-semibold text-industrial-blue group-hover:text-cedar-orange transition-colors">
-                                    Quote #{quote.quote_number || quote.id.substring(0, 8)}
-                                </h3>
-                                <p className="text-sm text-neutral-500">
-                                    {format(new Date(quote.created_at), 'MMM d, yyyy')}
-                                </p>
-                            </div>
-                            {/* We need QuoteStatusBadge component */}
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize 
-                                ${quote.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                    quote.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                        'bg-blue-100 text-blue-800'}`}>
-                                {quote.status}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between items-end mt-4">
-                            <div className="text-sm text-neutral-600">
-                                {quote.items?.length || 0} item{(quote.items?.length || 0) !== 1 ? 's' : ''}
-                            </div>
-                            {(userType === 'business' || userType === 'verified') && quote.estimated_total && (
-                                <div className="font-semibold text-industrial-blue">
-                                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(quote.estimated_total)}
-                                </div>
-                            )}
-                        </div>
-                    </Link>
-                ))}
+                <Link
+                    href="/quotes/new"
+                    className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold shadow-sm transition-colors"
+                >
+                    <Plus className="w-5 h-5" />
+                    Request Quote
+                </Link>
             </div>
 
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard
+                    label="Total Requests"
+                    value={stats.total}
+                    icon={<FileText className="w-5 h-5 text-gray-500" />}
+                    bg="bg-gray-50"
+                />
+                <StatCard
+                    label="Pending Action"
+                    value={stats.pending}
+                    icon={<Clock className="w-5 h-5 text-amber-500" />}
+                    bg="bg-amber-50"
+                    textColor="text-amber-700"
+                />
+                <StatCard
+                    label="Approved"
+                    value={stats.approved}
+                    icon={<CheckCircle2 className="w-5 h-5 text-green-500" />}
+                    bg="bg-green-50"
+                    textColor="text-green-700"
+                />
+                <StatCard
+                    label="Rejected"
+                    value={stats.rejected}
+                    icon={<AlertCircle className="w-5 h-5 text-red-500" />}
+                    bg="bg-red-50"
+                    textColor="text-red-700"
+                />
+            </div>
 
-            {/* Business Collections (With Content - Mobile Only) */}
-            {
-                collections.length > 0 && (
-                    <div className="pt-8 border-t border-gray-100 md:hidden">
+            {/* Quote List */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900">Recent Requests</h2>
+                <div className="grid gap-4">
+                    {quotes.map((quote) => (
+                        <QuoteCard key={quote.id} quote={quote} userType={userType} />
+                    ))}
+                </div>
+            </div>
+
+            {/* Mobile Collections Footer */}
+            {collections.length > 0 && (
+                <div className="pt-12 md:hidden">
+                    <div className="border-t border-gray-200 pt-8">
                         <div className="space-y-8">
                             {collections.map((collection) => (
                                 <DynamicCollectionSection
                                     key={collection.id}
                                     collection={{
                                         ...collection,
-                                        isActive: true, // Force active for display
-                                        products: collection.products.map((pc: any) => {
-                                            // Handle nested structure: {product: {...}} from collections-display-context
-                                            const p = pc.product || pc;
-                                            return {
-                                                id: p.id,
-                                                title: p.name || p.title,
-                                                name: p.name || p.title,
-                                                slug: p.slug,
-                                                handle: p.slug,
-                                                thumbnail: p.thumbnail_url || p.thumbnail,
-                                                price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
-                                                compare_at_price: p.compare_at_price,
-                                                variants: p.variants || p.product_variants || [],
-                                                product_variants: p.product_variants || [],
-                                                metadata: p.metadata || {}
-                                            };
-                                        })
+                                        isActive: true,
+                                        products: mapCollectionProducts(collection.products)
                                     }}
-                                    variant="mobile" /* Optimizing for mobile view as requested */
+                                    variant="mobile"
                                 />
                             ))}
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
+}
+
+// --- Sub-components for cleaner code ---
+
+function StatCard({ label, value, icon, bg, textColor = 'text-gray-900' }: any) {
+    return (
+        <div className={`${bg} p-4 rounded-xl border border-transparent hover:border-gray-200 transition-colors`}>
+            <div className="flex items-start justify-between mb-2">
+                <div className={textColor}>{icon}</div>
+                <span className={`text-2xl font-bold ${textColor}`}>{value}</span>
+            </div>
+            <p className="text-sm font-medium text-gray-600">{label}</p>
+        </div>
+    );
+}
+
+function QuoteCard({ quote, userType }: { quote: Quote, userType: any }) {
+    const firstItem = quote.items?.[0];
+    const itemCount = quote.items?.length || 0;
+    const remainingItems = itemCount > 1 ? itemCount - 1 : 0;
+
+    // Only show price if approved/business
+    const showPrice = (userType === 'business' || userType === 'verified' || quote.status === 'approved') && quote.estimated_total;
+
+    return (
+        <Link
+            href={`/quotes/${quote.id}`}
+            className="group block bg-white rounded-xl border border-gray-200 hover:border-industrial-blue hover:shadow-md transition-all overflow-hidden"
+        >
+            <div className="flex flex-row">
+                {/* Left: Image Preview */}
+                <div className="relative w-32 md:w-48 bg-gray-50 flex-shrink-0 border-r border-gray-100 min-h-[140px] md:min-h-0">
+                    {firstItem?.product_thumbnail ? (
+                        <Image
+                            src={firstItem.product_thumbnail}
+                            alt={firstItem.product_name || 'Product'}
+                            fill
+                            className="object-contain p-2 md:p-4 group-hover:scale-105 transition-transform duration-300"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <Package className="w-8 h-8" />
+                        </div>
+                    )}
+                    {remainingItems > 0 && (
+                        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full font-medium backdrop-blur-sm">
+                            +{remainingItems} more
+                        </div>
+                    )}
+                </div>
+
+                {/* Right: Content */}
+                <div className="flex-1 p-3 md:p-5 flex flex-col justify-between">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4">
+                        <div>
+                            <div className="flex items-center gap-3 mb-1">
+                                <span className="text-[10px] md:text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                    {quote.quote_number || '#' + quote.id.substring(0, 8).toUpperCase()}
+                                </span>
+                                <span className="text-[10px] md:text-xs text-gray-400 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {format(new Date(quote.created_at), 'MMM d, yyyy')}
+                                </span>
+                            </div>
+
+                            <h3 className="font-semibold text-base md:text-lg text-gray-900 group-hover:text-industrial-blue transition-colors line-clamp-2 md:line-clamp-1">
+                                {firstItem?.product_name || 'Untitled Quote Request'}
+                            </h3>
+
+                            <p className="text-xs md:text-sm text-gray-500 mt-1">
+                                {itemCount} item{itemCount !== 1 ? 's' : ''} requested
+                            </p>
+                        </div>
+
+                        <div className="self-start">
+                            <QuoteStatusBadge status={quote.status} />
+                        </div>
+                    </div>
+
+                    <div className="mt-2 md:mt-4 flex items-center justify-between border-t border-gray-50 pt-2 md:pt-4">
+                        <div>
+                            {showPrice ? (
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Estimated Total</span>
+                                    <span className="text-lg font-bold text-industrial-blue">
+                                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(quote.estimated_total!)}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-gray-400 italic">
+                                    Price pending approval
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-1 text-sm font-semibold text-industrial-blue group-hover:translate-x-1 transition-transform">
+                            View Details <ChevronRight className="w-4 h-4" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+// Helper for mapping collection products safely
+function mapCollectionProducts(products: any[]) {
+    return products.map((pc: any) => {
+        const p = pc.product || pc;
+        return {
+            id: p.id,
+            title: p.name || p.title,
+            name: p.name || p.title,
+            slug: p.slug,
+            handle: p.slug,
+            thumbnail: p.thumbnail_url || p.thumbnail,
+            price: p.price ? { amount: p.price, currency_code: 'INR' } : undefined,
+            compare_at_price: p.compare_at_price,
+            variants: p.variants || p.product_variants || [],
+            product_variants: p.product_variants || [],
+            metadata: p.metadata || {}
+        };
+    });
 }
 

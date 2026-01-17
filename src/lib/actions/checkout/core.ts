@@ -12,7 +12,7 @@
 
 'use server'
 
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase, createClerkSupabaseClient } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
 import type { ActionResponse, CheckoutSummary, CheckoutMetadata } from './types'
 
@@ -239,7 +239,7 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
             return { success: false, error: 'Not authenticated' }
         }
 
-        const supabase = await createServerSupabase()
+        const supabase = await createClerkSupabaseClient()
 
         // Get quote with items
         const { data: quote, error: quoteError } = await supabase

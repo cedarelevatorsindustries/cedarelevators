@@ -103,7 +103,7 @@ export async function createQuote(data: CreateQuoteInput) {
 
       const { data: products } = await supabase
         .from('products')
-        .select('id, title, thumbnail, sku')
+        .select('id, name, thumbnail_url, sku')
         .in('id', productIds);
 
       const productMap = new Map(products?.map((p: any) => [p.id, p]) || []);
@@ -115,9 +115,9 @@ export async function createQuote(data: CreateQuoteInput) {
           product_id: item.product_id,
           variant_id: item.variant_id || null,
           quantity: item.quantity,
-          product_name: product?.title || 'Unknown Product',
+          product_name: product?.name || 'Unknown Product',
           product_sku: product?.sku || null,
-          product_thumbnail: product?.thumbnail || null,
+          product_thumbnail: product?.thumbnail_url || null,
         };
       });
 

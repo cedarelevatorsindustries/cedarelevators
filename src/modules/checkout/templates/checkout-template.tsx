@@ -342,8 +342,8 @@ export default function CheckoutTemplate() {
               </div>
 
               <div className="divide-y divide-[#f4ede7]">
-                {checkoutData.items.map((item: any) => (
-                  <div key={item.id} className="flex items-center gap-4 px-6 py-4 justify-between">
+                {checkoutData.items.map((item: any, index: number) => (
+                  <div key={`${item.id}-${item.variant_id || 'default'}-${index}`} className="flex items-center gap-4 px-6 py-4 justify-between">
                     <div className="flex items-center gap-4">
                       <Link href={item.slug ? `/products/${item.slug}` : '#'} className="w-16 h-16 bg-gray-100 rounded-lg border border-[#f4ede7] overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
                         {item.thumbnail ? (
