@@ -150,6 +150,17 @@ export default function MobileCheckoutTemplate() {
         loadData()
     }, [isLoaded, isPricingLoaded, source, quoteId, permission, derivedItems, cartSummary, isCartLoading])
 
+    // Handle permission-based redirects in useEffect to avoid render-phase state updates
+    useEffect(() => {
+        if (!isLoaded || isLoading) return
+
+        if (permission === 'blocked_signin') {
+            router.push('/sign-in?redirect=/checkout')
+        } else if (permission === 'blocked_verify') {
+            router.push('/profile/business/verify')
+        }
+    }, [permission, isLoaded, isLoading, router])
+
     const handlePlaceOrder = async () => {
         if (isProcessing || !checkoutData) return
         setIsProcessing(true)
@@ -224,14 +235,13 @@ export default function MobileCheckoutTemplate() {
         )
     }
 
-    if (permission === 'blocked_signin') {
-        router.push('/sign-in?redirect=/checkout')
-        return null
-    }
-
-    if (permission === 'blocked_verify') {
-        router.push('/profile/business/verify')
-        return null
+    // Don't render content while redirecting
+    if (permission === 'blocked_signin' || permission === 'blocked_verify') {
+        return (
+            <div className="min-h-screen bg-[#f8f7f5] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+            </div>
+        )
     }
 
     if (!checkoutData) {
