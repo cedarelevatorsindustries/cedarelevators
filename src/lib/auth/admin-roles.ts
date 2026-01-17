@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { createServerSupabase, createAdminClient } from '@/lib/supabase/server'
 import type { AdminRole } from '@/types/b2b/quote'
 
 // =====================================================
@@ -19,16 +19,18 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 export async function getCurrentAdminUser() {
   'use server'
   try {
-    const supabase = createAdminClient()  // Use admin client to bypass RLS
+    // Use session-aware client to access the authenticated admin user
+    const supabase = await createServerSupabase()
 
     // Get authenticated user from Supabase Auth (admin panel uses Supabase Auth)
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      console.error('No Supabase auth user found:', authError)
       return null
     }
 
-    // Find admin user by email (more reliable than id matching)
+    // Find admin user by email (matching with admin_users table)
     const { data: adminUser, error } = await supabase
       .from('admin_users')
       .select('*')
@@ -37,7 +39,11 @@ export async function getCurrentAdminUser() {
       .single()
 
     if (error || !adminUser) {
-      console.error('Admin user not found or not active:', { email: user.email, error })
+      console.error('Admin user not found or not active:', {
+        email: user.email,
+        userId: user.id,
+        error
+      })
       return null
     }
 

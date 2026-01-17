@@ -11,7 +11,7 @@ export default function WhyChoosePage() {
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-                <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+                <div className="max-w-6xl mx-auto px-4 pt-32 pb-16 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">Why Choose Cedar Elevators?</h1>
                     <p className="text-xl text-blue-100 max-w-3xl mx-auto">
                         India's leading B2B marketplace for premium elevator components, trusted by professionals nationwide
@@ -87,57 +87,6 @@ export default function WhyChoosePage() {
                             Serving contractors, installers, and maintenance professionals
                             across India with consistent quality and service.
                         </p>
-                    </div>
-                </div>
-
-                {/* Our Commitment */}
-                <div className="bg-white rounded-lg shadow-sm p-12 mb-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Commitment to Excellence</h2>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">Quality Assurance</h3>
-                            <p className="text-gray-600 mb-4">
-                                Every product in our catalog undergoes rigorous quality checks before dispatch.
-                                We source only from certified manufacturers and maintain strict quality control standards.
-                            </p>
-                            <ul className="space-y-2">
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">100% genuine products</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">Certified quality standards</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">Regular quality audits</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">Customer-Centric Approach</h3>
-                            <p className="text-gray-600 mb-4">
-                                We understand the unique needs of B2B customers. Our platform is designed
-                                to make procurement easy, efficient, and transparent.
-                            </p>
-                            <ul className="space-y-2">
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">Bulk order discounts</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">Dedicated account managers</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></div>
-                                    <span className="text-gray-600">Flexible payment options</span>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
 

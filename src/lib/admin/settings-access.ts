@@ -99,16 +99,6 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     group: 'access'
   },
   {
-    id: 'about-us',
-    title: 'About Us',
-    href: '/admin/settings/cms/about',
-    description: 'Company description page',
-    tier: 'operational',
-    allowedRoles: TIER_2_ROLES,
-    icon: 'FileText',
-    group: 'cms'
-  },
-  {
     id: 'policies',
     title: 'Policies',
     href: '/admin/settings/cms/policies',

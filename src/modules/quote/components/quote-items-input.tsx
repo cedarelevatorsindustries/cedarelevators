@@ -67,29 +67,9 @@ export function QuoteItemsInput({ control, register, errors, userType, prefilled
         }
     }, [isGuest, guestVariants, guestVariantId, setError, clearErrors]);
 
-    // Validate Items Variants
-    useEffect(() => {
-        if (isGuest) return;
-
-        // Ensure we have items to validate
-        if (!items || items.length === 0) return;
-
-        items.forEach((item: any, index: number) => {
-            const variants = variantOptionsMap.get(index) || [];
-            if (variants.length > 0) {
-                if (!item.variant_id) {
-                    setError(`items.${index}.variant_id`, {
-                        type: 'manual',
-                        message: 'Please select a variant'
-                    });
-                } else {
-                    clearErrors(`items.${index}.variant_id`);
-                }
-            } else {
-                clearErrors(`items.${index}.variant_id`);
-            }
-        });
-    }, [isGuest, items, variantOptionsMap, setError, clearErrors]);
+    // Note: Removed aggressive validation for items variants
+    // Validation is now handled by react-hook-form's built-in validation on submit
+    // This prevents showing errors immediately when variants load
 
     // Load initial products
     useEffect(() => {
