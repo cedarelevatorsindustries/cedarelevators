@@ -17,6 +17,7 @@ interface PriceActionCardProps {
     isMobile?: boolean
     actionDisabled?: boolean
     productId?: string
+    verificationStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
 }
 
 export function PriceActionCard({
@@ -28,7 +29,8 @@ export function PriceActionCard({
     className = '',
     isMobile = false,
     actionDisabled = false,
-    productId
+    productId,
+    verificationStatus
 }: PriceActionCardProps) {
     const [quantity, setQuantity] = useState(1)
     const router = useRouter()
@@ -54,6 +56,8 @@ export function PriceActionCard({
 
     // Guest, Individual & Business Unverified States (No Price)
     if (!permissions.canViewPrice) {
+        const isPending = userState === 'business_unverified' && verificationStatus === 'pending'
+
         return (
             <div className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}>
                 {/* Header */}
@@ -61,21 +65,34 @@ export function PriceActionCard({
                     <div className="flex flex-col gap-4">
                         {/* Status Badge */}
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
-                                <Lock className="w-5 h-5" />
-                            </div>
+                            {isPending ? (
+                                <div className="flex items-center justify-center w-12 h-12">
+                                    <img
+                                        src="/images/verification/verification_illustration.png"
+                                        alt="Verification in progress"
+                                        className="w-full h-full object-contain"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 text-orange-600">
+                                    <Lock className="w-5 h-5" />
+                                </div>
+                            )}
                             <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">
-                                {userState === 'guest' ? 'Member Only' : userState === 'individual' ? 'Business Only' : 'Verification Required'}
+                                {isPending ? 'Verification Pending' : userState === 'guest' ? 'Member Only' : userState === 'individual' ? 'Business Only' : 'Verification Required'}
                             </span>
                         </div>
 
                         {/* Headline */}
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900 leading-tight tracking-tight">
-                                {permissions.statusMessage}
+                                {isPending ? 'Verification Under Review' : permissions.statusMessage}
                             </h2>
                             <p className="mt-3 text-gray-600 text-sm leading-relaxed">
-                                {permissions.microCopy}
+                                {isPending
+                                    ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours). Pricing will be available after approval.'
+                                    : permissions.microCopy
+                                }
                             </p>
                         </div>
                     </div>
@@ -83,8 +100,8 @@ export function PriceActionCard({
 
                 {/* Actions */}
                 <div className="p-6 pt-4 flex flex-col gap-3">
-                    {/* Primary Button */}
-                    {primaryUrl ? (
+                    {/* Primary Button - Hide when pending */}
+                    {!isPending && primaryUrl ? (
                         <Link
                             href={primaryUrl}
                             className="group relative flex w-full items-center justify-center overflow-hidden rounded-lg bg-orange-500 h-11 px-4 text-white text-sm font-bold tracking-wide transition-all hover:bg-orange-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"

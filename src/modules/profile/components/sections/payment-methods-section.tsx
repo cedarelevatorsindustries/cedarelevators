@@ -56,27 +56,34 @@ export default function PaymentMethodsSection({
 
   // Only verified business accounts can access payment methods
   if (!isVerified) {
+    const isPending = verificationStatus === 'pending'
+
     return (
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
-          <div className="bg-yellow-50 rounded-xl p-8 border border-yellow-200">
+          <div className={`rounded-xl p-8 border ${isPending ? 'bg-orange-50 border-orange-200' : 'bg-yellow-50 border-yellow-200'}`}>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-yellow-500 rounded-lg">
+              <div className={`p-3 rounded-lg ${isPending ? 'bg-orange-500' : 'bg-yellow-500'}`}>
                 <CreditCard className="text-white" size={24} />
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Verification Required
+                  {isPending ? 'Verification Under Review' : 'Verification Required'}
                 </h3>
                 <p className="text-gray-700 mb-4">
-                  Complete business verification to access payment methods and credit facilities.
+                  {isPending
+                    ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours). Payment methods will be available after approval.'
+                    : 'Complete business verification to access payment methods and credit facilities.'
+                  }
                 </p>
-                <a
-                  href="/profile/business/verification"
-                  className="inline-block px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors"
-                >
-                  Complete Verification
-                </a>
+                {!isPending && (
+                  <a
+                    href="/profile/business/verification"
+                    className="inline-block px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Complete Verification
+                  </a>
+                )}
               </div>
             </div>
           </div>

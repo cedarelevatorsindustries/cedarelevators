@@ -10,6 +10,7 @@ interface UpgradeNudgeProps {
     dismissible?: boolean;
     onDismiss?: () => void;
     className?: string;
+    verificationStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete';
 }
 
 export function UpgradeNudge({
@@ -17,8 +18,14 @@ export function UpgradeNudge({
     variant = 'banner',
     dismissible = false,
     onDismiss,
-    className = ''
+    className = '',
+    verificationStatus
 }: UpgradeNudgeProps) {
+    // Don't show nudge for business users who are pending verification
+    if (currentTier === 'business' && verificationStatus === 'pending') {
+        return null;
+    }
+
     const getNudgeConfig = () => {
         switch (currentTier) {
             case 'guest':

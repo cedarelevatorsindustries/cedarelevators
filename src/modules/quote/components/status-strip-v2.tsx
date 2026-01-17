@@ -31,17 +31,22 @@ export function StatusStripV2({
                             {isPending ? "Business Verification Pending" : "Complete Your Business Verification"}
                         </p>
                         <p className="text-slate-500 text-sm">
-                            {completionPercentage}% Complete - Please upload your tax documents to unlock full pricing tiers.
+                            {isPending
+                                ? "Our team is reviewing your documents. You'll receive an email once approved (usually within 24 hours)."
+                                : `${completionPercentage}% Complete - Please upload your tax documents to unlock full pricing tiers.`
+                            }
                         </p>
                     </div>
                 </div>
-                <Link
-                    href="/profile?tab=business"
-                    className="group flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
-                >
-                    Complete Verification
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                {!isPending && (
+                    <Link
+                        href="/profile?tab=business"
+                        className="group flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+                    >
+                        Complete Verification
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                )}
             </div>
         </div>
     )

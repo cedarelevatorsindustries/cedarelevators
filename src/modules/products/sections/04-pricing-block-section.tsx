@@ -28,6 +28,11 @@ export default function PricingBlockSection({
   const { user } = useUser()
   const userState = getUserPricingState(user)
 
+  // Get verification status from user object
+  const verificationStatus = user?.business?.verification_status === 'verified' ? 'approved' :
+    user?.business?.verification_status === 'pending' ? 'pending' :
+      user?.business?.verification_status === 'rejected' ? 'rejected' : 'incomplete'
+
   return (
     <PriceActionCard
       userState={userState}
@@ -39,6 +44,7 @@ export default function PricingBlockSection({
       isMobile={isMobile}
       actionDisabled={actionDisabled}
       productId={productId}
+      verificationStatus={verificationStatus}
     />
   )
 }

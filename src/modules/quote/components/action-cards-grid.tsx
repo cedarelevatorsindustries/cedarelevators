@@ -7,9 +7,9 @@ export function ActionCardsGrid() {
     const cards = [
         {
             icon: MessageSquare,
-            title: "Request Quote",
-            description: "Get custom pricing for bulk orders or special parts.",
-            href: "/quotes/new",
+            title: "Quote Hub",
+            description: "View and manage all your quotes in one place.",
+            href: "/quotes",
             bgColor: "bg-blue-50",
             iconColor: "text-blue-600",
             hoverColor: "hover:border-blue-300"

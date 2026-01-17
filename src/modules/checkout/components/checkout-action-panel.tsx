@@ -20,6 +20,7 @@ interface CheckoutActionPanelProps {
     total: number
     limitViolations?: string[]
     canProceed?: boolean
+    verificationStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
 }
 
 export function CheckoutActionPanel({
@@ -31,8 +32,10 @@ export function CheckoutActionPanel({
     isProcessing,
     total,
     limitViolations = [],
-    canProceed = true
+    canProceed = true,
+    verificationStatus
 }: CheckoutActionPanelProps) {
+    const isPending = verificationStatus === 'pending'
 
     // A. Full Checkout (Verified Business)
     if (permission === 'full_checkout') {
@@ -127,25 +130,32 @@ export function CheckoutActionPanel({
     if (permission === 'blocked_verify') {
         return (
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 sticky top-24">
-                <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                <div className={`border rounded-lg p-4 mb-4 ${isPending ? 'bg-orange-50 border-orange-300' : 'bg-amber-50 border-amber-300'}`}>
                     <div className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isPending ? 'text-orange-600' : 'text-amber-600'}`} />
                         <div>
-                            <h4 className="font-semibold text-amber-900 mb-1">Verification Required</h4>
-                            <p className="text-sm text-amber-800">
-                                Business verification is required to place orders.
+                            <h4 className={`font-semibold mb-1 ${isPending ? 'text-orange-900' : 'text-amber-900'}`}>
+                                {isPending ? 'Verification Under Review' : 'Verification Required'}
+                            </h4>
+                            <p className={`text-sm ${isPending ? 'text-orange-800' : 'text-amber-800'}`}>
+                                {isPending
+                                    ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours). Ordering will be available after approval.'
+                                    : 'Business verification is required to place orders.'
+                                }
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <button
-                    onClick={onVerify}
-                    className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                    <ShieldCheck className="w-5 h-5" />
-                    Complete Verification
-                </button>
+                {!isPending && (
+                    <button
+                        onClick={onVerify}
+                        className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
+                    >
+                        <ShieldCheck className="w-5 h-5" />
+                        Complete Verification
+                    </button>
+                )}
             </div>
         )
     }

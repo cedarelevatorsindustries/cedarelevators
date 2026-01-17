@@ -67,27 +67,34 @@ export default function InvoicesSection({
   const isVerified = accountType === 'business' && verificationStatus === 'approved'
 
   if (!isVerified) {
+    const isPending = verificationStatus === 'pending'
+
     return (
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
-          <div className="bg-yellow-50 rounded-xl p-8 border border-yellow-200">
+          <div className={`rounded-xl p-8 border ${isPending ? 'bg-orange-50 border-orange-200' : 'bg-yellow-50 border-yellow-200'}`}>
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-yellow-500 rounded-lg">
+              <div className={`p-3 rounded-lg ${isPending ? 'bg-orange-500' : 'bg-yellow-500'}`}>
                 <FileText className="text-white" size={24} />
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Business Verification Required
+                  {isPending ? 'Verification Under Review' : 'Business Verification Required'}
                 </h3>
                 <p className="text-gray-700 mb-4">
-                  Complete business verification to access invoice management and GST invoices.
+                  {isPending
+                    ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours). Invoice access will be available after approval.'
+                    : 'Complete business verification to access invoice management and GST invoices.'
+                  }
                 </p>
-                <a
-                  href="/profile/verification"
-                  className="inline-block px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors"
-                >
-                  Complete Verification
-                </a>
+                {!isPending && (
+                  <a
+                    href="/profile/verification"
+                    className="inline-block px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Complete Verification
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -97,7 +104,7 @@ export default function InvoicesSection({
   }
 
   const filteredInvoices = invoices.filter(invoice => {
-    const matchesSearch = 
+    const matchesSearch =
       invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       invoice.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter

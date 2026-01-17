@@ -8,6 +8,7 @@ interface CheckoutBlockedSectionProps {
   userType: UserCheckoutType
   onRequestQuote: () => void
   isLoading?: boolean
+  verificationStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
 }
 
 const BLOCKED_CONTENT = {
@@ -37,7 +38,7 @@ const BLOCKED_CONTENT = {
     icon: ShieldCheck,
     title: 'Verify Your Business',
     description: 'Your business account is pending verification. Complete verification to unlock purchasing.',
-    primaryCta: { label: 'Complete Verification', href: '/dashboard/verification' },
+    primaryCta: { label: 'Complete Verification', href: '/dashboard/verification' } as { label: string; href: string } | null,
     secondaryCta: null,
     showQuoteButton: true,
     pendingMessage: 'Verification typically takes 24-48 hours after document submission.',
@@ -52,13 +53,29 @@ const BLOCKED_CONTENT = {
   },
 }
 
-export default function CheckoutBlockedSection({ 
-  userType, 
-  onRequestQuote, 
-  isLoading 
+export default function CheckoutBlockedSection({
+  userType,
+  onRequestQuote,
+  isLoading,
+  verificationStatus
 }: CheckoutBlockedSectionProps) {
-  const content = BLOCKED_CONTENT[userType]
-  
+  const isPending = verificationStatus === 'pending'
+
+  // Compute content dynamically for business_unverified based on pending status
+  let content = BLOCKED_CONTENT[userType]
+
+  if (userType === 'business_unverified' && isPending) {
+    content = {
+      icon: ShieldCheck,
+      title: 'Verification Under Review',
+      description: 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours). Ordering will be available after approval.',
+      primaryCta: null, // No button when pending
+      secondaryCta: null,
+      showQuoteButton: true,
+      pendingMessage: 'In the meantime, you can request quotes for products you\'re interested in.',
+    }
+  }
+
   if (!content.icon) return null
 
   const Icon = content.icon

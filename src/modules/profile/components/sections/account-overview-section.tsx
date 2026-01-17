@@ -193,8 +193,12 @@ export default function AccountOverviewSection({
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               {verificationStatus === 'pending' ? (
-                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                  <AlertCircle className="text-orange-600" size={24} />
+                <div className="w-16 h-16 flex items-center justify-center">
+                  <img
+                    src="/images/verification/verification_illustration.png"
+                    alt="Verification in progress"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               ) : (
                 <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
