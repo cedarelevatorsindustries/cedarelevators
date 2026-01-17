@@ -98,18 +98,37 @@ export async function createQuote(data: CreateQuoteInput) {
 
     // 2. Create Items
     if (data.items && data.items.length > 0) {
-      const itemsData = data.items.map(item => ({
-        quote_id: quote.id,
-        product_id: item.product_id,
-        variant_id: item.variant_id || null,
-        quantity: item.quantity,
-      }));
+      // Fetch product details for all items
+      const productIds = data.items.map(item => item.product_id).filter(Boolean);
+
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, title, thumbnail, sku')
+        .in('id', productIds);
+
+      const productMap = new Map(products?.map((p: any) => [p.id, p]) || []);
+
+      const itemsData = data.items.map(item => {
+        const product = productMap.get(item.product_id);
+        return {
+          quote_id: quote.id,
+          product_id: item.product_id,
+          variant_id: item.variant_id || null,
+          quantity: item.quantity,
+          product_name: product?.title || 'Unknown Product',
+          product_sku: product?.sku || null,
+          product_thumbnail: product?.thumbnail || null,
+        };
+      });
 
       const { error: itemsError } = await supabase
         .from('quote_items')
         .insert(itemsData);
 
-      if (itemsError) throw new Error("Failed to create quote items");
+      if (itemsError) {
+        console.error('Quote items insert error:', itemsError);
+        throw new Error("Failed to create quote items");
+      }
     }
 
     // 3. Create Attachments
