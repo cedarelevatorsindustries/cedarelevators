@@ -95,6 +95,7 @@ export default function BusinessVerificationSection({
 
     setIsSubmitting(true)
     try {
+      // First, save/update the basic information
       const response = await fetch('/api/business-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,6 +104,7 @@ export default function BusinessVerificationSection({
           contact_person_name: formData.owner_name,
           contact_person_phone: formData.business_phone,
           gstin: formData.gstin,
+          submit_for_review: true, // Flag to set status to pending
         }),
       })
 
@@ -128,9 +130,50 @@ export default function BusinessVerificationSection({
   }
 
   const handleFileUpload = async (file: File) => {
-    if (!verificationId && status === 'incomplete') {
-      toast.error('Please save your information first before uploading documents')
+    // If status is pending or approved, don't allow uploads
+    if (status === 'pending' || status === 'approved') {
+      toast.error('Cannot upload documents - verification is already under review or approved')
       return
+    }
+
+    let currentVerificationId = verificationId
+
+    // Create draft verification if doesn't exist (status: incomplete)
+    if (!currentVerificationId) {
+      // Validate required fields first
+      if (!formData.business_name || !formData.owner_name || !formData.business_phone) {
+        toast.error('Please fill in Business Name, Owner Name, and Phone Number first')
+        return
+      }
+
+      // Create draft verification (incomplete status, won't be reviewed)
+      try {
+        const response = await fetch('/api/business-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            legal_business_name: formData.business_name,
+            contact_person_name: formData.owner_name,
+            contact_person_phone: formData.business_phone,
+            gstin: formData.gstin,
+            submit_for_review: false, // Keep as draft
+          }),
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          currentVerificationId = data.verification_id
+          setVerificationId(data.verification_id)
+        } else {
+          toast.error(data.error || 'Failed to save draft')
+          return
+        }
+      } catch (error) {
+        console.error('Error creating draft:', error)
+        toast.error('Failed to save draft')
+        return
+      }
     }
 
     // Check if visiting card already uploaded
@@ -141,14 +184,14 @@ export default function BusinessVerificationSection({
 
     setUploadingDoc(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('document_type', 'visiting_card')
-      formData.append('verification_id', verificationId)
+      const formDataUpload = new FormData()
+      formDataUpload.append('file', file)
+      formDataUpload.append('document_type', 'visiting_card')
+      formDataUpload.append('verification_id', currentVerificationId)
 
       const response = await fetch('/api/business-verification/documents', {
         method: 'POST',
-        body: formData,
+        body: formDataUpload,
       })
 
       const data = await response.json()
@@ -360,26 +403,90 @@ export default function BusinessVerificationSection({
                     )}
                   />
                 </div>
+              </div>
+            </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    GST Number (Optional - Required if no visiting card)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.gstin}
-                    onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
-                    placeholder="Enter GST number (if applicable)"
-                    readOnly={status === 'pending' || status === 'approved'}
-                    className={cn(
-                      "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-                      (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
-                    )}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Provide either GST number OR upload a visiting card below
-                  </p>
-                </div>
+            {/* Verification Method Section */}
+            <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verification Method</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Provide either GST number or upload a visiting card (or both) to verify your business
+              </p>
+
+              {/* GST Number */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  GST Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.gstin}
+                  onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
+                  placeholder="Enter GST number (e.g., 22AAAAA0000A1Z5)"
+                  readOnly={status === 'pending' || status === 'approved'}
+                  className={cn(
+                    "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                    (status === 'pending' || status === 'approved') && "bg-gray-100 text-gray-500"
+                  )}
+                />
+              </div>
+
+              {/* Visiting Card Upload */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Visiting Card (Optional)</h4>
+                <p className="text-xs text-gray-500 mb-3">
+                  Upload your business visiting card • Max 5MB • Formats: PDF, JPG, PNG
+                </p>
+
+                {/* Uploaded Document */}
+                {documents.length > 0 && (
+                  <div className="mb-3">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <FileText className="text-green-600" size={20} />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{doc.file_name}</p>
+                            <p className="text-xs text-gray-500">Uploaded successfully</p>
+                          </div>
+                        </div>
+                        {canUploadDocs && (
+                          <button
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            className="text-red-600 hover:text-red-700 p-1"
+                            type="button"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload New Document */}
+                {canUploadDocs && documents.length === 0 && (
+                  <div>
+                    <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors cursor-pointer">
+                      <Upload size={20} className="text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {uploadingDoc ? 'Uploading to Cloudinary...' : 'Choose visiting card to upload'}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                        disabled={uploadingDoc}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleFileUpload(file)
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -416,79 +523,8 @@ export default function BusinessVerificationSection({
           </form>
         )}
 
-        {/* Visiting Card Upload Section */}
-        {(canUploadDocs || status === 'approved') && (
-          <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Visiting Card</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Upload your business visiting card (Required if no GST number provided)
-              <br />
-              <span className="text-xs text-gray-500">Max 5MB. Formats: PDF, JPG, PNG</span>
-            </p>
-
-            {/* Uploaded Document */}
-            {documents.length > 0 && (
-              <div className="mb-4">
-                {documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="text-green-600" size={20} />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{doc.file_name}</p>
-                        <p className="text-xs text-gray-500">Visiting Card</p>
-                      </div>
-                    </div>
-                    {canUploadDocs && (
-                      <button
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        className="text-red-600 hover:text-red-700 p-1"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload New Document */}
-            {canUploadDocs && documents.length === 0 && (
-              <div>
-                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors cursor-pointer">
-                  <Upload size={20} className="text-gray-400" />
-                  <span className="text-sm text-gray-600">
-                    {uploadingDoc ? 'Uploading...' : 'Choose visiting card to upload'}
-                  </span>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className="hidden"
-                    disabled={uploadingDoc}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        handleFileUpload(file)
-                      }
-                    }}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Final Submit for Review */}
-        {status === 'incomplete' && verificationId && (
-          <div className="flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="px-8 py-3 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 font-semibold"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
-            </button>
-          </div>
-        )}
+        {/* Remove the duplicate Visiting Card section that was outside the form */}
+        {/* Final Submit for Review - removed as it's redundant */}
       </div>
     </div>
   )

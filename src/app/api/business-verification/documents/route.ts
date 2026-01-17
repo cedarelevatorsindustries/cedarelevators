@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary/upload'
 
 export async function POST(request: NextRequest) {
     try {
@@ -44,12 +45,34 @@ export async function POST(request: NextRequest) {
 
         const supabase = await createClerkSupabaseClient()
 
+        // Get the user from users table using clerk_user_id
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('clerk_user_id', userId)
+            .maybeSingle()
+
+        if (userError || !user) {
+            return NextResponse.json(
+                { success: false, error: 'User not found' },
+                { status: 404 }
+            )
+        }
+
+        const { data: userProfile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+        const userIdForCheck = userProfile?.id || user.id
+
         // Verify ownership of verification
         const { data: verification, error: verifyError } = await supabase
             .from('business_verifications')
             .select('id, user_id, status')
             .eq('id', verificationId)
-            .eq('user_id', userId)
+            .eq('user_id', userIdForCheck)
             .single()
 
         if (verifyError || !verification) {
@@ -67,49 +90,41 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Upload to Supabase Storage
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${verificationId}/${documentType}_${Date.now()}.${fileExt}`
+        // Upload to Cloudinary
+        const uploadResult = await uploadToCloudinary(file, 'business-verification')
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('business-documents')
-            .upload(fileName, file, {
-                contentType: file.type,
-                upsert: false
-            })
-
-        if (uploadError) {
-            console.error('Storage upload error:', uploadError)
+        if (!uploadResult || !uploadResult.secure_url) {
             return NextResponse.json(
-                { success: false, error: 'Failed to upload document' },
+                { success: false, error: 'Failed to upload document to Cloudinary' },
                 { status: 500 }
             )
         }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from('business-documents')
-            .getPublicUrl(fileName)
-
-        // Save document record - SIMPLIFIED SCHEMA (no file_size)
-        const { error: dbError } = await supabase
+        // Save document record with Cloudinary URL and public_id
+        const { data: documentData, error: dbError } = await supabase
             .from('business_verification_documents')
             .insert({
                 verification_id: verificationId,
                 document_type: documentType,
-                document_url: publicUrl,
-                file_name: file.name
+                document_url: uploadResult.secure_url,
+                file_name: file.name,
+                cloudinary_public_id: uploadResult.public_id
             })
+            .select()
+            .single()
 
         if (dbError) {
-            // Cleanup uploaded file if DB insert fails
-            await supabase.storage.from('business-documents').remove([fileName])
+            // Cleanup uploaded file from Cloudinary if DB insert fails
+            if (uploadResult.public_id) {
+                await deleteFromCloudinary(uploadResult.public_id)
+            }
             throw dbError
         }
 
         return NextResponse.json({
             success: true,
-            document_url: publicUrl,
+            document_url: uploadResult.secure_url,
+            document_id: documentData.id,
             message: 'Document uploaded successfully'
         })
     } catch (error) {
@@ -178,12 +193,10 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        // Extract file path from URL
-        const urlParts = document.document_url.split('/business-documents/')
-        const filePath = urlParts[1]
-
-        // Delete from storage
-        await supabase.storage.from('business-documents').remove([filePath])
+        // Delete from Cloudinary if public_id exists
+        if (document.cloudinary_public_id) {
+            await deleteFromCloudinary(document.cloudinary_public_id)
+        }
 
         // Delete from database
         const { error: deleteError } = await supabase

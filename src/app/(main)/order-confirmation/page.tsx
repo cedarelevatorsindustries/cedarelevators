@@ -257,7 +257,7 @@ function OrderConfirmationContent() {
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Total Amount</p>
                     <p className="text-sm font-medium text-gray-900">
-                      ₹{(order.total_amount || 0).toLocaleString('en-IN')}
+                      ₹{Math.round(order.total_amount || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div>
@@ -282,8 +282,8 @@ function OrderConfirmationContent() {
                       {/* Icon Circle */}
                       <div
                         className={`z-10 w-8 h-8 rounded-full flex items-center justify-center ${step.status === 'current'
-                            ? 'bg-orange-600 text-white ring-4 ring-orange-50'
-                            : 'bg-gray-100 border-2 border-gray-200 text-gray-400'
+                          ? 'bg-orange-600 text-white ring-4 ring-orange-50'
+                          : 'bg-gray-100 border-2 border-gray-200 text-gray-400'
                           }`}
                       >
                         {step.icon}

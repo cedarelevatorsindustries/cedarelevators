@@ -47,24 +47,26 @@ export interface OrderWithDetails {
 }
 
 export interface ShippingAddress {
-    name: string
+    name?: string
     phone: string
     address_line1: string
     address_line2?: string
     city: string
     state: string
-    pincode: string
+    pincode?: string
+    postal_code?: string  // Alternative to pincode
     country: string
 }
 
 export interface BillingAddress {
-    name: string
+    name?: string
     phone: string
     address_line1: string
     address_line2?: string
     city: string
     state: string
-    pincode: string
+    pincode?: string
+    postal_code?: string  // Alternative to pincode
     country: string
     gstin?: string  // GST Identification Number for business invoicing
 }

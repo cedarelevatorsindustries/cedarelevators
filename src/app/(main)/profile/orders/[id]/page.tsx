@@ -72,7 +72,13 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
 
         return <OrderDetailsTemplate order={order} pickupLocation={pickupLocation} />
 
-    } catch (error) {
+    } catch (error: any) {
+        // Re-throw redirect errors so Next.js can handle them
+        // Next.js redirect errors have a digest that starts with 'NEXT_REDIRECT'
+        if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+            throw error
+        }
+
         console.error("Error loading order details:", error)
         return (
             <div className="container mx-auto py-12 px-4 text-center">

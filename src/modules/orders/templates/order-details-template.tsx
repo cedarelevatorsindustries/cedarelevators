@@ -266,14 +266,14 @@ export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDet
                                 {order.shipping_address ? (
                                     <address className="not-italic text-sm text-gray-600 leading-relaxed">
                                         <p className="font-medium text-gray-900">
-                                            {order.shipping_address.name}
+                                            {order.shipping_address.name || 'Delivery Address'}
                                         </p>
                                         <p>{order.shipping_address.address_line1}</p>
                                         {order.shipping_address.address_line2 && <p>{order.shipping_address.address_line2}</p>}
                                         <p>
                                             {order.shipping_address.city}, {order.shipping_address.state}
                                         </p>
-                                        <p>{order.shipping_address.pincode}</p>
+                                        <p>{order.shipping_address.postal_code || order.shipping_address.pincode}</p>
                                         <p className="mt-2 text-gray-500">{order.shipping_address.phone}</p>
                                     </address>
                                 ) : (
@@ -291,14 +291,14 @@ export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDet
                                 {order.billing_address ? (
                                     <address className="not-italic text-sm text-gray-600 leading-relaxed">
                                         <p className="font-medium text-gray-900">
-                                            {order.billing_address.name}
+                                            {order.billing_address.name || 'Billing Address'}
                                         </p>
                                         <p>{order.billing_address.address_line1}</p>
                                         {order.billing_address.address_line2 && <p>{order.billing_address.address_line2}</p>}
                                         <p>
                                             {order.billing_address.city}, {order.billing_address.state}
                                         </p>
-                                        <p>{order.billing_address.pincode}</p>
+                                        <p>{order.billing_address.postal_code || order.billing_address.pincode}</p>
                                         <p className="mt-2 text-gray-500">{order.billing_address.phone}</p>
                                         {order.billing_address.gstin && (
                                             <p className="mt-2 text-xs text-gray-500">GSTIN: {order.billing_address.gstin}</p>

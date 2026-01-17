@@ -85,24 +85,23 @@ export default function BusinessVerificationDetailPage() {
   const loadProfile = async () => {
     try {
       setIsLoading(true)
-      
-      // Fetch business profile with documents
-      const result = await getBusinessProfileById(params.id as string)
-      if (!result.success || !result.profile) {
-        toast.error(result.error || 'Business profile not found')
+
+      // Fetch business verification with documents
+      const response = await fetch(`/api/admin/business-verifications/${params.id}`)
+      const data = await response.json()
+
+      if (!response.ok || !data.success || !data.verification) {
+        toast.error(data.error || 'Business verification not found')
         router.push('/admin/business-verification')
         return
       }
 
-      setProfile(result.profile as BusinessProfileDetail)
-      setNotes(result.profile.verification_notes || '')
+      setProfile(data.verification as BusinessProfileDetail)
+      setNotes(data.verification.rejection_reason || '')
 
-      // Get user email from Clerk (would need to implement this properly)
-      // For now, we'll skip email fetching
-      
     } catch (error: any) {
-      console.error('Error loading profile:', error)
-      toast.error('Failed to load business profile')
+      console.error('Error loading verification:', error)
+      toast.error('Failed to load business verification')
     } finally {
       setIsLoading(false)
     }
@@ -120,10 +119,10 @@ export default function BusinessVerificationDetailPage() {
 
       setShowApproveDialog(false)
       setShowRejectDialog(false)
-      
+
       // Refresh profile
       await loadProfile()
-      
+
       // Navigate back after 2 seconds
       setTimeout(() => {
         router.push('/admin/business-verification')
@@ -211,7 +210,7 @@ export default function BusinessVerificationDetailPage() {
             </p>
           </div>
         </div>
-        
+
         {isPending && (
           <div className="flex gap-2">
             <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

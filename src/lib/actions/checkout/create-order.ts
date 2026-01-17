@@ -83,15 +83,32 @@ export async function createOrderFromCheckout(input: CreateOrderInput): Promise<
             .eq('clerk_user_id', userId)
             .single()
 
-        // Get default address if exists
-        const { data: defaultAddress } = await supabase
-            .from('business_addresses')
+        // Get default address - try user_addresses first, then business_addresses
+        let defaultAddress = null
+
+        // Try user_addresses first (for individual users)
+        const { data: userAddress } = await supabase
+            .from('user_addresses')
             .select('*')
             .eq('clerk_user_id', userId)
             .eq('is_default', true)
             .single()
 
+        if (userAddress) {
+            defaultAddress = userAddress
+        } else {
+            // Fallback to business_addresses
+            const { data: businessAddress } = await supabase
+                .from('business_addresses')
+                .select('*')
+                .eq('clerk_user_id', userId)
+                .eq('is_default', true)
+                .single()
+            defaultAddress = businessAddress
+        }
+
         const addressSnapshot = defaultAddress ? {
+            name: defaultAddress.name || '',
             address_line1: defaultAddress.address_line_1 || defaultAddress.address_line1 || '',
             address_line2: defaultAddress.address_line_2 || defaultAddress.address_line2 || '',
             city: defaultAddress.city || '',
@@ -99,7 +116,7 @@ export async function createOrderFromCheckout(input: CreateOrderInput): Promise<
             country: defaultAddress.country || 'India',
             postal_code: defaultAddress.postal_code || defaultAddress.pincode || '',
             phone: defaultAddress.phone || ''
-        } : {}
+        } : null
 
         // Get user_id from users table (needed for RLS policy)
         const { data: userRecord } = await supabase

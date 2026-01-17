@@ -16,10 +16,9 @@ export default function DocumentsSection({ orderId, quoteId, quoteNumber }: Docu
 
             <div className="space-y-3">
                 {/* Invoice */}
-                <a
-                    href={`/api/orders/${orderId}/invoice`}
-                    download
-                    className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors group"
+                <button
+                    onClick={() => window.open(`/api/orders/${orderId}/invoice`, '_blank')}
+                    className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors group w-full text-left"
                 >
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
@@ -31,7 +30,7 @@ export default function DocumentsSection({ orderId, quoteId, quoteNumber }: Docu
                         </div>
                     </div>
                     <Download className="w-4 h-4 text-gray-400 group-hover:text-orange-600" />
-                </a>
+                </button>
 
                 {/* Quote Reference */}
                 {quoteId && quoteNumber && (

@@ -175,6 +175,10 @@ export async function POST(request: NextRequest) {
             .eq('user_id', userIdForVerification)
             .single()
 
+        // Determine status based on submit_for_review flag
+        const submitForReview = body.submit_for_review === true
+        const newStatus = submitForReview ? 'pending' : 'incomplete'
+
         // Prepare verification data - SIMPLIFIED SCHEMA
         const verificationData = {
             user_id: userIdForVerification, // Use user_profile UUID or clerk_user_id
@@ -182,19 +186,32 @@ export async function POST(request: NextRequest) {
             contact_person_name: body.contact_person_name,
             contact_person_phone: body.contact_person_phone,
             gstin: body.gstin || null,
-            status: 'pending',
+            status: newStatus,
             updated_at: new Date().toISOString()
         }
 
         let verificationId: string
 
         if (existing) {
-            // Update existing verification (only if incomplete or rejected)
-            if (existing.status !== 'incomplete' && existing.status !== 'rejected') {
-                return NextResponse.json(
-                    { success: false, error: 'Verification already submitted and under review' },
-                    { status: 400 }
-                )
+            // Update existing verification
+            // Only allow updates if status is incomplete or rejected
+            // If submitting for review, allow incomplete/rejected to become pending
+            if (submitForReview) {
+                // When submitting for review, only incomplete or rejected can be submitted
+                if (existing.status !== 'incomplete' && existing.status !== 'rejected') {
+                    return NextResponse.json(
+                        { success: false, error: 'Verification already submitted and under review' },
+                        { status: 400 }
+                    )
+                }
+            } else {
+                // When saving draft, allow updates to incomplete or rejected only
+                if (existing.status !== 'incomplete' && existing.status !== 'rejected') {
+                    return NextResponse.json(
+                        { success: false, error: 'Cannot update verification that is under review or approved' },
+                        { status: 400 }
+                    )
+                }
             }
 
             const { error: updateError } = await supabase

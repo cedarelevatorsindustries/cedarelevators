@@ -11,7 +11,7 @@ export async function uploadToCloudinary(
     file: File | string,
     folder: string = 'uploads',
     publicId?: string
-): Promise<{ success: boolean; url?: string; error?: string }> {
+): Promise<{ success: boolean; secure_url?: string; public_id?: string; url?: string; error?: string }> {
     try {
         let uploadData: string
 
@@ -37,6 +37,8 @@ export async function uploadToCloudinary(
 
         return {
             success: true,
+            secure_url: result.secure_url,
+            public_id: result.public_id,
             url: result.secure_url
         }
     } catch (error: any) {
