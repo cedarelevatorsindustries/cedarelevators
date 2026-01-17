@@ -30,7 +30,7 @@ export async function getUserQuotes(): Promise<{ quotes: any[], stats: QuoteStat
         const { data: quotes, error } = await supabase
             .from('quotes')
             .select('*')
-            .eq('clerk_user_id', userId)
+            .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .limit(10)
 

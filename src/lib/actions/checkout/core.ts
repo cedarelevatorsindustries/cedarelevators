@@ -259,7 +259,7 @@ export async function getCheckoutFromQuote(quoteId: string): Promise<ActionRespo
         )
       `)
             .eq('id', quoteId)
-            .eq('clerk_user_id', userId)
+            .eq('user_id', userId)
             .single()
 
         console.log('[getCheckoutFromQuote] Query result:', {
