@@ -65,27 +65,18 @@ export const legalPolicyItems: MenuItem[] = [
 ]
 
 // Mobile hamburger menu items - Guest user
-export const guestShoppingItems: MenuItem[] = [
-  { icon: Package, label: "Browse Products", href: "/catalog" },
-
-  { icon: ShoppingCart, label: "View Cart (0 items)", href: "/cart" }
-]
-
-export const guestGetStartedItems: MenuItem[] = [
-  { icon: ClipboardList, label: "Quick Quote Request", href: "/quotes/new" },
-
-
-]
+// Note: Shopping and Get Started sections removed as per user requirements
 
 export const guestAboutItems: MenuItem[] = [
-  { icon: Info, label: "About Cedar", href: "/about" },
-  { icon: Settings, label: "Why Cedar?", href: "/why-cedar" },
+  { icon: Settings, label: "Why Choose Cedar", href: "/why-cedar" },
+  { icon: FileText, label: "Warranty Information", href: "/warranty" },
   { icon: Phone, label: "Contact Us", href: "/contact" }
 ]
 
 export const guestLegalItems: MenuItem[] = [
-  { icon: FileText, label: "Terms & Privacy", href: "/terms" },
-  { icon: Truck, label: "Shipping Info", href: "/shipping" },
-  { icon: Package, label: "Return Policy", href: "/returns" }
+  { icon: FileText, label: "Privacy Policy", href: "/privacy-policy" },
+  { icon: FileText, label: "Terms & Conditions", href: "/terms-conditions" },
+  { icon: Package, label: "Return Policy", href: "/return-policy" },
+  { icon: Truck, label: "Shipping Policy", href: "/shipping-policy" }
 ]
 
