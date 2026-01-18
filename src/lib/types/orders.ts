@@ -44,6 +44,12 @@ export interface OrderWithDetails {
     updated_at: string
     order_items?: OrderItem[]
     customer?: Customer | null
+    // Business profile (for customer type detection)
+    business_profile?: {
+        company_name: string
+        gst_number: string | null
+        verification_status: string
+    } | null
 }
 
 export interface ShippingAddress {

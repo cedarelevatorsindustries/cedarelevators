@@ -15,6 +15,7 @@ import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { getOrderById } from "@/lib/data/orders"
 import { notFound } from "next/navigation"
+import { CancelOrderButton } from "./cancel-order-button"
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -31,6 +32,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     clerk_user_id,
     guest_name,
     guest_email,
+    guest_phone,
     order_status,
     payment_status,
     payment_method,
@@ -41,7 +43,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     created_at,
     shipping_address,
     billing_address,
-    order_items
+    order_items,
+    quote_id,
+    quote_number
   } = order
 
   const getStatusColor = (status: string) => {
@@ -81,6 +85,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <CancelOrderButton orderId={id} orderStatus={order_status} />
           <Button variant="outline" className="border-gray-200" asChild>
             <a href={`/api/orders/${id}/invoice`} target="_blank" rel="noopener noreferrer">
               <Printer className="mr-2 h-4 w-4" />
@@ -181,19 +186,82 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-900">{guest_name || 'Customer'}</p>
+              {/* Customer Name & Contact */}
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Name</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {order.business_profile?.company_name || shipping_address?.name || guest_name || 'Customer'}
+                  </p>
+                </div>
+
                 {guest_email && (
-                  <div className="flex items-center gap-2 mt-1 text-sm text-orange-600 hover:underline cursor-pointer">
-                    <Mail className="h-3 w-3" />
-                    {guest_email}
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Email</p>
+                    <div className="flex items-center gap-2 text-sm text-orange-600 hover:underline cursor-pointer">
+                      <Mail className="h-3 w-3" />
+                      {guest_email}
+                    </div>
                   </div>
                 )}
-                {billing_address?.phone && (
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                    <Phone className="h-3 w-3" />
-                    {billing_address.phone}
+
+                {(shipping_address?.phone || billing_address?.phone || guest_phone) && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Phone</p>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="h-3 w-3" />
+                      {shipping_address?.phone || billing_address?.phone || guest_phone}
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-100"></div>
+
+              {/* Customer Type */}
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Customer Type</p>
+                <Badge className={`${order.business_profile?.verification_status === 'verified'
+                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                  : billing_address?.gstin
+                    ? 'bg-purple-100 text-purple-700 border-purple-200'
+                    : clerk_user_id
+                      ? 'bg-green-100 text-green-700 border-green-200'
+                      : 'bg-gray-100 text-gray-700 border-gray-200'
+                  }`}>
+                  {order.business_profile?.verification_status === 'verified' ? 'Business (Verified)' : billing_address?.gstin ? 'Business (Unverified)' : clerk_user_id ? 'Individual' : 'Guest'}
+                </Badge>
+                {billing_address?.gstin && (
+                  <p className="text-xs text-gray-500 mt-1">GSTIN: {billing_address.gstin}</p>
+                )}
+                {order.business_profile && (
+                  <p className="text-xs text-gray-500 mt-1">Company: {order.business_profile.company_name}</p>
+                )}
+              </div>
+
+              {/* Order Source */}
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Order Source</p>
+                {quote_id ? (
+                  <div className="space-y-1">
+                    <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                      From Quote
+                    </Badge>
+                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                      Quote:
+                      <Link
+                        href={`/admin/quotes/${quote_id}`}
+                        className="text-orange-600 hover:underline font-medium"
+                      >
+                        {quote_number || quote_id}
+                      </Link>
+                    </p>
+                  </div>
+                ) : (
+                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                    Direct Order
+                  </Badge>
                 )}
               </div>
             </CardContent>

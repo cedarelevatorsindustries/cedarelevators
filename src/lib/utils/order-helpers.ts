@@ -12,13 +12,22 @@ export function getVariantName(variantName?: string | null): string {
     return variantName || 'Default'
 }
 
-export function getCustomerName(guestName?: string | null, email?: string | null): string {
+export function getCustomerName(guestName?: string | null, email?: string | null, shippingAddress?: any): string {
+    // Check if shipping address has a name (which contains business/customer name)
+    if (shippingAddress?.name) {
+        return shippingAddress.name
+    }
     return guestName || email || 'Guest Customer'
 }
 
-export function getOrderNumber(orderId: string): string {
-    if (typeof orderId !== 'string') return '#UNKNOWN'
-    return `#${orderId.slice(0, 8).toUpperCase()}`
+export function getOrderNumber(orderNumber?: string | null, orderId?: string): string {
+    // Use the actual order_number field if available
+    if (orderNumber) return orderNumber
+    // Fallback to ID-based format for backward compatibility
+    if (typeof orderId === 'string') {
+        return `#${orderId.slice(0, 8).toUpperCase()}`
+    }
+    return '#UNKNOWN'
 }
 
 export function formatAddress(address: ShippingAddress | BillingAddress | null): string {

@@ -84,6 +84,52 @@ export async function getOrderById(orderId: string): Promise<OrderWithDetails | 
     console.log('Raw order data:', JSON.stringify(data, null, 2))
     console.log('Order items count:', data.order_items?.length || 0)
 
+    // Fetch user and business info if user is logged in
+    let userInfo = null
+    let businessInfo = null
+
+    if (data.clerk_user_id) {
+      // Get user info from users table
+      const { data: user } = await supabase
+        .from('users')
+        .select('id, name, email, phone')
+        .eq('clerk_user_id', data.clerk_user_id)
+        .single()
+
+      userInfo = user
+      console.log('User info:', userInfo)
+
+      // Get business info via business_members -> businesses
+      if (userInfo) {
+        const { data: businessMember } = await supabase
+          .from('business_members')
+          .select(`
+            business_id,
+            businesses!inner (
+              id,
+              name,
+              verification_status
+            )
+          `)
+          .eq('user_id', userInfo.id)
+          .single()
+
+        // businesses is returned as object from inner join with single()
+        const bizData = businessMember?.businesses as unknown as { id: string; name: string; verification_status: string } | null
+        if (bizData) {
+          businessInfo = bizData
+          console.log('Business info:', businessInfo)
+        }
+      }
+    }
+
+    // Build business profile info for the order
+    const businessProfile = businessInfo ? {
+      company_name: businessInfo.name || '',
+      gst_number: null,
+      verification_status: businessInfo.verification_status || 'unverified'
+    } : null
+
     // Map database field names to OrderWithDetails interface
     const orderWithDetails: OrderWithDetails = {
       ...data,
@@ -93,7 +139,12 @@ export async function getOrderById(orderId: string): Promise<OrderWithDetails | 
       shipping_amount: data.shipping_cost || 0,
       discount_amount: data.discount || 0,
       // Keep original fields as well
-      order_items: data.order_items || []
+      order_items: data.order_items || [],
+      // Override guest name with user info name if available
+      guest_name: userInfo?.name || data.guest_name,
+      guest_email: userInfo?.email || data.guest_email,
+      // Add business profile info
+      business_profile: businessProfile
     }
 
     console.log('Mapped order with details:', JSON.stringify(orderWithDetails, null, 2))

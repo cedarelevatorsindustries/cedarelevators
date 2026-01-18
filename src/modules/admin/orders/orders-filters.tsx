@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -9,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Search, Filter, X } from "lucide-react"
+import { Search, X } from "lucide-react"
 
 interface OrderFilters {
   search: string
@@ -28,104 +28,120 @@ interface OrdersFiltersProps {
 }
 
 export function OrdersFilters({ filters, onFiltersChange, totalOrders }: OrdersFiltersProps) {
+  const [localSearch, setLocalSearch] = useState(filters.search || '')
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onFiltersChange({ ...filters, search: localSearch })
+  }
+
+  const handleClearFilters = () => {
+    setLocalSearch('')
+    onFiltersChange({
+      search: '',
+      status: 'all',
+      paymentStatus: 'all',
+      dateFrom: '',
+      dateTo: '',
+      customer: ''
+    })
+  }
+
+  const hasActiveFilters = filters.search || filters.status !== 'all' || filters.paymentStatus !== 'all'
+
   return (
-    <div className="space-y-4 p-4 rounded-xl bg-white/60 border border-gray-200/50 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
-        <span className="text-sm text-gray-600">{totalOrders} total orders</span>
-      </div>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search - Takes most of the space */}
+        <form onSubmit={handleSearchSubmit} className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by order number, name, or email..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </form>
 
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Search by order number, name, or email..."
-            className="pl-10 pr-10"
-            value={filters.search}
-            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-          />
-          {filters.search && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 hover:bg-gray-100"
-              onClick={() => onFiltersChange({ ...filters, search: '' })}
-              title="Clear search"
-            >
-              <X className="h-4 w-4 text-gray-400" />
-            </Button>
-          )}
+        {/* Filters grouped on the right */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Status Filter */}
+          <Select value={filters.status} onValueChange={(value) => onFiltersChange({ ...filters, status: value })}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Payment Status Filter */}
+          <Select value={filters.paymentStatus} onValueChange={(value) => onFiltersChange({ ...filters, paymentStatus: value })}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Payment Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payments</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="refunded">Refunded</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-
-        <Select value={filters.status} onValueChange={(value) => onFiltersChange({ ...filters, status: value })}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="shipped">Shipped</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={filters.paymentStatus} onValueChange={(value) => onFiltersChange({ ...filters, paymentStatus: value })}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Payment Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Payments</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
-            <SelectItem value="refunded">Refunded</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300">
-          <Filter className="mr-2 h-4 w-4" />
-          More Filters
-        </Button>
       </div>
 
       {/* Active Filters */}
-      {(filters.status !== 'all' || filters.paymentStatus !== 'all' || filters.search) && (
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">Active filters:</span>
-          {filters.status !== 'all' && (
-            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
-              <span>Status: {filters.status}</span>
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-orange-800"
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <div className="flex flex-wrap gap-2">
+            {filters.search && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setLocalSearch('')
+                  onFiltersChange({ ...filters, search: '' })
+                }}
+              >
+                Search: {filters.search}
+                <X className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+            {filters.status && filters.status !== 'all' && (
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => onFiltersChange({ ...filters, status: 'all' })}
-              />
-            </Badge>
-          )}
-          {filters.paymentStatus !== 'all' && (
-            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
-              <span>Payment: {filters.paymentStatus}</span>
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-orange-800"
+              >
+                Status: {filters.status}
+                <X className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+            {filters.paymentStatus && filters.paymentStatus !== 'all' && (
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => onFiltersChange({ ...filters, paymentStatus: 'all' })}
-              />
-            </Badge>
-          )}
-          {filters.search && (
-            <Badge className="flex items-center space-x-1 bg-orange-100 text-orange-700 border-orange-200">
-              <span>Search: {filters.search}</span>
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-orange-800"
-                onClick={() => onFiltersChange({ ...filters, search: '' })}
-              />
-            </Badge>
-          )}
+              >
+                Payment: {filters.paymentStatus}
+                <X className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-            onClick={() => onFiltersChange({ search: '', status: 'all', paymentStatus: 'all', dateFrom: '', dateTo: '', customer: '' })}
+            onClick={handleClearFilters}
           >
             Clear all
           </Button>

@@ -58,7 +58,7 @@ export async function updateOrderStatus(
         // Get order details first
         const { data: order } = await supabase
             .from('orders')
-            .select('clerk_user_id, order_number')
+            .select('clerk_user_id, order_number, guest_email, guest_name, tracking_number, tracking_carrier, tracking_url')
             .eq('id', orderId)
             .single()
 
@@ -75,23 +75,26 @@ export async function updateOrderStatus(
             return { success: false, error: error.message }
         }
 
-        // Send notification if user is logged in - DISABLED
-        // Notifications have been removed from the system
-        /*
-        if (order?.clerk_user_id) {
+        // Send email notification to customer
+        if (order?.guest_email) {
             try {
-                await sendOrderNotification(
-                    order.clerk_user_id,
+                const trackingInfo = order.tracking_number ? {
+                    carrier: order.tracking_carrier || 'Carrier',
+                    trackingNumber: order.tracking_number,
+                    trackingUrl: order.tracking_url
+                } : undefined
+
+                await sendOrderStatusUpdate(
+                    order.guest_email,
                     order.order_number,
                     status,
-                    orderId
+                    trackingInfo
                 )
-            } catch (notifError) {
-                console.error('Error sending order notification:', notifError)
-                // Don't fail the status update if notification fails
+            } catch (emailError) {
+                console.error('Error sending order status email:', emailError)
+                // Don't fail the status update if email fails
             }
         }
-        */
 
         return { success: true }
     } catch (error: any) {
@@ -295,9 +298,52 @@ export async function fetchOrders(filters?: {
             return { success: false, error: error.message }
         }
 
+        // Enrich orders with business information
+        const enrichedOrders = await Promise.all(
+            (data || []).map(async (order) => {
+                if (!order.clerk_user_id) return order as OrderWithDetails
+
+                // Get user info
+                const { data: user } = await supabase
+                    .from('users')
+                    .select('id, name, email')
+                    .eq('clerk_user_id', order.clerk_user_id)
+                    .single()
+
+                if (!user) return order as OrderWithDetails
+
+                // Get business info via business_members -> businesses
+                const { data: businessMember } = await supabase
+                    .from('business_members')
+                    .select(`
+                        business_id,
+                        businesses!inner (
+                            id,
+                            name,
+                            verification_status
+                        )
+                    `)
+                    .eq('user_id', user.id)
+                    .single()
+
+                const bizData = businessMember?.businesses as unknown as { id: string; name: string; verification_status: string } | null
+
+                return {
+                    ...order,
+                    guest_name: user.name || order.guest_name,
+                    guest_email: user.email || order.guest_email,
+                    business_profile: bizData ? {
+                        company_name: bizData.name || '',
+                        gst_number: null,
+                        verification_status: bizData.verification_status || 'unverified'
+                    } : null
+                } as OrderWithDetails
+            })
+        )
+
         return {
             success: true,
-            orders: data as OrderWithDetails[],
+            orders: enrichedOrders,
             total: count || 0,
             page,
             limit,

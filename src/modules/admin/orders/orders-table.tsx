@@ -194,7 +194,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       header: 'Order ID',
       render: (order: OrderWithDetails) => (
         <TableCell className="font-mono font-semibold text-gray-900">
-          {getOrderNumber(order.id)}
+          {getOrderNumber(order.order_number, order.id)}
         </TableCell>
       ),
     },
@@ -204,7 +204,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       render: (order: OrderWithDetails) => (
         <TableCell>
           <div>
-            <div className="font-semibold text-gray-900">{getCustomerName(order.guest_name, order.guest_email)}</div>
+            <div className="font-semibold text-gray-900">{getCustomerName(order.guest_name, order.guest_email, order.shipping_address)}</div>
             <div className="text-sm text-gray-600">{order.guest_email}</div>
           </div>
         </TableCell>
@@ -222,7 +222,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       header: 'Total',
       render: (order: OrderWithDetails) => (
         <TableCell className="font-semibold text-gray-900">
-          ₹{(order.total_amount || 0).toLocaleString()}
+          ₹{Math.round(order.total_amount || 0).toLocaleString()}
         </TableCell>
       ),
     },
@@ -302,10 +302,10 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               )}
               {(order.order_status === 'pending' || order.order_status === 'processing') && (
                 <DropdownMenuItem
-                  onClick={() => setTrackingDialog({ open: true, orderId: order.id })}
+                  onClick={() => handleStatusUpdate(order.id, 'shipped')}
                 >
                   <Truck className="mr-2 h-4 w-4" />
-                  Add Tracking & Ship
+                  Mark as Shipped
                 </DropdownMenuItem>
               )}
               {order.order_status === 'shipped' && (
@@ -316,12 +316,6 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
                   Mark as Delivered
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                onClick={() => setTrackingDialog({ open: true, orderId: order.id })}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Tracking
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               {order.order_status !== 'cancelled' && order.order_status !== 'delivered' && (
                 <DropdownMenuItem
