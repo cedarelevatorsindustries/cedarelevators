@@ -1,85 +1,179 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { SlidersHorizontal } from "lucide-react"
-import { CatalogFiltersComponent } from "./CatalogFilters"
-import type { CatalogFilters as CatalogFiltersType, AvailableCatalogOptions } from "@/lib/types/filters"
+import { FilterGroup } from "./FilterGroup"
+import { StockFilter } from "./StockFilter"
+import { CheckboxFilter } from "./CheckboxFilter"
+import type { Product } from "@/lib/types/domain"
 
-export function FilterBottomSheet({ variant = 'default' }: { variant?: 'default' | 'icon' }) {
+interface FilterOption {
+    id: string
+    name: string
+    count?: number
+}
+
+interface FilterBottomSheetProps {
+    variant?: 'default' | 'icon'
+    products?: Product[]
+    // Catalog-specific filter options (only shown on main catalog page)
+    applications?: FilterOption[]
+    categories?: FilterOption[]
+    subcategories?: FilterOption[]
+}
+
+export function FilterBottomSheet({
+    variant = 'default',
+    products = [],
+    applications = [],
+    categories = [],
+    subcategories = []
+}: FilterBottomSheetProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const [open, setOpen] = useState(false)
 
     // Filter state
-    const [catalogFilters, setCatalogFilters] = useState<CatalogFiltersType>({})
+    const [availability, setAvailability] = useState<'all' | 'in_stock' | 'out_of_stock'>('all')
+    // Store selected values per option name: { "Size": ["9mm", "5mm"], "Voltage": ["24V"] }
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
+    // Catalog-specific filters
+    const [selectedApplications, setSelectedApplications] = useState<string[]>([])
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
 
-    // Available options
-    const [catalogOptions, setCatalogOptions] = useState<AvailableCatalogOptions>({
-        applications: [],
-        elevatorTypes: [],
-        categories: [],
-        subcategories: []
-    })
+    // Extract variant options grouped by option name
+    const variantOptions = useMemo(() => {
+        const optionGroups: Record<string, Set<string>> = {}
+        products.forEach(p => {
+            p.variants?.forEach(v => {
+                // Extract from options object if available
+                if (v.options && typeof v.options === 'object') {
+                    Object.entries(v.options).forEach(([optionName, optionValue]) => {
+                        if (optionName && optionValue && String(optionValue).toLowerCase() !== 'default') {
+                            // Normalize option name (capitalize first letter)
+                            const normalizedName = optionName.charAt(0).toUpperCase() + optionName.slice(1).toLowerCase()
+                            if (!optionGroups[normalizedName]) {
+                                optionGroups[normalizedName] = new Set()
+                            }
+                            optionGroups[normalizedName].add(String(optionValue))
+                        }
+                    })
+                }
+            })
+        })
+        // Convert Sets to Arrays
+        const result: Record<string, string[]> = {}
+        Object.entries(optionGroups).forEach(([name, values]) => {
+            result[name] = Array.from(values).sort()
+        })
+        return result
+    }, [products])
 
     // Parse filters from URL
     useEffect(() => {
         const params = new URLSearchParams(searchParams.toString())
 
-        const applications = params.get('applications')?.split(',').filter(Boolean)
-        const elevatorTypes = params.get('elevator_types')?.split(',').filter(Boolean)
-        const categories = params.get('categories')?.split(',').filter(Boolean)
-        const subcategories = params.get('subcategories')?.split(',').filter(Boolean)
+        const avail = params.get('availability')
+        if (avail === 'in_stock' || avail === 'out_of_stock') {
+            setAvailability(avail)
+        }
 
-        setCatalogFilters({ applications, elevatorTypes, categories, subcategories })
-    }, [searchParams])
+        // Parse options from URL (format: option_Size=9mm,5mm&option_Voltage=24V)
+        const newSelectedOptions: Record<string, string[]> = {}
+        Object.keys(variantOptions).forEach(optionName => {
+            const key = `option_${optionName}`
+            const values = params.get(key)?.split(',').filter(Boolean) || []
+            if (values.length > 0) {
+                newSelectedOptions[optionName] = values
+            }
+        })
+        setSelectedOptions(newSelectedOptions)
 
-    // Fetch options
-    useEffect(() => {
-        fetchFilterOptions()
-    }, [catalogFilters])
+        // Parse catalog filters
+        setSelectedApplications(params.get('applications')?.split(',').filter(Boolean) || [])
+        setSelectedCategories(params.get('categories')?.split(',').filter(Boolean) || [])
+        setSelectedSubcategories(params.get('subcategories')?.split(',').filter(Boolean) || [])
+    }, [searchParams, variantOptions])
 
-    const fetchFilterOptions = async () => {
-        // TODO: Implement filter options API endpoint
-        // Filters work client-side for now
-        return
+    const handleOptionChange = (optionName: string, values: string[]) => {
+        setSelectedOptions(prev => {
+            const updated = { ...prev }
+            if (values.length > 0) {
+                updated[optionName] = values
+            } else {
+                delete updated[optionName]
+            }
+            return updated
+        })
     }
 
     const applyFilters = () => {
         const params = new URLSearchParams(searchParams.toString())
 
         // Clear old params
+        params.delete('availability')
         params.delete('applications')
-        params.delete('elevator_types')
         params.delete('categories')
         params.delete('subcategories')
+        // Clear all option_ params
+        Object.keys(variantOptions).forEach(optionName => {
+            params.delete(`option_${optionName}`)
+        })
+
+        // Add new params
+        if (availability !== 'all') {
+            params.set('availability', availability)
+        }
+
+        // Add selected options
+        Object.entries(selectedOptions).forEach(([optionName, values]) => {
+            if (values.length > 0) {
+                params.set(`option_${optionName}`, values.join(','))
+            }
+        })
 
         // Add catalog filters
-        if (catalogFilters.applications?.length) params.set('applications', catalogFilters.applications.join(','))
-        if (catalogFilters.elevatorTypes?.length) params.set('elevator_types', catalogFilters.elevatorTypes.join(','))
-        if (catalogFilters.categories?.length) params.set('categories', catalogFilters.categories.join(','))
-        if (catalogFilters.subcategories?.length) params.set('subcategories', catalogFilters.subcategories.join(','))
+        if (selectedApplications.length > 0) {
+            params.set('applications', selectedApplications.join(','))
+        }
+        if (selectedCategories.length > 0) {
+            params.set('categories', selectedCategories.join(','))
+        }
+        if (selectedSubcategories.length > 0) {
+            params.set('subcategories', selectedSubcategories.join(','))
+        }
 
         router.push(`${pathname}?${params.toString()}`, { scroll: false })
         setOpen(false)
     }
 
     const clearAll = () => {
-        setCatalogFilters({})
-        router.push(pathname, { scroll: false })
-        setOpen(false)
+        setAvailability('all')
+        setSelectedOptions({})
+        setSelectedApplications([])
+        setSelectedCategories([])
+        setSelectedSubcategories([])
     }
 
-    const activeFilterCount =
-        (catalogFilters.applications?.length || 0) +
-        (catalogFilters.elevatorTypes?.length || 0) +
-        (catalogFilters.categories?.length || 0) +
-        (catalogFilters.subcategories?.length || 0)
+    // Count active filters
+    const activeFilterCount = useMemo(() => {
+        let count = availability !== 'all' ? 1 : 0
+        Object.values(selectedOptions).forEach(values => {
+            count += values.length
+        })
+        count += selectedApplications.length
+        count += selectedCategories.length
+        count += selectedSubcategories.length
+        return count
+    }, [availability, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories])
+
+    const hasVariantOptions = Object.keys(variantOptions).length > 0
+    const hasCatalogFilters = applications.length > 0 || categories.length > 0 || subcategories.length > 0
 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
@@ -114,16 +208,71 @@ export function FilterBottomSheet({ variant = 'default' }: { variant?: 'default'
                     <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
 
-                <ScrollArea className="h-[calc(85vh-140px)] mt-2">
-                    <div className="space-y-6 px-4 pb-4">
-                        {/* Catalog Filters Only */}
-                        <CatalogFiltersComponent
-                            filters={catalogFilters}
-                            onChange={setCatalogFilters}
-                            availableOptions={catalogOptions}
-                        />
+                <div className="overflow-y-auto h-[calc(85vh-140px)] mt-4">
+                    <div className="space-y-0 px-4 pb-4">
+                        {/* Availability Filter */}
+                        <FilterGroup title="Availability">
+                            <StockFilter
+                                selectedValue={availability}
+                                onChange={setAvailability}
+                            />
+                        </FilterGroup>
+
+                        {/* Variant Option Filters - Grouped by Option Name */}
+                        {hasVariantOptions && Object.entries(variantOptions).map(([optionName, values]) => (
+                            <FilterGroup key={optionName} title={optionName}>
+                                <CheckboxFilter
+                                    options={values.map(v => ({ value: v, label: v }))}
+                                    selectedValues={selectedOptions[optionName] || []}
+                                    onChange={(selected) => handleOptionChange(optionName, selected)}
+                                />
+                            </FilterGroup>
+                        ))}
+
+                        {/* Catalog-Specific Filters (only on main catalog page) */}
+                        {applications.length > 0 && (
+                            <FilterGroup title="Applications">
+                                <CheckboxFilter
+                                    options={applications.map(a => ({
+                                        value: a.id,
+                                        label: a.name,
+                                        count: a.count
+                                    }))}
+                                    selectedValues={selectedApplications}
+                                    onChange={setSelectedApplications}
+                                />
+                            </FilterGroup>
+                        )}
+
+                        {categories.length > 0 && (
+                            <FilterGroup title="Categories">
+                                <CheckboxFilter
+                                    options={categories.map(c => ({
+                                        value: c.id,
+                                        label: c.name,
+                                        count: c.count
+                                    }))}
+                                    selectedValues={selectedCategories}
+                                    onChange={setSelectedCategories}
+                                />
+                            </FilterGroup>
+                        )}
+
+                        {subcategories.length > 0 && (
+                            <FilterGroup title="Subcategories">
+                                <CheckboxFilter
+                                    options={subcategories.map(s => ({
+                                        value: s.id,
+                                        label: s.name,
+                                        count: s.count
+                                    }))}
+                                    selectedValues={selectedSubcategories}
+                                    onChange={setSelectedSubcategories}
+                                />
+                            </FilterGroup>
+                        )}
                     </div>
-                </ScrollArea>
+                </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t flex gap-2">
                     <Button variant="outline" onClick={clearAll} className="flex-1">

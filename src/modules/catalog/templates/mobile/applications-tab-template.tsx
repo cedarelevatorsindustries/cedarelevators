@@ -54,7 +54,6 @@ export default function ApplicationsTabTemplate({
             <ApplicationDetailTemplate
                 application={selectedApplication}
                 products={products}
-                allApplications={applications}
                 onBack={() => setSelectedApplication(null)}
             />
         )

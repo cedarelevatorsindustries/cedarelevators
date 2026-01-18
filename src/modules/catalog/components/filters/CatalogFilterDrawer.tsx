@@ -12,8 +12,9 @@ import type {
     AvailableCatalogOptions,
     AvailablePLPOptions
 } from "@/lib/types/filters"
+import { Product } from "@/lib/types/domain"
 
-export function CatalogFilterDrawer({ variant = 'default' }: { variant?: 'default' | 'icon' }) {
+export function CatalogFilterDrawer({ variant = 'default', products = [] }: { variant?: 'default' | 'icon', products?: Product[] }) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -67,12 +68,30 @@ export function CatalogFilterDrawer({ variant = 'default' }: { variant?: 'defaul
         if (open) {
             fetchFilterOptions()
         }
-    }, [open, catalogFilters.applications, catalogFilters.categories, catalogFilters.elevatorTypes])
+    }, [open, catalogFilters.applications, catalogFilters.categories, catalogFilters.elevatorTypes, products])
 
     const fetchFilterOptions = async () => {
-        // TODO: Implement filter options API endpoint
-        // Filters work client-side for now
-        return
+        // Extract variants from products if available
+        if (products.length > 0) {
+            const extractedVariants = new Set<string>()
+            products.forEach(p => {
+                p.variants?.forEach(v => {
+                    const title = v.variant_title || v.title
+                    if (title && title.toLowerCase() !== 'default title') {
+                        extractedVariants.add(title)
+                    }
+                })
+            })
+
+            if (extractedVariants.size > 0) {
+                setPLPOptions(prev => ({
+                    ...prev,
+                    variantOptions: {
+                        "Variants": Array.from(extractedVariants)
+                    }
+                }))
+            }
+        }
     }
 
     const applyFilters = () => {

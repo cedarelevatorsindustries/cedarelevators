@@ -6,8 +6,8 @@ import { ArrowLeft, Search, Package2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProductCard from "@/components/ui/product-card"
 import { EmptyState } from "@/components/ui/empty-state"
-import { FilterBottomSheet } from "@/modules/catalog/components/filters"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
+import { ProductFilterDrawer, FilterChips } from "@/modules/catalog/components/filters"
 
 interface SubcategoryTemplateProps {
   category: ProductCategory
@@ -28,6 +28,11 @@ export default function SubcategoryTemplate({
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearch, setShowSearch] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  // Filter states
+  const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'in_stock' | 'out_of_stock'>('all')
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
 
   // Get subcategories (either children or siblings, or create virtual subcategories)
   let subcategories: ProductCategory[] = []
@@ -49,7 +54,7 @@ export default function SubcategoryTemplate({
     ]
   }
 
-  // Filter products by selected subcategory and search query
+  // Filter products by selected subcategory, search query, availability, and variants
   const filteredProducts = (() => {
     let filtered = products // Start with all products (already filtered by backend if from application)
 
@@ -68,7 +73,37 @@ export default function SubcategoryTemplate({
         filtered = products.filter(p => p.categories?.some(c => c.id === category.id))
       }
     }
-    // If no subcategories (like for applications), use all products as-is
+
+    // Apply availability filter
+    if (availabilityFilter !== 'all') {
+      if (availabilityFilter === 'in_stock') {
+        filtered = filtered.filter(p =>
+          p.variants?.some(v => v.inventory_quantity > 0)
+        )
+      } else if (availabilityFilter === 'out_of_stock') {
+        filtered = filtered.filter(p =>
+          !p.variants?.some(v => v.inventory_quantity > 0)
+        )
+      }
+    }
+
+    // Apply variant option filters
+    const hasOptionFilters = Object.values(selectedOptions).some(arr => arr.length > 0)
+    if (hasOptionFilters) {
+      filtered = filtered.filter(p =>
+        p.variants?.some(v => {
+          if (!v.options || typeof v.options !== 'object') return false
+          return Object.entries(selectedOptions).every(([optionName, values]) => {
+            if (values.length === 0) return true
+            // Check if variant has this option with a matching value
+            const optionValue = Object.entries(v.options).find(
+              ([key]) => key.toLowerCase() === optionName.toLowerCase()
+            )?.[1]
+            return optionValue && values.includes(String(optionValue))
+          })
+        })
+      )
+    }
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -161,7 +196,20 @@ export default function SubcategoryTemplate({
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <FilterBottomSheet variant="icon" />
+              {/* Product Filter Drawer */}
+              <ProductFilterDrawer
+                products={products}
+                open={filterOpen}
+                onOpenChange={setFilterOpen}
+                availability={availabilityFilter}
+                onAvailabilityChange={setAvailabilityFilter}
+                selectedOptions={selectedOptions}
+                onOptionsChange={setSelectedOptions}
+                onClearAll={() => {
+                  setAvailabilityFilter('all')
+                  setSelectedOptions({})
+                }}
+              />
               <button
                 onClick={() => setShowSearch(!showSearch)}
                 className={`p-2 rounded-full transition-colors ${showSearch ? 'bg-orange-100 text-orange-600' : 'hover:bg-gray-100 text-gray-600'}`}
@@ -185,25 +233,18 @@ export default function SubcategoryTemplate({
             </div>
           )}
 
-          {/* Horizontal Filter Pills (Subcategories) */}
-          {subcategories.length > 1 && (
-            <div className="px-4 py-3 border-b border-gray-100 bg-white overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2">
-                {subcategories.map((subcat) => (
-                  <button
-                    key={subcat.id}
-                    onClick={() => setSelectedSubCategory(subcat.id)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${selectedSubCategory === subcat.id
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    {String(subcat.name || "")}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
+          {/* Filter Chips */}
+          <FilterChips
+            availability={availabilityFilter}
+            onAvailabilityChange={setAvailabilityFilter}
+            selectedOptions={selectedOptions}
+            onOptionsChange={setSelectedOptions}
+            onClearAll={() => {
+              setAvailabilityFilter('all')
+              setSelectedOptions({})
+            }}
+          />
 
           {/* Products Grid - Scrollable */}
           <div className="flex-1 overflow-y-auto">
@@ -269,3 +310,4 @@ export default function SubcategoryTemplate({
     </div>
   )
 }
+

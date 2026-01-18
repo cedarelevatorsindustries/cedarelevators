@@ -122,6 +122,9 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
           ),
           product_variants(
             id,
+            name,
+            variant_title,
+            options,
             inventory_quantity
           )
         `)
@@ -152,8 +155,11 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
             handle: p.slug,
             images: parsedImages,
             thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
-            // Include variants for stock display
-            variants: p.product_variants || [],
+            variants: (p.product_variants || []).map((v: any) => ({
+              ...v,
+              title: v.name || v.variant_title,
+              inventory_quantity: v.inventory_quantity || 0
+            })),
             categories: p.product_categories?.map((pc: any) => ({
               ...pc.category,
               name: pc.category?.title || pc.category?.name,
@@ -207,6 +213,9 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         ),
         product_variants(
           id,
+          name,
+          variant_title,
+          options,
           price,
           compare_at_price,
           inventory_quantity
@@ -244,9 +253,9 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,
         thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
-        // Include variants for stock display - ensure inventory_quantity is included
         variants: (p.product_variants || []).map((v: any) => ({
           ...v,
+          title: v.name || v.variant_title,
           inventory_quantity: v.inventory_quantity || 0
         })),
         // Extract categories from junction table
@@ -312,7 +321,11 @@ export async function getProductByHandle(handle: string): Promise<Product | null
       handle: data.slug, // Map slug to handle
       images: parsedImages,
       thumbnail: data.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
-      variants: data.product_variants || [], // Include variants with prices
+      variants: (data.product_variants || []).map((v: any) => ({
+        ...v,
+        title: v.name || v.variant_title,
+        inventory_quantity: v.inventory_quantity || 0
+      })),
     } as Product
   } catch (error) {
     console.error("Error in getProductByHandle:", error)

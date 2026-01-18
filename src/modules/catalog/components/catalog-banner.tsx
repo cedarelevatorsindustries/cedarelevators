@@ -1,6 +1,6 @@
 "use client"
 
-import { ProductCategory } from "@/lib/types/domain"
+import { Product, ProductCategory } from "@/lib/types/domain"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { CatalogFilterDrawer } from "@/modules/catalog/components/filters"
 import Link from "next/link"
@@ -14,6 +14,7 @@ interface CatalogBannerProps {
     type: "application" | "category" | "elevator-type"
     slug?: string
     variant?: "full" | "simple"
+    products?: Product[]
 }
 
 
@@ -24,7 +25,8 @@ export function CatalogBanner({
     categories = [],
     type,
     slug,
-    variant = "full"
+    variant = "full",
+    products = []
 }: CatalogBannerProps) {
     const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -109,7 +111,7 @@ export function CatalogBanner({
                                         {type === "application" ? "Source by Categories" : "Source by Subcategory"}
                                     </h3>
                                     <div className="flex items-center gap-2">
-                                        <CatalogFilterDrawer variant="icon" />
+                                        <CatalogFilterDrawer variant="icon" products={products} />
                                         {/* Scroll Buttons */}
                                         <button
                                             onClick={() => scroll('left')}

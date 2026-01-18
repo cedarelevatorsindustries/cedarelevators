@@ -169,6 +169,13 @@ export default function CatalogTemplate({
     return []
   }, [catalogType, searchQuery, initialProducts])
 
+  // Combine products for filters (before sidebar filters)
+  const productsForFilters = useMemo(() => {
+    return config.fallbackToAll
+      ? [...primaryProducts, ...fallbackProducts]
+      : primaryProducts
+  }, [primaryProducts, fallbackProducts, config.fallbackToAll])
+
   // Get current category/application for hero
   const currentCategory = useMemo(() => {
     // Priority: use explicit activeCategory pass from server
@@ -318,6 +325,7 @@ export default function CatalogTemplate({
           type="application"
           slug={activeApplication.slug}
           variant={config.bannerVariant || "full"}
+          products={productsForFilters}
         />
       )}
 
@@ -331,6 +339,7 @@ export default function CatalogTemplate({
           type="category"
           slug={currentCategory.handle || currentCategory.id}
           variant={config.bannerVariant || "full"}
+          products={productsForFilters}
         />
       )}
 
@@ -344,6 +353,7 @@ export default function CatalogTemplate({
           type="elevator-type"
           slug={activeType.slug}
           variant={config.bannerVariant || "full"}
+          products={productsForFilters}
         />
       )}
 
@@ -419,7 +429,22 @@ export default function CatalogTemplate({
           /* Two-Column Layout with Filters */
           <div className="flex gap-8">
             {/* Filter Sidebar */}
-            <UnifiedFilterSidebar hideExtraFilters={!!activeApplication || catalogType === 'category' || catalogType === 'browse-all'} />
+            <UnifiedFilterSidebar
+              products={productsForFilters}
+              applications={activeApplication?.categories?.map((cat: any) => ({
+                id: cat.id,
+                name: cat.name,
+                count: cat.product_count
+              })) || []}
+              categories={categories.filter(c => !c.parent_id).map(c => ({
+                id: c.id,
+                name: c.name
+              }))}
+              subcategories={categories.filter(c => c.parent_id).map(c => ({
+                id: c.id,
+                name: c.name
+              }))}
+            />
 
             {/* Products Column */}
             <div className="flex-1">

@@ -30,6 +30,7 @@ export interface FilterParams {
 
   // Technical Specifications
   voltage?: string | string[]
+  variants?: string | string[]
   load_capacity_min?: number
   load_capacity_max?: number
   speed_min?: number

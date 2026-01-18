@@ -219,6 +219,19 @@ export default function MobileCatalogTemplate({
             banners={banners}
             activeCollection={activeCollection}
             activeType={activeType}
+            applications={activeApplication?.categories?.map((cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              count: cat.product_count
+            })) || []}
+            categories={categories.filter(c => !c.parent_id).map(c => ({
+              id: c.id,
+              name: c.name
+            }))}
+            subcategories={categories.filter(c => c.parent_id).map(c => ({
+              id: c.id,
+              name: c.name
+            }))}
           />
 
           {/* Filter Sidebar (only show if filters are available) */}

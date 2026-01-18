@@ -9,14 +9,32 @@ import { FilterBottomSheet } from "@/modules/catalog/components/filters"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { BannerCarousel } from "../../components/banner-carousel"
 
+interface FilterOption {
+  id: string
+  name: string
+  count?: number
+}
+
 interface ProductsTabProps {
   products: Product[]
   banners?: BannerWithSlides[]
   activeCollection?: any
   activeType?: any
+  // Catalog filter options
+  applications?: FilterOption[]
+  categories?: FilterOption[]
+  subcategories?: FilterOption[]
 }
 
-export default function ProductsTabTemplate({ products, banners = [], activeCollection, activeType }: ProductsTabProps) {
+export default function ProductsTabTemplate({
+  products,
+  banners = [],
+  activeCollection,
+  activeType,
+  applications = [],
+  categories = [],
+  subcategories = []
+}: ProductsTabProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [showSort, setShowSort] = useState(false)
 
@@ -138,7 +156,13 @@ export default function ProductsTabTemplate({ products, banners = [], activeColl
           <div className="px-4 py-3 bg-white border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-gray-900">All Products</h2>
-              <FilterBottomSheet variant="icon" />
+              <FilterBottomSheet
+                variant="icon"
+                products={products}
+                applications={applications}
+                categories={categories}
+                subcategories={subcategories}
+              />
             </div>
           </div>
 

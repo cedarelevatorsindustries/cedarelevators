@@ -2,10 +2,7 @@
 
 import { FilterGroup } from "./FilterGroup"
 import { CheckboxFilter } from "./CheckboxFilter"
-import { PriceRangeSlider } from "./PriceRangeSlider"
-import { RatingFilter } from "./RatingFilter"
 import { RadioFilter } from "./RadioFilter"
-import { SortFilter } from "./SortFilter"
 import type {
     CatalogFilters,
     PLPFilters,
@@ -92,14 +89,6 @@ export function UnifiedFiltersComponent({
     }
 
     // Section Renderers
-    const renderSort = () => (
-        <FilterGroup title="Sort By" defaultExpanded>
-            <SortFilter
-                value={plpFilters.sort || 'default'}
-                onChange={handleSortChange}
-            />
-        </FilterGroup>
-    )
 
     const renderCategories = () => (
         catalogOptions.categories.length > 0 && (
@@ -166,26 +155,6 @@ export function UnifiedFiltersComponent({
         )
     )
 
-    const renderPrice = () => (
-        <FilterGroup title="Price Range" defaultExpanded>
-            <PriceRangeSlider
-                min={plpOptions.priceRange.min}
-                max={plpOptions.priceRange.max}
-                currentMin={plpFilters.priceRange?.min}
-                currentMax={plpFilters.priceRange?.max}
-                onChange={handlePriceChange}
-            />
-        </FilterGroup>
-    )
-
-    const renderRating = () => (
-        <FilterGroup title="Customer Rating">
-            <RatingFilter
-                selectedRating={plpFilters.minRating}
-                onChange={handleRatingChange}
-            />
-        </FilterGroup>
-    )
 
     const renderApplications = () => (
         catalogOptions.applications.length > 0 && (

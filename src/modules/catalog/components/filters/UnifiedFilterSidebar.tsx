@@ -1,172 +1,202 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { CatalogFiltersComponent } from "./CatalogFilters"
-import { PLPFiltersComponent } from "./PLPFilters"
-import { ActiveFilterChips } from "./ActiveFilterChips"
-import type { CatalogFilters as CatalogFiltersType, PLPFilters as PLPFiltersType, AvailableCatalogOptions, AvailablePLPOptions } from "@/lib/types/filters"
+import { FilterGroup } from "./FilterGroup"
+import { StockFilter } from "./StockFilter"
+import { CheckboxFilter } from "./CheckboxFilter"
+import type { Product } from "@/lib/types/domain"
+
+interface FilterOption {
+    id: string
+    name: string
+    count?: number
+}
 
 interface UnifiedFilterSidebarProps {
     className?: string
+    products?: Product[]
+    // Catalog-specific filter options (only shown on main catalog page)
+    applications?: FilterOption[]
+    categories?: FilterOption[]
+    subcategories?: FilterOption[]
 }
 
-export function UnifiedFilterSidebar({ className, hideExtraFilters = false }: { className?: string, hideExtraFilters?: boolean }) {
+export function UnifiedFilterSidebar({
+    className,
+    products = [],
+    applications = [],
+    categories = [],
+    subcategories = []
+}: UnifiedFilterSidebarProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
 
     // Filter state
-    const [catalogFilters, setCatalogFilters] = useState<CatalogFiltersType>({})
-    const [plpFilters, setPLPFilters] = useState<PLPFiltersType>({})
+    const [availability, setAvailability] = useState<'all' | 'in_stock' | 'out_of_stock'>('all')
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
+    // Catalog-specific filters
+    const [selectedApplications, setSelectedApplications] = useState<string[]>([])
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
 
-    // Available options (from API)
-    const [catalogOptions, setCatalogOptions] = useState<AvailableCatalogOptions>({
-        applications: [],
-        elevatorTypes: [],
-        categories: [],
-        subcategories: []
-    })
-    const [plpOptions, setPLPOptions] = useState<AvailablePLPOptions>({
-        priceRange: { min: 0, max: 50000 },
-        variantOptions: {},
-        ratings: [3, 4, 5]
-    })
+    // Extract variant options grouped by option name
+    const variantOptions = useMemo(() => {
+        const optionGroups: Record<string, Set<string>> = {}
+        products.forEach(p => {
+            p.variants?.forEach(v => {
+                if (v.options && typeof v.options === 'object') {
+                    Object.entries(v.options).forEach(([optionName, optionValue]) => {
+                        if (optionName && optionValue && String(optionValue).toLowerCase() !== 'default') {
+                            const normalizedName = optionName.charAt(0).toUpperCase() + optionName.slice(1).toLowerCase()
+                            if (!optionGroups[normalizedName]) {
+                                optionGroups[normalizedName] = new Set()
+                            }
+                            optionGroups[normalizedName].add(String(optionValue))
+                        }
+                    })
+                }
+            })
+        })
+        const result: Record<string, string[]> = {}
+        Object.entries(optionGroups).forEach(([name, values]) => {
+            result[name] = Array.from(values).sort()
+        })
+        return result
+    }, [products])
 
     // Parse filters from URL
     useEffect(() => {
         const params = new URLSearchParams(searchParams.toString())
 
-        // Catalog filters
-        const applications = params.get('applications')?.split(',').filter(Boolean)
-        const elevatorTypes = params.get('elevator_types')?.split(',').filter(Boolean)
-        const categories = params.get('categories')?.split(',').filter(Boolean)
-        const subcategories = params.get('subcategories')?.split(',').filter(Boolean)
+        const avail = params.get('availability')
+        if (avail === 'in_stock' || avail === 'out_of_stock') {
+            setAvailability(avail)
+        } else {
+            setAvailability('all')
+        }
 
-        setCatalogFilters({
-            applications,
-            elevatorTypes,
-            categories,
-            subcategories
+        // Parse variant options from URL
+        const newSelectedOptions: Record<string, string[]> = {}
+        Object.keys(variantOptions).forEach(optionName => {
+            const key = `option_${optionName}`
+            const values = params.get(key)?.split(',').filter(Boolean) || []
+            if (values.length > 0) {
+                newSelectedOptions[optionName] = values
+            }
         })
+        setSelectedOptions(newSelectedOptions)
 
-        // PLP filters
-        const availability = params.get('availability') as 'in_stock' | 'out_of_stock' | undefined
-        const minRating = params.get('min_rating') ? Number(params.get('min_rating')) : undefined
-        const priceMin = params.get('price_min') ? Number(params.get('price_min')) : undefined
-        const priceMax = params.get('price_max') ? Number(params.get('price_max')) : undefined
+        // Parse catalog filters
+        setSelectedApplications(params.get('applications')?.split(',').filter(Boolean) || [])
+        setSelectedCategories(params.get('categories')?.split(',').filter(Boolean) || [])
+        setSelectedSubcategories(params.get('subcategories')?.split(',').filter(Boolean) || [])
+    }, [searchParams, variantOptions])
 
-        setPLPFilters({
-            availability,
-            minRating,
-            priceRange: priceMin || priceMax ? { min: priceMin || 0, max: priceMax || 50000 } : undefined
-        })
-    }, [searchParams])
-
-    // Fetch available options
-    useEffect(() => {
-        fetchFilterOptions()
-    }, [catalogFilters])
-
-    const fetchFilterOptions = async () => {
-        // TODO: Implement filter options API endpoint
-        // Filters work client-side for now
-        return
+    const handleOptionChange = (optionName: string, values: string[]) => {
+        const updated = { ...selectedOptions }
+        if (values.length > 0) {
+            updated[optionName] = values
+        } else {
+            delete updated[optionName]
+        }
+        setSelectedOptions(updated)
+        applyFilters(availability, updated, selectedApplications, selectedCategories, selectedSubcategories)
     }
 
-    const applyFiltersToURL = (newCatalogFilters: CatalogFiltersType, newPLPFilters: PLPFiltersType) => {
+    const handleAvailabilityChange = (value: 'all' | 'in_stock' | 'out_of_stock') => {
+        setAvailability(value)
+        applyFilters(value, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories)
+    }
+
+    const handleApplicationsChange = (values: string[]) => {
+        setSelectedApplications(values)
+        applyFilters(availability, selectedOptions, values, selectedCategories, selectedSubcategories)
+    }
+
+    const handleCategoriesChange = (values: string[]) => {
+        setSelectedCategories(values)
+        applyFilters(availability, selectedOptions, selectedApplications, values, selectedSubcategories)
+    }
+
+    const handleSubcategoriesChange = (values: string[]) => {
+        setSelectedSubcategories(values)
+        applyFilters(availability, selectedOptions, selectedApplications, selectedCategories, values)
+    }
+
+    const applyFilters = (
+        avail: 'all' | 'in_stock' | 'out_of_stock',
+        options: Record<string, string[]>,
+        apps: string[],
+        cats: string[],
+        subs: string[]
+    ) => {
         const params = new URLSearchParams(searchParams.toString())
 
         // Clear old params
+        params.delete('availability')
         params.delete('applications')
-        params.delete('elevator_types')
         params.delete('categories')
         params.delete('subcategories')
-        params.delete('availability')
-        params.delete('price_min')
-        params.delete('price_max')
-        params.delete('min_rating')
+        Object.keys(variantOptions).forEach(optionName => {
+            params.delete(`option_${optionName}`)
+        })
 
-        // Add catalog filters
-        if (newCatalogFilters.applications?.length) params.set('applications', newCatalogFilters.applications.join(','))
-        if (newCatalogFilters.elevatorTypes?.length) params.set('elevator_types', newCatalogFilters.elevatorTypes.join(','))
-        if (newCatalogFilters.categories?.length) params.set('categories', newCatalogFilters.categories.join(','))
-        if (newCatalogFilters.subcategories?.length) params.set('subcategories', newCatalogFilters.subcategories.join(','))
-
-        // Add PLP filters
-        if (newPLPFilters.availability) params.set('availability', newPLPFilters.availability)
-        if (newPLPFilters.priceRange) {
-            params.set('price_min', String(newPLPFilters.priceRange.min))
-            params.set('price_max', String(newPLPFilters.priceRange.max))
+        // Add new params
+        if (avail !== 'all') {
+            params.set('availability', avail)
         }
-        if (newPLPFilters.minRating) params.set('min_rating', String(newPLPFilters.minRating))
+
+        Object.entries(options).forEach(([optionName, values]) => {
+            if (values.length > 0) {
+                params.set(`option_${optionName}`, values.join(','))
+            }
+        })
+
+        if (apps.length > 0) {
+            params.set('applications', apps.join(','))
+        }
+        if (cats.length > 0) {
+            params.set('categories', cats.join(','))
+        }
+        if (subs.length > 0) {
+            params.set('subcategories', subs.join(','))
+        }
 
         router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
-    const handleCatalogChange = (filters: CatalogFiltersType) => {
-        setCatalogFilters(filters)
-        // Use the new filters directly + current PLP filters
-        applyFiltersToURL(filters, plpFilters)
-    }
-
-    const handlePLPChange = (filters: PLPFiltersType) => {
-        setPLPFilters(filters)
-        // Use current catalog filters + new PLP filters
-        applyFiltersToURL(catalogFilters, filters)
-    }
-
     const handleClearAll = () => {
-        setCatalogFilters({})
-        setPLPFilters({})
+        setAvailability('all')
+        setSelectedOptions({})
+        setSelectedApplications([])
+        setSelectedCategories([])
+        setSelectedSubcategories([])
         router.push(pathname, { scroll: false })
     }
 
-    // Active chips helpers
-    const getActiveChips = () => {
-        const chips: any[] = []
+    // Count active filters
+    const activeFilterCount = useMemo(() => {
+        let count = availability !== 'all' ? 1 : 0
+        Object.values(selectedOptions).forEach(values => {
+            count += values.length
+        })
+        count += selectedApplications.length
+        count += selectedCategories.length
+        count += selectedSubcategories.length
+        return count
+    }, [availability, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories])
 
-        if (catalogFilters.applications?.length) chips.push({ key: 'applications', label: `Apps: ${catalogFilters.applications.length}`, value: catalogFilters.applications })
-        if (catalogFilters.elevatorTypes?.length) chips.push({ key: 'elevator_types', label: `Types: ${catalogFilters.elevatorTypes.length}`, value: catalogFilters.elevatorTypes })
-        if (catalogFilters.categories?.length) chips.push({ key: 'categories', label: `Cats: ${catalogFilters.categories.length}`, value: catalogFilters.categories })
-        if (plpFilters.availability) chips.push({ key: 'availability', label: plpFilters.availability === 'in_stock' ? 'In Stock' : 'Out of Stock', value: plpFilters.availability })
-        if (plpFilters.minRating) chips.push({ key: 'min_rating', label: `${plpFilters.minRating}+ Stars`, value: plpFilters.minRating })
-
-        return chips
-    }
-
-    const handleRemoveChip = (key: string) => {
-        const newCatalog = { ...catalogFilters }
-        const newPLP = { ...plpFilters }
-
-        if (key === 'applications') delete newCatalog.applications
-        if (key === 'elevator_types') delete newCatalog.elevatorTypes
-        if (key === 'categories') delete newCatalog.categories
-        if (key === 'availability') delete newPLP.availability
-        if (key === 'min_rating') delete newPLP.minRating
-
-        setCatalogFilters(newCatalog)
-        setPLPFilters(newPLP)
-        applyFiltersToURL(newCatalog, newPLP)
-    }
-
-    const hasActiveFilters =
-        catalogFilters.applications?.length ||
-        catalogFilters.elevatorTypes?.length ||
-        catalogFilters.categories?.length ||
-        catalogFilters.subcategories?.length ||
-        plpFilters.availability ||
-        plpFilters.priceRange ||
-        plpFilters.minRating
+    const hasVariantOptions = Object.keys(variantOptions).length > 0
 
     return (
         <aside className={`w-full lg:w-80 ${className}`}>
             <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-24 overflow-visible">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-gray-900">Filters</h3>
-                    {hasActiveFilters && (
+                    {activeFilterCount > 0 && (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -178,29 +208,68 @@ export function UnifiedFilterSidebar({ className, hideExtraFilters = false }: { 
                     )}
                 </div>
 
-                <ActiveFilterChips
-                    filters={getActiveChips()}
-                    onRemove={handleRemoveChip}
-                    onClearAll={handleClearAll}
-                />
+                <div className="space-y-0">
+                    {/* Availability Filter */}
+                    <FilterGroup title="Availability" defaultExpanded>
+                        <StockFilter
+                            selectedValue={availability}
+                            onChange={handleAvailabilityChange}
+                        />
+                    </FilterGroup>
 
-                <div className="space-y-6">
-                    {/* Catalog Filters */}
-                    <CatalogFiltersComponent
-                        filters={catalogFilters}
-                        onChange={handleCatalogChange}
-                        availableOptions={catalogOptions}
-                    />
+                    {/* Variant Option Filters - Grouped by Option Name */}
+                    {hasVariantOptions && Object.entries(variantOptions).map(([optionName, values]) => (
+                        <FilterGroup key={optionName} title={optionName}>
+                            <CheckboxFilter
+                                options={values.map(v => ({ value: v, label: v }))}
+                                selectedValues={selectedOptions[optionName] || []}
+                                onChange={(selected) => handleOptionChange(optionName, selected)}
+                            />
+                        </FilterGroup>
+                    ))}
 
-                    <Separator />
+                    {/* Catalog-Specific Filters */}
+                    {applications.length > 0 && (
+                        <FilterGroup title="Applications">
+                            <CheckboxFilter
+                                options={applications.map(a => ({
+                                    value: a.id,
+                                    label: a.name,
+                                    count: a.count
+                                }))}
+                                selectedValues={selectedApplications}
+                                onChange={handleApplicationsChange}
+                            />
+                        </FilterGroup>
+                    )}
 
-                    {/* PLP Filters */}
-                    <PLPFiltersComponent
-                        filters={plpFilters}
-                        onChange={handlePLPChange}
-                        availableOptions={plpOptions}
-                        hideExtraFilters={hideExtraFilters}
-                    />
+                    {categories.length > 0 && (
+                        <FilterGroup title="Categories">
+                            <CheckboxFilter
+                                options={categories.map(c => ({
+                                    value: c.id,
+                                    label: c.name,
+                                    count: c.count
+                                }))}
+                                selectedValues={selectedCategories}
+                                onChange={handleCategoriesChange}
+                            />
+                        </FilterGroup>
+                    )}
+
+                    {subcategories.length > 0 && (
+                        <FilterGroup title="Subcategories">
+                            <CheckboxFilter
+                                options={subcategories.map(s => ({
+                                    value: s.id,
+                                    label: s.name,
+                                    count: s.count
+                                }))}
+                                selectedValues={selectedSubcategories}
+                                onChange={handleSubcategoriesChange}
+                            />
+                        </FilterGroup>
+                    )}
                 </div>
             </div>
         </aside>

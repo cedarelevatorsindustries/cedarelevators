@@ -1,38 +1,72 @@
 "use client"
 
-import { useState, useEffect, type ReactElement } from "react"
+import { useState, useMemo, type ReactElement } from "react"
 import { Product } from "@/lib/types/domain"
-import { ArrowLeft, Search } from "lucide-react"
+import { ArrowLeft, Search, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import ProductCard from "@/components/ui/product-card"
 import { Application } from "@/lib/data/applications"
+import { FilterSidebar } from "@/modules/catalog/components/mobile/filter-sidebar"
 
 interface ApplicationDetailTemplateProps {
     application: Application
     products: Product[]
-    allApplications: Application[]
     onBack?: () => void
 }
 
 export default function ApplicationDetailTemplate({
     application,
     products,
-    allApplications,
     onBack
 }: ApplicationDetailTemplateProps): ReactElement {
     const router = useRouter()
-    const [selectedApplicationId, setSelectedApplicationId] = useState<string>(application.id)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
-    // Filter products by selected application
-    const filteredProducts = products.filter(p => p.application_id === selectedApplicationId)
+    // Extract unique categories from products
+    const categoryFilters = useMemo(() => {
+        const categoryMap = new Map<string, { id: string; name: string; count: number }>()
 
-    // Auto-select current application on mount
-    useEffect(() => {
-        setSelectedApplicationId(application.id)
-    }, [application.id])
+        products.forEach(product => {
+            product.categories?.forEach(category => {
+                if (categoryMap.has(category.id)) {
+                    const existing = categoryMap.get(category.id)!
+                    existing.count++
+                } else {
+                    categoryMap.set(category.id, {
+                        id: category.id,
+                        name: category.name,
+                        count: 1
+                    })
+                }
+            })
+        })
 
-    // Get selected application details
-    const selectedApp = allApplications.find(app => app.id === selectedApplicationId) || application
+        return Array.from(categoryMap.values())
+    }, [products])
+
+    // Filter products based on search query and category
+    const filteredProducts = useMemo(() => {
+        let filtered = products
+
+        // Apply category filter
+        if (activeCategory) {
+            filtered = filtered.filter(product =>
+                product.categories?.some(cat => cat.id === activeCategory)
+            )
+        }
+
+        // Apply search filter
+        if (searchQuery.trim()) {
+            filtered = filtered.filter(product =>
+                product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+        }
+
+        return filtered
+    }, [products, activeCategory, searchQuery])
 
     return (
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
@@ -46,87 +80,101 @@ export default function ApplicationDetailTemplate({
                 </button>
                 <div className="flex-1">
                     <h1 className="text-base font-bold text-gray-900 line-clamp-1">
-                        {selectedApp.name}
+                        {application.name}
                     </h1>
                     <p className="text-xs text-gray-500">
                         {filteredProducts.length} products
                     </p>
                 </div>
-                <button className="p-2 hover:bg-gray-100 rounded-full">
+                <button
+                    onClick={() => setIsSearchOpen(!isSearchOpen)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                >
                     <Search size={20} />
                 </button>
             </div>
 
-            {/* Main Content - Scrollable */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Left Sidebar - Applications */}
-                <div className="w-24 bg-gray-50 border-r border-gray-200 overflow-y-auto">
-                    <div className="py-2">
-                        {allApplications.map((app) => (
+            {/* Search Bar - Collapsible */}
+            {isSearchOpen && (
+                <div className="bg-white border-b border-gray-200 px-4 py-3 animate-in slide-in-from-top duration-200">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            autoFocus
+                        />
+                        {searchQuery && (
                             <button
-                                key={app.id}
-                                onClick={() => setSelectedApplicationId(app.id)}
-                                className={`w-full px-2 py-3 text-center transition-all ${selectedApplicationId === app.id
-                                        ? "bg-white border-l-2 border-orange-600 text-orange-600 font-semibold"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }`}
+                                onClick={() => setSearchQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                             >
-                                <div className="flex flex-col items-center gap-1">
-                                    {/* Icon/Image */}
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden ${selectedApplicationId === app.id
-                                            ? "bg-orange-50"
-                                            : "bg-white"
-                                        }`}>
-                                        {app.thumbnail_image ? (
-                                            <img
-                                                src={app.thumbnail_image}
-                                                alt={app.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <span className="text-2xl">
-                                                {app.icon || "📦"}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className="text-xs leading-tight line-clamp-2">
-                                        {app.name}
-                                    </span>
-                                </div>
+                                <X size={18} />
                             </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Right Content - Products Grid */}
-                <div className="flex-1 overflow-y-auto">
-                    <div className="p-3">
-                        {/* Products Grid - 2 Columns */}
-                        <div className="grid grid-cols-2 gap-3">
-                            {filteredProducts.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                    variant="mobile"
-                                />
-                            ))}
-                        </div>
-
-                        {/* Empty State */}
-                        {filteredProducts.length === 0 && (
-                            <div className="text-center py-12">
-                                <div className="text-gray-400 text-5xl mb-3">📦</div>
-                                <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                    No products found
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                    Check back soon for new items in {selectedApp.name}
-                                </p>
-                            </div>
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* Main Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="p-3 pb-24">
+                    {/* Products Grid - 2 Columns */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {filteredProducts.map((product) => (
+                            <ProductCard
+                                key={product.id}
+                                product={product}
+                                variant="mobile"
+                            />
+                        ))}
+                    </div>
+
+                    {/* Empty State */}
+                    {filteredProducts.length === 0 && (
+                        <div className="text-center py-12">
+                            <div className="text-gray-400 text-5xl mb-3">
+                                {searchQuery || activeCategory ? "🔍" : "📦"}
+                            </div>
+                            <h3 className="text-base font-semibold text-gray-900 mb-1">
+                                {searchQuery || activeCategory ? "No products found" : "No products available"}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                                {searchQuery
+                                    ? `No products match "${searchQuery}"`
+                                    : activeCategory
+                                        ? "No products in this category"
+                                        : `Check back soon for new items in ${application.name}`
+                                }
+                            </p>
+                            {(searchQuery || activeCategory) && (
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery("")
+                                        setActiveCategory(null)
+                                    }}
+                                    className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Filter Sidebar - Only show if categories are available */}
+            {categoryFilters.length > 0 && (
+                <FilterSidebar
+                    title="Categories"
+                    filters={categoryFilters}
+                    activeFilter={activeCategory}
+                    onFilterChange={setActiveCategory}
+                />
+            )}
         </div>
     )
 }
