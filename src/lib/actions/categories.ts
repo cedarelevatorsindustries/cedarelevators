@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { getCached } from "@/lib/cache/redis"
+import { CACHE_KEYS, DEFAULT_TTL } from "@/lib/utils/cache-keys"
 import type {
   Category,
   CategoryWithChildren,
@@ -24,6 +26,19 @@ function ensureSupabase(client: ReturnType<typeof createServerSupabaseClient>) {
 // =============================================
 
 export async function getCategories(filters?: CategoryFilters) {
+  // Generate cache key based on filters
+  const cacheKey = CACHE_KEYS.CATEGORIES.LIST() + (filters ? `:${JSON.stringify(filters)}` : '')
+
+  return getCached(
+    cacheKey,
+    async () => {
+      return await getCategoriesUncached(filters)
+    },
+    DEFAULT_TTL.CATEGORIES // 1 hour
+  )
+}
+
+async function getCategoriesUncached(filters?: CategoryFilters) {
   try {
     const supabase = ensureSupabase(createServerSupabaseClient())
 
@@ -58,36 +73,46 @@ export async function getCategories(filters?: CategoryFilters) {
 
     if (error) throw error
 
-    // Enhance with stats for each category
-    const categoriesWithStats = await Promise.all(
-      (data || []).map(async (category) => {
-        // Count subcategories via junction table
-        const { count: subcategoryCount } = await supabase
-          .from('category_subcategories')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
+    // PERFORMANCE OPTIMIZATION: Batch fetch counts instead of N+1 queries
+    const categoryIds = (data || []).map(c => c.id)
 
-        // Count products via product_categories
-        const { count: productCount } = await supabase
-          .from('product_categories')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
+    // Helper to count items by key
+    const countByKey = (items: any[], key: string) => {
+      return items.reduce((acc, item) => {
+        const keyValue = item[key]
+        acc[keyValue] = (acc[keyValue] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+    }
 
-        // Count applications using this category
-        const { count: applicationCount } = await supabase
-          .from('application_categories')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id)
+    // Fetch all counts in parallel with 3 queries instead of N queries per category
+    const [subcategoryData, productData, applicationData] = await Promise.all([
+      supabase
+        .from('category_subcategories')
+        .select('category_id')
+        .in('category_id', categoryIds),
+      supabase
+        .from('product_categories')
+        .select('category_id')
+        .in('category_id', categoryIds),
+      supabase
+        .from('application_categories')
+        .select('category_id')
+        .in('category_id', categoryIds)
+    ])
 
-        return {
-          ...category,
-          name: category.title, // Map database 'title' to 'name' for UI
-          subcategory_count: subcategoryCount || 0,
-          product_count: productCount || 0,
-          application_count: applicationCount || 0
-        }
-      })
-    )
+    const subcategoryCounts = countByKey(subcategoryData.data || [], 'category_id')
+    const productCounts = countByKey(productData.data || [], 'category_id')
+    const applicationCounts = countByKey(applicationData.data || [], 'category_id')
+
+    // Map counts to categories
+    const categoriesWithStats = (data || []).map(category => ({
+      ...category,
+      name: category.title,
+      subcategory_count: subcategoryCounts[category.id] || 0,
+      product_count: productCounts[category.id] || 0,
+      application_count: applicationCounts[category.id] || 0
+    }))
 
     const stats = await getCategoryStats()
 
@@ -113,6 +138,18 @@ export async function getCategories(filters?: CategoryFilters) {
 // =============================================
 
 export async function getCategoryById(id: string) {
+  const cacheKey = CACHE_KEYS.CATEGORIES.DETAIL(id)
+
+  return getCached(
+    cacheKey,
+    async () => {
+      return await getCategoryByIdUncached(id)
+    },
+    DEFAULT_TTL.CATEGORIES
+  )
+}
+
+async function getCategoryByIdUncached(id: string) {
   try {
     const supabase = ensureSupabase(createServerSupabaseClient())
 
@@ -155,6 +192,18 @@ export async function getCategoryById(id: string) {
 // =============================================
 
 export async function getCategoryBySlug(slug: string) {
+  const cacheKey = CACHE_KEYS.CATEGORIES.BY_SLUG(slug)
+
+  return getCached(
+    cacheKey,
+    async () => {
+      return await getCategoryBySlugUncached(slug)
+    },
+    DEFAULT_TTL.CATEGORIES
+  )
+}
+
+async function getCategoryBySlugUncached(slug: string) {
   try {
     const supabase = ensureSupabase(createServerSupabaseClient())
 
@@ -235,6 +284,13 @@ export async function createCategory(formData: CategoryFormData) {
 
     console.log('[createCategory] Created category:', data?.id)
 
+    // Invalidate caches
+    const { invalidateCache } = await import('@/lib/middleware/cache')
+    await invalidateCache([
+      'categories:*',
+      'admin:*'
+    ])
+
     revalidatePath('/admin/categories')
     revalidatePath('/')
 
@@ -292,6 +348,13 @@ export async function updateCategory(id: string, formData: Partial<CategoryFormD
 
     if (error) throw error
 
+    // Invalidate caches
+    const { invalidateCache } = await import('@/lib/middleware/cache')
+    await invalidateCache([
+      'categories:*',
+      'admin:*'
+    ])
+
     revalidatePath('/admin/categories')
     revalidatePath('/')
 
@@ -346,6 +409,13 @@ export async function deleteCategory(id: string) {
       .eq('id', id)
 
     if (error) throw error
+
+    // Invalidate caches
+    const { invalidateCache } = await import('@/lib/middleware/cache')
+    await invalidateCache([
+      'categories:*',
+      'admin:*'
+    ])
 
     revalidatePath('/admin/categories')
     revalidatePath('/')

@@ -1,6 +1,8 @@
 "use server"
 
 import { createAdminClient } from "@/lib/supabase/server"
+import { getCached } from "@/lib/cache/redis"
+import { CACHE_KEYS, DEFAULT_TTL } from "@/lib/utils/cache-keys"
 import type { Product, ProductFilters } from "@/lib/types/products"
 
 /**
@@ -8,6 +10,19 @@ import type { Product, ProductFilters } from "@/lib/types/products"
  * Uses admin client to bypass RLS and show all product statuses
  */
 export async function getProducts(filters: ProductFilters = {}, page = 1, limit = 20) {
+    // Generate cache key based on filters and pagination
+    const cacheKey = CACHE_KEYS.PRODUCTS.LIST(JSON.stringify({ filters, page, limit }))
+
+    return getCached(
+        cacheKey,
+        async () => {
+            return await getProductsUncached(filters, page, limit)
+        },
+        DEFAULT_TTL.PRODUCTS // 15 minutes
+    )
+}
+
+async function getProductsUncached(filters: ProductFilters = {}, page = 1, limit = 20) {
     const supabase = createAdminClient()
 
     let query = supabase
@@ -86,6 +101,18 @@ export async function getProduct(id: string) {
  * Fetch product with variants and classifications
  */
 export async function getProductWithVariants(id: string) {
+    const cacheKey = CACHE_KEYS.PRODUCTS.DETAIL(id)
+
+    return getCached(
+        cacheKey,
+        async () => {
+            return await getProductWithVariantsUncached(id)
+        },
+        DEFAULT_TTL.PRODUCTS
+    )
+}
+
+async function getProductWithVariantsUncached(id: string) {
     const supabase = createAdminClient()
 
     const { data, error } = await supabase
