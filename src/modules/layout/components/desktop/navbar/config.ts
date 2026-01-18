@@ -381,8 +381,8 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   // Catalog - Show page title with solid topbar
   if (pathname === '/catalog' || pathname.startsWith('/catalog/')) return 'browse-products'
 
-  // Quote - Show page title
-  if (pathname === '/quotes/new' || pathname.startsWith('/quotes/new')) return 'account'
+  // Quote pages - Show page title with bottom nav
+  if (pathname === '/quotes' || pathname.startsWith('/quotes/')) return 'account'
 
   // Cart - Show page title
   if (pathname === '/cart') return 'account'

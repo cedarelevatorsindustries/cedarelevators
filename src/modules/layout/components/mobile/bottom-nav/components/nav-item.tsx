@@ -14,9 +14,9 @@ export function NavItem({ href, icon: Icon, label, isActive, showBadge = false }
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center justify-center transition-colors relative ${
-        isActive ? "text-[#ff3705]" : "text-gray-600"
-      }`}
+      prefetch={true}
+      className={`flex flex-col items-center justify-center relative touch-manipulation ${isActive ? "text-[#ff3705]" : "text-gray-600 active:text-[#ff3705]"
+        }`}
     >
       <div className="relative">
         <Icon size={20} />
