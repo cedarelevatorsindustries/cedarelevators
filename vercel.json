@@ -50,5 +50,11 @@
         }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/account/delete",
+      "schedule": "0 0 * * *"
+    }
   ]
 }
