@@ -30,6 +30,7 @@ export function VerificationFilters({ filters, onFilterChange }: VerificationFil
           onChange={(e) =>
             onFilterChange({ ...filters, search: e.target.value })
           }
+          className="focus-visible:ring-0 focus-visible:border-gray-900"
           data-testid="verification-search-input"
         />
       </div>

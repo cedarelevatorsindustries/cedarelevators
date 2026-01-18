@@ -3,7 +3,7 @@
 import { StatusStripV2 } from "@/modules/quote/components/status-strip-v2"
 import { ActionNeededV2 } from "@/modules/quote/components/action-needed-v2"
 import { ActionCardsGrid } from "@/modules/quote/components/action-cards-grid"
-import { QuotesSidebar } from "@/modules/quote/components/quotes-sidebar"
+import QuotesOrdersSnapshot from "./sections/quotes-orders-snapshot"
 import type { BusinessHubData } from "@/lib/actions/business-hub"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 
@@ -62,10 +62,7 @@ export default function BusinessHubTab({ data, collections = [] }: BusinessHubTa
       <ActionCardsGrid />
 
       {/* 5. Quotes & Orders Section */}
-      <QuotesSidebar
-        activeQuotes={stats.activeQuotes}
-        activeOrders={stats.activeOrders}
-      />
+      <QuotesOrdersSnapshot />
 
       {/* 3. Exclusive Business Collections - Moved to bottom */}
       {transformedCollections.map((collection) => (

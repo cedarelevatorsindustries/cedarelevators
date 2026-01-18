@@ -112,7 +112,7 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
 
 
 
-        // Create new user
+        // Create new user - wrap in try-catch to handle race conditions
         const { data: newUser, error } = await supabase
             .from('users')
             .insert({
@@ -125,24 +125,70 @@ export async function getOrCreateUser(clerkUserId: string, clerkUserObj?: User |
             .single()
 
         if (error) {
+            // Check if it's a duplicate key error (race condition - user was created by another request)
+            if (error.code === '23505' && error.message?.includes('users_clerk_user_id_key')) {
+                console.log('User creation race condition detected, fetching existing user')
+                // Query for the user that was created by the other request
+                const { data: raceUser } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('clerk_user_id', clerkUserId)
+                    .single()
+
+                if (raceUser) {
+                    return raceUser
+                }
+            }
+
             console.error('Error creating user:', error)
             return null
         }
 
 
 
-        // Create default individual profile with clerk_user_id for easy lookup
-        const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-                user_id: newUser.id,
-                clerk_user_id: clerkUserId,
-                profile_type: 'individual',
-                is_active: true
+        // Check account type from Clerk metadata to create the correct profile type
+        const accountType = clerkUser.unsafeMetadata?.accountType as string | undefined
+
+        if (accountType === 'business') {
+            // Create business profile for users who signed up as business
+            const companyName = clerkUser.unsafeMetadata?.company as string | undefined
+            const businessName = companyName || `${newUser.name || 'My'} Business`
+
+            console.log('[getOrCreateUser] Creating business profile for new user:', {
+                userId: newUser.id,
+                businessName,
+                accountType
             })
 
-        if (profileError) {
-            console.error('Error creating default profile:', profileError)
+            // Use the createBusinessProfile function to ensure all related entities are created
+            const result = await createBusinessProfile(newUser.id, { name: businessName }, clerkUserId)
+
+            if (!result.success) {
+                console.error('Error creating business profile for new user:', result.error)
+                // Fall back to individual profile if business creation fails
+                await supabase
+                    .from('user_profiles')
+                    .insert({
+                        user_id: newUser.id,
+                        clerk_user_id: clerkUserId,
+                        profile_type: 'individual',
+                        is_active: true
+                    })
+            }
+        } else {
+            // Create default individual profile with clerk_user_id for easy lookup
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .insert({
+                    user_id: newUser.id,
+                    clerk_user_id: clerkUserId,
+                    profile_type: 'individual',
+                    is_active: true
+                })
+
+            if (profileError) {
+                console.error('Error creating default profile:', profileError)
+            }
         }
 
         return newUser
@@ -233,14 +279,27 @@ export async function getUserWithProfile(clerkUserId: string, clerkUserObj?: Use
                     // Fetch additional verification data (GST, Phone, Address)
                     if (business.id) {
                         try {
-                            // 1. Fetch from business_verifications
+                            // 1. Fetch from business_verifications - query by user_id since business_id may be null
                             const { data: verificationData } = await supabase
                                 .from('business_verifications')
-                                .select('gstin, contact_person_phone, legal_business_name, contact_person_name')
-                                .eq('business_id', business.id)
+                                .select('status, gstin, contact_person_phone, legal_business_name, contact_person_name')
+                                .eq('user_id', user.id)
                                 .order('created_at', { ascending: false })
                                 .limit(1)
                                 .maybeSingle()
+
+
+                            // Map verification application status to business verification_status
+                            // This ensures the UI shows the correct pending/approved/rejected status
+                            if (verificationData?.status) {
+                                const statusMap: Record<string, 'verified' | 'pending' | 'rejected' | 'unverified'> = {
+                                    'pending': 'pending',
+                                    'approved': 'verified',
+                                    'rejected': 'rejected',
+                                    'incomplete': 'unverified'
+                                }
+                                business.verification_status = statusMap[verificationData.status] || 'unverified'
+                            }
 
                             // 2. Fetch address from user_addresses
                             // Prefer business address or default address
@@ -355,7 +414,8 @@ export async function createBusinessProfile(
     userId: string,
     businessData: {
         name: string
-    }
+    },
+    clerkUserId?: string  // Optional: If provided, skips the query
 ): Promise<{ success: boolean; businessId?: string; error?: string }> {
     try {
         const supabase = createAdminClient()
@@ -396,20 +456,32 @@ export async function createBusinessProfile(
                 role: 'owner'
             })
 
-        // Deactivate individual profile
-        await supabase
-            .from('user_profiles')
-            .update({ is_active: false })
-            .eq('user_id', userId)
-            .eq('profile_type', 'individual')
+        // Only deactivate individual profile if it exists (not during initial signup)
+        if (!clerkUserId) {
+            await supabase
+                .from('user_profiles')
+                .update({ is_active: false })
+                .eq('user_id', userId)
+                .eq('profile_type', 'individual')
+        }
+
+        // Get clerk_user_id if not provided
+        let actualClerkUserId = clerkUserId
+        if (!actualClerkUserId) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('clerk_user_id')
+                .eq('id', userId)
+                .single()
+            actualClerkUserId = userData?.clerk_user_id
+        }
 
         // Create and activate business profile
-        // Include clerk_user_id for sync operations
         const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
                 user_id: userId,
-                clerk_user_id: (await supabase.from('users').select('clerk_user_id').eq('id', userId).single()).data?.clerk_user_id,
+                clerk_user_id: actualClerkUserId,
                 profile_type: 'business',
                 is_active: true // Auto-activate business profile
             })

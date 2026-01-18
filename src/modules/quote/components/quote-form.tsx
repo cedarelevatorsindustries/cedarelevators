@@ -154,22 +154,8 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
     const handleAnimationComplete = () => {
         if (!successData) return;
 
-        // Redirect logic based on user type and device
-        if (userType === 'guest') {
-            // Guest users go to success page
-            router.push(`/quotes/success?quoteId=${successData.id}&quoteNumber=${encodeURIComponent(successData.quoteNumber)}`);
-        } else if (userType === 'business' || userType === 'verified') {
-            // Business users: Desktop -> Home (Business Hub), Mobile -> Quotes
-            const isMobile = window.innerWidth < 768; // md breakpoint
-            if (isMobile) {
-                router.push('/quotes');
-            } else {
-                router.push('/?tab=business'); // Business Hub tab
-            }
-        } else {
-            // Individual users go to quotes page
-            router.push('/quotes');
-        }
+        // All users go to quote success/confirmation page
+        router.push(`/quotes/success?quoteId=${successData.id}&quoteNumber=${encodeURIComponent(successData.quoteNumber)}`);
     };
 
     if (showSuccessAnimation) {
@@ -184,16 +170,16 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
             {/* Header Section */}
             <div className="mb-8">
                 <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                             {userType === 'guest' ? 'Get a Custom Quote' :
                                 userType === 'verified' ? 'Create Bulk Quote' : 'Request New Quote'}
                         </h1>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-sm sm:text-base text-gray-600 mt-1">
                             {userType === 'guest' ? 'Tell us what you need and we\'ll get back to you within 24 hours.' :
                                 'Fill out the details below to receive a formal quotation.'}
                         </p>
@@ -361,22 +347,6 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                         <p className="text-sm text-gray-600 mt-1">Tell us more about your requirements</p>
                     </div>
                     <div className="p-6 space-y-6">
-                        {/* Bulk Pricing Toggle */}
-                        {permissions.hasBulkPricing && (
-                            <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <input
-                                    type="checkbox"
-                                    id="bulk_pricing_requested"
-                                    {...register("bulk_pricing_requested")}
-                                    className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                                />
-                                <label htmlFor="bulk_pricing_requested" className="flex-1 cursor-pointer">
-                                    <span className="text-sm font-medium text-gray-900">Request Bulk Pricing</span>
-                                    <p className="text-xs text-gray-600 mt-0.5">Get special rates for large orders</p>
-                                </label>
-                            </div>
-                        )}
-
                         {/* Notes */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">

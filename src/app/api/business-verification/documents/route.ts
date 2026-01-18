@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { uploadToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary/upload'
 
 export async function POST(request: NextRequest) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Get the user from users table using clerk_user_id
         const { data: user, error: userError } = await supabase
@@ -59,23 +59,21 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle()
 
-        const userIdForCheck = userProfile?.id || user.id
-
-        // Verify ownership of verification
+        // Verify ownership of verification using users.id (not user_profiles.id)
         const { data: verification, error: verifyError } = await supabase
             .from('business_verifications')
             .select('id, user_id, status')
             .eq('id', verificationId)
-            .eq('user_id', userIdForCheck)
+            .eq('user_id', user.id)
             .single()
 
         if (verifyError || !verification) {
+            console.error('[Document Upload] Verification not found:', {
+                verificationId,
+                userId: user.id,
+                error: verifyError
+            })
             return NextResponse.json(
                 { success: false, error: 'Verification not found' },
                 { status: 404 }
@@ -158,7 +156,22 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
+
+        const supabase = createAdminClient()
+
+        // Get the user from users table using clerk_user_id
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('clerk_user_id', userId)
+            .maybeSingle()
+
+        if (userError || !user) {
+            return NextResponse.json(
+                { success: false, error: 'User not found' },
+                { status: 404 }
+            )
+        }
 
         // Get document and verify ownership
         const { data: document, error: fetchError } = await supabase
@@ -177,8 +190,8 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        // Verify ownership
-        if (document.verification.user_id !== userId) {
+        // Verify ownership - compare user.id (UUID) with verification.user_id (UUID)
+        if (document.verification.user_id !== user.id) {
             return NextResponse.json(
                 { success: false, error: 'Unauthorized' },
                 { status: 403 }

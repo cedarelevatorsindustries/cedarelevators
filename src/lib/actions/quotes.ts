@@ -6,11 +6,11 @@ import { revalidatePath } from 'next/cache'
 import { generateQuoteNumber } from '@/lib/utils/quote-number-generator'
 
 // Helper function to determine quote priority based on user tier
-function getQuotePriority(accountType: 'guest' | 'individual' | 'business', verificationStatus?: string | null): 'low' | 'normal' | 'medium' | 'high' {
+function getQuotePriority(accountType: 'guest' | 'individual' | 'business', verificationStatus?: string | null): 'low' | 'normal' | 'high' | 'urgent' {
   if (accountType === 'guest') return 'low';
   if (accountType === 'individual') return 'normal';
   if (accountType === 'business') {
-    return verificationStatus === 'verified' ? 'high' : 'medium';
+    return verificationStatus === 'verified' ? 'urgent' : 'high';
   }
   return 'normal';
 }
@@ -144,7 +144,10 @@ export async function createQuote(data: CreateQuoteInput) {
         .from('quote_attachments')
         .insert(attachData);
 
-      if (attachError) throw new Error("Failed to save attachments");
+      if (attachError) {
+        console.error('Quote attachments insert error:', attachError);
+        throw new Error("Failed to save attachments");
+      }
     }
 
     revalidatePath('/quotes');

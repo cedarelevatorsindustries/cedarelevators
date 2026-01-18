@@ -95,7 +95,7 @@ export function CustomersFilters({
             placeholder="Search by email, name, or company..."
             value={filters.search || ''}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
+            className="pl-10 focus-visible:ring-0 focus-visible:border-gray-900"
             data-testid="search-input"
           />
         </div>

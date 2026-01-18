@@ -10,11 +10,15 @@ interface ConsolidatedAccountFormProps {
     onUploadAvatar: (file: File) => Promise<string>
 }
 
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+
 export default function ConsolidatedAccountForm({
     user,
     onUpdatePersonal,
     onUploadAvatar
 }: ConsolidatedAccountFormProps) {
+    const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [personalData, setPersonalData] = useState({
         first_name: user?.first_name || '',
@@ -27,9 +31,11 @@ export default function ConsolidatedAccountForm({
         setIsLoading(true)
         try {
             await onUpdatePersonal(personalData)
-            // Show success message
+            toast.success('Profile updated successfully')
+            router.push('/profile')
         } catch (error) {
             console.error('Error saving changes:', error)
+            toast.error('Failed to update profile')
         } finally {
             setIsLoading(false)
         }

@@ -119,9 +119,47 @@ export function useProfile() {
   }
 
   const uploadAvatar = async (file: File): Promise<string> => {
-    // TODO: Implement avatar upload
-    console.log('Uploading avatar:', file)
-    return ''
+    if (!clerkUser) {
+      toast.error('User not authenticated')
+      throw new Error('User not authenticated')
+    }
+
+    try {
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error('Image size must be less than 5MB')
+        throw new Error('File size exceeds 5MB')
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file')
+        throw new Error('Invalid file type')
+      }
+
+      toast.loading('Uploading avatar...')
+
+      // Upload to Clerk
+      await clerkUser.setProfileImage({ file })
+
+      // Reload user to get the new image URL
+      await clerkUser.reload()
+
+      // Update local state with new image URL
+      const newAvatarUrl = clerkUser.imageUrl
+      setUser(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : null)
+
+      toast.dismiss()
+      toast.success('Profile photo updated successfully!')
+
+      return newAvatarUrl
+    } catch (error: any) {
+      toast.dismiss()
+      console.error('Error uploading avatar:', error)
+      toast.error(error.message || 'Failed to upload avatar')
+      throw error
+    }
   }
 
   const addAddress = async (address: Omit<Address, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {

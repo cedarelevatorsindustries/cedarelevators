@@ -90,6 +90,7 @@ export interface BusinessProfile {
   verified_at?: string
   verification_requested_at?: string
   rejected_at?: string
+  previous_rejection_reason?: string
   last_verification_check_at?: string
   documents_count?: number
   created_at: string

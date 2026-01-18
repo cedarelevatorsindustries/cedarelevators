@@ -32,8 +32,6 @@ export default async function VerifyOTPPage({ searchParams }: Props) {
     <AuthSplitLayout
       illustrationImage="/images/auth-pannels/otp-verification.png"
       illustrationAlt="Email verification illustration"
-      overlayTitle="Almost There!"
-      overlaySubtitle="Verify your email to get started with Cedar Elevators"
     >
       <EmailOTPForm email={decodeURIComponent(email)} />
     </AuthSplitLayout>

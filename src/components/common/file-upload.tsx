@@ -36,29 +36,42 @@ export function FileUpload({
 
     const uploadToCloudinary = async (file: File): Promise<UploadedFile | null> => {
         if (!cloudinaryCloudName) {
-            toast.error('Cloudinary not configured')
+            toast.error('Cloudinary not configured - missing cloud name')
+            console.error('Missing NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME environment variable')
             return null
         }
+
+        console.log('Uploading to Cloudinary:', {
+            cloudName: cloudinaryCloudName,
+            preset: cloudinaryUploadPreset,
+            fileName: file.name,
+            fileType: file.type
+        })
+
+        // Determine resource type based on file type
+        const isPdf = file.type === 'application/pdf'
+        const resourceType = isPdf ? 'raw' : 'image'
 
         const formData = new FormData()
         formData.append('file', file)
         formData.append('upload_preset', cloudinaryUploadPreset)
-        formData.append('folder', 'quote_attachments')
 
         try {
-            const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/upload`,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            )
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/${resourceType}/upload`
+            console.log('Upload URL:', uploadUrl)
 
-            if (!response.ok) {
-                throw new Error('Upload failed')
-            }
+            const response = await fetch(uploadUrl, {
+                method: 'POST',
+                body: formData
+            })
 
             const data = await response.json()
+            console.log('Cloudinary response:', data)
+
+            if (!response.ok) {
+                console.error('Cloudinary upload error:', data)
+                throw new Error(data.error?.message || `Upload failed (${response.status})`)
+            }
 
             return {
                 name: file.name,
@@ -66,9 +79,9 @@ export function FileUpload({
                 size: file.size,
                 publicId: data.public_id
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Cloudinary upload error:', error)
-            toast.error(`Failed to upload ${file.name}`)
+            toast.error(error.message || `Failed to upload ${file.name}`)
             return null
         }
     }

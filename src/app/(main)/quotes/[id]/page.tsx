@@ -37,13 +37,43 @@ export default async function QuoteDetailPage({ params }: PageProps) {
 
     if (!user) {
         userType = 'guest';
-    } else if (user.publicMetadata?.verification_status === 'verified' || user.publicMetadata?.role === 'admin') {
-        userType = 'verified';
-    } else if (user.publicMetadata?.account_type === 'business') {
-        userType = 'business';
     } else {
-        userType = 'individual';
+        // First check Clerk unsafeMetadata (most reliable source for account type)
+        const unsafeMetadata = user.unsafeMetadata as any;
+        const accountType = unsafeMetadata?.account_type || unsafeMetadata?.accountType;
+        const verificationStatus = unsafeMetadata?.verification_status || unsafeMetadata?.verificationStatus;
+        const isVerified = unsafeMetadata?.is_verified;
+
+        console.log('Clerk metadata:', { accountType, verificationStatus, isVerified });
+
+        if (user.publicMetadata?.role === 'admin') {
+            userType = 'verified';
+        } else if (verificationStatus === 'verified' || verificationStatus === 'approved' || isVerified === true) {
+            userType = 'verified';
+        } else if (accountType === 'business') {
+            // Check businesses table for verification status
+            const { createClerkSupabaseClient } = await import('@/lib/supabase/server');
+            const supabase = await createClerkSupabaseClient();
+
+            const { data: businessData } = await supabase
+                .from('businesses')
+                .select('verification_status')
+                .eq('user_id', userId)
+                .single();
+
+            console.log('Business data from DB:', businessData);
+
+            if (businessData?.verification_status === 'verified' || businessData?.verification_status === 'approved') {
+                userType = 'verified';
+            } else {
+                userType = 'business';
+            }
+        } else {
+            userType = 'individual';
+        }
     }
+
+    console.log('Final userType:', userType);
 
     return (
         <div className="container py-8 max-w-5xl mx-auto px-4">

@@ -192,26 +192,22 @@ export default function AccountOverviewSection({
         )}>
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              {verificationStatus === 'pending' ? (
-                <div className="w-16 h-16 flex items-center justify-center">
-                  <img
-                    src="/images/verification/verification_illustration.png"
-                    alt="Verification in progress"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertCircle className="text-red-600" size={24} />
-                </div>
-              )}
+              <div className="w-24 h-24 flex items-center justify-center">
+                <img
+                  src="/images/verification/verification_illustration.png"
+                  alt="Verification Status"
+                  className="w-full h-full object-contain"
+                />
+              </div>
             </div>
 
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {verificationStatus === 'pending'
                   ? 'Verification in Progress'
-                  : 'Complete Business Verification'
+                  : verificationStatus === 'rejected'
+                    ? 'Verification Rejected'
+                    : 'Complete Business Verification'
                 }
               </h3>
               <p className={cn(
@@ -222,7 +218,9 @@ export default function AccountOverviewSection({
               )}>
                 {verificationStatus === 'pending'
                   ? 'Our team is reviewing your documents. You\'ll receive an email once approved (usually within 24 hours).'
-                  : 'Complete business verification to unlock full B2B features including custom quotes and bulk ordering.'
+                  : verificationStatus === 'rejected'
+                    ? 'Your business verification was not approved. Please review the rejection reason and update your information to reapply.'
+                    : 'Complete business verification to unlock full B2B features including custom quotes and bulk ordering.'
                 }
               </p>
               {verificationStatus !== 'pending' && (
@@ -230,7 +228,7 @@ export default function AccountOverviewSection({
                   onClick={() => onNavigate('approvals')}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
                 >
-                  Complete Verification <ArrowRight size={16} />
+                  {verificationStatus === 'rejected' ? 'View Details' : 'Complete Verification'} <ArrowRight size={16} />
                 </button>
               )}
             </div>

@@ -98,6 +98,7 @@ export function CustomerNotesTab({ customerClerkId }: CustomerNotesTabProps) {
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 rows={4}
+                className="focus-visible:ring-0 focus-visible:border-gray-900"
                 data-testid="note-textarea"
               />
             </div>

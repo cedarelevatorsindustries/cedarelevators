@@ -111,13 +111,15 @@ export default function BusinessVerificationSection({
       const data = await response.json()
 
       if (data.success) {
-        toast.success('Verification submitted successfully!')
+        const isReverification = status === 'rejected'
+        toast.success(isReverification ? 'Reverification sent successfully!' : 'Verification submitted successfully!')
         setVerificationId(data.verification_id)
         setStatus('pending')
 
         // Invalidate profile cache so all pages show updated status
         invalidateProfileCache()
         router.refresh()
+        router.push('/profile')
       } else {
         toast.error(data.error || 'Failed to submit verification')
       }
@@ -516,7 +518,7 @@ export default function BusinessVerificationSection({
                   disabled={isSubmitting}
                   className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Submitting...' : status === 'rejected' ? 'Resubmit Verification' : 'Verify Business'}
+                  {isSubmitting ? 'Submitting...' : status === 'rejected' ? 'Reapply for Verification' : 'Verify Business'}
                 </button>
               )}
             </div>

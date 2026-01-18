@@ -39,7 +39,7 @@ export function AboutSection() {
   }
 
   return (
-    <div className="hidden md:block bg-gray-50 border-t border-gray-200">
+    <div id="about-section" className="hidden md:block bg-gray-50 border-t border-gray-200">
       <div className="max-w-[1440px] mx-auto px-6 py-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">

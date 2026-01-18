@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(request: NextRequest) {
@@ -25,7 +25,24 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
+
+        // Get the Supabase user ID from Clerk user ID
+        const { data: userData, error: userFetchError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('clerk_user_id', userId)
+            .single()
+
+        if (userFetchError || !userData) {
+            console.error('Error fetching user:', userFetchError)
+            return NextResponse.json(
+                { error: 'User not found in database' },
+                { status: 404 }
+            )
+        }
+
+        const supabaseUserId = userData.id
 
         // 1. Mark user profile for deletion in database
         const { error: updateError } = await supabase
@@ -35,7 +52,7 @@ export async function POST(request: NextRequest) {
                 is_deleted: false, // Will be set to true after 30 days
                 deletion_requested_at: new Date().toISOString(),
             })
-            .eq('id', userId)
+            .eq('user_id', supabaseUserId)
 
         if (updateError) {
             console.error('Error marking profile for deletion:', updateError)
@@ -53,7 +70,7 @@ export async function POST(request: NextRequest) {
                 is_deleted: false,
                 deletion_requested_at: new Date().toISOString(),
             })
-            .eq('user_id', userId)
+            .eq('owner_clerk_user_id', userId)
 
         // 3. Update Clerk user metadata to indicate pending deletion
         const clerk = await clerkClient()
@@ -96,7 +113,7 @@ export async function DELETE(request: NextRequest) {
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
         const now = new Date().toISOString()
 
         // Find all accounts past their scheduled deletion date

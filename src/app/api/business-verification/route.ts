@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // GET - Get current user's verification status
 export async function GET() {
@@ -14,7 +14,7 @@ export async function GET() {
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // First, get the user from users table using clerk_user_id
         const { data: user, error: userError } = await supabase
@@ -31,34 +31,19 @@ export async function GET() {
             })
         }
 
-        // Get user_profile using user_id
-        const { data: userProfile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('profile_type', 'business')
-            .maybeSingle()
 
-        if (profileError || !userProfile) {
-            // No business profile found
-            return NextResponse.json({
-                success: true,
-                verification: null
-            })
-        }
-
-        // Get verification with documents using the user_profile ID
+        // Get verification with documents using users.id (matching POST logic)
         const { data: verification, error } = await supabase
             .from('business_verifications')
             .select(`
         *,
         documents:business_verification_documents(*)
       `)
-            .eq('user_id', userProfile.id)
-            .single()
+            .eq('user_id', user.id)
+            .maybeSingle()
 
         if (error && error.code !== 'PGRST116') {
-            throw error
+            console.error('[Verification GET] Error fetching verification:', error)
         }
 
         return NextResponse.json({
@@ -157,30 +142,27 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Get user_id from user_profiles for business_verifications table
-        // If no user_profile exists, use the Supabase user.id (UUID), NOT the Clerk userId (string)
-        const { data: userProfile } = await supabase
-            .from('user_profiles')
-            .select('id')
-            .eq('clerk_user_id', userId)
-            .maybeSingle()
-
-        // IMPORTANT: Must use UUID (user.id), not Clerk string (userId)
-        const userIdForVerification = userProfile?.id || user.id
+        // IMPORTANT: business_verifications.user_id should ALWAYS reference users.id (UUID)
+        // NOT user_profiles.id, to avoid mismatches
+        const userIdForVerification = user.id
 
         // Check if verification already exists
         const { data: existing } = await supabase
             .from('business_verifications')
-            .select('id, status')
+            .select('id, status, rejection_reason')
             .eq('user_id', userIdForVerification)
-            .single()
+            .maybeSingle()
 
         // Determine status based on submit_for_review flag
         const submitForReview = body.submit_for_review === true
         const newStatus = submitForReview ? 'pending' : 'incomplete'
 
+        // If this is a reverification (was rejected, now pending), preserve the old rejection reason
+        const isReverification = existing?.status === 'rejected' && submitForReview
+        const previousRejectionReason = isReverification ? existing.rejection_reason : null
+
         // Prepare verification data - SIMPLIFIED SCHEMA
-        const verificationData = {
+        const verificationData: any = {
             user_id: userIdForVerification, // Use user_profile UUID or clerk_user_id
             legal_business_name: body.legal_business_name,
             contact_person_name: body.contact_person_name,
@@ -188,6 +170,12 @@ export async function POST(request: NextRequest) {
             gstin: body.gstin || null,
             status: newStatus,
             updated_at: new Date().toISOString()
+        }
+
+        // Add previous_rejection_reason if this is a reverification
+        if (isReverification) {
+            verificationData.previous_rejection_reason = previousRejectionReason
+            verificationData.rejection_reason = null // Clear current rejection reason
         }
 
         let verificationId: string

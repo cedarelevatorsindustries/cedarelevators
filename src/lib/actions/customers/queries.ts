@@ -381,6 +381,7 @@ export async function getCustomerById(
                 verified_at: businessVerification.verified_at,
                 verified_by: businessVerification.verified_by,
                 rejected_at: businessVerification.rejected_at,
+                previous_rejection_reason: businessVerification.previous_rejection_reason,
             } as BusinessProfile : undefined,
         }
 
@@ -491,9 +492,60 @@ export async function getVerificationDocuments(
     | { success: false; error: string }
 > {
     try {
-        // TODO: verification_documents table doesn't exist yet
-        // Return empty array for now
-        return { success: true, documents: [] }
+        const supabase = createAdminClient()
+        if (!supabase) {
+            return { success: false, error: 'Database connection failed' }
+        }
+
+        // Get user ID from clerk_user_id
+        const { data: userData } = await supabase
+            .from('users')
+            .select('id')
+            .eq('clerk_user_id', customerClerkId)
+            .maybeSingle()
+
+        if (!userData) {
+            return { success: true, documents: [] }
+        }
+
+        // Get verification for this user
+        const { data: verification } = await supabase
+            .from('business_verifications')
+            .select('id')
+            .eq('user_id', userData.id)
+            .maybeSingle()
+
+        if (!verification) {
+            return { success: true, documents: [] }
+        }
+
+        // Get documents for this verification
+        const { data: documents, error } = await supabase
+            .from('business_verification_documents')
+            .select('*')
+            .eq('verification_id', verification.id)
+            .order('uploaded_at', { ascending: false })
+
+        if (error) {
+            console.error('Error fetching verification documents:', error)
+            return { success: false, error: error.message }
+        }
+
+        // Map to VerificationDocument type
+        const mappedDocs = (documents || []).map((doc: any) => ({
+            id: doc.id,
+            customer_clerk_id: customerClerkId,
+            verification_id: doc.verification_id,
+            document_type: doc.document_type,
+            file_url: doc.document_url || doc.file_url, // Support both field names
+            file_name: doc.file_name,
+            status: doc.status || 'pending',
+            uploaded_at: doc.uploaded_at,
+            created_at: doc.uploaded_at, // Table only has uploaded_at
+            updated_at: doc.uploaded_at, // Table only has uploaded_at
+        }))
+
+        return { success: true, documents: mappedDocs }
     } catch (error: any) {
         console.error('Error in getVerificationDocuments:', error)
         return { success: false, error: error.message || 'Failed to fetch documents' }

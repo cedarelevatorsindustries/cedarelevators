@@ -1,37 +1,42 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, Package, LoaderCircle } from "lucide-react"
+import { FileText, Package, LoaderCircle, Clock, CheckCircle, AlertCircle } from "lucide-react"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 import { getQuotes } from "@/lib/actions/quotes"
 import { Quote } from "@/types/b2b/quote"
 
-interface SnapshotItem {
-  label: string
-  count: number
-  href: string
+// Mock function to get orders - replace with actual API call when available
+async function getOrders() {
+  // TODO: Replace with actual order fetching logic
+  return { success: true, orders: [] }
 }
 
 export default function QuotesOrdersSnapshot() {
-  const [quotesData, setQuotesData] = useState<{ pending: number; approved: number }>({ pending: 0, approved: 0 })
-  const [ordersData, setOrdersData] = useState<{ active: number; completed: number }>({ active: 0, completed: 0 })
+  const [recentQuotes, setRecentQuotes] = useState<Quote[]>([])
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
       try {
-        // Fetch quotes data
+        // Fetch recent quotes
         const quotesResult = await getQuotes({ status: 'all' })
+        console.log('Quotes result:', quotesResult)
 
         if (quotesResult.success && quotesResult.quotes) {
-          const pending = quotesResult.quotes.filter(q => q.status === 'pending' || q.status === 'reviewing' || q.status === 'submitted').length
-          const approved = quotesResult.quotes.filter(q => q.status === 'approved').length
-          setQuotesData({ pending, approved })
+          console.log('Found quotes:', quotesResult.quotes.length)
+          // Get 3 most recent quotes
+          setRecentQuotes(quotesResult.quotes.slice(0, 3))
+        } else {
+          console.error('Failed to fetch quotes:', quotesResult.error)
         }
 
-        // TODO: Fetch orders data from Supabase when implemented
-        // For now, using placeholder data
-        setOrdersData({ active: 0, completed: 0 })
+        // Fetch recent orders
+        const ordersResult = await getOrders()
+        if (ordersResult.success && ordersResult.orders) {
+          setRecentOrders(ordersResult.orders.slice(0, 3))
+        }
       } catch (error) {
         console.error('Error loading snapshot data:', error)
       } finally {
@@ -52,15 +57,36 @@ export default function QuotesOrdersSnapshot() {
     )
   }
 
-  const quotesItems: SnapshotItem[] = [
-    { label: "Pending", count: quotesData.pending, href: "/profile/quotes?status=pending" },
-    { label: "Approved", count: quotesData.approved, href: "/profile/quotes?status=accepted" }
-  ]
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
+      pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800', icon: Clock },
+      reviewing: { label: 'Reviewing', className: 'bg-blue-100 text-blue-800', icon: Clock },
+      approved: { label: 'Approved', className: 'bg-green-100 text-green-800', icon: CheckCircle },
+      rejected: { label: 'Rejected', className: 'bg-red-100 text-red-800', icon: AlertCircle },
+    }
 
-  const ordersItems: SnapshotItem[] = [
-    { label: "Active", count: ordersData.active, href: "/profile/orders?status=active" },
-    { label: "Completed", count: ordersData.completed, href: "/profile/orders?status=completed" }
-  ]
+    const config = statusConfig[status] || { label: status, className: 'bg-gray-100 text-gray-800', icon: Clock }
+    const Icon = config.icon
+
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
+        <Icon size={12} />
+        {config.label}
+      </span>
+    )
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+    return `${Math.floor(diffInMinutes / 1440)}d ago`
+  }
+
+  const hasNoData = recentQuotes.length === 0 && recentOrders.length === 0
 
   return (
     <section className="bg-white border border-gray-200 rounded-lg p-6">
@@ -82,58 +108,82 @@ export default function QuotesOrdersSnapshot() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Quotes Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-blue-600" />
-            <h3 className="text-base font-semibold text-gray-900">Quotes</h3>
-          </div>
-          <div className="space-y-2">
-            {quotesItems.map((item) => (
-              <LocalizedClientLink
-                key={item.label}
-                href={item.href}
-                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">• {item.label}</span>
-                <span className="text-sm font-semibold text-gray-900">{item.count}</span>
-              </LocalizedClientLink>
-            ))}
-          </div>
-        </div>
-
-        {/* Orders Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Package className="w-5 h-5 text-emerald-600" />
-            <h3 className="text-base font-semibold text-gray-900">Orders</h3>
-          </div>
-          <div className="space-y-2">
-            {ordersItems.map((item) => (
-              <LocalizedClientLink
-                key={item.label}
-                href={item.href}
-                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors group"
-              >
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">• {item.label}</span>
-                <span className="text-sm font-semibold text-gray-900">{item.count}</span>
-              </LocalizedClientLink>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Empty State */}
-      {quotesData.pending === 0 && quotesData.approved === 0 && ordersData.active === 0 && ordersData.completed === 0 && (
-        <div className="text-center py-4 mt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-500">No quotes or orders yet</p>
+      {hasNoData ? (
+        <div className="text-center py-8">
+          <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm text-gray-500 mb-2">No quotes or orders yet</p>
           <LocalizedClientLink
             href="/quotes/new"
-            className="inline-block mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
           >
             Request your first quote →
           </LocalizedClientLink>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Recent Quotes */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="w-5 h-5 text-blue-600" />
+              <h3 className="text-base font-semibold text-gray-900">Recent Quotes</h3>
+            </div>
+            {recentQuotes.length === 0 ? (
+              <p className="text-sm text-gray-500 py-4">No quotes yet</p>
+            ) : (
+              <div className="space-y-2">
+                {recentQuotes.map((quote) => (
+                  <LocalizedClientLink
+                    key={quote.id}
+                    href={`/quotes/${quote.id}`}
+                    className="block p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        #{quote.quote_number}
+                      </span>
+                      {getStatusBadge(quote.status)}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{quote.items?.length || 0} item{quote.items?.length !== 1 ? 's' : ''}</span>
+                      <span>{formatDate(quote.created_at)}</span>
+                    </div>
+                  </LocalizedClientLink>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Orders */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Package className="w-5 h-5 text-emerald-600" />
+              <h3 className="text-base font-semibold text-gray-900">Recent Orders</h3>
+            </div>
+            {recentOrders.length === 0 ? (
+              <p className="text-sm text-gray-500 py-4">No orders yet</p>
+            ) : (
+              <div className="space-y-2">
+                {recentOrders.map((order) => (
+                  <LocalizedClientLink
+                    key={order.id}
+                    href={`/profile/orders/${order.id}`}
+                    className="block p-3 rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        #{order.order_number}
+                      </span>
+                      {getStatusBadge(order.status)}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>₹{order.total?.toLocaleString()}</span>
+                      <span>{formatDate(order.created_at)}</span>
+                    </div>
+                  </LocalizedClientLink>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </section>
