@@ -359,7 +359,7 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
       showLogo: false,
       showPageTitle: true,
       transparentTopBar: false,
-      showBottomNav: false, // Critical: Hide bottom nav
+      showBottomNav: true, // Show bottom nav - wishlist is a top-level page
       showSidebar: true,
     },
   },
@@ -381,8 +381,11 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   // Catalog - Show page title with solid topbar
   if (pathname === '/catalog' || pathname.startsWith('/catalog/')) return 'browse-products'
 
-  // Quote pages - Show page title with bottom nav
-  if (pathname === '/quotes' || pathname.startsWith('/quotes/')) return 'account'
+  // Quote pages - Show page title with bottom nav ONLY on listing page
+  if (pathname === '/quotes') return 'account'
+
+  // Quote detail pages - Hide bottom nav (secondary page)
+  if (pathname.startsWith('/quotes/')) return 'product-detail'
 
   // Cart - Show page title
   if (pathname === '/cart') return 'account'

@@ -12,11 +12,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com
 
 export const metadata: Metadata = {
   title: {
-    default: "Cedar Elevators - Premium Lift Components",
+    default: "Cedar Elevators - Elevator Components & Parts",
     template: "%s | Cedar Elevators"
   },
-  description: "India's leading B2B marketplace for premium elevator components. Shop high-quality lift parts, motors, controllers, and accessories with competitive wholesale pricing.",
-  keywords: "elevator components, lift parts, elevator motors, lift controllers, elevator accessories, B2B marketplace, wholesale elevator parts, India",
+  description: "Shop quality elevator components and spare parts online. Find safety gear, door operators, controllers, and more for your elevator maintenance and installation needs.",
+  keywords: "elevator components, lift parts, elevator safety gear, door operators, controllers, elevator maintenance, spare parts, elevator installation",
   authors: [{ name: "Cedar Elevators" }],
   creator: "Cedar Elevators",
   publisher: "Cedar Elevators",
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     url: SITE_URL,
     siteName: 'Cedar Elevators',
-    title: 'Cedar Elevators - Premium Lift Components',
-    description: "India's leading B2B marketplace for premium elevator components",
+    title: 'Cedar Elevators - Elevator Components & Parts',
+    description: 'Quality elevator components and parts for maintenance, repair, and installation',
     images: [
       {
         url: `${SITE_URL}/og-image.png`,
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cedar Elevators - Premium Lift Components',
-    description: "India's leading B2B marketplace for premium elevator components",
+    title: 'Cedar Elevators - Elevator Components & Parts',
+    description: 'Quality elevator components and parts for maintenance, repair, and installation',
     images: [`${SITE_URL}/og-image.png`],
     creator: '@cedarelevators',
   },

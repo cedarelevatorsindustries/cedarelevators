@@ -1,12 +1,5 @@
 import { Metadata } from "next"
-import { ShieldCheck, FileText, Wrench, AlertTriangle, HelpCircle } from "lucide-react"
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
+import { ShieldCheck, FileText, AlertTriangle, Info } from "lucide-react"
 
 export const metadata: Metadata = {
     title: "Warranty Information | Cedar Elevators",
@@ -16,6 +9,9 @@ export const metadata: Metadata = {
 export default function WarrantyPage() {
     return (
         <div className="bg-white min-h-screen pb-16">
+            {/* Add top padding to prevent navbar overlap */}
+            <div className="h-[70px] md:h-[80px]" />
+
             {/* Header */}
             <div className="bg-gray-50 border-b border-gray-200 py-12 px-4">
                 <div className="container mx-auto max-w-4xl text-center">
@@ -29,6 +25,31 @@ export default function WarrantyPage() {
             </div>
 
             <div className="container mx-auto px-4 max-w-4xl mt-12 space-y-16">
+                {/* Warranty Period Card - ADDED */}
+                <section>
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-8 md:p-12 text-center shadow-sm">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-6">
+                            <ShieldCheck className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-5xl md:text-6xl font-bold text-blue-600 mb-3">
+                            12 Months
+                        </h2>
+                        <p className="text-lg text-gray-600 font-medium mb-6 uppercase tracking-wide">
+                            WARRANTY PERIOD
+                        </p>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm text-gray-700">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                                <span className="font-medium">Type: Limited Manufacturing Warranty</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                                <span className="font-medium">Applies to: All Cedar Components</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Section 1: Coverage Table */}
                 <section>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -94,49 +115,7 @@ export default function WarrantyPage() {
                         <span>Valid Invoice and Serial Number required for all claims.</span>
                     </div>
                 </section>
-
-                {/* Section 4: FAQs */}
-                <section>
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <HelpCircle className="text-gray-500" />
-                        Common Questions
-                    </h2>
-                    <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1">
-                            <AccordionTrigger>Is installation mandatory for warranty?</AccordionTrigger>
-                            <AccordionContent>
-                                For technical items like Motors and Drives, warranty is valid only if installed by a qualified technician. DIY installation errors are not covered.
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-2">
-                            <AccordionTrigger>What voids the warranty?</AccordionTrigger>
-                            <AccordionContent>
-                                Physical damage, water damage, voltage fluctuations (unless stabilizer used), or unauthorized repairs extend void the warranty.
-                            </AccordionContent>
-                        </AccordionItem>
-                        <AccordionItem value="item-3">
-                            <AccordionTrigger>Who pays for shipping back the defective item?</AccordionTrigger>
-                            <AccordionContent>
-                                For confirmed manufacturing defects within 7 days, we cover shipping. After that, customer bears one-way shipping.
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                </section>
-
-                {/* Service Type / CTA */}
-                <section className="bg-gray-900 text-white rounded-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div>
-                        <h3 className="text-xl font-bold mb-2">Check warranty by SKU</h3>
-                        <p className="text-gray-400 text-sm">Verify status for specific parts.</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="outline" className="text-black border-white hover:bg-gray-100">
-                            Enter SKU
-                        </Button>
-                    </div>
-                </section>
             </div>
         </div>
     )
 }
-

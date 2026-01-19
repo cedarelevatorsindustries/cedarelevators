@@ -22,6 +22,7 @@ interface DesktopHomepageProps {
   applications?: Application[]
   elevatorTypes?: ElevatorType[]
   collections?: Array<Collection & { products: Product[] }>
+  whyChooseItems?: Array<{ icon: string; title: string; description: string }>
 }
 
 export default function DesktopHomepage({
@@ -30,7 +31,8 @@ export default function DesktopHomepage({
   testimonials,
   applications = [],
   elevatorTypes = [],
-  collections = []
+  collections = [],
+  whyChooseItems = []
 }: DesktopHomepageProps) {
   return (
     <div className="w-full">
@@ -76,7 +78,7 @@ export default function DesktopHomepage({
 
       {/* Why Choose Cedar */}
       <div className="mt-12">
-        <WhyCedarSection />
+        <WhyCedarSection items={whyChooseItems} />
       </div>
 
       {/* Testimonials - Below quote form */}

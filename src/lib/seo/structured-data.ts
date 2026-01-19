@@ -17,7 +17,7 @@ export function generateOrganizationSchema(): Organization {
     name: SITE_NAME,
     url: SITE_URL,
     logo: `${SITE_URL}/logo/logo.png`,
-    description: "India's leading B2B marketplace for premium elevator components",
+    description: "E-commerce platform offering quality elevator components and spare parts for maintenance, repair, and installation needs.",
     address: {
       '@type': 'PostalAddress',
       addressCountry: 'IN',

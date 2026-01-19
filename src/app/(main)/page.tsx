@@ -3,6 +3,7 @@ import { getUserType } from "@/lib/auth/server"
 import { listProducts, listCategories, listApplications, listElevatorTypes } from "@/lib/data"
 import { getCollectionsWithProductsByDisplayContext } from "@/lib/actions/collections-display-context"
 import { getBusinessHubData } from "@/lib/actions/business-hub"
+import { getWhyChoosePublicDataAction } from "@/lib/actions/why-choose-cms"
 import {
   DesktopHomepage,
   DesktopHomepageLoggedIn,
@@ -12,8 +13,8 @@ import {
 } from "@/modules/home"
 
 export const metadata: Metadata = {
-  title: "Cedar Elevators - Premium Lift Components | B2B Marketplace",
-  description: "India's leading B2B marketplace for premium elevator components. ISO certified quality, pan-India delivery, and 2-year warranty on all products.",
+  title: "Cedar Elevators - Quality Elevator Components & Parts",
+  description: "Shop quality elevator components and spare parts online. Find safety gear, door operators, controllers, and more for your elevator maintenance and installation needs.",
 }
 
 // Enable Incremental Static Regeneration with 1-hour revalidation
@@ -34,6 +35,7 @@ export default async function HomePage() {
     { collections: rawCategoriesCollections },
     { collections: rawBusinessHubCollections },
     { collections: rawGuestCollections },
+    whyChooseResult,
   ] = await Promise.all([
     listProducts({ queryParams: { limit: 20 } }),
     listCategories({ parent_id: null, include_descendants_tree: true }),
@@ -44,6 +46,7 @@ export default async function HomePage() {
     getCollectionsWithProductsByDisplayContext("business_hub"),
     // Fetch guest-safe collections (show_in_guest = true)
     getCollectionsWithProductsByDisplayContext("homepage", undefined, true),
+    getWhyChoosePublicDataAction(),
   ])
 
   const products = response.products
@@ -104,6 +107,11 @@ export default async function HomePage() {
     .slice(0, 7)
     .map((p: any) => p.name)
 
+  // Extract Why Choose items from CMS (serialize to remove undefined/null)
+  const whyChooseItems = whyChooseResult.data?.items
+    ? JSON.parse(JSON.stringify(whyChooseResult.data.items))
+    : []
+
   // For logged-in users, show the dashboard-style layout
   if (!isGuest) {
     return (
@@ -151,6 +159,7 @@ export default async function HomePage() {
           applications={serializedApplications}
           elevatorTypes={serializedElevatorTypes}
           collections={guestCollections}
+          whyChooseItems={whyChooseItems}
         />
       </div>
 

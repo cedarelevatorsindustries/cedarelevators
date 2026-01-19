@@ -1,6 +1,6 @@
 "use client"
 
-import { Award, Shield, Globe, Headphones, ShieldCheck, Truck, Clock } from "lucide-react"
+import { Award, Shield, Globe, Headphones, ShieldCheck, Truck, Clock, Star, Package, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Feature {
@@ -11,10 +11,29 @@ interface Feature {
 
 interface WhyCedarSectionProps {
     variant?: 'desktop' | 'mobile'
+    items?: Array<{
+        icon: string
+        title: string
+        description: string
+    }>
 }
 
-// Desktop features with descriptions
-const desktopFeatures: Feature[] = [
+// Icon mapping for dynamic icons
+const iconMap: Record<string, any> = {
+    ShieldCheck,
+    Globe,
+    Truck,
+    Star,
+    Package,
+    Users,
+    Award,
+    Shield,
+    Headphones,
+    Clock
+}
+
+// Fallback desktop features (used if no CMS data)
+const defaultDesktopFeatures: Feature[] = [
     {
         icon: <ShieldCheck size={24} />,
         title: "Quality Assurance",
@@ -37,8 +56,8 @@ const desktopFeatures: Feature[] = [
     }
 ]
 
-// Mobile features - simpler, more compact
-const mobileFeatures: Feature[] = [
+// Fallback mobile features
+const defaultMobileFeatures: Feature[] = [
     {
         icon: <Award size={32} className="text-primary" />,
         title: "20+ Years Experience"
@@ -60,10 +79,27 @@ const mobileFeatures: Feature[] = [
 /**
  * Unified Why Cedar Section
  * Responsive component that handles both mobile and desktop layouts
+ * Now supports dynamic data from CMS
  */
-export function WhyCedarSection({ variant = 'desktop' }: WhyCedarSectionProps) {
+export function WhyCedarSection({ variant = 'desktop', items }: WhyCedarSectionProps) {
     const isMobile = variant === 'mobile'
-    const features = isMobile ? mobileFeatures : desktopFeatures
+
+    // Convert CMS items to Feature format
+    const cmsFeatures: Feature[] | undefined = items?.map(item => {
+        const IconComponent = iconMap[item.icon] || Star
+        return {
+            icon: isMobile ?
+                <IconComponent size={32} className="text-primary" /> :
+                <IconComponent size={24} />,
+            title: item.title,
+            description: isMobile ? undefined : item.description
+        }
+    })
+
+    // Use CMS data if available, otherwise fallback to defaults
+    const features = cmsFeatures && cmsFeatures.length > 0
+        ? cmsFeatures
+        : (isMobile ? defaultMobileFeatures : defaultDesktopFeatures)
 
     if (isMobile) {
         return (
@@ -95,9 +131,9 @@ export function WhyCedarSection({ variant = 'desktop' }: WhyCedarSectionProps) {
             </h2>
             <div className="flex flex-col gap-10 py-10 @container">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-0">
-                    {features.map((feature) => (
+                    {features.map((feature, index) => (
                         <div
-                            key={feature.title}
+                            key={index}
                             className="flex flex-1 gap-3 rounded-lg border border-[#e6e0db] bg-white p-4 flex-col"
                         >
                             <div className="text-blue-500">
@@ -122,4 +158,3 @@ export function WhyCedarSection({ variant = 'desktop' }: WhyCedarSectionProps) {
 }
 
 export default WhyCedarSection
-

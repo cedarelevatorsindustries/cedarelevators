@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Cedar Elevators - Premium Lift Components',
+    name: 'Cedar Elevators - Elevator Components & Parts',
     short_name: 'Cedar Elevators',
-    description: "India's leading B2B marketplace for premium elevator components. Shop high-quality lift parts, motors, controllers, and accessories.",
+    description: 'Shop quality elevator components and spare parts. Find safety gear, controllers, door operators, and more for elevator maintenance and installation.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
