@@ -182,21 +182,6 @@ export function PriceActionCard({
                     <p className="text-gray-500 text-sm mt-1">(Inclusive of all taxes)</p>
                 </div>
 
-                {/* Bulk Pricing Message */}
-                {permissions.showBulkPricing && (
-                    <div className="bg-gray-50 rounded-lg p-3 mb-6 flex items-start gap-3 border border-gray-100">
-                        <Package className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="text-gray-900 text-sm font-medium leading-tight">
-                                Bulk pricing available
-                            </p>
-                            <p className="text-gray-600 text-xs mt-0.5">
-                                Verified businesses save extra on qty &gt; 10
-                            </p>
-                        </div>
-                    </div>
-                )}
-
                 {/* Quantity Selector */}
                 <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">

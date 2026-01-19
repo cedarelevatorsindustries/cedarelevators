@@ -1,13 +1,41 @@
 import { Metadata } from "next"
 import Link from "next/link"
-import { ShieldCheck, Globe, Wrench, Truck } from "lucide-react"
+import { ShieldCheck, Globe, Wrench, Truck, Star, Package, Users, Award } from "lucide-react"
+import { getWhyChoosePublicDataAction } from "@/lib/actions/why-choose-cms"
 
 export const metadata: Metadata = {
     title: "Why Choose Cedar | Elevator Component Excellence",
     description: "Reliable components for safer elevators, delivered with transparency. Discover why Cedar is the trusted choice for premium elevator components.",
 }
 
-export default function WhyChoosePage() {
+// Icon mapping for dynamic rendering
+const iconMap: Record<string, any> = {
+    ShieldCheck,
+    Globe,
+    Wrench,
+    Truck,
+    Star,
+    Package,
+    Users,
+    Award
+}
+
+export default async function WhyChoosePage() {
+    const { data } = await getWhyChoosePublicDataAction()
+
+    // Fallback data if nothing is configured
+    const hero = data?.hero || {
+        title: "Why Choose Cedar",
+        description: "Reliable components for safer elevators, delivered with transparency."
+    }
+
+    const items = data?.items || []
+    const stats = data?.stats || []
+    const cta = data?.cta || {
+        title: "Ready to upgrade your infrastructure?",
+        description: "Join hundreds of facility managers and OEMs who trust Cedar for precision-engineered components. Get a custom quote tailored to your project requirements today."
+    }
+
     return (
         <div className="min-h-screen bg-[#f8f7f6]">
             {/* Hero Section */}
@@ -21,11 +49,11 @@ export default function WhyChoosePage() {
                         </div>
 
                         <h1 className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-[#1b160d]">
-                            Why Choose Cedar
+                            {hero.title}
                         </h1>
 
                         <p className="text-lg text-[#5a4a35] leading-relaxed max-w-2xl mx-auto">
-                            Reliable components for safer elevators, delivered with transparency.
+                            {hero.description}
                         </p>
                     </div>
                 </div>
@@ -39,111 +67,62 @@ export default function WhyChoosePage() {
                         <div className="w-16 h-1 bg-[#ec9213]"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Quality Assurance */}
-                        <div className="group p-10 rounded-xl border border-[#e7ddcf] bg-[#f8f7f6] hover:shadow-xl hover:border-[#ec9213]/30 transition-all">
-                            <div className="size-14 rounded-lg bg-white flex items-center justify-center mb-6 shadow-sm text-[#ec9213] group-hover:scale-110 transition-transform">
-                                <ShieldCheck className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Quality Assurance</h3>
-                            <p className="text-[#5a4a35] leading-relaxed">
-                                Every component undergoes rigorous ISO-certified manufacturing and multi-stage quality checks to ensure maximum safety in vertical transportation.
-                            </p>
+                    {items.length === 0 ? (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500">No excellence items configured</p>
                         </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {items.map((item) => {
+                                const IconComponent = iconMap[item.icon] || Star
 
-                        {/* Global Reach */}
-                        <div className="group p-10 rounded-xl border border-[#e7ddcf] bg-[#f8f7f6] hover:shadow-xl hover:border-[#ec9213]/30 transition-all">
-                            <div className="size-14 rounded-lg bg-white flex items-center justify-center mb-6 shadow-sm text-[#ec9213] group-hover:scale-110 transition-transform">
-                                <Globe className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Global Reach</h3>
-                            <p className="text-[#5a4a35] leading-relaxed">
-                                With strategic hubs worldwide, we reliably ship critical elevator components to over 50 countries, supporting global maintenance teams 24/7.
-                            </p>
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="group p-10 rounded-xl border border-[#e7ddcf] bg-[#f8f7f6] hover:shadow-xl hover:border-[#ec9213]/30 transition-all"
+                                    >
+                                        <div className="size-14 rounded-lg bg-white flex items-center justify-center mb-6 shadow-sm text-[#ec9213] group-hover:scale-110 transition-transform">
+                                            <IconComponent className="w-8 h-8" />
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                                        <p className="text-[#5a4a35] leading-relaxed">{item.description}</p>
+                                    </div>
+                                )
+                            })}
                         </div>
-
-                        {/* Technical Support */}
-                        <div className="group p-10 rounded-xl border border-[#e7ddcf] bg-[#f8f7f6] hover:shadow-xl hover:border-[#ec9213]/30 transition-all">
-                            <div className="size-14 rounded-lg bg-white flex items-center justify-center mb-6 shadow-sm text-[#ec9213] group-hover:scale-110 transition-transform">
-                                <Wrench className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Technical Support</h3>
-                            <p className="text-[#5a4a35] leading-relaxed">
-                                Our team of expert engineers provides round-the-clock technical assistance for installation, troubleshooting, and component optimization.
-                            </p>
-                        </div>
-
-                        {/* Rapid Logistics */}
-                        <div className="group p-10 rounded-xl border border-[#e7ddcf] bg-[#f8f7f6] hover:shadow-xl hover:border-[#ec9213]/30 transition-all">
-                            <div className="size-14 rounded-lg bg-white flex items-center justify-center mb-6 shadow-sm text-[#ec9213] group-hover:scale-110 transition-transform">
-                                <Truck className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Rapid Logistics</h3>
-                            <p className="text-[#5a4a35] leading-relaxed">
-                                Minimize downtime with our expedited supply chain. We offer 48-hour dispatch on all in-stock elevator components across all continents.
-                            </p>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </section>
 
             {/* Stats Section */}
-            <section className="py-24 bg-[#f8f7f6] border-y border-[#e7ddcf]">
-                <div className="max-w-[1280px] mx-auto px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-                        {/* Years of Excellence */}
-                        <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
-                            <div
-                                className="text-7xl font-extrabold font-display"
-                                style={{
-                                    WebkitTextStroke: '1px #d1d5db',
-                                    color: 'transparent'
-                                }}
-                            >
-                                15+
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xl font-bold">Years of Excellence</p>
-                                <p className="text-sm text-[#5a4a35]">Proven track record in engineering</p>
-                            </div>
-                        </div>
-
-                        {/* Parts Installed */}
-                        <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
-                            <div
-                                className="text-7xl font-extrabold font-display"
-                                style={{
-                                    WebkitTextStroke: '1px #d1d5db',
-                                    color: 'transparent'
-                                }}
-                            >
-                                500k+
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xl font-bold">Parts Installed</p>
-                                <p className="text-sm text-[#5a4a35]">Active components in global buildings</p>
-                            </div>
-                        </div>
-
-                        {/* Safety Rating */}
-                        <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4">
-                            <div
-                                className="text-7xl font-extrabold font-display"
-                                style={{
-                                    WebkitTextStroke: '1px #d1d5db',
-                                    color: 'transparent'
-                                }}
-                            >
-                                99.9%
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xl font-bold">Safety Rating</p>
-                                <p className="text-sm text-[#5a4a35]">Uncompromising commitment to life safety</p>
-                            </div>
+            {stats.length > 0 && (
+                <section className="py-24 bg-[#f8f7f6] border-y border-[#e7ddcf]">
+                    <div className="max-w-[1280px] mx-auto px-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+                            {stats.map((stat) => (
+                                <div
+                                    key={stat.id}
+                                    className="flex flex-col items-center md:items-start text-center md:text-left gap-4"
+                                >
+                                    <div
+                                        className="text-7xl font-extrabold font-display"
+                                        style={{
+                                            WebkitTextStroke: '1px #d1d5db',
+                                            color: 'transparent'
+                                        }}
+                                    >
+                                        {stat.number}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-xl font-bold">{stat.title}</p>
+                                        <p className="text-sm text-[#5a4a35]">{stat.subtitle}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* CTA Section */}
             <section className="py-32 bg-white overflow-hidden relative">
@@ -153,10 +132,10 @@ export default function WhyChoosePage() {
 
                 <div className="max-w-[800px] mx-auto px-8 text-center relative z-10">
                     <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
-                        Ready to upgrade your infrastructure?
+                        {cta.title}
                     </h2>
                     <p className="text-lg text-[#5a4a35] mb-12 leading-relaxed">
-                        Join hundreds of facility managers and OEMs who trust Cedar for precision-engineered components. Get a custom quote tailored to your project requirements today.
+                        {cta.description}
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

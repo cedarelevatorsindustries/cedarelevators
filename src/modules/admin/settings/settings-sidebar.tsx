@@ -60,6 +60,7 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
     store: true,
     commerce: true,
     access: true,
+    cms: true,
     system: true
   })
 
