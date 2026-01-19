@@ -179,7 +179,6 @@ export function PriceActionCard({
                             </>
                         )}
                     </div>
-                    <p className="text-gray-500 text-sm mt-1">(Inclusive of all taxes)</p>
                 </div>
 
                 {/* Quantity Selector */}
