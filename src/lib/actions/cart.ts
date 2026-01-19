@@ -101,13 +101,62 @@ export async function getOrCreateCart(
     })
 
     if (error) {
-      logger.error('Error getting/creating cart', {
+      logger.error('Error calling get_or_create_cart RPC', {
         error,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
         userId: context.userId,
         profileType: profile,
         businessId: bizId
       })
-      return { success: false, error: `Failed to get or create cart: ${error.message || 'Unknown error'}` }
+
+      // Fallback: Try to get existing cart directly if RPC fails
+      logger.info('Attempting direct cart lookup as fallback')
+      const { data: existingCart, error: lookupError } = await supabase
+        .from('carts')
+        .select(`
+          *,
+          items:cart_items(*)
+        `)
+        .eq('clerk_user_id', context.userId)
+        .eq('profile_type', profile)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      if (!lookupError && existingCart) {
+        logger.info('Found existing cart via direct lookup')
+        return { success: true, data: existingCart as Cart }
+      }
+
+      // If no existing cart, try to create one directly using admin client
+      if (!lookupError && !existingCart) {
+        logger.info('No existing cart found, attempting to create new cart')
+        const adminClient = createAdminClient()
+
+        const { data: newCart, error: createError } = await adminClient
+          .from('carts')
+          .insert({
+            clerk_user_id: context.userId,
+            profile_type: profile,
+            business_id: bizId || null,
+            status: 'active'
+          })
+          .select(`
+            *,
+            items:cart_items(*)
+          `)
+          .single()
+
+        if (!createError && newCart) {
+          logger.info('Successfully created cart via direct insert')
+          return { success: true, data: newCart as Cart }
+        }
+
+        logger.error('Failed to create cart via direct insert', { error: createError })
+      }
+
+      return { success: false, error: `Failed to get or create cart: ${error.message}` }
     }
 
     // Fetch the cart with items
@@ -115,8 +164,12 @@ export async function getOrCreateCart(
     return { success: true, data: cart.data || undefined }
 
   } catch (error) {
-    logger.error('getOrCreateCart error', error)
-    return { success: false, error: 'Failed to get or create cart' }
+    logger.error('getOrCreateCart error', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
+    })
+    return { success: false, error: `Failed to get or create cart: ${error instanceof Error ? error.message : 'Unknown error'}` }
   }
 }
 
