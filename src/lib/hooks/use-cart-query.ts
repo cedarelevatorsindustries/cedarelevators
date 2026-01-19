@@ -13,6 +13,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import {
   getUserActiveCart,
   addItemToCart,
@@ -154,6 +155,7 @@ export function useCartLockStatus(cartId?: string) {
 // =====================================================
 
 export function useAddToCart() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { userId: clerkUserId } = useAuth()
   const userId = clerkUserId || null
@@ -181,6 +183,8 @@ export function useAddToCart() {
         queryKey: cartKeys.cart(userId),
         exact: false
       })
+      // Refresh Next.js cache to update server components
+      router.refresh()
       toast.success('Added to cart')
     },
     onError: (error: Error) => {
@@ -196,6 +200,7 @@ export function useAddToCart() {
 // =====================================================
 
 export function useUpdateCartItem() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { userId: clerkUserId } = useAuth()
   const userId = clerkUserId || null
@@ -211,6 +216,7 @@ export function useUpdateCartItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.cart(userId) })
       queryClient.invalidateQueries({ queryKey: cartKeys.count(userId) })
+      router.refresh()
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update quantity')
@@ -223,6 +229,7 @@ export function useUpdateCartItem() {
 // =====================================================
 
 export function useRemoveCartItem() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { userId: clerkUserId } = useAuth()
   const userId = clerkUserId || null
@@ -237,6 +244,7 @@ export function useRemoveCartItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.cart(userId) })
       queryClient.invalidateQueries({ queryKey: cartKeys.count(userId) })
+      router.refresh()
       toast.success('Removed from cart')
     },
     onError: (error: Error) => {
