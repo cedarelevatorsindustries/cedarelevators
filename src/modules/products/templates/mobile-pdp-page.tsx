@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useTransition } from "react"
 import { Product } from "@/lib/types/domain"
 import { useUser } from "@/lib/auth/client"
 import { useUserPricing } from "@/lib/hooks/useUserPricing"
-import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare, Package } from "lucide-react"
+import { ChevronLeft, Share2, Heart, ShoppingCart, MessageSquare, Package, Check } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -482,51 +482,6 @@ export default function MobileProductDetailPage({
 
         {/* Main Content */}
         <div className="px-4 py-6 space-y-6">
-          {/* Variant Selector - Under Image */}
-          {variants.length > 0 && (
-            <div className="bg-white -mx-4 px-4 py-4">
-              {variants.map((variantGroup) => {
-                const [selectedVariant, setSelectedVariant] = useState("")
-
-                return (
-                  <div key={variantGroup.type} className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {variantGroup.type}
-                    </h3>
-
-                    <div className="flex flex-wrap gap-3">
-                      {variantGroup.options.map((option: any) => {
-                        const isSelected = selectedVariant === option.id
-                        const isDisabled = !option.inStock
-
-                        return (
-                          <button
-                            key={option.id}
-                            onClick={() => !isDisabled && setSelectedVariant(option.id)}
-                            disabled={isDisabled}
-                            className={`
-px - 6 py - 3 rounded - xl font - medium text - base transition - all
-                              ${isSelected
-                                ? "bg-blue-50 text-blue-600 border-2 border-blue-500"
-                                : "bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300"
-                              }
-                              ${isDisabled
-                                ? "opacity-40 cursor-not-allowed"
-                                : "cursor-pointer"
-                              }
-`}
-                          >
-                            {option.value}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
           {/* Product Info - Order: Badges → Title → Description → SKU → Stars → Price → Buttons */}
           <div className="bg-white -mx-4 px-4 py-4 space-y-4">
             <TitleBadgesSection
@@ -538,7 +493,58 @@ px - 6 py - 3 rounded - xl font - medium text - base transition - all
               reviewCount={reviews.length}
               onClickReviews={scrollToReviews}
             />
+          </div>
 
+          {/* Variant Selector - Under Name and Description */}
+          {variants.length > 0 && (
+            <div className="bg-white -mx-4 px-4 py-5 space-y-5">
+              {variants.map((variantGroup) => {
+                const [selectedVariant, setSelectedVariant] = useState("")
+
+                return (
+                  <div key={variantGroup.type} className="space-y-3">
+                    <h3 className="text-xs font-bold text-gray-900 tracking-wide uppercase">
+                      {variantGroup.type}
+                    </h3>
+
+                    <div className="flex flex-wrap gap-2">
+                      {variantGroup.options.map((option: any) => {
+                        const isSelected = selectedVariant === option.id
+                        const isDisabled = !option.inStock
+
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => !isDisabled && setSelectedVariant(option.id)}
+                            disabled={isDisabled}
+                            className={`
+                              relative px-5 py-2.5 rounded-full font-medium text-sm transition-all
+                              ${isSelected
+                                ? "bg-blue-50/80 backdrop-blur-sm text-blue-600 border-2 border-blue-600"
+                                : "bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400"
+                              }
+                              ${isDisabled
+                                ? "opacity-40 cursor-not-allowed"
+                                : "cursor-pointer"
+                              }
+                            `}
+                          >
+                            {isSelected && (
+                              <Check className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-600" />
+                            )}
+                            <span className={isSelected ? "ml-3" : ""}>{option.value}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Pricing Block */}
+          <div className="bg-white -mx-4 px-4 py-4">
             <PricingBlockSection
               price={price}
               originalPrice={originalPrice}
