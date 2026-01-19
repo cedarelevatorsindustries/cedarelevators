@@ -101,8 +101,13 @@ export async function getOrCreateCart(
     })
 
     if (error) {
-      logger.error('Error getting/creating cart', error)
-      return { success: false, error: 'Failed to get or create cart' }
+      logger.error('Error getting/creating cart', {
+        error,
+        userId: context.userId,
+        profileType: profile,
+        businessId: bizId
+      })
+      return { success: false, error: `Failed to get or create cart: ${error.message || 'Unknown error'}` }
     }
 
     // Fetch the cart with items
@@ -365,8 +370,13 @@ export async function addItemToCart(
     }
 
   } catch (error) {
-    logger.error('addItemToCart error', error)
-    return { success: false, error: 'Failed to add item to cart' }
+    logger.error('addItemToCart error', {
+      error,
+      productId: payload.productId,
+      variantId: payload.variantId,
+      quantity: payload.quantity
+    })
+    return { success: false, error: `Failed to add item to cart: ${error instanceof Error ? error.message : 'Unknown error'}` }
   }
 }
 

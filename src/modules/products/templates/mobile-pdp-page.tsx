@@ -20,6 +20,7 @@ import RelatedRecentlyViewedSection from "../sections/13-related-recently-viewed
 
 // Import actions
 import { addItemToCart } from "@/lib/actions/cart"
+import { useAddToCart } from "@/lib/hooks/use-cart-query"
 
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
@@ -50,6 +51,7 @@ export default function MobileProductDetailPage({
 }: MobileProductDetailPageProps) {
   const { user } = useUser()
   const router = useRouter()
+  const addToCartMutation = useAddToCart()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const imageScrollRef = useRef<HTMLDivElement>(null)
   const fullScreenScrollRef = useRef<HTMLDivElement>(null)
@@ -130,20 +132,9 @@ export default function MobileProductDetailPage({
 
   // Handlers
   const handleAddToCart = (quantity: number) => {
-    startTransition(async () => {
-      try {
-        const result = await addItemToCart({
-          productId: product.id,
-          quantity
-        })
-        if (result.success) {
-          toast.success(`${product.title} added to cart`)
-        } else {
-          toast.error(result.error || "Failed to add to cart")
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to add to cart")
-      }
+    addToCartMutation.mutate({
+      productId: product.id,
+      quantity
     })
   }
 
@@ -206,9 +197,11 @@ export default function MobileProductDetailPage({
   const handleAddBundle = () => {
     startTransition(async () => {
       try {
-        await addItemToCart({ productId: product.id, quantity: 1 })
+        // Use mutation for main product
+        addToCartMutation.mutate({ productId: product.id, quantity: 1 })
+        // Add bundle products
         for (const bundleProduct of bundleProducts) {
-          await addItemToCart({ productId: bundleProduct.id, quantity: 1 })
+          addToCartMutation.mutate({ productId: bundleProduct.id, quantity: 1 })
         }
         toast.success("Bundle added to cart")
       } catch (error: any) {

@@ -71,10 +71,11 @@ export function useCartQuery() {
       return result.data || null
     },
     enabled: isSignedIn,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds - faster updates
     gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     refetchOnReconnect: true, // Refresh on network reconnection
+    refetchInterval: false, // Don't poll automatically
     retry: 2 // Retry failed requests twice (good for mobile)
   })
 }
@@ -172,11 +173,14 @@ export function useAddToCart() {
       // Optimistically update count
       queryClient.setQueryData(cartKeys.count(userId), (old: number = 0) => old + payload.quantity)
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all cart queries and explicitly refetch
-      queryClient.invalidateQueries({ queryKey: cartKeys.all })
+      await queryClient.invalidateQueries({ queryKey: cartKeys.all })
       // Force refetch to ensure cart appears in UI immediately
-      queryClient.refetchQueries({ queryKey: cartKeys.cart(userId) })
+      await queryClient.refetchQueries({
+        queryKey: cartKeys.cart(userId),
+        exact: false
+      })
       toast.success('Added to cart')
     },
     onError: (error: Error) => {

@@ -25,17 +25,6 @@ export function useUserPricing(): UserPricingInfo {
   // Get verification status from enhanced user object (from /api/auth/profile)
   const isVerified = user?.business?.verification_status === 'verified'
 
-  console.log('[useUserPricing] Debug:', {
-    isLoaded,
-    userExists: !!user,
-    accountType,
-    isBusiness,
-    isIndividual,
-    businessObject: user?.business,
-    verificationStatus: user?.business?.verification_status,
-    isVerified
-  })
-
   // Map database verification status to component-friendly status
   const dbStatus = user?.business?.verification_status
   const verificationStatus: VerificationStatus =

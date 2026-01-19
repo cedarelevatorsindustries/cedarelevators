@@ -96,7 +96,7 @@ export function getPricingPermissions(state: UserPricingState): PricingPermissio
                 primaryCTA: 'Add to Cart',
                 secondaryCTA: 'Add to Quote',
                 statusMessage: 'Verified Business',
-                microCopy: 'Free delivery for Verified Business'
+                microCopy: 'Shipping charges applicable as per location'
             }
     }
 }

@@ -21,6 +21,7 @@ import { useRef, useState, useEffect, useTransition } from "react"
 
 // Import actions
 import { addItemToCart } from "@/lib/actions/cart"
+import { useAddToCart } from "@/lib/hooks/use-cart-query"
 
 import { toggleFavorite, checkIsFavorite } from "@/lib/actions/user-lists"
 import { addToQuoteBasket } from "@/lib/actions/quote-basket"
@@ -51,6 +52,7 @@ export default function ProductDetailPage({
 }: ProductDetailPageProps) {
   const { user } = useUser()
   const router = useRouter()
+  const addToCartMutation = useAddToCart()
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const [isFavorite, setIsFavorite] = useState(false)
@@ -170,22 +172,11 @@ export default function ProductDetailPage({
       return
     }
 
-    startTransition(async () => {
-      try {
-        const variantId = getSelectedVariantId()
-        const result = await addItemToCart({
-          productId: product.id,
-          variantId: variantId || undefined,
-          quantity
-        })
-        if (result.success) {
-          toast.success(`${product.title} added to cart`)
-        } else {
-          toast.error(result.error || "Failed to add to cart")
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to add to cart")
-      }
+    const variantId = getSelectedVariantId()
+    addToCartMutation.mutate({
+      productId: product.id,
+      variantId: variantId || undefined,
+      quantity
     })
   }
 
@@ -243,10 +234,10 @@ export default function ProductDetailPage({
     startTransition(async () => {
       try {
         // Add main product
-        await addItemToCart({ productId: product.id, quantity: 1 })
+        addToCartMutation.mutate({ productId: product.id, quantity: 1 })
         // Add bundle products
         for (const bundleProduct of bundleProducts) {
-          await addItemToCart({ productId: bundleProduct.id, quantity: 1 })
+          addToCartMutation.mutate({ productId: bundleProduct.id, quantity: 1 })
         }
         toast.success("Bundle added to cart")
       } catch (error: any) {

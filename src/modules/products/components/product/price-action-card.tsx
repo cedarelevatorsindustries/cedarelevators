@@ -33,8 +33,9 @@ export function PriceActionCard({
     verificationStatus
 }: PriceActionCardProps) {
     const [quantity, setQuantity] = useState(1)
+    const [isAddingToCart, setIsAddingToCart] = useState(false)
     const router = useRouter()
-    const { data: cart } = useCartQuery()
+    const { data: cart, isLoading: isCartLoading, refetch: refetchCart } = useCartQuery()
     const permissions = getPricingPermissions(userState)
     const discount = price && mrp ? calculateDiscount(price, mrp) : 0
     const primaryUrl = getPrimaryCTAUrl(userState)
@@ -48,9 +49,18 @@ export function PriceActionCard({
         setQuantity(prev => Math.max(1, prev + delta))
     }
 
-    const handlePrimaryAction = () => {
+    const handlePrimaryAction = async () => {
         if (userState === 'business_verified' && onAddToCart) {
-            onAddToCart(quantity)
+            setIsAddingToCart(true)
+            try {
+                await onAddToCart(quantity)
+                // Force refetch cart to update button state
+                await refetchCart()
+            } catch (error) {
+                console.error('Error adding to cart:', error)
+            } finally {
+                setIsAddingToCart(false)
+            }
         }
     }
 
@@ -229,14 +239,23 @@ export function PriceActionCard({
                     ) : (
                         <button
                             onClick={handlePrimaryAction}
-                            disabled={actionDisabled}
-                            className={`flex-1 font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] ${actionDisabled
+                            disabled={actionDisabled || isAddingToCart}
+                            className={`flex-1 font-semibold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] ${actionDisabled || isAddingToCart
                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 : 'bg-orange-500 hover:bg-orange-600 text-white'
                                 }`}
                         >
-                            <ShoppingCart className="w-5 h-5" />
-                            {permissions.primaryCTA}
+                            {isAddingToCart ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Adding...
+                                </>
+                            ) : (
+                                <>
+                                    <ShoppingCart className="w-5 h-5" />
+                                    {permissions.primaryCTA}
+                                </>
+                            )}
                         </button>
                     )}
 

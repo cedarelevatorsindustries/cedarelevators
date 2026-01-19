@@ -2,10 +2,7 @@
 
 import { FilterGroup } from "./FilterGroup"
 import { StockFilter } from "./StockFilter"
-import { SortFilter } from "./SortFilter"
 import { VariantOptionFilter } from "./VariantOptionFilter"
-import { PriceRangeSlider } from "./PriceRangeSlider"
-import { RatingFilter } from "./RatingFilter"
 import type { PLPFilters, AvailablePLPOptions } from "@/lib/types/filters"
 
 interface PLPFiltersProps {
