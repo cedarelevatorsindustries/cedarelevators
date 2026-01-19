@@ -108,6 +108,26 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     icon: 'Star',
     group: 'cms'
   },
+  {
+    id: 'warranty-info',
+    title: 'Warranty Information',
+    href: '/admin/settings/cms/warranty',
+    description: 'Manage Warranty page content',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'ShieldCheck',
+    group: 'cms'
+  },
+  {
+    id: 'policies',
+    title: 'Policies',
+    href: '/admin/settings/cms/policies',
+    description: 'Manage all policy pages',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'ScrollText',
+    group: 'cms'
+  },
 
   {
     id: 'system',

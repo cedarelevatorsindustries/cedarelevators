@@ -82,16 +82,35 @@ export async function getOrCreateCart(
   profileType?: ProfileType,
   businessId?: string
 ): Promise<CartActionResponse<Cart>> {
+  console.log('🛒 [getOrCreateCart] START', { profileType, businessId })
+
   try {
+    console.log('🔐 [getOrCreateCart] Getting user context...')
     const context = await getUserContext()
+
     if (!context) {
+      console.error('❌ [getOrCreateCart] User not authenticated')
       return { success: false, error: 'User not authenticated' }
     }
 
+    console.log('✅ [getOrCreateCart] User context obtained:', {
+      userId: context.userId,
+      profileType: context.profileType,
+      businessId: context.businessId
+    })
+
+    console.log('🔌 [getOrCreateCart] Creating Clerk Supabase client...')
     const supabase = await createClerkSupabaseClient()
+    console.log('✅ [getOrCreateCart] Supabase client created')
 
     const profile = profileType || context.profileType
     const bizId = businessId || context.businessId
+
+    console.log('📞 [getOrCreateCart] Calling get_or_create_cart RPC...', {
+      userId: context.userId,
+      profileType: profile,
+      businessId: bizId
+    })
 
     // Call database function to get or create cart
     const { data, error } = await supabase.rpc('get_or_create_cart', {
@@ -100,7 +119,24 @@ export async function getOrCreateCart(
       p_business_id: bizId || null
     })
 
+    console.log('📥 [getOrCreateCart] RPC response received:', {
+      hasData: !!data,
+      hasError: !!error,
+      data,
+      error
+    })
+
     if (error) {
+      console.error('❌ [getOrCreateCart] RPC ERROR:', {
+        errorMessage: error.message,
+        errorCode: error.code,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        userId: context.userId,
+        profileType: profile,
+        businessId: bizId
+      })
+
       logger.error('Error calling get_or_create_cart RPC', {
         error,
         errorMessage: error.message,
@@ -112,7 +148,9 @@ export async function getOrCreateCart(
       })
 
       // Fallback: Try to get existing cart directly if RPC fails
+      console.log('🔄 [getOrCreateCart] FALLBACK: Attempting direct cart lookup...')
       logger.info('Attempting direct cart lookup as fallback')
+
       const { data: existingCart, error: lookupError } = await supabase
         .from('carts')
         .select(`
@@ -124,13 +162,21 @@ export async function getOrCreateCart(
         .eq('status', 'active')
         .maybeSingle()
 
+      console.log('📥 [getOrCreateCart] Direct lookup result:', {
+        foundCart: !!existingCart,
+        hasLookupError: !!lookupError,
+        lookupError
+      })
+
       if (!lookupError && existingCart) {
+        console.log('✅ [getOrCreateCart] Found existing cart via direct lookup')
         logger.info('Found existing cart via direct lookup')
         return { success: true, data: existingCart as Cart }
       }
 
       // If no existing cart, try to create one directly using admin client
       if (!lookupError && !existingCart) {
+        console.log('➕ [getOrCreateCart] FALLBACK: Creating new cart with admin client...')
         logger.info('No existing cart found, attempting to create new cart')
         const adminClient = createAdminClient()
 
@@ -148,22 +194,40 @@ export async function getOrCreateCart(
           `)
           .single()
 
+        console.log('📥 [getOrCreateCart] Cart creation result:', {
+          success: !!newCart,
+          hasCreateError: !!createError,
+          createError
+        })
+
         if (!createError && newCart) {
+          console.log('✅ [getOrCreateCart] Successfully created new cart via fallback')
           logger.info('Successfully created cart via direct insert')
           return { success: true, data: newCart as Cart }
         }
 
+        console.error('❌ [getOrCreateCart] Failed to create cart:', createError)
         logger.error('Failed to create cart via direct insert', { error: createError })
       }
 
+      console.error('❌ [getOrCreateCart] All fallback attempts failed')
       return { success: false, error: `Failed to get or create cart: ${error.message}` }
     }
 
+    console.log('✅ [getOrCreateCart] RPC succeeded, fetching cart details...')
     // Fetch the cart with items
     const cart = await getCart(data)
+
+    console.log('🎉 [getOrCreateCart] SUCCESS:', { cartId: cart.data?.id })
     return { success: true, data: cart.data || undefined }
 
   } catch (error) {
+    console.error('💥 [getOrCreateCart] CATCH ERROR:', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined
+    })
+
     logger.error('getOrCreateCart error', {
       error,
       errorMessage: error instanceof Error ? error.message : 'Unknown error',
@@ -171,6 +235,7 @@ export async function getOrCreateCart(
     })
     return { success: false, error: `Failed to get or create cart: ${error instanceof Error ? error.message : 'Unknown error'}` }
   }
+
 }
 
 // =====================================================
