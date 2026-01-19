@@ -215,11 +215,25 @@ export async function getOrCreateCart(
     }
 
     console.log('✅ [getOrCreateCart] RPC succeeded, fetching cart details...')
+    console.log('📋 [getOrCreateCart] Cart ID from RPC:', data)
+
     // Fetch the cart with items
     const cart = await getCart(data)
 
-    console.log('🎉 [getOrCreateCart] SUCCESS:', { cartId: cart.data?.id })
-    return { success: true, data: cart.data || undefined }
+    console.log('📥 [getOrCreateCart] getCart result:', {
+      success: cart.success,
+      hasData: !!cart.data,
+      cartId: cart.data?.id,
+      error: cart.error
+    })
+
+    if (!cart.success || !cart.data) {
+      console.error('❌ [getOrCreateCart] Failed to fetch cart details after RPC success:', cart.error)
+      return { success: false, error: cart.error || 'Failed to fetch cart details' }
+    }
+
+    console.log('🎉 [getOrCreateCart] SUCCESS:', { cartId: cart.data.id })
+    return { success: true, data: cart.data }
 
   } catch (error) {
     console.error('💥 [getOrCreateCart] CATCH ERROR:', {
