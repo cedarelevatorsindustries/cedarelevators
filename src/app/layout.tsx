@@ -1,5 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import "@/styles/globals.css"
 import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
@@ -79,6 +79,29 @@ export const metadata: Metadata = {
       { url: '/web-app-manifest-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
   },
+  // Mobile-specific format detection
+  formatDetection: {
+    telephone: true,
+    email: true,
+    address: true,
+  },
+  // Enhanced mobile web app support
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
+}
+
+// Viewport configuration for mobile optimization
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F97316' },
+    { media: '(prefers-color-scheme: dark)', color: '#EA580C' },
+  ],
 }
 
 import { Space_Grotesk } from "next/font/google"
@@ -86,6 +109,10 @@ import { Space_Grotesk } from "next/font/google"
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-space-grotesk",
+  display: 'swap', // Prevent invisible text during load (FOIT)
+  preload: true,
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'sans-serif'],
+  adjustFontFallback: true, // Reduce layout shift (CLS)
 })
 
 export default function RootLayout({

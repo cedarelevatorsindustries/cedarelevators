@@ -71,7 +71,7 @@ export default function MobileSidebar({ isOpen, isLoggedIn, userName, onClose }:
                     </svg>
                   </a>
                   <a
-                    href="https://wa.me/917299012340"
+                
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#20BA5A] flex items-center justify-center transition-colors"
@@ -126,7 +126,7 @@ export default function MobileSidebar({ isOpen, isLoggedIn, userName, onClose }:
                     </svg>
                   </a>
                   <a
-                    href="https://wa.me/917299012340"
+                  
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#20BA5A] flex items-center justify-center transition-colors"

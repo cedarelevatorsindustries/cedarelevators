@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { getStoreSettings } from "@/lib/services/settings"
 
 export default function FooterLite() {
-  const [contactPhone, setContactPhone] = useState<string>("7299012340") // Fallback
   const [contactEmail, setContactEmail] = useState<string>("contact@cedarelevator.com") // Fallback
   const [isLoading, setIsLoading] = useState(true)
 
@@ -50,7 +49,7 @@ export default function FooterLite() {
       {/* Copyright - Single Line */}
       <div className="px-4 py-2 border-t border-blue-100">
         <p className="text-[10px] text-gray-600 text-center leading-tight">
-          © 2025 Cedar Elevators Industries. All Rights Reserved. | crafted by <a href="https://mergex.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Mergex</a>
+          © 2026 Cedar Elevators Industries. All Rights Reserved. | crafted by <a href="https://mergex.in" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">Mergex</a>
         </p>
       </div>
     </footer>
