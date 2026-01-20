@@ -119,7 +119,8 @@ export async function getCollectionsWithProductsByDisplayContext(
                             id,
                             name,
                             slug,
-                            thumbnail_url,
+                            description,
+                            images,
                             price,
                             compare_at_price,
                             status,
@@ -142,6 +143,12 @@ export async function getCollectionsWithProductsByDisplayContext(
                 // Map the response to match ProductInCollection type
                 const products = (collectionProducts || []).map((cp: any) => {
                     const rawProduct = Array.isArray(cp.product) ? cp.product[0] : cp.product
+
+                    // Parse images if they're a JSON string
+                    const parsedImages = typeof rawProduct?.images === 'string'
+                        ? JSON.parse(rawProduct.images)
+                        : rawProduct?.images
+
                     return {
                         id: cp.id,
                         product_id: cp.product_id,
@@ -150,6 +157,12 @@ export async function getCollectionsWithProductsByDisplayContext(
                         created_at: cp.created_at,
                         product: rawProduct ? {
                             ...rawProduct,
+                            // Map database fields to ProductCard expected fields
+                            // Extract thumbnail from images array (first image)
+                            thumbnail: Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null,
+                            handle: rawProduct.slug || rawProduct.handle || '', // ProductCard expects 'handle'
+                            title: rawProduct.name || rawProduct.title || '', // ProductCard expects 'title'
+                            images: parsedImages, // Include parsed images
                             // Prices are in rupees in database, product-card expects rupees  
                             price: rawProduct.price || null,
                             compare_at_price: rawProduct.compare_at_price || null,

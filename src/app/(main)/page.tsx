@@ -50,22 +50,91 @@ export default async function HomePage() {
   ])
 
   const products = response.products
-  const collections = JSON.parse(JSON.stringify(rawCollections))
-  const categoriesCollections = JSON.parse(JSON.stringify(rawCategoriesCollections))
-  const businessHubCollections = JSON.parse(JSON.stringify(rawBusinessHubCollections))
+
+  // Transform collections to flatten nested product structure (for all users)
+  const collections = (rawCollections || []).map((collection: any) => ({
+    ...collection,
+    products: (collection.products || []).map((pc: any) => {
+      const product = pc.product || pc
+      const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+      return {
+        id: product.id,
+        title: product.name || product.title,
+        name: product.name,
+        slug: product.slug,
+        handle: product.slug || product.handle,
+        thumbnail: product.thumbnail || product.thumbnail_url || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        description: product.description,
+        images: parsedImages,
+        price: product.price,
+        compare_at_price: product.compare_at_price,
+        variants: product.variants || product.product_variants || [],
+        product_variants: product.product_variants || [],
+        metadata: product.metadata || {}
+      }
+    })
+  }))
+
+  const categoriesCollections = (rawCategoriesCollections || []).map((collection: any) => ({
+    ...collection,
+    products: (collection.products || []).map((pc: any) => {
+      const product = pc.product || pc
+      const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+      return {
+        id: product.id,
+        title: product.name || product.title,
+        name: product.name,
+        slug: product.slug,
+        handle: product.slug || product.handle,
+        thumbnail: product.thumbnail || product.thumbnail_url || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        description: product.description,
+        images: parsedImages,
+        price: product.price,
+        compare_at_price: product.compare_at_price,
+        variants: product.variants || product.product_variants || [],
+        product_variants: product.product_variants || [],
+        metadata: product.metadata || {}
+      }
+    })
+  }))
+
+  const businessHubCollections = (rawBusinessHubCollections || []).map((collection: any) => ({
+    ...collection,
+    products: (collection.products || []).map((pc: any) => {
+      const product = pc.product || pc
+      const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
+      return {
+        id: product.id,
+        title: product.name || product.title,
+        name: product.name,
+        slug: product.slug,
+        handle: product.slug || product.handle,
+        thumbnail: product.thumbnail || product.thumbnail_url || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        description: product.description,
+        images: parsedImages,
+        price: product.price,
+        compare_at_price: product.compare_at_price,
+        variants: product.variants || product.product_variants || [],
+        product_variants: product.product_variants || [],
+        metadata: product.metadata || {}
+      }
+    })
+  }))
 
   // Transform guest collections to flatten nested product structure
   const guestCollections = (rawGuestCollections || []).map((collection: any) => ({
     ...collection,
     products: (collection.products || []).map((pc: any) => {
       const product = pc.product || pc
+      const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
       return {
         id: product.id,
         title: product.name,
         name: product.name,
         slug: product.slug,
         handle: product.slug,
-        thumbnail: product.thumbnail_url || product.thumbnail,
+        thumbnail: product.thumbnail || product.thumbnail_url || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        images: parsedImages,
         price: product.price ? { amount: product.price, currency_code: 'INR' } : undefined,
         compare_at_price: product.compare_at_price,
         // CRITICAL: Include variants for stock display

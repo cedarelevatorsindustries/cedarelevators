@@ -6,9 +6,10 @@
 
 'use client'
 
+import { useMemo } from 'react'
 import { CartSummary as CartSummaryType } from '@/types/cart.types'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, FileText } from 'lucide-react'
+import { AlertCircle, FileText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -16,10 +17,11 @@ interface CartSummaryProps {
   summary: CartSummaryType
   onCheckout?: () => void
   onRequestQuote?: () => void
+  onClearCart?: () => void
   gstPercentage?: number  // Optional GST percentage to display
 }
 
-export function CartSummary({ summary, onCheckout, onRequestQuote, gstPercentage }: CartSummaryProps) {
+export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, gstPercentage }: CartSummaryProps) {
   const router = useRouter()
 
   const handleCheckout = () => {
@@ -36,98 +38,168 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, gstPercentage
   const displayGstPercentage = gstPercentage ||
     (summary.subtotal > 0 ? Math.round((summary.tax / summary.subtotal) * 100) : 18)
 
+  // Calculate savings
+  const totalSavings = useMemo(() => {
+    return summary.discount
+  }, [summary.discount])
+
   return (
-    <div className="bg-gray-50 rounded-lg p-6 sticky top-4" data-testid="cart-summary">
-      <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+    <div className="bg-white rounded-lg p-6 sticky top-4 shadow-sm border-none" data-testid="cart-summary">
+      <h3 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h3>
 
-      {/* Item Count */}
-      <div className="flex justify-between text-sm mb-2">
-        <span className="text-gray-600">Items ({summary.itemCount})</span>
-        <span className="font-medium">₹{summary.subtotal.toLocaleString()}</span>
-      </div>
-
-      {/* Discount */}
-      {summary.discount > 0 && (
-        <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-600">Discount</span>
-          <span className="font-medium text-green-600">-₹{summary.discount.toLocaleString()}</span>
+      {/* Summary Items */}
+      <div className="space-y-3 mb-4">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Items ({summary.itemCount})</span>
+          <span className="font-medium">₹{summary.subtotal.toLocaleString()}</span>
         </div>
-      )}
 
-      {/* Shipping */}
-      <div className="flex justify-between text-sm mb-2">
-        <span className="text-gray-600">Shipping</span>
-        <span className="font-medium text-gray-600">
-          {summary.shipping === 0 ? 'Paid on delivery' : `₹${summary.shipping.toLocaleString()}`}
-        </span>
-      </div>
+        {summary.discount > 0 && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span>Discount</span>
+            <span className="font-medium">-₹{summary.discount.toLocaleString()}</span>
+          </div>
+        )}
 
-      {/* Tax */}
-      {summary.tax > 0 && (
-        <div className="flex justify-between text-sm mb-2">
+        {/* Shipping - only show if there's a cost (> 0) */}
+        {summary.shipping > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Shipping</span>
+            <span className="font-medium">₹{summary.shipping.toLocaleString()}</span>
+          </div>
+        )}
+
+        <div className="flex justify-between text-sm">
           <span className="text-gray-600">GST ({displayGstPercentage}%)</span>
           <span className="font-medium">₹{Math.round(summary.tax).toLocaleString()}</span>
         </div>
-      )}
-
-      <div className="border-t my-4" />
+      </div>
 
       {/* Total */}
-      <div className="flex justify-between text-lg font-bold mb-6">
-        <span>Total</span>
-        <span data-testid="cart-total">₹{Math.round(summary.total).toLocaleString()}</span>
+      <div className="border-t pt-4 mb-4">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-lg font-bold text-gray-900">Total</span>
+          <span className="text-2xl font-bold text-orange-600" data-testid="cart-total">
+            ₹{Math.round(summary.total).toLocaleString()}
+          </span>
+        </div>
+
+        {/* Info message about delivery charge */}
+        <p className="text-xs text-gray-500 mb-2">
+          In addition, a delivery charge will apply
+        </p>
+
+        {/* Savings message */}
+        {totalSavings > 0 && (
+          <p className="text-sm text-green-600 font-medium">
+            You save ₹{totalSavings.toLocaleString()} on this purchase
+          </p>
+        )}
       </div>
 
       {/* Warnings */}
       {summary.hasUnavailableItems && (
-        <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg mb-4">
-          Some items are no longer available. Please remove them to proceed.
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-800">
+              Some items are no longer available. Please remove them to continue.
+            </p>
+          </div>
         </div>
       )}
 
       {summary.hasOutOfStockItems && (
-        <div className="bg-amber-50 text-amber-700 text-sm p-3 rounded-lg mb-4">
-          Some items are out of stock. Please adjust quantities.
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800">
+              Some items are out of stock. Please adjust quantities or request a quote.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Action Buttons - Only for Verified Business Users */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Secondary: Request Quote */}
-        <Button
-          onClick={handleRequestQuote}
-          variant="outline"
-          className="w-full border-2 border-gray-300 hover:bg-gray-50"
-          size="lg"
-          data-testid="request-quote-btn"
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          Request Quote
-        </Button>
-
-        {/* Primary: Proceed to Checkout */}
+      {/* Single Checkout Button */}
+      <div className="mb-6">
         <Button
           onClick={handleCheckout}
           disabled={!summary.canCheckout}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
           size="lg"
           data-testid="checkout-btn"
         >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Checkout
+          Proceed to Checkout
         </Button>
       </div>
 
-      {/* Continue Shopping Button */}
-      <Link href="/catalog" className="block mt-3">
-        <Button
-          variant="outline"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white border-transparent"
-          size="lg"
-        >
-          Continue Shopping
-        </Button>
-      </Link>
+      {/* Trust Badges - Bullet Points with Checkmarks */}
+      <div className="mb-6 space-y-2">
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-green-600 text-xs font-bold">✓</span>
+          </div>
+          <span>Cash on Delivery Available</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-green-600 text-xs font-bold">✓</span>
+          </div>
+          <span>GST Invoice included</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-green-600 text-xs font-bold">✓</span>
+          </div>
+          <span>Easy Returns</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <span className="text-green-600 text-xs font-bold">✓</span>
+          </div>
+          <span>Delivered in 3-5 working days</span>
+        </div>
+      </div>
+
+      {/* Bottom Links */}
+      <div className="pt-4 border-t space-y-3">
+        {/* Need more? Request bulk pricing */}
+        <div className="text-center">
+          <Button
+            onClick={handleRequestQuote}
+            variant="outline"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200 italic"
+            size="sm"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Need more? Request bulk pricing
+          </Button>
+        </div>
+
+        {/* Continue Shopping */}
+        <div className="text-center">
+          <Link href="/catalog">
+            <Button
+              variant="ghost"
+              className="w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+            >
+              Continue Shopping
+            </Button>
+          </Link>
+        </div>
+
+        {/* Clear Cart */}
+        {onClearCart && (
+          <Button
+            onClick={onClearCart}
+            variant="ghost"
+            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            data-testid="clear-cart-btn"
+          >
+            Clear Cart
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

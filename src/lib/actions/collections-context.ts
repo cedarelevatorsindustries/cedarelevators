@@ -46,6 +46,7 @@ export async function getHomepageCollections(limit = 5) {
                             name,
                             slug,
                             thumbnail,
+                            images,
                             price,
                             compare_at_price,
                             status,
@@ -62,13 +63,15 @@ export async function getHomepageCollections(limit = 5) {
 
                 const products = (productCollections || []).map(pc => {
                     const product = pc.products as any
+                    const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
                     return {
                         id: product.id,
                         title: product.name,
                         name: product.name,
                         slug: product.slug,
                         handle: product.handle || product.slug,
-                        thumbnail: product.thumbnail,
+                        thumbnail: product.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+                        images: parsedImages,
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
@@ -128,6 +131,7 @@ export async function getCategoryCollections(categoryId: string, limit = 5) {
                             name,
                             slug,
                             thumbnail,
+                            images,
                             price,
                             compare_at_price,
                             status,
@@ -144,13 +148,15 @@ export async function getCategoryCollections(categoryId: string, limit = 5) {
 
                 const products = (productCollections || []).map(pc => {
                     const product = pc.products as any
+                    const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
                     return {
                         id: product.id,
                         title: product.name,
                         name: product.name,
                         slug: product.slug,
                         handle: product.handle || product.slug,
-                        thumbnail: product.thumbnail,
+                        thumbnail: product.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+                        images: parsedImages,
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
@@ -209,6 +215,7 @@ export async function getBusinessCollections(limit = 5) {
                             name,
                             slug,
                             thumbnail,
+                            images,
                             price,
                             compare_at_price,
                             status,
@@ -225,13 +232,15 @@ export async function getBusinessCollections(limit = 5) {
 
                 const products = (productCollections || []).map(pc => {
                     const product = pc.products as any
+                    const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
                     return {
                         id: product.id,
                         title: product.name,
                         name: product.name,
                         slug: product.slug,
                         handle: product.handle || product.slug,
-                        thumbnail: product.thumbnail,
+                        thumbnail: product.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+                        images: parsedImages,
                         price: product.price ? {
                             amount: product.price,
                             currency_code: 'INR'
@@ -290,6 +299,7 @@ export async function getCatalogCollections() {
                             name,
                             slug,
                             thumbnail,
+                            images,
                             price,
                             compare_at_price,
                             status,
@@ -307,13 +317,15 @@ export async function getCatalogCollections() {
 
                 const products = (productCollections || []).map(pc => {
                     const product = pc.products as any
+                    const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
                     return {
                         id: product.id,
                         title: product.name,
                         name: product.name,
                         slug: product.slug,
                         handle: product.handle || product.slug,
-                        thumbnail: product.thumbnail,
+                        thumbnail: product.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+                        images: parsedImages,
                         description: product.description,
                         price: product.price ? {
                             amount: product.price,
@@ -370,6 +382,7 @@ export async function getCollectionProducts(collectionSlug: string, limit?: numb
                     name,
                     slug,
                     thumbnail,
+                    images,
                     price,
                     compare_at_price,
                     status,
@@ -396,13 +409,15 @@ export async function getCollectionProducts(collectionSlug: string, limit?: numb
 
         const products = (productCollections || []).map(pc => {
             const product = pc.products as any
+            const parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images
             return {
                 id: product.id,
                 title: product.name,
                 name: product.name,
                 slug: product.slug,
                 handle: product.handle || product.slug,
-                thumbnail: product.thumbnail,
+                thumbnail: product.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+                images: parsedImages,
                 description: product.description,
                 metadata: product.metadata,
                 price: product.price ? {
