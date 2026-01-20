@@ -5,7 +5,7 @@
 
 'use client'
 
-import { Wallet } from 'lucide-react'
+import { IndianRupee } from 'lucide-react'
 
 interface PaymentMethodSelectorProps {
     disabled?: boolean
@@ -27,7 +27,7 @@ export function PaymentMethodSelector({ disabled = false }: PaymentMethodSelecto
                     {/* Payment Details */}
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <Wallet className="w-5 h-5 text-orange-600" />
+                            <IndianRupee className="w-5 h-5 text-orange-600" />
                             <span className="font-semibold text-gray-900">Cash on Delivery (COD)</span>
                         </div>
                         <p className="text-sm text-gray-600">

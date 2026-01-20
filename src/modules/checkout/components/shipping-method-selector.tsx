@@ -17,6 +17,7 @@ interface ShippingMethodSelectorProps {
     onSelectMethod: (method: ShippingMethod) => void
     onSelectPickupLocation: (locationId: string) => void
     onAddressRequired?: () => void
+    deliveryEta?: string  // Optional delivery timeline
 }
 
 export function ShippingMethodSelector({
@@ -25,7 +26,8 @@ export function ShippingMethodSelector({
     pickupLocations,
     onSelectMethod,
     onSelectPickupLocation,
-    onAddressRequired
+    onAddressRequired,
+    deliveryEta
 }: ShippingMethodSelectorProps) {
     return (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -63,12 +65,18 @@ export function ShippingMethodSelector({
 
                         <div className="flex-1 text-left">
                             <div className="flex items-center gap-2 mb-1">
-                                <Truck className="w-5 h-5 text-orange-600" />
+                                <Truck className="w-5 h-5 text-blue-600" />
                                 <span className="font-semibold text-gray-900">Doorstep Delivery</span>
                             </div>
                             <p className="text-sm text-gray-600">
-                                Delivery to your specified address
+                                Delivered to your address
                             </p>
+                            <div className="flex items-center gap-2 mt-1.5">
+                                <Truck className="w-4 h-4 text-blue-600" />
+                                <p className="text-xs text-gray-500">
+                                    {deliveryEta}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </button>

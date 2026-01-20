@@ -19,6 +19,7 @@ import { CheckoutOrderSummary } from './checkout-order-summary'
 import { CheckoutPaymentSection } from './checkout-payment-section'
 import { CheckoutProgress } from './checkout-progress'
 import { getBusinessAddresses, getCheckoutSummary } from '@/lib/actions/checkout'
+import { getShippingSettings } from '@/lib/services/settings'
 import type { BusinessAddress, CheckoutSummary } from '@/lib/actions/checkout'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
@@ -38,6 +39,7 @@ export function CheckoutPageContent() {
   const [checkoutSummary, setCheckoutSummary] = useState<CheckoutSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deliveryEta, setDeliveryEta] = useState<string>('')
 
   // Load addresses and checkout summary
   useEffect(() => {
@@ -69,6 +71,12 @@ export function CheckoutPageContent() {
         const summaryResult = await getCheckoutSummary(cart.id)
         if (summaryResult.success && summaryResult.data) {
           setCheckoutSummary(summaryResult.data)
+        }
+
+        // Load shipping settings for delivery ETA
+        const shippingResult = await getShippingSettings()
+        if (shippingResult.success && shippingResult.data?.delivery_sla_text) {
+          setDeliveryEta(shippingResult.data.delivery_sla_text)
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load checkout data')
@@ -152,6 +160,7 @@ export function CheckoutPageContent() {
             canProceedToPayment={canProceedToReview}
             currentStep={currentStep}
             onProceedToPayment={() => setCurrentStep('payment')}
+            deliveryEta={deliveryEta}
           />
         </div>
       </div>

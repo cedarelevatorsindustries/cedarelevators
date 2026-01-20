@@ -23,7 +23,8 @@ import { UserType, ProfileType } from '@/types/cart.types'
 import { useRouter } from 'next/navigation'
 import EmptyCartState from '@/modules/cart/templates/empty-cart-state'
 import { useUserPricing } from '@/lib/hooks/useUserPricing'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getShippingSettings } from '@/lib/services/settings'
 
 export default function CartPage() {
   const router = useRouter()
@@ -38,6 +39,19 @@ export default function CartPage() {
     clearCartItems,
     switchProfile
   } = useCart()
+
+  // Fetch shipping settings for delivery ETA
+  const [deliveryEta, setDeliveryEta] = useState<string>('')
+
+  useEffect(() => {
+    const fetchShippingSettings = async () => {
+      const result = await getShippingSettings()
+      if (result.success && result.data?.delivery_sla_text) {
+        setDeliveryEta(result.data.delivery_sla_text)
+      }
+    }
+    fetchShippingSettings()
+  }, [])
 
   // Use centralized user pricing hook for correct user type detection
   const { userType: pricingUserType, isVerified } = useUserPricing()
@@ -168,7 +182,7 @@ export default function CartPage() {
                     onClick={clearCartItems}
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-gray-600 hover:text-gray-700 hover:bg-gray-100"
                     data-testid="clear-cart-btn"
                   >
                     Clear All
@@ -194,6 +208,7 @@ export default function CartPage() {
               summary={summary}
               onCheckout={handleCheckout}
               onRequestQuote={handleRequestQuote}
+              deliveryEta={deliveryEta}
             />
           </div>
         </div>

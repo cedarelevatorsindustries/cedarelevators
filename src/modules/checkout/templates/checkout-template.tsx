@@ -23,7 +23,8 @@ import {
   TrendingUp,
   Shield,
   ChevronRight,
-  Phone
+  Phone,
+  IndianRupee
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -40,6 +41,7 @@ import type {
 import { getCheckoutFromQuote } from '@/lib/actions/checkout/core'
 import { validateIndividualOrder } from '@/lib/actions/checkout/individual-validation'
 import { createOrderFromCheckout } from '@/lib/actions/checkout/create-order'
+import { getShippingSettings } from '@/lib/services/settings'
 import { toast } from 'sonner'
 import SuccessAnimation from '@/modules/checkout/components/success-animation'
 
@@ -63,6 +65,7 @@ export default function CheckoutTemplate() {
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([])
   const [defaultAddress, setDefaultAddress] = useState<any>(null)
   const [isLoadingAddress, setIsLoadingAddress] = useState(true)
+  const [deliveryEta, setDeliveryEta] = useState<string>('')
 
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null)
@@ -87,6 +90,15 @@ export default function CheckoutTemplate() {
       setPickupLocations(locations)
     }
     loadPickupLocations()
+
+    // Fetch shipping settings for delivery ETA
+    async function loadShippingSettings() {
+      const result = await getShippingSettings()
+      if (result.success && result.data?.delivery_sla_text) {
+        setDeliveryEta(result.data.delivery_sla_text)
+      }
+    }
+    loadShippingSettings()
   }, [])
 
   // Fetch default address
@@ -406,6 +418,10 @@ export default function CheckoutTemplate() {
                   />
                   <span className="font-bold text-lg mb-1">Doorstep Delivery</span>
                   <span className="text-sm text-[#9c7349]">Delivered to your address</span>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <Truck className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs text-gray-500">{deliveryEta}</span>
+                  </div>
                 </label>
 
                 <label className={`relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all ${shippingMethod === 'pickup'
@@ -529,13 +545,13 @@ export default function CheckoutTemplate() {
             {/* Payment Method */}
             <section className="bg-white rounded-xl border border-[#f4ede7] p-6">
               <h2 className="text-xl font-bold mb-5 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-orange-600" />
+                <IndianRupee className="w-5 h-5 text-orange-600" />
                 Payment Method
               </h2>
 
               <div className="flex items-center gap-4 p-4 border-2 border-orange-600 bg-orange-600/5 rounded-xl relative">
                 <div className="bg-orange-600/20 p-2 rounded-lg">
-                  <CreditCard className="w-6 h-6 text-orange-600" />
+                  <IndianRupee className="w-6 h-6 text-orange-600" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-lg leading-none">Cash on Delivery (COD)</span>
@@ -570,10 +586,13 @@ export default function CheckoutTemplate() {
                     <span className="text-[#9c7349]">Subtotal</span>
                     <span className="font-medium">₹{checkoutData.summary.subtotal.toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between text-base">
-                    <span className="text-[#9c7349]">Shipping</span>
-                    <span className="text-gray-600 font-medium">Paid on delivery</span>
-                  </div>
+
+                  {checkoutData.summary.shipping > 0 && (
+                    <div className="flex justify-between text-base">
+                      <span className="text-[#9c7349]">Shipping</span>
+                      <span className="text-gray-600 font-medium">₹{checkoutData.summary.shipping.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
                   {checkoutData.summary.tax > 0 && (
                     <div className="flex justify-between text-base">
                       <span className="text-[#9c7349]">GST</span>
@@ -582,9 +601,12 @@ export default function CheckoutTemplate() {
                   )}
 
                   <div className="h-px bg-[#f4ede7] my-2"></div>
-                  <div className="flex justify-between text-xl font-black">
-                    <span>Total</span>
-                    <span className="text-orange-600">₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}</span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-xl font-black">You Pay</span>
+                      <p className="text-xs text-[#9c7349] mt-0.5">Includes GST</p>
+                    </div>
+                    <span className="text-2xl font-black text-gray-900">₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
@@ -596,13 +618,27 @@ export default function CheckoutTemplate() {
                   </div>
                 )}
 
+                <div className="mt-4 text-center">
+                  <p className="text-xs text-gray-500">
+                    In addition, a delivery charge will apply
+                  </p>
+                </div>
+
                 <button
                   onClick={handlePlaceOrder}
                   disabled={hasViolations || isProcessing || !defaultAddress || (shippingMethod === 'pickup' && !pickupLocationId)}
-                  className="w-full mt-6 bg-orange-600 hover:bg-orange-600/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20"
+                  className="w-full mt-6 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
                 >
-                  {isProcessing ? 'Processing...' : 'Place Order'}
-                  <ChevronRight className="w-5 h-5" />
+                  {isProcessing ? (
+                    'Processing...'
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Place Secure Order
+                    </>
+                  )}
                 </button>
                 {!defaultAddress && !isLoadingAddress && (
                   <p className="text-xs text-red-600 mt-2 text-center">
@@ -614,6 +650,40 @@ export default function CheckoutTemplate() {
                     Please select a pickup location to place your order
                   </p>
                 )}
+
+                {/* Trust Badges */}
+                <div className="mt-6 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-600 text-xs font-bold">🛡️</span>
+                    </div>
+                    <span>Purchase Protection</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-600 text-xs font-bold">✓</span>
+                    </div>
+                    <span>Cash on Delivery Available</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-600 text-xs font-bold">✓</span>
+                    </div>
+                    <span>GST Invoice included</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-600 text-xs font-bold">✓</span>
+                    </div>
+                    <span>Secure Transaction</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-600 text-xs font-bold">✓</span>
+                    </div>
+                    <span>{deliveryEta}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Upgrade Nudge (Individual only) */}

@@ -9,7 +9,7 @@
 import { useMemo } from 'react'
 import { CartSummary as CartSummaryType } from '@/types/cart.types'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, FileText } from 'lucide-react'
+import { AlertCircle, FileText, ShoppingCart, ShieldCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -19,9 +19,11 @@ interface CartSummaryProps {
   onRequestQuote?: () => void
   onClearCart?: () => void
   gstPercentage?: number  // Optional GST percentage to display
+  deliveryEta?: string  // Optional delivery timeline (e.g., "2-10 business days")
 }
 
-export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, gstPercentage }: CartSummaryProps) {
+export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, gstPercentage, deliveryEta }: CartSummaryProps) {
+  console.log('[CartSummary] deliveryEta prop:', deliveryEta)
   const router = useRouter()
 
   const handleCheckout = () => {
@@ -75,26 +77,28 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
         </div>
       </div>
 
+      {/* Savings message - positioned before total */}
+      {totalSavings > 0 && (
+        <div className="mb-3">
+          <p className="text-sm text-green-600 font-medium">
+            You saved ₹{totalSavings.toLocaleString()} on this order
+          </p>
+        </div>
+      )}
+
       {/* Total */}
       <div className="border-t pt-4 mb-4">
         <div className="flex justify-between items-center mb-3">
           <span className="text-lg font-bold text-gray-900">Total</span>
-          <span className="text-2xl font-bold text-orange-600" data-testid="cart-total">
+          <span className="text-2xl font-bold text-gray-900" data-testid="cart-total">
             ₹{Math.round(summary.total).toLocaleString()}
           </span>
         </div>
 
         {/* Info message about delivery charge */}
-        <p className="text-xs text-gray-500 mb-2">
+        <p className="text-xs text-gray-500">
           In addition, a delivery charge will apply
         </p>
-
-        {/* Savings message */}
-        {totalSavings > 0 && (
-          <p className="text-sm text-green-600 font-medium">
-            You save ₹{totalSavings.toLocaleString()} on this purchase
-          </p>
-        )}
       </div>
 
       {/* Warnings */}
@@ -129,6 +133,7 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
           size="lg"
           data-testid="checkout-btn"
         >
+          <ShoppingCart className="h-5 w-5 mr-2" />
           Proceed to Checkout
         </Button>
       </div>
@@ -151,13 +156,13 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
           <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
             <span className="text-green-600 text-xs font-bold">✓</span>
           </div>
-          <span>Easy Returns</span>
+          <span>Secured Payment</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-700">
           <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
             <span className="text-green-600 text-xs font-bold">✓</span>
           </div>
-          <span>Delivered in 3-5 working days</span>
+          <span>{deliveryEta}</span>
         </div>
       </div>
 
@@ -178,13 +183,8 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
 
         {/* Continue Shopping */}
         <div className="text-center">
-          <Link href="/catalog">
-            <Button
-              variant="ghost"
-              className="w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-            >
-              Continue Shopping
-            </Button>
+          <Link href="/catalog" className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium block py-2">
+            Continue Shopping
           </Link>
         </div>
 
@@ -193,7 +193,7 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
           <Button
             onClick={onClearCart}
             variant="ghost"
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full text-gray-600 hover:text-gray-700 hover:bg-gray-100"
             data-testid="clear-cart-btn"
           >
             Clear Cart

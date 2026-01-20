@@ -16,6 +16,7 @@ interface CheckoutOrderSummaryProps {
   canProceedToPayment: boolean
   currentStep: string
   onProceedToPayment: () => void
+  deliveryEta?: string  // Optional delivery timeline
 }
 
 export function CheckoutOrderSummary({
@@ -24,6 +25,7 @@ export function CheckoutOrderSummary({
   canProceedToPayment,
   currentStep,
   onProceedToPayment,
+  deliveryEta,
 }: CheckoutOrderSummaryProps) {
   const summary = checkoutSummary || {
     subtotal: cartSummary.subtotal,
@@ -60,7 +62,7 @@ export function CheckoutOrderSummary({
         {/* Pricing Breakdown */}
         <div className="p-6 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-gray-600">Items ({cartSummary.itemCount})</span>
             <span className="font-medium" data-testid="subtotal-amount">
               {formatCurrency(summary.subtotal)}
             </span>
@@ -75,12 +77,15 @@ export function CheckoutOrderSummary({
             </div>
           )}
 
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping</span>
-            <span className="font-medium" data-testid="shipping-amount">
-              {summary.shipping === 0 ? 'FREE' : formatCurrency(summary.shipping)}
-            </span>
-          </div>
+          {/* Shipping - only show if there's a cost (> 0) */}
+          {summary.shipping > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Shipping</span>
+              <span className="font-medium" data-testid="shipping-amount">
+                {formatCurrency(summary.shipping)}
+              </span>
+            </div>
+          )}
 
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">GST ({summary.gst_percentage}%)</span>
@@ -91,29 +96,34 @@ export function CheckoutOrderSummary({
 
           <div className="pt-3 border-t border-gray-200">
             <div className="flex justify-between items-center">
-              <span className="text-base font-semibold text-gray-900">Total</span>
+              <div>
+                <span className="text-base font-semibold text-gray-900">You Pay</span>
+                <p className="text-xs text-gray-500 mt-0.5">Includes GST</p>
+              </div>
               <span className="text-2xl font-bold text-gray-900" data-testid="total-amount">
                 {formatCurrency(summary.total)}
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1 text-right">
-              (Inclusive of all taxes)
-            </p>
+            {summary.shipping === 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                In addition, a delivery charge will apply
+              </p>
+            )}
           </div>
         </div>
 
         {/* Action Button */}
         {currentStep === 'address' && (
-          <div className="p-6 bg-gray-50 border-t border-gray-200">
+          <div className="p-6 border-t border-gray-200">
             <Button
               size="lg"
-              className="w-full"
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
               disabled={!canProceedToPayment}
               onClick={onProceedToPayment}
               data-testid="proceed-to-payment-button"
             >
-              Proceed to Payment
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <Lock className="w-5 h-5 mr-2" />
+              Place Secure Order
             </Button>
             {!canProceedToPayment && (
               <p className="text-xs text-gray-500 mt-2 text-center">
@@ -123,15 +133,38 @@ export function CheckoutOrderSummary({
           </div>
         )}
 
-        {/* Security Badge */}
-        <div className="p-4 bg-green-50 border-t border-green-100">
-          <div className="flex items-center justify-center gap-2 text-sm text-green-700">
-            <Lock className="w-4 h-4" />
-            <span className="font-medium">Secure Checkout</span>
+        {/* Trust Badges - Bullet Points with Checkmarks */}
+        <div className="p-6 border-t border-gray-200 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-blue-600 text-xs font-bold">🛡️</span>
+            </div>
+            <span>Purchase Protection</span>
           </div>
-          <p className="text-xs text-center text-green-600 mt-1">
-            Your payment information is encrypted
-          </p>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-green-600 text-xs font-bold">✓</span>
+            </div>
+            <span>Cash on Delivery Available</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-green-600 text-xs font-bold">✓</span>
+            </div>
+            <span>GST Invoice included</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-green-600 text-xs font-bold">✓</span>
+            </div>
+            <span>Secure Transaction</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-green-600 text-xs font-bold">✓</span>
+            </div>
+            <span>{deliveryEta}</span>
+          </div>
         </div>
       </div>
 

@@ -11,7 +11,7 @@ const statusConfig = {
         className: 'bg-gray-100 text-gray-700'
     },
     pending: {
-        label: 'Pending Payment',
+        label: 'Order Received',
         className: 'bg-yellow-100 text-yellow-700'
     },
     processing: {

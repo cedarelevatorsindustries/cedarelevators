@@ -94,7 +94,7 @@ export interface ShippingSettings {
     free_shipping_enabled: boolean
     free_shipping_threshold: number
     flat_rate_enabled: boolean
-    delivery_sla_text: string | null
+    delivery_sla_text: string | null  // e.g., "7-10 business days"
     shipping_zones: ShippingZone[]
     created_at: string
     updated_at: string
