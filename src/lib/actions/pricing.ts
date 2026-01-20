@@ -96,7 +96,7 @@ export async function deriveCartItems(
             // Get product details
             const { data: product } = await supabase
                 .from('products')
-                .select('id, name, slug, sku, status, price, compare_at_price, stock_quantity')
+                .select('id, name, slug, sku, status, price, compare_at_price, stock_quantity, thumbnail_url, images')
                 .eq('id', item.product_id)
                 .single()
 
@@ -150,8 +150,23 @@ export async function deriveCartItems(
             const stock_available = stockQty >= item.quantity
             const is_available = product.status === 'active' && (!variant || variant.status === 'active')
 
+            // Derive thumbnail: prefer valid thumbnail_url, fallback to first image from images array
+            // Blob URLs are invalid (they start with 'blob:' and only work in the session that created them)
+            let derivedThumbnail = item.thumbnail
+            const thumbnailUrl = product.thumbnail_url
+            const isValidThumbnail = thumbnailUrl && !thumbnailUrl.startsWith('blob:')
+
+            if (isValidThumbnail) {
+                derivedThumbnail = thumbnailUrl
+            } else if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+                // Use first image from images array as fallback
+                const firstImage = product.images[0]
+                derivedThumbnail = firstImage?.url || item.thumbnail
+            }
+
             derivedItems.push({
                 ...item,
+                thumbnail: derivedThumbnail,
                 unit_price,
                 compare_at_price,
                 discount_percentage,

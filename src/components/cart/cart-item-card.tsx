@@ -10,7 +10,6 @@ import { DerivedCartItem } from '@/types/cart.types'
 import { useCart } from '@/contexts/cart-context'
 import { Minus, Plus, Trash2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -49,15 +48,26 @@ export function CartItemCard({ item }: CartItemCardProps) {
       <Link href={`/products/${item.product?.slug || ''}`} className="flex-shrink-0">
         <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
           {item.thumbnail ? (
-            <Image
+            <img
               src={item.thumbnail}
               alt={item.title}
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to placeholder on error
+                (e.target as HTMLImageElement).src = '/images/product-placeholder.png'
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              No image
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <img
+                src="/images/product-placeholder.png"
+                alt="Product placeholder"
+                className="w-full h-full object-contain p-2 opacity-50"
+                onError={(e) => {
+                  // If placeholder also fails, show text
+                  (e.target as HTMLImageElement).style.display = 'none'
+                }}
+              />
             </div>
           )}
         </div>
