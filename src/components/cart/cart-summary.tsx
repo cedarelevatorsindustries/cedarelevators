@@ -126,6 +126,11 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
 
       {/* Single Checkout Button */}
       <div className="mb-6">
+        <div className="mb-3 text-center">
+          <p className="text-sm text-green-600 font-medium">
+            You saved ₹50 on this order
+          </p>
+        </div>
         <Button
           onClick={handleCheckout}
           disabled={!summary.canCheckout}

@@ -46,6 +46,7 @@ import { toast } from 'sonner'
 import SuccessAnimation from '@/modules/checkout/components/success-animation'
 
 export default function CheckoutTemplate() {
+  console.log('Checkout Template Loaded - Version 2.0 - With Savings Text')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isLoaded } = useUser()
@@ -621,6 +622,9 @@ export default function CheckoutTemplate() {
                 <div className="mt-4 text-center">
                   <p className="text-xs text-gray-500">
                     In addition, a delivery charge will apply
+                  </p>
+                  <p className="text-sm text-green-600 font-medium mt-2">
+                    You saved ₹50 on this order
                   </p>
                 </div>
 
