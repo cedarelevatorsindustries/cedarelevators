@@ -155,10 +155,10 @@ export default function QuoteConfirmationPage({
                             />
                         )}
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 mb-3">
-                        Quote Request Submitted
+                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-green-600 mb-3">
+                        Quote Request Submitted Successfully!
                     </h1>
-                    <p className="text-gray-500 text-lg max-w-lg leading-relaxed">
+                    <p className="text-green-600 text-lg max-w-lg leading-relaxed">
                         Your quotation request has been received and is under review.
                     </p>
                 </div>

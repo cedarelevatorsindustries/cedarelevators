@@ -10,8 +10,9 @@
 
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
+import { RealtimeChannel } from '@supabase/supabase-js'
 import {
   Cart,
   CartContext as CartContextType,
@@ -31,6 +32,8 @@ import {
 } from '@/lib/actions/cart-locking'
 import { getCartWithPricing } from '@/lib/actions/pricing'
 import { logger } from '@/lib/services/logger'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 interface CartContextState {
   cart: Cart | null
@@ -75,67 +78,80 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<CartContextType | null>(null)
   const [lockStatus, setLockStatus] = useState<CartLockStatus | null>(null)
+  const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null)
 
-  // Refresh cart data
-  const refreshCart = useCallback(async () => {
+  // Debounce ref for realtime refresh
+  const refreshDebounceRef = useRef<NodeJS.Timeout | null>(null)
+  const isExternalUpdate = useRef(false)
+
+  // Refresh cart data with debouncing for realtime updates
+  const refreshCart = useCallback(async (silent = false) => {
     if (!isSignedIn) {
       setIsLoading(false)
       return
     }
 
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      // Get active cart
-      const cartResult = await getUserActiveCart()
-      if (!cartResult.success || !cartResult.data) {
-        setCart(null)
-        setDerivedItems([])
-        setIsLoading(false)
-        return
-      }
-
-      const fetchedCart = cartResult.data
-      setCart(fetchedCart)
-
-      // Map pricing user type to cart user type
-      let userType: UserType = 'guest'
-      if (pricingUserType === 'business' && isVerified) {
-        userType = 'business_verified'
-      } else if (pricingUserType === 'business' && !isVerified) {
-        userType = 'business_unverified'
-      } else if (pricingUserType === 'individual') {
-        userType = 'individual'
-      }
-
-      // Get user context (from cart and pricing hook)
-      const userContext: CartContextType = {
-        userId: userId!,
-        profileType: fetchedCart.profile_type,
-        businessId: fetchedCart.business_id || undefined,
-        userType: userType,
-        isVerified: isVerified
-      }
-      setContext(userContext)
-
-      console.log('[CartContext] User context:', userContext)
-
-      // Get cart with pricing
-      const { items, summary: calculatedSummary } = await getCartWithPricing(
-        fetchedCart.id,
-        { userType: userContext.userType, businessId: userContext.businessId, isVerified: userContext.isVerified }
-      )
-
-      setDerivedItems(items)
-      setSummary(calculatedSummary)
-
-    } catch (err) {
-      logger.error('Error refreshing cart', err)
-      setError('Failed to load cart')
-    } finally {
-      setIsLoading(false)
+    // Clear existing debounce timer
+    if (refreshDebounceRef.current) {
+      clearTimeout(refreshDebounceRef.current)
     }
+
+    // Debounce refresh to prevent excessive calls
+    refreshDebounceRef.current = setTimeout(async () => {
+      try {
+        if (!silent) setIsLoading(true)
+        setError(null)
+
+        // Get active cart
+        const cartResult = await getUserActiveCart()
+        if (!cartResult.success || !cartResult.data) {
+          setCart(null)
+          setDerivedItems([])
+          setIsLoading(false)
+          return
+        }
+
+        const fetchedCart = cartResult.data
+        setCart(fetchedCart)
+
+        // Map pricing user type to cart user type
+        let userType: UserType = 'guest'
+        if (pricingUserType === 'business' && isVerified) {
+          userType = 'business_verified'
+        } else if (pricingUserType === 'business' && !isVerified) {
+          userType = 'business_unverified'
+        } else if (pricingUserType === 'individual') {
+          userType = 'individual'
+        }
+
+        // Get user context (from cart and pricing hook)
+        const userContext: CartContextType = {
+          userId: userId!,
+          profileType: fetchedCart.profile_type,
+          businessId: fetchedCart.business_id || undefined,
+          userType: userType,
+          isVerified: isVerified
+        }
+        setContext(userContext)
+
+        console.log('[CartContext] User context:', userContext)
+
+        // Get cart with pricing
+        const { items, summary: calculatedSummary } = await getCartWithPricing(
+          fetchedCart.id,
+          { userType: userContext.userType, businessId: userContext.businessId, isVerified: userContext.isVerified }
+        )
+
+        setDerivedItems(items)
+        setSummary(calculatedSummary)
+
+      } catch (err) {
+        logger.error('Error refreshing cart', err)
+        setError('Failed to load cart')
+      } finally {
+        setIsLoading(false)
+      }
+    }, 300) // 300ms debounce
   }, [isSignedIn, userId, pricingUserType, isVerified])
 
   // Refresh lock status
@@ -250,6 +266,102 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return () => clearInterval(interval)
   }, [cart?.id, refreshLockStatus])
+
+  // Realtime subscription for cart synchronization across devices
+  useEffect(() => {
+    if (!cart?.id || !isSignedIn) {
+      // Cleanup existing subscription if cart is cleared
+      if (realtimeChannel) {
+        realtimeChannel.unsubscribe()
+        setRealtimeChannel(null)
+      }
+      return
+    }
+
+    const setupRealtimeSubscription = async () => {
+      try {
+        const supabase = createClient()
+
+        console.log(`[Realtime] Setting up subscription for cart: ${cart.id}`)
+
+        // Subscribe to cart_items changes for this specific cart
+        const channel = supabase
+          .channel(`cart:${cart.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'cart_items',
+              filter: `cart_id=eq.${cart.id}`
+            },
+            (payload) => {
+              console.log('[Realtime] Cart item changed:', payload)
+
+              // Mark as external update to prevent showing toast on own actions
+              isExternalUpdate.current = true
+
+              // Refresh cart silently (no loading state)
+              refreshCart(true)
+
+              // Show notification for external changes only
+              // We detect external changes by checking if this is an INSERT/UPDATE/DELETE
+              // that wasn't triggered by the current user's action
+              if (payload.eventType === 'INSERT') {
+                toast.info('Cart updated from another device', {
+                  description: 'New item added to your cart',
+                  duration: 3000
+                })
+              } else if (payload.eventType === 'UPDATE') {
+                toast.info('Cart updated from another device', {
+                  description: 'Item quantity changed',
+                  duration: 3000
+                })
+              } else if (payload.eventType === 'DELETE') {
+                toast.info('Cart updated from another device', {
+                  description: 'Item removed from your cart',
+                  duration: 3000
+                })
+              }
+
+              // Reset external update flag after a short delay
+              setTimeout(() => {
+                isExternalUpdate.current = false
+              }, 1000)
+            }
+          )
+          .subscribe((status) => {
+            console.log('[Realtime] Subscription status:', status)
+            if (status === 'SUBSCRIBED') {
+              logger.info('Realtime cart subscription active', { cartId: cart.id })
+            } else if (status === 'CLOSED') {
+              logger.warn('Realtime cart subscription closed', { cartId: cart.id })
+            } else if (status === 'CHANNEL_ERROR') {
+              logger.error('Realtime cart subscription error', { cartId: cart.id })
+            }
+          })
+
+        setRealtimeChannel(channel)
+      } catch (error) {
+        logger.error('Failed to setup realtime subscription', error)
+      }
+    }
+
+    setupRealtimeSubscription()
+
+    // Cleanup on unmount or cart change
+    return () => {
+      if (realtimeChannel) {
+        console.log('[Realtime] Cleaning up subscription')
+        realtimeChannel.unsubscribe()
+        setRealtimeChannel(null)
+      }
+      // Clear debounce timer
+      if (refreshDebounceRef.current) {
+        clearTimeout(refreshDebounceRef.current)
+      }
+    }
+  }, [cart?.id, isSignedIn, refreshCart])
 
   return (
     <CartContext.Provider

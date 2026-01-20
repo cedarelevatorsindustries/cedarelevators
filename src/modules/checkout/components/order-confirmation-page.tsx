@@ -160,17 +160,17 @@ export default function OrderConfirmationPage({
                             />
                         )}
                     </div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 mb-2">
-                        Order Confirmed
+                    <h1 className="text-4xl font-extrabold tracking-tight text-green-600 mb-2">
+                        Order Placed Successfully!
                     </h1>
-                    <p className="text-lg text-gray-600">
+                    <p className="text-lg text-green-600">
                         Thank you. Your order has been successfully placed.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Left Column - Order Details */}
-                    <div className="md:col-span-2 space-y-6">
+                    <div className="space-y-6">
                         {/* Order Summary Card */}
                         <Card className="overflow-hidden shadow-sm">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-start">
@@ -200,37 +200,49 @@ export default function OrderConfirmationPage({
                                 </span>
                             </div>
 
-                            {/* Addresses */}
-                            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div>
-                                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                        <Truck className="w-4 h-4 text-gray-400" />
-                                        Shipping Address
-                                    </h3>
-                                    <div className="text-sm text-gray-600 leading-relaxed">
-                                        {shippingAddress.name}<br />
-                                        {shippingAddress.line1}<br />
-                                        {shippingAddress.line2 && <>{shippingAddress.line2}<br /></>}
-                                        {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postal_code}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                        <FileText className="w-4 h-4 text-gray-400" />
-                                        Billing Address
-                                    </h3>
-                                    <div className="text-sm text-gray-600 leading-relaxed">
-                                        {billingAddress.name}<br />
-                                        {billingAddress.line1}<br />
-                                        {billingAddress.line2 && <>{billingAddress.line2}<br /></>}
-                                        {billingAddress.city}, {billingAddress.state} {billingAddress.postal_code}
-                                        {billingAddress.tax_id && <><br />Tax ID: {billingAddress.tax_id}</>}
-                                    </div>
+                            {/* Delivery Address */}
+                            <div className="p-6 border-b border-gray-100">
+                                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                    Delivery Address
+                                </h3>
+                                <div className="text-sm text-gray-600 leading-relaxed">
+                                    {shippingAddress.name}<br />
+                                    {shippingAddress.line1}<br />
+                                    {shippingAddress.line2 && <>{shippingAddress.line2}<br /></>}
+                                    {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postal_code}
                                 </div>
                             </div>
 
+                            {/* Trust Badges */}
+                            <div className="p-6 border-b border-gray-100">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Check className="w-3 h-3 text-green-600" />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-700">Verified Business</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Check className="w-3 h-3 text-green-600" />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-700">Secure Order</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Check className="w-3 h-3 text-green-600" />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-700">GST Invoice Included</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-4">
+                                    * In addition, a delivery charge will apply
+                                </p>
+                            </div>
+
                             {/* Price Breakdown */}
-                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                            <div className="px-6 py-4 bg-gray-50">
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm text-gray-600">
                                         <span>Subtotal</span>
@@ -243,7 +255,7 @@ export default function OrderConfirmationPage({
                                     <div className="flex justify-between text-sm text-gray-600">
                                         <span>Shipping</span>
                                         <span className={shipping === 0 ? "text-green-600 font-medium" : ""}>
-                                            {shipping === 0 ? 'Free' : `₹${shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+                                            {shipping === 0 ? 'Paid on Delivery' : `₹${shipping.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
@@ -299,30 +311,62 @@ export default function OrderConfirmationPage({
                         </Card>
                     </div>
 
-                    {/* Right Column - Actions */}
+                    {/* Right Column - What Happens Next */}
                     <div className="space-y-6">
-                        {/* Delivery Details */}
-                        <Card className="bg-orange-50/50 border-orange-100/50 p-6">
-                            <h2 className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-4">
-                                Delivery Details
-                            </h2>
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-3">
-                                    <MapPin className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase">
-                                            Expected Dispatch
+                        {/* What Happens Next Section */}
+                        <Card className="p-6">
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="text-orange-500 text-xl">📋</span>
+                                <h2 className="text-xl font-bold text-gray-900">
+                                    What Happens Next
+                                </h2>
+                            </div>
+
+                            <div className="space-y-5">
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0">
+                                        <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
+                                            1
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 pt-0.5">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="font-bold text-gray-900">Order Confirmation Email</h3>
+                                            <span className="px-2 py-0.5 text-xs font-semibold rounded-full border bg-orange-100 text-orange-700 border-orange-200">
+                                                IMMEDIATE
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 leading-relaxed">
+                                            We've just sent a detailed order summary to your registered email address.
                                         </p>
-                                        <p className="font-bold text-gray-900">{expectedDispatch}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-3">
-                                    <Truck className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase">
-                                            Shipping Method
+
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0">
+                                        <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
+                                            2
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 pt-0.5">
+                                        <h3 className="font-bold text-gray-900 mb-1">Processing COD Order</h3>
+                                        <p className="text-sm text-gray-600 leading-relaxed">
+                                            Since this is a Cash on Delivery order, please ensure you have the exact amount ready upon delivery.
                                         </p>
-                                        <p className="font-bold text-gray-900">{shippingMethod}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0">
+                                        <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
+                                            3
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 pt-0.5">
+                                        <h3 className="font-bold text-gray-900 mb-1">Shipped & Tracked</h3>
+                                        <p className="text-sm text-gray-600 leading-relaxed">
+                                            Once your package ships, we'll notify you via email and you can track it in real-time.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -336,38 +380,15 @@ export default function OrderConfirmationPage({
                                     Track Order
                                 </Button>
                             </Link>
-                            <Button
-                                variant="outline"
-                                className="w-full font-bold py-6 rounded-xl flex items-center justify-center gap-2"
-                            >
-                                <Download className="w-5 h-5 text-gray-400" />
-                                Download Invoice
-                            </Button>
-                            <Link href={`/profile/orders/${orderId}`}>
+                            <Link href="/catalog">
                                 <Button
-                                    variant="ghost"
-                                    className="w-full text-gray-500 font-semibold py-3 rounded-xl text-sm hover:bg-gray-100"
+                                    variant="outline"
+                                    className="w-full font-bold py-6 rounded-xl flex items-center justify-center gap-2"
                                 >
-                                    View Order Details
+                                    Explore More Parts
                                 </Button>
                             </Link>
                         </div>
-
-                        {/* Security Badges */}
-                        <Card className="bg-gray-50 p-4 border-gray-100">
-                            <div className="flex items-center gap-3 text-gray-600 mb-3">
-                                <ShieldCheck className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                <p className="text-xs font-medium">
-                                    Your data is secured with AES-256 encryption.
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-600">
-                                <Headphones className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                                <p className="text-xs font-medium">
-                                    Dedicated support for B2B orders.
-                                </p>
-                            </div>
-                        </Card>
                     </div>
                 </div>
 

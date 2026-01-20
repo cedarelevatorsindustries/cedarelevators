@@ -23,7 +23,7 @@ export default function FrequentlyBoughtTogetherSection({
   if (bundleProducts.length === 0) return null
 
   // Show up to 4 bundle products for mobile, 3 for desktop
-  const limitedBundleProducts = bundleProducts.slice(0, isMobile ? 3 : 3)
+  const limitedBundleProducts = bundleProducts.slice(0, isMobile ? 6 : 3)
 
   // All products including main product
   const allProducts = [mainProduct, ...limitedBundleProducts]
@@ -67,14 +67,18 @@ export default function FrequentlyBoughtTogetherSection({
       </h2>
 
       {/* Products Grid */}
-      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 mb-6`}>
+      <div className={`${isMobile ? 'flex overflow-x-auto pb-4 gap-4 scrollbar-hide -mx-4 px-4 snap-x' : 'grid grid-cols-4 gap-4 mb-6'}`}>
         {allProducts.map((product) => {
           const productPrice = product.variants?.[0]?.calculated_price?.calculated_amount || 0
           const formattedPrice = productPrice ? `₹${Number(productPrice).toLocaleString("en-IN")}` : null
           const isSelected = selectedProducts.has(product.id)
 
           return (
-            <div key={product.id} className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-lg transition-all duration-300">
+            <div
+              key={product.id}
+              className={`group relative bg-gray-50 rounded-xl p-3 hover:shadow-lg transition-all duration-300 ${isMobile ? 'min-w-[160px] w-[160px] flex-shrink-0 snap-start' : ''
+                }`}
+            >
               {/* Product Image */}
               <div className={`aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm transition-opacity ${!isSelected ? 'opacity-40' : ''
                 }`}>
