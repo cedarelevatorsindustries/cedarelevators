@@ -55,14 +55,7 @@ export async function getCollectionsByDisplayContext(
 
         const { data, error } = await query
 
-        console.log('[getCollectionsByDisplayContext] Query result:', {
-            context,
-            forGuest,
-            categoryId,
-            dataCount: data?.length || 0,
-            error: error?.message,
-            firstCollection: data?.[0]
-        })
+
 
         if (error) {
             console.error(`Error fetching collections for ${context}:`, error)
@@ -182,13 +175,7 @@ export async function getCollectionsWithProductsByDisplayContext(
             })
         )
 
-        console.log('[getCollectionsWithProductsByDisplayContext] Final result:', {
-            context,
-            forGuest,
-            categoryId,
-            collectionsCount: collectionsWithProducts.length,
-            firstCollectionProductCount: collectionsWithProducts[0]?.products?.length || 0
-        })
+
 
         return { success: true, collections: collectionsWithProducts }
     } catch (error: any) {

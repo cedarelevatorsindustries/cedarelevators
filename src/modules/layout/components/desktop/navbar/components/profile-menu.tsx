@@ -52,12 +52,7 @@ export function ProfileMenu({ isTransparent, onHover }: ProfileMenuProps) {
   const handleSwitch = async () => {
     if (isSwitching) return
 
-    console.log('=== PROFILE SWITCH DEBUG ===')
-    console.log('Current user:', user)
-    console.log('isBusiness:', isBusiness)
-    console.log('isIndividual:', isIndividual)
-    console.log('hasBusinessProfile:', hasBusinessProfile)
-    console.log('userName:', userName)
+
 
     // ONE-WAY RESTRICTION: Cannot switch from business to individual
     if (isBusiness) {

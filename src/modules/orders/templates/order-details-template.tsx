@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { OrderWithDetails } from "@/lib/types/orders"
 import {
     ChevronLeft,
@@ -16,6 +17,20 @@ import { formatOrderDate } from "@/lib/utils/orders/helpers"
 import OrderStatusBadge from "../components/order-status-badge"
 import DocumentsSection from "../components/documents-section"
 import SupportCTA from "../components/support-cta"
+import { cancelOrder } from "@/lib/actions/orders"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 interface OrderDetailsTemplateProps {
     order: OrderWithDetails
@@ -23,6 +38,11 @@ interface OrderDetailsTemplateProps {
 }
 
 export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDetailsTemplateProps) {
+    const router = useRouter()
+    const [cancelDialog, setCancelDialog] = useState(false)
+    const [cancelReason, setCancelReason] = useState('')
+    const [isCancelling, setIsCancelling] = useState(false)
+
     // Determine current step index based on status
     const status = (order.order_status || order.status)?.toLowerCase()
     const paymentMethod = order.payment_method?.toLowerCase()
@@ -84,8 +104,20 @@ export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDet
                         </div>
                     </div>
                 </div>
-                <div className="hidden md:block">
-                    <OrderStatusBadge status={order.order_status || order.status || 'pending'} />
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div className="hidden md:block">
+                        <OrderStatusBadge status={order.order_status || order.status || 'pending'} />
+                    </div>
+                    {/* Cancel Button - Only show if order is not cancelled or delivered */}
+                    {status !== 'cancelled' && status !== 'delivered' && status !== 'shipped' && (
+                        <Button
+                            variant="outline"
+                            className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                            onClick={() => setCancelDialog(true)}
+                        >
+                            Cancel Order
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -349,6 +381,72 @@ export default function OrderDetailsTemplate({ order, pickupLocation }: OrderDet
                     <SupportCTA orderId={order.id} />
                 </div>
             </div>
+
+            {/* Cancel Order Dialog */}
+            <Dialog open={cancelDialog} onOpenChange={setCancelDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cancel Order</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to cancel this order? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <Label htmlFor="cancelReason">Reason for Cancellation *</Label>
+                            <Textarea
+                                id="cancelReason"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Please provide a reason for cancelling this order..."
+                                rows={3}
+                                className="mt-2"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setCancelDialog(false)
+                                setCancelReason('')
+                            }}
+                            disabled={isCancelling}
+                        >
+                            Keep Order
+                        </Button>
+                        <Button
+                            className="bg-orange-500 hover:bg-orange-600 text-white"
+                            onClick={async () => {
+                                if (!cancelReason.trim()) {
+                                    toast.error('Please provide a reason for cancellation')
+                                    return
+                                }
+
+                                setIsCancelling(true)
+                                try {
+                                    const result = await cancelOrder(order.id, cancelReason)
+                                    if (result.success) {
+                                        toast.success('Order cancelled successfully')
+                                        setCancelDialog(false)
+                                        setCancelReason('')
+                                        router.refresh()
+                                    } else {
+                                        toast.error(result.error || 'Failed to cancel order')
+                                    }
+                                } catch (error) {
+                                    toast.error('Failed to cancel order')
+                                } finally {
+                                    setIsCancelling(false)
+                                }
+                            }}
+                            disabled={isCancelling}
+                        >
+                            {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div >
     )
 }

@@ -32,7 +32,6 @@ export default function AccountTypeSelector({ onSelectType, disabled = false }: 
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            console.log("Individual button clicked")
             onSelectType("individual")
           }}
           disabled={disabled}
@@ -85,7 +84,6 @@ export default function AccountTypeSelector({ onSelectType, disabled = false }: 
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            console.log("Business button clicked")
             onSelectType("business")
           }}
           disabled={disabled}

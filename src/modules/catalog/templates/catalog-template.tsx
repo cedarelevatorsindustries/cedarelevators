@@ -139,16 +139,7 @@ export default function CatalogTemplate({
       return p
     }).filter(Boolean) || []
 
-    // Debug logging
-    if (activeCollection) {
-      console.log('=== COLLECTION DEBUG ===')
-      console.log('Collection:', activeCollection.title || activeCollection.name)
-      console.log('Collection products array:', activeCollection.products)
-      console.log('Extracted collection product IDs:', collectionProductIds)
-      console.log('Total products available:', initialProducts.length)
-      console.log('Sample product IDs:', initialProducts.slice(0, 5).map(p => ({ id: p.id, title: p.title })))
-      console.log('Sample collection products:', activeCollection.products?.slice(0, 3))
-    }
+
 
     return filterProductsByType(initialProducts, {
       type: catalogType,
@@ -203,17 +194,9 @@ export default function CatalogTemplate({
 
   // Combine and filter products
   const allDisplayProducts = useMemo(() => {
-    console.log('=== FILTER DEBUG START ===')
-    console.log('Catalog Type:', catalogType)
-    console.log('Config:', config)
-
     const combined = config.fallbackToAll
       ? [...primaryProducts, ...fallbackProducts]
       : primaryProducts
-
-    console.log('Primary products count:', primaryProducts.length)
-    console.log('Fallback products count:', fallbackProducts.length)
-    console.log('Combined products count:', combined.length)
 
     let filtered = [...combined]
 
@@ -229,12 +212,7 @@ export default function CatalogTemplate({
       ))
     )
 
-    console.log('Selected category:', selectedCategory)
-    console.log('Is main category:', isMainCategory)
-    console.log('Selected subcategory:', selectedSubcategory)
-
     if (selectedCategory && !isMainCategory) {
-      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedCategory ||
@@ -242,9 +220,7 @@ export default function CatalogTemplate({
           cat.slug === selectedCategory
         )
       )
-      console.log('After category filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     } else if (selectedSubcategory) {
-      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedSubcategory ||
@@ -252,24 +228,16 @@ export default function CatalogTemplate({
           cat.slug === selectedSubcategory
         )
       )
-      console.log('After subcategory filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     }
 
     // Apply sidebar filters
-    console.log('Active filters:', activeFilters)
-
     if (activeFilters.category && activeFilters.category.length > 0) {
-      const beforeCount = filtered.length
       filtered = filtered.filter(product =>
         product.categories?.some(cat =>
           activeFilters.category.includes(cat.handle || cat.id)
         )
       )
-      console.log('After sidebar category filter:', filtered.length, '(removed', beforeCount - filtered.length, ')')
     }
-
-    console.log('Final filtered products count:', filtered.length)
-    console.log('=== FILTER DEBUG END ===')
 
     return filtered
   }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, selectedCategory, selectedSubcategory])

@@ -11,7 +11,6 @@ export default function QuoteFormCard() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Quote submitted:", formData)
     alert("Quote request submitted successfully!")
   }
 

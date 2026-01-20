@@ -116,11 +116,7 @@ async function _fetchMegaMenuData() {
             })
             .filter(cat => cat.products.length > 0) // Only categories with products
 
-        console.log('[getMegaMenuData] Optimized query:', {
-            totalCategories: categories.length,
-            categoriesWithProducts: categoriesWithProducts.length,
-            totalProducts: allProductLinks?.length || 0
-        })
+
 
         return { success: true, categories: categoriesWithProducts }
     } catch (error) {

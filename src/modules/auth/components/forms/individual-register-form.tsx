@@ -48,13 +48,9 @@ export default function IndividualRegisterForm() {
   const handleGoogleSignUp = async () => {
     if (!isLoaded) return
 
-    console.log("Starting Google OAuth flow...")
-
     try {
       // Store intended account type in session storage for SSO callback
       sessionStorage.setItem('pendingAccountType', 'individual')
-
-      console.log("Initiating OAuth redirect...")
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback?accountType=individual",

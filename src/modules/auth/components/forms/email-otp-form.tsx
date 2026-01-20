@@ -30,7 +30,6 @@ export default function EmailOTPForm({ email }: Props) {
         await setActive({ session: result.createdSessionId })
         router.push("/")
       } else {
-        console.log(result)
         setError("Verification failed. Please try again.")
       }
     } catch (err: any) {

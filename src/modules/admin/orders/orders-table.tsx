@@ -60,6 +60,17 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
     open: false,
     orderId: ''
   })
+  const [statusDialog, setStatusDialog] = useState<{
+    open: boolean;
+    orderId: string;
+    status: string;
+    statusLabel: string
+  }>({
+    open: false,
+    orderId: '',
+    status: '',
+    statusLabel: ''
+  })
   const [trackingInfo, setTrackingInfo] = useState({
     trackingNumber: '',
     carrier: '',
@@ -294,7 +305,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               <DropdownMenuSeparator />
               {order.order_status === 'pending' && (
                 <DropdownMenuItem
-                  onClick={() => handleStatusUpdate(order.id, 'processing')}
+                  onClick={() => setStatusDialog({ open: true, orderId: order.id, status: 'processing', statusLabel: 'Processing' })}
                 >
                   <Package className="mr-2 h-4 w-4" />
                   Mark as Processing
@@ -302,7 +313,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               )}
               {(order.order_status === 'pending' || order.order_status === 'processing') && (
                 <DropdownMenuItem
-                  onClick={() => handleStatusUpdate(order.id, 'shipped')}
+                  onClick={() => setStatusDialog({ open: true, orderId: order.id, status: 'shipped', statusLabel: 'Shipped' })}
                 >
                   <Truck className="mr-2 h-4 w-4" />
                   Mark as Shipped
@@ -310,7 +321,7 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               )}
               {order.order_status === 'shipped' && (
                 <DropdownMenuItem
-                  onClick={() => handleStatusUpdate(order.id, 'delivered')}
+                  onClick={() => setStatusDialog({ open: true, orderId: order.id, status: 'delivered', statusLabel: 'Delivered' })}
                 >
                   <Package className="mr-2 h-4 w-4" />
                   Mark as Delivered
@@ -498,6 +509,39 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
             </Button>
             <Button variant="destructive" onClick={handleCancelOrder} disabled={isUpdating}>
               {isUpdating ? 'Cancelling...' : 'Cancel Order'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Status Change Confirmation Dialog */}
+      <Dialog
+        open={statusDialog.open}
+        onOpenChange={(open) => setStatusDialog({ open, orderId: '', status: '', statusLabel: '' })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Status Change</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to mark this order as <strong>{statusDialog.statusLabel}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialog({ open: false, orderId: '', status: '', statusLabel: '' })}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={async () => {
+                await handleStatusUpdate(statusDialog.orderId, statusDialog.status)
+                setStatusDialog({ open: false, orderId: '', status: '', statusLabel: '' })
+              }}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Updating...' : `Mark as ${statusDialog.statusLabel}`}
             </Button>
           </DialogFooter>
         </DialogContent>

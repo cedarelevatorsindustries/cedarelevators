@@ -122,9 +122,7 @@ export default function CheckoutTemplate() {
       setIsLoading(true)
       try {
         if (source === 'quote' && quoteId) {
-          console.log('[CheckoutTemplate] Loading quote checkout - quoteId:', quoteId)
           const result = await getCheckoutFromQuote(quoteId)
-          console.log('[CheckoutTemplate] Quote result:', { success: result.success, hasData: !!result.data, error: result.error })
 
           if (result.success && result.data) {
             setCheckoutData(result.data)

@@ -22,10 +22,8 @@ export default function QuotesOrdersSnapshot() {
       try {
         // Fetch recent quotes
         const quotesResult = await getQuotes({ status: 'all' })
-        console.log('Quotes result:', quotesResult)
 
         if (quotesResult.success && quotesResult.quotes) {
-          console.log('Found quotes:', quotesResult.quotes.length)
           // Get 3 most recent quotes
           setRecentQuotes(quotesResult.quotes.slice(0, 3))
         } else {

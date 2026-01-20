@@ -90,8 +90,8 @@ const HeroSection = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (inputValue.trim()) {
-      // Handle search submission
-      console.log("Searching for:", inputValue)
+      // Handle search submission - navigate to search results
+      window.location.href = `/catalog?search=${encodeURIComponent(inputValue)}`
     }
   }
 

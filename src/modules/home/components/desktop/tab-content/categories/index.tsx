@@ -50,12 +50,7 @@ export default function CategoriesTab({
     showViewAll: true
   }))
 
-  // Debug logging
-  console.log('[CategoriesTab] Collections data:', collections)
-  console.log('[CategoriesTab] Transformed collections:', transformedCollections)
-  if (transformedCollections.length > 0 && transformedCollections[0].products.length > 0) {
-    console.log('[CategoriesTab] Sample product:', transformedCollections[0].products[0])
-  }
+
 
   return (
     <div className="max-w-[1440px] mx-auto px-6 py-12 space-y-12">
