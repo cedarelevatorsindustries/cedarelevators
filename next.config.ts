@@ -68,10 +68,13 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-tabs',
       'date-fns',
       '@tanstack/react-query',
+      'framer-motion',
+      'sonner',
     ],
     serverActions: {
       bodySizeLimit: '50mb',
     },
+    webpackBuildWorker: true,
   },
   // SEO-safe redirects for routing refactor
   async redirects() {
@@ -80,6 +83,32 @@ const nextConfig: NextConfig = {
         source: '/categories/:handle',
         destination: '/catalog/categories/:handle',
         permanent: true,
+      },
+    ]
+  },
+  // Performance and security headers
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+        ],
+      },
+      {
+        source: '/:path*.(jpg|jpeg|png|webp|avif|svg|ico|woff|woff2)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
       },
     ]
   },

@@ -6,6 +6,7 @@ import { getStoreSettings } from "@/lib/services/settings"
 
 export default function FooterLite() {
   const [contactEmail, setContactEmail] = useState<string>("contact@cedarelevator.com") // Fallback
+  const [contactPhone, setContactPhone] = useState<string>("+91 90037 90037") // Fallback
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
