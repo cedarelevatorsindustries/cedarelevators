@@ -18,6 +18,7 @@ function OrderConfirmationContent({ params }: OrderConfirmationPageProps) {
   const [order, setOrder] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deliverySLA, setDeliverySLA] = useState<string>('7-10 business days')
 
   useEffect(() => {
     async function loadOrder() {
@@ -37,7 +38,20 @@ function OrderConfirmationContent({ params }: OrderConfirmationPageProps) {
       }
     }
 
+    async function loadShippingSettings() {
+      try {
+        const { getShippingSettings } = await import('@/lib/services/settings')
+        const result = await getShippingSettings()
+        if (result.success && result.data?.delivery_sla_text) {
+          setDeliverySLA(result.data.delivery_sla_text)
+        }
+      } catch (err) {
+        console.error('Error loading shipping settings:', err)
+      }
+    }
+
     loadOrder()
+    loadShippingSettings()
   }, [id])
 
   if (isLoading) {
@@ -92,7 +106,7 @@ function OrderConfirmationContent({ params }: OrderConfirmationPageProps) {
           },
           {
             label: 'Estimated Delivery',
-            value: 'September 18, 2023',
+            value: deliverySLA,
             icon: <Calendar className="w-4 h-4" />,
           },
         ]}

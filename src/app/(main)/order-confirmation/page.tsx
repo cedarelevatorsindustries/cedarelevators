@@ -256,7 +256,7 @@ function OrderConfirmationContent() {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Payment Method</p>
-                    <div className="space-y-1">
+                    <div className="space-y-1 mt-2">
                       <p className="text-base font-semibold text-gray-900">{isCOD ? 'Cash on Delivery' : 'Prepaid'}</p>
                       {isCOD && (
                         <p className="text-xs text-gray-500">Keep ₹{Math.round(order.total_amount || 0).toLocaleString('en-IN')} ready (Cash / UPI accepted)</p>
@@ -345,12 +345,12 @@ function OrderConfirmationContent() {
               </div>
               <div className="p-6 relative">
                 {/* Vertical Line Container */}
-                <div className="absolute left-[39px] top-6 bottom-6 w-0.5 bg-gray-100" />
+                <div className="absolute left-[40px] top-6 bottom-6 w-0.5 bg-gray-100" />
 
                 <div className="space-y-8 relative">
                   {timelineSteps.map((step, index) => (
                     <div key={index} className="flex gap-4 relative">
-                      <div className="flex-shrink-0 z-10">
+                      <div className="flex-shrink-0 z-10 w-8">
                         {/* Icon Circle */}
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${step.status === 'current'

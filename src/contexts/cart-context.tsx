@@ -278,15 +278,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    let retryCount = 0
+    const maxRetries = 3
+    let retryTimeout: NodeJS.Timeout | null = null
+
     const setupRealtimeSubscription = async () => {
       try {
         const supabase = createClient()
 
-        console.log(`[Realtime] Setting up subscription for cart: ${cart.id}`)
+        // Only log on first attempt to reduce console noise
+        if (retryCount === 0) {
+          console.log(`[Realtime] Setting up subscription for cart: ${cart.id}`)
+        }
 
         // Subscribe to cart_items changes for this specific cart
         const channel = supabase
-          .channel(`cart:${cart.id}`)
+          .channel(`cart:${cart.id}`, {
+            config: {
+              broadcast: { self: false },
+              presence: { key: '' },
+            }
+          })
           .on(
             'postgres_changes',
             {
@@ -305,8 +317,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               refreshCart(true)
 
               // Show notification for external changes only
-              // We detect external changes by checking if this is an INSERT/UPDATE/DELETE
-              // that wasn't triggered by the current user's action
               if (payload.eventType === 'INSERT') {
                 toast.info('Cart updated from another device', {
                   description: 'New item added to your cart',
@@ -330,19 +340,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               }, 1000)
             }
           )
-          .subscribe((status) => {
-            console.log('[Realtime] Subscription status:', status)
+          .subscribe((status, err) => {
             if (status === 'SUBSCRIBED') {
+              retryCount = 0 // Reset retry count on successful connection
+              if (retryTimeout) {
+                clearTimeout(retryTimeout)
+                retryTimeout = null
+              }
               logger.info('Realtime cart subscription active', { cartId: cart.id })
             } else if (status === 'CLOSED') {
+              // Only log warning, don't retry on intentional close
               logger.warn('Realtime cart subscription closed', { cartId: cart.id })
             } else if (status === 'CHANNEL_ERROR') {
-              logger.error('Realtime cart subscription error', { cartId: cart.id })
+              // Suppress error logging to console - just use internal logger
+              const errorMessage = err?.message || 'Connection error'
+
+              // Only log to internal logger, not console
+              logger.error('Realtime cart subscription error', {
+                cartId: cart.id,
+                error: errorMessage,
+                retryCount
+              })
+
+              // Retry with exponential backoff
+              if (retryCount < maxRetries) {
+                const delay = Math.min(1000 * Math.pow(2, retryCount), 10000) // Max 10s
+                retryCount++
+
+                console.log(`[Realtime] Retrying connection in ${delay}ms (attempt ${retryCount}/${maxRetries})`)
+
+                retryTimeout = setTimeout(() => {
+                  channel.unsubscribe()
+                  setupRealtimeSubscription()
+                }, delay)
+              } else {
+                // Max retries reached - silently fall back to polling
+                console.log('[Realtime] Max retries reached. Using polling-only mode.')
+              }
             }
           })
 
         setRealtimeChannel(channel)
       } catch (error) {
+        // Suppress error to console, only log internally
         logger.error('Failed to setup realtime subscription', error)
       }
     }
@@ -351,6 +391,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // Cleanup on unmount or cart change
     return () => {
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
       if (realtimeChannel) {
         console.log('[Realtime] Cleaning up subscription')
         realtimeChannel.unsubscribe()

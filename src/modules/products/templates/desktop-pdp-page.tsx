@@ -77,9 +77,11 @@ export default function ProductDetailPage({
     }
   }, [user, product.id])
 
-  // Images
+  // Images - Use images array if available, otherwise fallback to thumbnail
   const images = product.images || []
-  const allImages = [product.thumbnail, ...images.map(img => img.url)].filter(Boolean) as string[]
+  const allImages = images.length > 0
+    ? images.map(img => img.url).filter(Boolean) as string[]
+    : (product.thumbnail ? [product.thumbnail] : []) as string[]
 
   // Calculate average rating from reviews
   const averageRating = reviews.length > 0

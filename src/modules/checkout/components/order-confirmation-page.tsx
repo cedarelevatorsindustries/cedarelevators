@@ -324,7 +324,7 @@ export default function OrderConfirmationPage({
 
                             <div className="space-y-5">
                                 <div className="flex gap-4">
-                                    <div className="flex-shrink-0">
+                                    <div className="flex-shrink-0 w-8">
                                         <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
                                             1
                                         </div>
@@ -343,7 +343,7 @@ export default function OrderConfirmationPage({
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <div className="flex-shrink-0">
+                                    <div className="flex-shrink-0 w-8">
                                         <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
                                             2
                                         </div>
@@ -357,7 +357,7 @@ export default function OrderConfirmationPage({
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <div className="flex-shrink-0">
+                                    <div className="flex-shrink-0 w-8">
                                         <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
                                             3
                                         </div>

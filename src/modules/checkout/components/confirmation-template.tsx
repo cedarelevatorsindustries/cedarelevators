@@ -139,7 +139,7 @@ export default function ConfirmationTemplate({
                                                 <p className="text-xs text-gray-600 uppercase tracking-wide font-medium mb-0.5">
                                                     {detail.label}
                                                 </p>
-                                                <p className="text-lg font-bold text-gray-900">
+                                                <p className="text-lg font-bold text-gray-900 mt-1">
                                                     {detail.value}
                                                 </p>
                                             </div>
@@ -164,7 +164,7 @@ export default function ConfirmationTemplate({
                         {steps.map((step) => (
                             <div key={step.number} className="flex gap-4">
                                 {/* Number Badge */}
-                                <div className="flex-shrink-0">
+                                <div className="flex-shrink-0 w-8">
                                     <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow">
                                         {step.number}
                                     </div>

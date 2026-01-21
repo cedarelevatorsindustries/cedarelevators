@@ -27,7 +27,8 @@ import {
     ChevronUp,
     Phone,
     X,
-    Edit2
+    Edit2,
+    IndianRupee
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -67,6 +68,9 @@ export default function MobileCheckoutTemplate() {
     const [limitViolations, setLimitViolations] = useState<string[]>([])
     const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([])
     const [itemsExpanded, setItemsExpanded] = useState(false)
+    const [defaultAddress, setDefaultAddress] = useState<any>(null)
+    const [isLoadingAddress, setIsLoadingAddress] = useState(true)
+    const [deliveryEta, setDeliveryEta] = useState<string>('')
 
     const userType = !isPricingLoaded || !user
         ? 'guest'
@@ -88,7 +92,43 @@ export default function MobileCheckoutTemplate() {
             setPickupLocations(locations)
         }
         loadPickupLocations()
+
+        // Fetch shipping settings for delivery ETA
+        async function loadShippingSettings() {
+            const { getShippingSettings } = await import('@/lib/services/settings')
+            const result = await getShippingSettings()
+            if (result.success && result.data?.delivery_sla_text) {
+                setDeliveryEta(result.data.delivery_sla_text)
+            }
+        }
+        loadShippingSettings()
     }, [])
+
+    // Fetch default address
+    useEffect(() => {
+        async function loadDefaultAddress() {
+            if (!user) {
+                setIsLoadingAddress(false)
+                return
+            }
+
+            try {
+                const response = await fetch('/api/addresses/default')
+                if (response.ok) {
+                    const data = await response.json()
+                    setDefaultAddress(data.address)
+                }
+            } catch (error) {
+                console.error('Failed to load default address:', error)
+            } finally {
+                setIsLoadingAddress(false)
+            }
+        }
+
+        if (isLoaded) {
+            loadDefaultAddress()
+        }
+    }, [isLoaded, user])
 
     useEffect(() => {
         if (!isLoaded) return
@@ -163,6 +203,20 @@ export default function MobileCheckoutTemplate() {
 
     const handlePlaceOrder = async () => {
         if (isProcessing || !checkoutData) return
+
+        // Validate address - required for both doorstep and pickup (billing purposes)
+        if (!defaultAddress) {
+            const addressType = shippingMethod === 'doorstep' ? 'delivery' : 'billing'
+            toast.error(`Please add a ${addressType} address to continue`)
+            return
+        }
+
+        // Validate pickup location for pickup
+        if (shippingMethod === 'pickup' && !pickupLocationId) {
+            toast.error('Please select a pickup location to continue')
+            return
+        }
+
         setIsProcessing(true)
 
         try {
@@ -363,10 +417,10 @@ export default function MobileCheckoutTemplate() {
                                         />
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Truck className="w-4 h-4 text-orange-600" />
+                                                <Truck className="w-4 h-4 text-blue-600" />
                                                 <span className="font-bold text-sm">Doorstep Delivery</span>
                                             </div>
-                                            <p className="text-xs text-gray-600">Delivered to your home or work in 7 days</p>
+                                            <p className="text-xs text-gray-600">{deliveryEta || 'Delivered in 3-5 working days'}</p>
                                         </div>
                                     </div>
                                 </label>
@@ -387,7 +441,7 @@ export default function MobileCheckoutTemplate() {
                                                 <Store className="w-4 h-4 text-orange-600" />
                                                 <span className="font-bold text-sm">In-Store Pickup</span>
                                             </div>
-                                            <p className="text-xs text-gray-600">Collect from our store in just 2 days</p>
+                                            <p className="text-xs text-gray-600">Ready at your nearest branch</p>
                                         </div>
                                     </div>
                                 </label>
@@ -398,27 +452,52 @@ export default function MobileCheckoutTemplate() {
                         {shippingMethod === 'doorstep' ? (
                             <div className="bg-white rounded-lg border border-gray-200 p-4">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-sm font-bold">Shipping Address</h3>
-                                    <button className="text-xs text-orange-600 font-medium">Add New</button>
+                                    <h3 className="text-sm font-bold">{shippingMethod === 'doorstep' ? 'Shipping Address' : 'Billing Address'}</h3>
+                                    <button
+                                        onClick={() => router.push('/profile/addresses?redirect=/checkout')}
+                                        className="text-xs text-orange-600 font-medium"
+                                    >
+                                        {defaultAddress ? 'Edit' : 'Add New'}
+                                    </button>
                                 </div>
 
-                                <div className="border border-orange-600 rounded-lg p-3 bg-orange-50">
-                                    <div className="flex items-start gap-2 mb-2">
-                                        <MapPin className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-bold bg-orange-600 text-white px-2 py-0.5 rounded">HOME/OFFICE</span>
-                                                <button className="text-xs text-orange-600 font-medium">Edit</button>
+                                {isLoadingAddress ? (
+                                    <div className="flex items-center gap-2 p-3">
+                                        <MapPin className="w-4 h-4 text-gray-400 animate-pulse" />
+                                        <p className="text-sm text-gray-600">Loading address...</p>
+                                    </div>
+                                ) : defaultAddress ? (
+                                    <div className="border border-orange-600 rounded-lg p-3 bg-orange-50">
+                                        <div className="flex items-start gap-2">
+                                            <MapPin className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium">{defaultAddress.name || 'Delivery Address'}</p>
+                                                <p className="text-xs text-gray-600 mt-1">
+                                                    {defaultAddress.address_line1 || defaultAddress.address_line_1}
+                                                    {(defaultAddress.address_line2 || defaultAddress.address_line_2) && `, ${defaultAddress.address_line2 || defaultAddress.address_line_2}`}
+                                                </p>
+                                                <p className="text-xs text-gray-600">
+                                                    {defaultAddress.city}, {defaultAddress.state} - {defaultAddress.pincode || defaultAddress.postal_code}
+                                                </p>
+                                                {defaultAddress.phone && (
+                                                    <p className="text-xs text-gray-600 mt-1">{defaultAddress.phone}</p>
+                                                )}
                                             </div>
-                                            <p className="text-sm font-medium">John Doe</p>
-                                            <p className="text-xs text-gray-600 mt-1">
-                                                4/234 Innovation Street, Tech Park Phase II,<br />
-                                                Electronic City, Bangalore - 560100
-                                            </p>
-                                            <p className="text-xs text-gray-600 mt-1">+91 98765 43210</p>
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 text-center border-2 border-dashed border-gray-300 rounded-lg">
+                                        <MapPin className="w-8 h-8 text-gray-300 mb-2" />
+                                        <p className="text-sm font-medium text-gray-900 mb-1">No Address Added</p>
+                                        <p className="text-xs text-gray-600 mb-3">Please add a delivery address to continue</p>
+                                        <button
+                                            onClick={() => router.push('/profile/addresses?redirect=/checkout')}
+                                            className="px-4 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg"
+                                        >
+                                            Add Address
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -478,17 +557,11 @@ export default function MobileCheckoutTemplate() {
                             <div className="space-y-3">
                                 <label className="block p-4 border-2 border-orange-600 bg-orange-50 rounded-lg cursor-pointer">
                                     <div className="flex items-start gap-3">
-                                        <input
-                                            type="radio"
-                                            name="payment"
-                                            value="cod"
-                                            checked
-                                            readOnly
-                                            className="mt-1"
-                                        />
+                                        <div className="bg-orange-600/20 p-2 rounded-lg">
+                                            <IndianRupee className="w-5 h-5 text-orange-600" />
+                                        </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <CreditCard className="w-4 h-4 text-orange-600" />
                                                 <span className="font-bold text-sm">Cash on Delivery (COD)</span>
                                                 <CheckCircle2 className="w-4 h-4 text-orange-600 ml-auto" />
                                             </div>
@@ -503,29 +576,74 @@ export default function MobileCheckoutTemplate() {
                             </div>
                         </div>
 
-                        {/* Price Summary */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4">
-                            <h3 className="text-sm font-bold mb-3">Price Summary</h3>
+                        {/* Order Summary */}
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                            <h3 className="text-lg font-bold mb-4 border-b border-gray-200 pb-3">Order Summary</h3>
 
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Subtotal</span>
+                            <div className="space-y-3">
+                                <div className="flex justify-between text-base">
+                                    <span className="text-[#9c7349]">Subtotal</span>
                                     <span className="font-medium">₹{checkoutData.summary.subtotal.toLocaleString('en-IN')}</span>
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Shipping</span>
-                                    <span className="font-medium text-gray-600">Paid on delivery</span>
-                                </div>
+
                                 {checkoutData.summary.tax > 0 && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">GST</span>
-                                        <span className="font-medium">₹{checkoutData.summary.tax.toLocaleString('en-IN')}</span>
+                                    <div className="flex justify-between text-base">
+                                        <span className="text-[#9c7349]">GST</span>
+                                        <span className="font-medium">₹{Math.round(checkoutData.summary.tax).toLocaleString('en-IN')}</span>
                                     </div>
                                 )}
-                                <div className="h-px bg-gray-200 my-2" />
-                                <div className="flex justify-between text-base">
-                                    <span className="font-bold">Total</span>
-                                    <span className="font-bold text-orange-600">₹{checkoutData.summary.total.toLocaleString('en-IN')}</span>
+
+                                <div className="h-px bg-gray-200 my-3" />
+
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <span className="text-xl font-black">You Pay</span>
+                                        <p className="text-xs text-[#9c7349] mt-0.5">Includes GST</p>
+                                    </div>
+                                    <span className="text-2xl font-black text-gray-900">₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 text-center">
+                                <p className="text-xs text-gray-500">
+                                    In addition, a delivery charge will apply
+                                </p>
+                                <p className="text-sm text-green-600 font-medium mt-2">
+                                    You saved ₹50 on this order
+                                </p>
+                            </div>
+
+                            {/* Trust Badges */}
+                            <div className="mt-5 pt-4 border-t border-gray-200 space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-blue-600 text-xs font-bold">🛡️</span>
+                                    </div>
+                                    <span>Purchase Protection</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-green-600 text-xs font-bold">✓</span>
+                                    </div>
+                                    <span>Cash on Delivery Available</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-green-600 text-xs font-bold">✓</span>
+                                    </div>
+                                    <span>GST Invoice included</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-green-600 text-xs font-bold">✓</span>
+                                    </div>
+                                    <span>Secure Transaction</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-green-600 text-xs font-bold">✓</span>
+                                    </div>
+                                    <span>{deliveryEta || 'Delivered in 3-5 working days'}</span>
                                 </div>
                             </div>
                         </div>
@@ -592,13 +710,19 @@ export default function MobileCheckoutTemplate() {
                             <div className="flex items-start gap-2">
                                 {shippingMethod === 'doorstep' ? (
                                     <>
-                                        <Truck className="w-4 h-4 text-orange-600 mt-0.5" />
+                                        <Truck className="w-4 h-4 text-blue-600 mt-0.5" />
                                         <div>
-                                            <p className="text-sm font-medium">Standard Delivery</p>
-                                            <p className="text-xs text-gray-600 mt-1">
-                                                123 Innovation Ave, Suite 400<br />
-                                                Oakland, CA 94107
-                                            </p>
+                                            <p className="text-sm font-medium">Doorstep Delivery</p>
+                                            {defaultAddress ? (
+                                                <p className="text-xs text-gray-600 mt-1">
+                                                    {defaultAddress.address_line1 || defaultAddress.address_line_1}
+                                                    {(defaultAddress.address_line2 || defaultAddress.address_line_2) && `, ${defaultAddress.address_line2 || defaultAddress.address_line_2}`}
+                                                    <br />
+                                                    {defaultAddress.city}, {defaultAddress.state} - {defaultAddress.pincode || defaultAddress.postal_code}
+                                                </p>
+                                            ) : (
+                                                <p className="text-xs text-red-600 mt-1">No address selected</p>
+                                            )}
                                         </div>
                                     </>
                                 ) : (
@@ -622,10 +746,12 @@ export default function MobileCheckoutTemplate() {
                                 <button onClick={() => setCurrentStep(2)} className="text-xs text-orange-600 font-medium">Edit</button>
                             </div>
                             <div className="flex items-start gap-2">
-                                <CreditCard className="w-4 h-4 text-orange-600 mt-0.5" />
+                                <div className="bg-orange-600/20 p-1.5 rounded-lg">
+                                    <IndianRupee className="w-4 h-4 text-orange-600" />
+                                </div>
                                 <div>
                                     <p className="text-sm font-medium">Cash on Delivery (COD)</p>
-                                    <CheckCircle2 className="w-4 h-4 text-orange-600 mt-1" />
+                                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-1" />
                                 </div>
                             </div>
                         </div>
@@ -643,14 +769,14 @@ export default function MobileCheckoutTemplate() {
                                 </div>
                                 {checkoutData.summary.tax > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Tax (VAT)</span>
-                                        <span className="font-medium">₹{checkoutData.summary.tax.toLocaleString('en-IN')}</span>
+                                        <span className="text-gray-600">GST</span>
+                                        <span className="font-medium">₹{Math.round(checkoutData.summary.tax).toLocaleString('en-IN')}</span>
                                     </div>
                                 )}
                                 <div className="h-px bg-gray-200 my-2" />
                                 <div className="flex justify-between text-lg">
                                     <span className="font-bold">Total</span>
-                                    <span className="font-bold text-orange-600">₹{checkoutData.summary.total.toLocaleString('en-IN')}</span>
+                                    <span className="font-bold text-orange-600">₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </div>
@@ -665,20 +791,26 @@ export default function MobileCheckoutTemplate() {
                         {currentStep === 3 ? 'Total' : `Subtotal (${checkoutData.items.length} items)`}
                     </span>
                     <span className="text-lg font-bold text-orange-600">
-                        ₹{checkoutData.summary.total.toLocaleString('en-IN')}
+                        ₹{Math.round(checkoutData.summary.total).toLocaleString('en-IN')}
                     </span>
                 </div>
 
                 <button
                     onClick={currentStep === 3 ? handlePlaceOrder : handleNextStep}
                     disabled={isProcessing || hasViolations}
-                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2"
+                    className={`w-full font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 ${currentStep === 3
+                        ? 'bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white shadow-lg shadow-green-600/20'
+                        : 'bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white'
+                        }`}
                 >
                     {isProcessing ? (
                         'Processing...'
                     ) : currentStep === 3 ? (
                         <>
-                            Place Order <CheckCircle2 className="w-5 h-5" />
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Place Secure Order
                         </>
                     ) : (
                         <>
@@ -693,6 +825,6 @@ export default function MobileCheckoutTemplate() {
                     </p>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

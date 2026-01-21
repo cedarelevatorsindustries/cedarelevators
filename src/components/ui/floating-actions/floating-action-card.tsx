@@ -62,6 +62,16 @@ export function FloatingActionCard({
   const isCartOrCheckout = pathname === '/cart' || pathname === '/checkout'
   const shouldShowBackToTop = showBackToTop && !isCartOrCheckout
 
+  // Hide entire component on cart/checkout if nothing to show
+  if (isCartOrCheckout && !showWhatsApp) {
+    return null
+  }
+
+  // If nothing to show at all, don't render
+  if (!showWhatsApp && !shouldShowBackToTop) {
+    return null
+  }
+
   return (
     <div
       className="fixed right-0 bottom-20 z-50 flex flex-col items-end"

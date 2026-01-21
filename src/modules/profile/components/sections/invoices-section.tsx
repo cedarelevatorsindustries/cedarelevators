@@ -25,41 +25,8 @@ export default function InvoicesSection({
   accountType,
   verificationStatus
 }: InvoicesSectionProps) {
-  const [invoices] = useState<Invoice[]>([
-    {
-      id: '1',
-      invoiceNumber: 'INV-2024-001',
-      orderNumber: 'ORD-2024-123',
-      date: '2024-01-15',
-      dueDate: '2024-02-14',
-      amount: 125000,
-      gstAmount: 22500,
-      status: 'paid',
-      downloadUrl: '#'
-    },
-    {
-      id: '2',
-      invoiceNumber: 'INV-2024-002',
-      orderNumber: 'ORD-2024-124',
-      date: '2024-01-20',
-      dueDate: '2024-02-19',
-      amount: 85000,
-      gstAmount: 15300,
-      status: 'pending',
-      downloadUrl: '#'
-    },
-    {
-      id: '3',
-      invoiceNumber: 'INV-2023-089',
-      orderNumber: 'ORD-2023-456',
-      date: '2023-12-10',
-      dueDate: '2024-01-09',
-      amount: 45000,
-      gstAmount: 8100,
-      status: 'overdue',
-      downloadUrl: '#'
-    }
-  ])
+  // TODO: Fetch invoices from API
+  const [invoices] = useState<Invoice[]>([])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'overdue'>('all')
