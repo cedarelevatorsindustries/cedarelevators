@@ -20,7 +20,9 @@ export function GeneralSettingsForm() {
         store_name: "",
         support_email: "",
         support_phone: "",
+        secondary_phone: "",
         whatsapp_number: "",
+        gst_number: "",
         invoice_prefix: "CEI",
         currency: "INR",
         timezone: "Asia/Kolkata",
@@ -57,7 +59,9 @@ export function GeneralSettingsForm() {
                     store_name: result.data.store_name || "",
                     support_email: result.data.support_email || "",
                     support_phone: result.data.support_phone || "",
+                    secondary_phone: result.data.secondary_phone || "",
                     whatsapp_number: result.data.whatsapp_number || "",
+                    gst_number: result.data.gst_number || "",
                     invoice_prefix: result.data.invoice_prefix || "CEI",
                     currency: result.data.currency || "INR",
                     timezone: result.data.timezone || "Asia/Kolkata",
@@ -99,7 +103,9 @@ export function GeneralSettingsForm() {
                 store_name: formData.store_name,
                 support_email: formData.support_email,
                 support_phone: formData.support_phone,
+                secondary_phone: formData.secondary_phone,
                 whatsapp_number: formData.whatsapp_number,
+                gst_number: formData.gst_number,
                 invoice_prefix: formData.invoice_prefix,
                 currency: formData.currency,
                 timezone: formData.timezone,
@@ -198,12 +204,35 @@ export function GeneralSettingsForm() {
 
                     <div className="grid md:grid-cols-2 gap-5">
                         <div className="space-y-3">
+                            <Label htmlFor="secondaryPhone" className="text-base font-medium">Secondary Phone</Label>
+                            <Input
+                                id="secondaryPhone"
+                                placeholder="+91-XXXXXXXXXX"
+                                value={formData.secondary_phone}
+                                onChange={(e) => handleChange('secondary_phone', e.target.value)}
+                                className="h-12 text-base"
+                            />
+                        </div>
+                        <div className="space-y-3">
                             <Label htmlFor="whatsappNumber" className="text-base font-medium">WhatsApp Number</Label>
                             <Input
                                 id="whatsappNumber"
                                 placeholder="+91-XXXXXXXXXX"
                                 value={formData.whatsapp_number}
                                 onChange={(e) => handleChange('whatsapp_number', e.target.value)}
+                                className="h-12 text-base"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-5">
+                        <div className="space-y-3">
+                            <Label htmlFor="gstNumber" className="text-base font-medium">GST Number</Label>
+                            <Input
+                                id="gstNumber"
+                                placeholder="33TZCPS1782R1Z6"
+                                value={formData.gst_number}
+                                onChange={(e) => handleChange('gst_number', e.target.value)}
                                 className="h-12 text-base"
                             />
                         </div>

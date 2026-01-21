@@ -14,6 +14,7 @@ export interface StoreSettings {
     description?: string | null
     support_email: string | null
     support_phone: string | null
+    secondary_phone?: string | null
     gst_number?: string | null
     invoice_prefix: string
     whatsapp_number: string | null

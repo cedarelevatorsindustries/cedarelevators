@@ -58,6 +58,10 @@ export function FloatingActionCard({
   const shouldShowWhatsAppOnMobile = pathname === '/' || pathname?.startsWith('/catalog')
   const showWhatsApp = !isMobile || shouldShowWhatsAppOnMobile
 
+  // Hide back-to-top button on cart and checkout pages
+  const isCartOrCheckout = pathname === '/cart' || pathname === '/checkout'
+  const shouldShowBackToTop = showBackToTop && !isCartOrCheckout
+
   return (
     <div
       className="fixed right-0 bottom-20 z-50 flex flex-col items-end"
@@ -119,7 +123,7 @@ export function FloatingActionCard({
           )}
 
           {/* Back to Top Button */}
-          {showBackToTop && (
+          {shouldShowBackToTop && (
             <>
               <div className="border-t border-gray-200 my-2" />
               <div className={`flex items-center ${isExpanded && !isMobile ? 'gap-3' : 'justify-center'}`}>
@@ -159,6 +163,12 @@ export function SimpleFloatingActions({
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const pathname = usePathname()
+
+  // Hide back-to-top button on cart and checkout pages
+  const isCartOrCheckout = pathname === '/cart' || pathname === '/checkout'
+  const shouldShowBackToTop = showBackToTop && !isCartOrCheckout
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -195,7 +205,7 @@ export function SimpleFloatingActions({
       </button>
 
       {/* Back to Top Button */}
-      {showBackToTop && (
+      {shouldShowBackToTop && (
         <button
           onClick={scrollToTop}
           className="group relative w-12 h-12 bg-white hover:bg-gray-50 text-gray-700 rounded-full flex items-center justify-center transition-all shadow-lg hover:shadow-xl hover:scale-110 border border-gray-200"
