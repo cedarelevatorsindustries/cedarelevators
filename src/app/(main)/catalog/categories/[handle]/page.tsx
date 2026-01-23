@@ -13,6 +13,7 @@ interface CategoryPageProps {
     searchParams: Promise<{
         search?: string
         view?: string
+        subcategory?: string  // Added for subcategory filtering
     }>
 }
 
@@ -50,6 +51,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             ...link.subcategory,
             name: link.subcategory.title,  // Map title to name for ProductCategory type compatibility
             handle: link.subcategory.slug,  // Map slug to handle for compatibility
+            slug: link.subcategory.slug,    // Keep slug for URL generation
+            thumbnail: link.subcategory.thumbnail || link.subcategory.thumbnail_image,  // Prioritize thumbnail field
+            thumbnail_image: link.subcategory.thumbnail || link.subcategory.thumbnail_image,  // Same value
             sort_order: link.sort_order  // From junction table
         })).sort((a, b) => a.sort_order - b.sort_order)
         : []
@@ -64,6 +68,17 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     const queryParams: any = {
         limit: 100,
         category_id: [category.id]
+    }
+
+    // If a subcategory is selected in URL, filter by it
+    if (searchParamsResolved.subcategory) {
+        // Find the subcategory by slug to get its ID
+        const selectedSubcat = curatedSubcategories.find(
+            sub => sub.slug === searchParamsResolved.subcategory || sub.id === searchParamsResolved.subcategory
+        )
+        if (selectedSubcat) {
+            queryParams.subcategory_id = selectedSubcat.id
+        }
     }
 
     if (searchParamsResolved.search) {
@@ -86,6 +101,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         category: category.id,
         search: searchParamsResolved.search,
         view: searchParamsResolved.view,
+        subcategory: searchParamsResolved.subcategory,  // Pass subcategory filter to template
     }
 
     return (

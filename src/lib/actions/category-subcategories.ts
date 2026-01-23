@@ -120,6 +120,7 @@ export async function getCategorySubcategories(categoryId: string) {
                     id,
                     title,
                     slug,
+                    thumbnail,
                     thumbnail_image,
                     description
                 )

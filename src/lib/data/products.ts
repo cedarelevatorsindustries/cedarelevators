@@ -7,6 +7,7 @@ interface ListProductsParams {
     limit?: number
     offset?: number
     category_id?: string[]
+    subcategory_id?: string  // Added for subcategory filtering
     application_id?: string
     q?: string
   }
@@ -61,6 +62,50 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         console.log('[listProducts] Product IDs:', productIds)
       } else {
         // No products found for these categories
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
+    }
+
+    // If filtering by subcategory, get product IDs from product_subcategories junction table
+    if (queryParams?.subcategory_id) {
+      console.log('[listProducts] Filtering by subcategory ID:', queryParams.subcategory_id)
+      const { data: junctionData } = await supabase
+        .from('product_subcategories')
+        .select('product_id')
+        .eq('subcategory_id', queryParams.subcategory_id)
+
+      console.log('[listProducts] Subcategory junction table returned:', junctionData?.length || 0, 'products')
+
+      if (junctionData && junctionData.length > 0) {
+        const subcategoryProductIds = junctionData.map(j => j.product_id)
+        // If we already have productIds from category filter, intersect them
+        if (productIds !== null) {
+          productIds = productIds.filter(id => subcategoryProductIds.includes(id))
+        } else {
+          productIds = subcategoryProductIds
+        }
+        console.log('[listProducts] Final product IDs after subcategory filter:', productIds)
+
+        // If no products match both filters, return empty
+        if (productIds.length === 0) {
+          return {
+            response: {
+              products: [],
+              count: 0,
+              offset,
+              limit
+            }
+          }
+        }
+      } else {
+        // No products found for this subcategory
         return {
           response: {
             products: [],

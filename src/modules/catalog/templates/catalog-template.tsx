@@ -220,7 +220,9 @@ export default function CatalogTemplate({
           cat.slug === selectedCategory
         )
       )
-    } else if (selectedSubcategory) {
+    } else if (selectedSubcategory && catalogType !== 'category') {
+      // Only apply client-side subcategory filtering if NOT on a category page
+      // Category pages already filter by subcategory on the server-side
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedSubcategory ||
