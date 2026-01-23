@@ -48,7 +48,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     const curatedSubcategories = success
         ? links.map(link => ({
             ...link.subcategory,
-            handle: link.subcategory.handle || link.subcategory.slug,  // Ensure handle exists
+            name: link.subcategory.title,  // Map title to name for ProductCategory type compatibility
+            handle: link.subcategory.slug,  // Map slug to handle for compatibility
             sort_order: link.sort_order  // From junction table
         })).sort((a, b) => a.sort_order - b.sort_order)
         : []

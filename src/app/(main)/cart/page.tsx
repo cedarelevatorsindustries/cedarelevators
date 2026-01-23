@@ -206,6 +206,7 @@ export default function CartPage() {
           <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:self-start">
             <CartSummary
               summary={summary}
+              items={derivedItems}
               onCheckout={handleCheckout}
               onRequestQuote={handleRequestQuote}
               deliveryEta={deliveryEta}

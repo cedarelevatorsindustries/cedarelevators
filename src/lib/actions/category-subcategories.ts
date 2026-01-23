@@ -14,8 +14,7 @@ interface CategorySubcategory {
 interface CategorySubcategoryWithDetails extends CategorySubcategory {
     subcategory: {
         id: string
-        name: string
-        handle: string
+        title: string
         slug: string
         thumbnail_image?: string
         description?: string
@@ -119,8 +118,8 @@ export async function getCategorySubcategories(categoryId: string) {
                 created_at,
                 subcategory:subcategories!subcategory_id (
                     id,
-                    name,
-                    handle,
+                    title,
+                    slug,
                     thumbnail_image,
                     description
                 )

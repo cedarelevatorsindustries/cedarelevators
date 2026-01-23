@@ -7,7 +7,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { CartSummary as CartSummaryType } from '@/types/cart.types'
+import { CartSummary as CartSummaryType, DerivedCartItem } from '@/types/cart.types'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, FileText, ShoppingCart, ShieldCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,7 @@ import Link from 'next/link'
 
 interface CartSummaryProps {
   summary: CartSummaryType
+  items?: DerivedCartItem[]  // Cart items for calculating savings
   onCheckout?: () => void
   onRequestQuote?: () => void
   onClearCart?: () => void
@@ -22,7 +23,7 @@ interface CartSummaryProps {
   deliveryEta?: string  // Optional delivery timeline (e.g., "2-10 business days")
 }
 
-export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, gstPercentage, deliveryEta }: CartSummaryProps) {
+export function CartSummary({ summary, items = [], onCheckout, onRequestQuote, onClearCart, gstPercentage, deliveryEta }: CartSummaryProps) {
   console.log('[CartSummary] deliveryEta prop:', deliveryEta)
   const router = useRouter()
 
@@ -40,10 +41,21 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
   const displayGstPercentage = gstPercentage ||
     (summary.subtotal > 0 ? Math.round((summary.tax / summary.subtotal) * 100) : 18)
 
-  // Calculate savings
+  // Calculate savings based on compare_at_price vs unit_price
   const totalSavings = useMemo(() => {
-    return summary.discount
-  }, [summary.discount])
+    if (!items || items.length === 0) return 0
+
+    const savingsFromPriceDifference = items.reduce((total, item) => {
+      if (item.compare_at_price && item.compare_at_price > item.unit_price) {
+        const savingsPerUnit = item.compare_at_price - item.unit_price
+        return total + (savingsPerUnit * item.quantity)
+      }
+      return total
+    }, 0)
+
+    // Add any additional discount from summary (e.g., coupons)
+    return savingsFromPriceDifference + (summary.discount || 0)
+  }, [items, summary.discount])
 
   return (
     <div className="bg-white rounded-lg p-6 sticky top-4 shadow-sm border-none" data-testid="cart-summary">
@@ -126,11 +138,13 @@ export function CartSummary({ summary, onCheckout, onRequestQuote, onClearCart, 
 
       {/* Single Checkout Button */}
       <div className="mb-6">
-        <div className="mb-3 text-center">
-          <p className="text-sm text-green-600 font-medium">
-            You saved ₹50 on this order
-          </p>
-        </div>
+        {totalSavings > 0 && (
+          <div className="mb-3 text-center">
+            <p className="text-sm text-green-600 font-medium">
+              You saved ₹{Math.round(totalSavings).toLocaleString()} on this order
+            </p>
+          </div>
+        )}
         <Button
           onClick={handleCheckout}
           disabled={!summary.canCheckout}

@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { useUserPricing } from '@/lib/hooks/useUserPricing'
@@ -189,6 +189,28 @@ export default function MobileCheckoutTemplate() {
 
         loadData()
     }, [isLoaded, isPricingLoaded, source, quoteId, permission, derivedItems, cartSummary, isCartLoading])
+
+    // Calculate total savings based on compare_at_price vs unit_price
+    const totalSavings = useMemo(() => {
+        if (!checkoutData?.items || checkoutData.items.length === 0) return 0
+
+        // For cart source, use derivedItems which have compare_at_price
+        if (source === 'cart' && derivedItems.length > 0) {
+            const savingsFromPriceDifference = derivedItems.reduce((total, item) => {
+                if (item.compare_at_price && item.compare_at_price > item.unit_price) {
+                    const savingsPerUnit = item.compare_at_price - item.unit_price
+                    return total + (savingsPerUnit * item.quantity)
+                }
+                return total
+            }, 0)
+
+            // Add any additional discount from summary
+            return savingsFromPriceDifference + (checkoutData.summary?.discount || 0)
+        }
+
+        // For quote source, use discount from summary if available
+        return checkoutData.summary?.discount || 0
+    }, [checkoutData, derivedItems, source])
 
     // Handle permission-based redirects in useEffect to avoid render-phase state updates
     useEffect(() => {
@@ -608,9 +630,11 @@ export default function MobileCheckoutTemplate() {
                                 <p className="text-xs text-gray-500">
                                     In addition, a delivery charge will apply
                                 </p>
-                                <p className="text-sm text-green-600 font-medium mt-2">
-                                    You saved ₹50 on this order
-                                </p>
+                                {totalSavings > 0 && (
+                                    <p className="text-sm text-green-600 font-medium mt-2">
+                                        You saved ₹{Math.round(totalSavings).toLocaleString()} on this order
+                                    </p>
+                                )}
                             </div>
 
                             {/* Trust Badges */}
