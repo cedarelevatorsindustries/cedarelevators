@@ -52,8 +52,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             name: link.subcategory.title,  // Map title to name for ProductCategory type compatibility
             handle: link.subcategory.slug,  // Map slug to handle for compatibility
             slug: link.subcategory.slug,    // Keep slug for URL generation
-            thumbnail: link.subcategory.thumbnail || link.subcategory.thumbnail_image,  // Prioritize thumbnail field
-            thumbnail_image: link.subcategory.thumbnail || link.subcategory.thumbnail_image,  // Same value
+            thumbnail: link.subcategory.thumbnail_image,  // Use thumbnail_image field
+            thumbnail_image: link.subcategory.thumbnail_image,  // Same value
             sort_order: link.sort_order  // From junction table
         })).sort((a, b) => a.sort_order - b.sort_order)
         : []
