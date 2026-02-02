@@ -196,6 +196,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
           const parsedImages = typeof p.images === 'string' ? JSON.parse(p.images) : p.images
           return {
             ...p,
+            stock_quantity: p.stock_quantity || 0, // Ensure product-level stock is included
             title: p.name,
             handle: p.slug,
             images: parsedImages,
@@ -294,6 +295,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
       return {
         ...p,
+        stock_quantity: p.stock_quantity || 0, // Ensure product-level stock is included
         title: p.name, // Map name to title for compatibility
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,

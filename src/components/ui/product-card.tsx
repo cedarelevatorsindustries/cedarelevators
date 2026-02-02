@@ -145,8 +145,11 @@ export default function ProductCard({
 
   // Check if product is out of stock
   // Handle both 'variants' (from some sources) and 'product_variants' (from Supabase relations)
+  // Check BOTH product-level stock_quantity AND variant-level inventory_quantity
   const variants = product.variants || (product as any).product_variants || []
-  const totalInventory = variants.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0)
+  const variantInventory = variants.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0)
+  const productStock = (product as any).stock_quantity || 0
+  const totalInventory = variantInventory + productStock
   const isOutOfStock = totalInventory === 0
 
   // Mobile Card Variant - Compact with cart icon left of quote button
