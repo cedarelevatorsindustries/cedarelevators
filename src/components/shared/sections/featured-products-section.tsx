@@ -28,6 +28,7 @@ export function FeaturedProductsSection({
         handle: product.handle || product.slug,
         thumbnail: product.thumbnail,
         price: product.price,
+        stock_quantity: product.stock_quantity || 0,
         variants: product.variants || [],
         metadata: product.metadata || {}
     }))

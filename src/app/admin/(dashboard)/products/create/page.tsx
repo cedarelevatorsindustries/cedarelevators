@@ -292,7 +292,9 @@ export default function CreateProductPage() {
       // Map form data to API format
       const productPayload: any = {
         name: formData.title,
-        slug: formData.urlHandle || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+        slug: formData.urlHandle
+          ? formData.urlHandle.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
+          : formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
         description: formData.description,
         short_description: formData.shortDescription,
         status: isDraft ? 'draft' : formData.status,

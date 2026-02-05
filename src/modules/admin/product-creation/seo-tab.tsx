@@ -23,17 +23,22 @@ interface SEOTabProps {
 }
 
 export function SEOTab({ seoData, onSEODataChange, productName, productDescription }: SEOTabProps) {
+  // Helper function to sanitize slug input
+  const sanitizeSlug = (input: string): string => {
+    return input
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special chars, keep spaces temporarily
+      .replace(/\s+/g, "-")           // Convert spaces to hyphens
+      .replace(/-+/g, "-")            // Collapse multiple hyphens
+      .replace(/^-+|-+$/g, "")        // Trim leading/trailing hyphens
+  }
+
   const generateDefaults = () => {
     const title = productName || "Product Name"
     const description = productDescription
       ? productDescription.substring(0, 150) + (productDescription.length > 150 ? "..." : "")
       : "Product description"
-    const handle = (productName || "product")
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim()
+    const handle = sanitizeSlug(productName || "product")
 
     onSEODataChange({
       metaTitle: title,
@@ -130,7 +135,10 @@ export function SEOTab({ seoData, onSEODataChange, productName, productDescripti
                 id="urlHandle"
                 placeholder="oversized-cotton-hoodie"
                 value={seoData.urlHandle}
-                onChange={(e) => onSEODataChange({ urlHandle: e.target.value })}
+                onChange={(e) => {
+                  const sanitized = sanitizeSlug(e.target.value)
+                  onSEODataChange({ urlHandle: sanitized })
+                }}
                 className="flex-1"
               />
             </div>
