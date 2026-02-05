@@ -59,7 +59,95 @@ export default function OrdersPage() {
 
   const handleExport = async () => {
     try {
-      toast.info('Export functionality coming soon')
+      if (orders.length === 0) {
+        toast.error('No orders to export')
+        return
+      }
+
+      // CSV Headers
+      const headers = [
+        'Order ID',
+        'Customer',
+        'Email',
+        'Items',
+        'Total',
+        'Status',
+        'Payment',
+        'Date',
+        'Address'
+      ]
+
+      // Convert orders to CSV rows
+      const csvRows = orders.map((order: any) => {
+        // Use actual OrderWithDetails field names
+        const customer = order.guest_name || 'N/A'
+        const email = order.guest_email || 'N/A'
+
+        // Count items from order_items array
+        const items = order.order_items?.length || 0
+
+        // Use total_amount field (stored in database)
+        const total = order.total_amount ? `₹${Math.round(order.total_amount)}` : 'N/A'
+
+        // Use order_status and payment_status
+        const status = order.order_status || 'pending'
+        const payment = order.payment_status || 'pending'
+
+        // Format date
+        const date = order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'
+
+        // Format address (shipping_address is JSON object with street, city, etc)
+        let address = 'N/A'
+        if (order.shipping_address) {
+          if (typeof order.shipping_address === 'string') {
+            address = order.shipping_address
+          } else if (typeof order.shipping_address === 'object') {
+            const addr = order.shipping_address
+            address = [addr.street, addr.city, addr.state, addr.postal_code]
+              .filter(Boolean)
+              .join(', ')
+          }
+        }
+
+        // Escape commas and quotes in data
+        const escape = (str: string) => {
+          if (typeof str !== 'string') return str
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`
+          }
+          return str
+        }
+
+        return [
+          escape(order.order_number || order.id),
+          escape(customer),
+          escape(email),
+          items,
+          escape(total),
+          escape(status),
+          escape(payment),
+          escape(date),
+          escape(address)
+        ].join(',')
+      })
+
+      // Combine headers and rows
+      const csvContent = [headers.join(','), ...csvRows].join('\n')
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      link.setAttribute('href', url)
+      link.setAttribute('download', `orders-export-${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      toast.success(`Exported ${orders.length} orders`)
     } catch (error) {
       console.error('Error exporting orders:', error)
       toast.error('Failed to export orders')
