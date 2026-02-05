@@ -134,8 +134,12 @@ export default function OrdersPage() {
       // Combine headers and rows
       const csvContent = [headers.join(','), ...csvRows].join('\n')
 
+      // Add UTF-8 BOM so Excel displays ₹ symbol correctly
+      const BOM = '\uFEFF'
+      const csvWithBOM = BOM + csvContent
+
       // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
 
