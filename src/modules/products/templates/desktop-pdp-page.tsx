@@ -65,8 +65,20 @@ export default function ProductDetailPage({
   const isBusiness = userType === 'business'
   const showPrice = canSeePrices
 
-  const price = (product as any).price || product.price?.amount || 0
-  const originalPrice = (product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null
+  const selectedVariant = product.variants?.find((v: any) => {
+    if (!v.options || typeof v.options !== 'object') return false
+    return Object.entries(selectedVariants).every(([key, value]) =>
+      v.options[key] === value
+    )
+  })
+
+  const price = selectedVariant
+    ? (Number(selectedVariant.price) || 0)
+    : ((product as any).price || product.price?.amount || 0)
+
+  const originalPrice = selectedVariant
+    ? (Number(selectedVariant.compare_at_price) || null)
+    : ((product as any).compare_at_price || (product.metadata?.compare_at_price as number) || null)
 
   // Check favorite status on mount
   useEffect(() => {
