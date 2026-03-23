@@ -93,7 +93,15 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
   }
 
   const removeOption = (optionId: string) => {
-    onOptionsChange(options.filter(option => option.id !== optionId))
+    const newOptions = options.filter(option => option.id !== optionId)
+    onOptionsChange(newOptions)
+    
+    // Auto-clear variant matrix if no valid options remain
+    const hasValues = newOptions.some(opt => opt.values.length > 0)
+    if (!hasValues && variants.length > 0) {
+      onVariantsChange([])
+      setActiveTab("configure")
+    }
   }
 
   const addOptionValue = (optionId: string) => {
@@ -127,13 +135,19 @@ export function VariantsTab({ options, variants, onOptionsChange, onVariantsChan
   }
 
   const removeOptionValue = (optionId: string, valueId: string) => {
-    onOptionsChange(
-      options.map(option =>
-        option.id === optionId
-          ? { ...option, values: option.values.filter(value => value.id !== valueId) }
-          : option
-      )
+    const newOptions = options.map(option =>
+      option.id === optionId
+        ? { ...option, values: option.values.filter(value => value.id !== valueId) }
+        : option
     )
+    onOptionsChange(newOptions)
+
+    // Auto-clear variant matrix if no valid options remain
+    const hasValues = newOptions.some(opt => opt.values.length > 0)
+    if (!hasValues && variants.length > 0) {
+      onVariantsChange([])
+      setActiveTab("configure")
+    }
   }
 
   const generateVariants = () => {

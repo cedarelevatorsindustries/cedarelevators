@@ -198,6 +198,13 @@ export default function CreateProductPage() {
           })
 
           if (shouldRestore) {
+            // Fix invalid blob URLs by replacing them with base64 backups
+            if (draftData.images && Array.isArray(draftData.images)) {
+              draftData.images = draftData.images.map((img: any) => ({
+                ...img,
+                url: (img.url && img.url.startsWith('blob:') && img.base64) ? img.base64 : img.url
+              }))
+            }
             setFormData(draftData)
             setLastSaved(new Date(savedTime))
             toast.success('Draft restored')
@@ -432,7 +439,7 @@ export default function CreateProductPage() {
               </p>
             )}
           </div>
-          <div className="flex items-center space-x-3 flex-shrink-0">
+          <div className="flex items-center space-x-3 shrink-0">
             <Button variant="outline" asChild className="bg-white border-gray-200 hover:bg-gray-50">
               <Link href="/admin/products">Cancel</Link>
             </Button>

@@ -11,7 +11,7 @@ import type { ActionResult } from "@/lib/types/action-result"
  * Create new product
  */
 export async function createProduct(productData: ProductFormData): Promise<ActionResult<Product>> {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     try {
         // Ensure slug is unique
