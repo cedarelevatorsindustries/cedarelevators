@@ -43,8 +43,8 @@ export async function getCached<T>(
         await redis.setex(key, ttl, JSON.stringify(data))
 
         return data
-    } catch (error) {
-        console.error('Redis error, falling back to direct fetch:', error)
+    } catch (error: any) {
+        console.warn('Redis unavailable, falling back to direct fetch:', error?.cause?.code || error?.message || 'unknown error')
         return fetcher()
     }
 }

@@ -210,21 +210,15 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
             variantsToInsert = productData.variants.map((variant: any) => ({
                 product_id: product.id,
                 name: variant.name || 'Default',
+                variant_title: variant.name || null,
                 sku: variant.sku || `${product.sku || 'SKU'}-${Math.random().toString(36).substr(2, 9)}`,
                 price: parseFloat(variant.price) || product.price || 0,
                 compare_at_price: variant.compareAtPrice || variant.mrp ? parseFloat(variant.compareAtPrice || variant.mrp) : null,
                 cost_per_item: variant.cost ? parseFloat(variant.cost) : null,
                 inventory_quantity: parseInt(variant.quantity || variant.stock) || 0,
                 status: variant.status || (variant.active ? 'active' : 'draft'),
-                barcode: variant.barcode || null,
-                weight: variant.weight ? parseFloat(variant.weight) : null,
                 image_url: variant.image || null,
-                option1_name: variant.option1?.name || null,
-                option1_value: variant.option1?.value || null,
-                option2_name: variant.option2?.name || null,
-                option2_value: variant.option2?.value || null,
-                option3_name: variant.option3?.name || null,
-                option3_value: variant.option3?.value || null,
+                options: variant.combinations ? variant.combinations : null,
             }));
         } else {
             // Create a default variant for simple products so inventory is tracked
@@ -232,14 +226,13 @@ export async function createProduct(productData: ProductFormData): Promise<Actio
             variantsToInsert = [{
                 product_id: product.id,
                 name: 'Default',
+                variant_title: 'Default',
                 sku: product.sku || `SKU-${Math.random().toString(36).substr(2, 9)}`,
                 price: product.price || 0,
                 compare_at_price: product.compare_at_price || null,
                 cost_per_item: product.cost_per_item || null,
                 inventory_quantity: product.stock_quantity || 0,
                 status: 'active',
-                barcode: null,
-                weight: null,
                 image_url: product.thumbnail_url || null,
             }];
         }

@@ -231,7 +231,7 @@ export default function ProductsPage() {
                     className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all bg-white"
                   >
                     {/* Image */}
-                    <Link href={`/admin/products/${product.id}`} className="flex-shrink-0">
+                    <Link href={`/admin/products/${product.id}`} className="shrink-0">
                       {product.thumbnail_url || (product.images && Array.isArray(product.images) && product.images.length > 0) ? (
                         <img
                           src={product.thumbnail_url || (Array.isArray(product.images) && product.images[0]?.url) || ''}
@@ -306,7 +306,7 @@ export default function ProductsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 sm:ml-4 flex-shrink-0 justify-end mt-2 sm:mt-0 border-t sm:border-t-0 pt-2 sm:pt-0">
+                    <div className="flex items-center gap-2 sm:ml-4 shrink-0 justify-end mt-2 sm:mt-0 border-t sm:border-t-0 pt-2 sm:pt-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -314,7 +314,7 @@ export default function ProductsPage() {
                         asChild
                         title="View on Store"
                       >
-                        <Link href={`/products/${product.slug}`} target="_blank">
+                        <Link href={`https://cedarelevator.com/products/${product.slug}`} target="_blank">
                           <ExternalLink className="h-4 w-4 text-gray-400" />
                         </Link>
                       </Button>
