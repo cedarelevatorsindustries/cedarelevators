@@ -101,12 +101,12 @@ const HeroSection = () => {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out"
         style={{
-          backgroundImage: 'url("/images/hero/desktop hero.png")',
+          backgroundImage: 'url("/images/hero/desktop hero.webp?v=2")',
           backgroundPosition: 'center 30%', // Adjust crop position for mobile
           transform: isLoaded ? 'scale(1.1)' : 'scale(1.2)' // Zoom for 9:16 mobile ratio
         }}
         role="img"
-        aria-label="Cedar Elevators premium lift components showcase - mobile view"
+        aria-label="Cedar Elevators premium lift components showcase - precision elevator machinery"
       />
 
       {/* Mobile Dark Gradient Overlay */}
@@ -160,13 +160,13 @@ const HeroSection = () => {
       {/* Mobile Content - Centered with safe spacing from search bar */}
       <div className="relative z-10 flex flex-col justify-center h-full px-4 pt-32 pb-8">
         {/* Mobile Primary Text */}
-        <div className="mb-3 sm:mb-4">
+        <div className="mb-2 sm:mb-3">
           <h1
-            className={`font-space-grotesk text-white text-xl sm:text-2xl font-black leading-tight uppercase transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`font-space-grotesk text-white text-base sm:text-lg font-light leading-snug uppercase tracking-wider transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
-              textShadow: '2px 4px 12px rgba(0, 0, 0, 0.8)',
-              letterSpacing: '0.05em',
+              textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)',
+              letterSpacing: '0.06em',
               fontOpticalSizing: 'auto'
             }}
           >
@@ -175,13 +175,13 @@ const HeroSection = () => {
         </div>
 
         {/* Mobile Secondary Text */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-5 sm:mb-6">
           <p
-            className={`font-space-grotesk text-white/90 text-xs sm:text-sm font-light transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`font-space-grotesk text-white/80 text-[11px] sm:text-xs font-extralight tracking-widest transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
-              textShadow: '1px 2px 8px rgba(0, 0, 0, 0.7)',
-              letterSpacing: '0.1em',
+              textShadow: '0 1px 6px rgba(0, 0, 0, 0.6)',
+              letterSpacing: '0.12em',
               fontOpticalSizing: 'auto'
             }}
           >
@@ -190,10 +190,10 @@ const HeroSection = () => {
         </div>
 
         {/* Mobile CTA Buttons */}
-        <div className={`flex flex-col gap-3 transition-all duration-800 delay-900 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`flex flex-col gap-2.5 transition-all duration-800 delay-900 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <LocalizedClientLink href="/quotes/new">
             <button
-              className="w-full bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg font-space-grotesk"
+              className="w-full bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 shadow-md font-space-grotesk"
               aria-label="Get a quote for premium lift components"
             >
               Get a Quote
@@ -202,7 +202,7 @@ const HeroSection = () => {
 
           <LocalizedClientLink href="/catalog">
             <button
-              className="w-full bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 focus:bg-white/30 focus:outline-none focus:ring-4 focus:ring-white/50 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg font-space-grotesk"
+              className="w-full bg-white/15 backdrop-blur-sm border border-white/30 text-white hover:bg-white/25 focus:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/40 px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 shadow-md font-space-grotesk"
               aria-label="Browse our premium lift components catalog"
             >
               Browse Products

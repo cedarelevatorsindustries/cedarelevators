@@ -1,15 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cloudinary } from '@/lib/cloudinary/config'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 export async function POST(request: NextRequest) {
     try {
+        const adminCheck = await requireAdmin()
+        if (!adminCheck.authorized) {
+            return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
+        }
+
         const formData = await request.formData()
         const file = formData.get('file') as File
-        const folder = formData.get('folder') as string || 'uploads'
+        const folder = formData.get('folder') as string || 'products'
 
         if (!file) {
             return NextResponse.json(
                 { error: 'No file provided' },
+                { status: 400 }
+            )
+        }
+
+        // Validate MIME type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf']
+        if (!allowedTypes.includes(file.type)) {
+            return NextResponse.json(
+                { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, PDF' },
+                { status: 400 }
+            )
+        }
+
+        // Limit file size (10 MB max)
+        if (file.size > 10 * 1024 * 1024) {
+            return NextResponse.json(
+                { error: 'File size exceeds maximum 10MB limit' },
                 { status: 400 }
             )
         }

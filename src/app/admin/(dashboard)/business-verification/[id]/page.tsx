@@ -33,7 +33,6 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { clerkClient } from '@clerk/nextjs/server'
 
 interface BusinessProfileDetail {
   id: string

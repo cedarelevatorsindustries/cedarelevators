@@ -116,11 +116,11 @@ const HeroSection = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out"
           style={{
-            backgroundImage: 'url("/images/hero/desktop hero.png")',
+            backgroundImage: 'url("/images/hero/desktop hero.webp?v=2")',
             transform: isLoaded ? 'scale(1)' : 'scale(1.1)'
           }}
           role="img"
-          aria-label="Cedar Elevators premium lift components showcase - modern elevator interior with advanced control systems"
+          aria-label="Cedar Elevators premium lift components showcase - precision elevator machinery"
         />
 
         {/* Dark Gradient Overlay for Text Readability - Enhanced for WCAG AA compliance */}
@@ -150,12 +150,12 @@ const HeroSection = () => {
             >
               {/* Desktop Main Headline */}
               <h1
-                className={`font-space-grotesk text-white text-5xl lg:text-6xl 2xl:text-7xl font-black leading-tight tracking-wider mb-6 transition-all duration-800 delay-300 max-w-2xl uppercase ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`font-space-grotesk text-white text-2xl md:text-3xl lg:text-4xl font-light leading-snug tracking-wide mb-4 transition-all duration-800 delay-300 max-w-xl uppercase ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
                   fontFamily: '"Space Grotesk", sans-serif',
-                  textShadow: '2px 4px 12px rgba(0, 0, 0, 0.5)',
-                  letterSpacing: '0.1em',
+                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
+                  letterSpacing: '0.06em',
                   fontOpticalSizing: 'auto'
                 }}
               >
@@ -164,12 +164,12 @@ const HeroSection = () => {
 
               {/* Desktop Subheadline/Tagline */}
               <p
-                className={`font-space-grotesk text-white/95 text-lg lg:text-xl font-light mb-10 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`font-space-grotesk text-white/85 text-xs sm:text-sm lg:text-base font-extralight mb-8 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
                   fontFamily: '"Space Grotesk", sans-serif',
-                  textShadow: '1px 2px 8px rgba(0, 0, 0, 0.4)',
-                  letterSpacing: '0.2em',
+                  textShadow: '0 1px 6px rgba(0, 0, 0, 0.5)',
+                  letterSpacing: '0.16em',
                   fontOpticalSizing: 'auto'
                 }}
               >
@@ -177,12 +177,12 @@ const HeroSection = () => {
               </p>
 
               {/* Desktop CTA Buttons */}
-              <div className={`flex flex-col sm:flex-row gap-5 transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}>
                 {/* Primary CTA */}
                 <LocalizedClientLink href="/quotes/new">
                   <button
-                    className="group relative overflow-hidden bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-8 py-3 rounded-lg text-base font-semibold transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-lg hover:shadow-2xl focus:shadow-2xl font-space-grotesk"
+                    className="group relative overflow-hidden bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl font-space-grotesk"
                     style={{
                       fontFamily: '"Space Grotesk", sans-serif',
                       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
@@ -198,7 +198,7 @@ const HeroSection = () => {
                 {/* Secondary CTA */}
                 <LocalizedClientLink href="/catalog">
                   <button
-                    className="group relative overflow-hidden bg-transparent border-2 border-white text-white hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-4 focus:ring-white/50 px-8 py-3 rounded-lg text-base font-semibold transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-lg hover:shadow-2xl focus:shadow-2xl font-space-grotesk"
+                    className="group relative overflow-hidden bg-transparent border border-white/70 text-white hover:bg-white/15 focus:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/40 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl font-space-grotesk"
                     style={{
                       fontFamily: '"Space Grotesk", sans-serif'
                     }}

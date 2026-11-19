@@ -1,34 +1,19 @@
-import { auth } from '@clerk/nextjs/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // GET - List all verifications (admin only)
 export async function GET(request: NextRequest) {
     try {
-        const { userId } = await auth()
-
-        if (!userId) {
+        const adminCheck = await requireAdmin()
+        if (!adminCheck.authorized) {
             return NextResponse.json(
-                { success: false, error: 'Unauthorized' },
-                { status: 401 }
+                { success: false, error: adminCheck.error },
+                { status: adminCheck.status }
             )
         }
 
-        const supabase = await createClerkSupabaseClient()
-
-        // Verify admin access
-        const { data: adminProfile } = await supabase
-            .from('admin_profiles')
-            .select('is_active')
-            .eq('user_id', userId)
-            .single()
-
-        if (!adminProfile?.is_active) {
-            return NextResponse.json(
-                { success: false, error: 'Admin access required' },
-                { status: 403 }
-            )
-        }
+        const supabase = createAdminClient()
 
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status') || 'all'

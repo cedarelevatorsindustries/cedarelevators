@@ -5,7 +5,7 @@ import { getProductWithVariants, getProductVariants, getProductElevatorTypes, ge
 import { getApplications, getCollections, getElevatorTypes } from '@/lib/actions/catalog'
 
 interface ProductEditPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function ProductEditPage({ params }: ProductEditPageProps) {

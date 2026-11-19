@@ -74,7 +74,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
-    webpackBuildWorker: true,
+    webpackBuildWorker: false,
   },
   // SEO-safe redirects for routing refactor
   async redirects() {
@@ -120,7 +120,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   swcMinify: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: true, // PWA disabled during Phase 1 stabilization build
   workboxOptions: {
     disableDevLogs: true,
   },

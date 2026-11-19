@@ -1,10 +1,9 @@
 "use client"
 
 import Image from "next/image"
-import { User } from "lucide-react"
-import { SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import Link from "next/link"
+import { FileText, Phone, Shield } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
-import { cn } from "@/lib/utils"
 
 interface SidebarHeaderProps {
   isLoggedIn: boolean
@@ -12,74 +11,59 @@ interface SidebarHeaderProps {
   onClose: () => void
 }
 
-export function SidebarHeader({ isLoggedIn, userName, onClose }: SidebarHeaderProps) {
-  const { user } = useUser()
-  const isBusiness = user?.userType === 'business' || user?.activeProfile?.profile_type === 'business'
-  const isVerified = isBusiness && user?.isVerified
-
-  if (isLoggedIn || user) {
-    return (
-      <div className="px-4 py-4 bg-blue-50 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "rounded-full flex items-center justify-center",
-              isVerified ? "p-[2px] bg-gradient-to-tr from-[#FDE047] via-[#F59E0B] to-[#D97706]" : ""
-            )}>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: cn("w-12 h-12", isVerified && "border-2 border-white")
-                  }
-                }}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">
-                {user?.name || userName}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {user?.email || "john@company.com"}
-              </p>
-            </div>
-          </div>
-          <Image
-            src="/logo/CEIicon.png"
-            alt="Cedar Elevators Industries"
-            width={32}
-            height={32}
-            className="w-8 h-8"
-          />
-        </div>
-      </div>
-    )
-  }
+export function SidebarHeader({ onClose }: SidebarHeaderProps) {
+  const { user, isLoaded } = useUser()
 
   return (
-    <div className="px-4 py-4 bg-blue-50 border-b border-gray-200">
-      <div className="flex items-center justify-between gap-3">
+    <div className="px-4 py-4 bg-orange-50 border-b border-orange-100">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <User size={20} className="text-blue-600" />
-          <SignInButton mode="modal">
-            <button className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors font-medium">
-              Login
-            </button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <button className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition-colors font-medium">
-              Sign Up
-            </button>
-          </SignUpButton>
+          <Image
+            src="/logo/CEIicon.png"
+            alt="Cedar Elevators"
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded"
+          />
+          <div>
+            <h3 className="font-semibold text-gray-900 text-sm">Cedar Elevators</h3>
+            <p className="text-xs text-gray-500">Premium Elevator Solutions</p>
+          </div>
         </div>
-        <Image
-          src="/logo/CEIicon.png"
-          alt="Cedar Elevators Industries"
-          width={32}
-          height={32}
-          className="w-8 h-8"
-        />
       </div>
+
+      <div className="flex items-center gap-2 pt-1">
+        <Link
+          href="/quotes/new"
+          onClick={onClose}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-md transition-colors"
+        >
+          <FileText size={14} />
+          <span>Get Quote</span>
+        </Link>
+        <Link
+          href="/contact"
+          onClick={onClose}
+          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-md border border-gray-200 transition-colors"
+        >
+          <Phone size={14} />
+          <span>Contact</span>
+        </Link>
+      </div>
+
+      {/* Admin Access Pill if authenticated admin */}
+      {isLoaded && user && (
+        <div className="mt-2 pt-2 border-t border-orange-200/50">
+          <Link
+            href="/admin"
+            onClick={onClose}
+            className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 font-medium"
+          >
+            <Shield size={12} className="text-orange-600" />
+            <span>Open Admin Dashboard</span>
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
-

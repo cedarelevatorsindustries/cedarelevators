@@ -20,8 +20,6 @@ export default function FrequentlyBoughtTogetherSection({
 }: FrequentlyBoughtTogetherSectionProps) {
   const { user } = useUser()
 
-  if (bundleProducts.length === 0) return null
-
   // Show up to 4 bundle products for mobile, 3 for desktop
   const limitedBundleProducts = bundleProducts.slice(0, isMobile ? 6 : 3)
 
@@ -32,6 +30,8 @@ export default function FrequentlyBoughtTogetherSection({
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
     new Set(allProducts.map(p => p.id))
   )
+
+  if (bundleProducts.length === 0) return null
 
   // User type and pricing logic
   const isGuest = !user

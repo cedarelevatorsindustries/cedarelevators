@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,7 +24,8 @@ interface VariantFormData {
     is_active: boolean
 }
 
-export default function VariantCreateEditPage({ params }: { params: { id: string } }) {
+export default function VariantCreateEditPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: productId } = use(params)
     const router = useRouter()
     const searchParams = useSearchParams()
     const variantId = searchParams.get("variantId")
@@ -69,7 +70,7 @@ export default function VariantCreateEditPage({ params }: { params: { id: string
             //   : await createVariant(params.id, formData)
 
             toast.success(isEdit ? "Variant updated successfully!" : "Variant created successfully!")
-            router.push(`/admin/products/${params.id}/variants`)
+            router.push(`/admin/products/${productId}/variants`)
         } catch (error) {
             console.error("Error saving variant:", error)
             toast.error("Failed to save variant")
@@ -100,7 +101,7 @@ export default function VariantCreateEditPage({ params }: { params: { id: string
                         </p>
                     </div>
                     <Button variant="outline" asChild className="border-gray-300 bg-white">
-                        <Link href={`/admin/products/${params.id}/variants`}>
+                        <Link href={`/admin/products/${productId}/variants`}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back
                         </Link>

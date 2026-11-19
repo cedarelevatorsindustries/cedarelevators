@@ -29,21 +29,18 @@ export function TestimonialsSection({
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
-    // Don't render if no testimonials
-    if (!testimonials || testimonials.length === 0) {
-        return null
-    }
+    const count = testimonials?.length || 0
 
     const goToNext = useCallback(() => {
-        setCurrentIndex((prev) => (prev + 1) % testimonials.length)
-    }, [testimonials.length])
+        if (count === 0) return
+        setCurrentIndex((prev) => (prev + 1) % count)
+    }, [count])
 
     const goToPrevious = useCallback(() => {
+        if (count === 0) return
         setIsAutoPlaying(false)
-        setCurrentIndex((prev) =>
-            prev === 0 ? testimonials.length - 1 : prev - 1
-        )
-    }, [testimonials.length])
+        setCurrentIndex((prev) => (prev === 0 ? count - 1 : prev - 1))
+    }, [count])
 
     const goToSlide = useCallback((index: number) => {
         setIsAutoPlaying(false)
@@ -52,11 +49,16 @@ export function TestimonialsSection({
 
     // Auto-play carousel
     useEffect(() => {
-        if (testimonials.length <= 1 || !isAutoPlaying) return
+        if (count <= 1 || !isAutoPlaying) return
 
         const interval = setInterval(goToNext, 5000)
         return () => clearInterval(interval)
-    }, [isAutoPlaying, testimonials.length, goToNext])
+    }, [isAutoPlaying, count, goToNext])
+
+    // Don't render if no testimonials
+    if (!testimonials || testimonials.length === 0) {
+        return null
+    }
 
     const currentTestimonial = testimonials[currentIndex]
 

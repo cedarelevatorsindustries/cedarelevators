@@ -1,27 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { createAdminClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
     
-    // TODO: Add admin role verification
-    // const supabase = await createServerSupabase()
-    // const { data: adminProfile } = await supabase
-    //   .from('admin_profiles')
-    //   .select('role, is_active')
-    //   .eq('user_id', userId)
-    //   .single()
-    // 
-    // if (!adminProfile || !adminProfile.is_active) {
-    //   return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    // }
-    
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
     
     // Get total orders
     const { count: totalOrders } = await supabase

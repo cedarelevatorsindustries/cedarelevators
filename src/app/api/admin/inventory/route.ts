@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { createAdminClient } from '@/lib/supabase/server'
 import { updateProductInventory } from '@/lib/actions/products'
 import { updateVariantInventory } from '@/lib/actions/product-variants'
@@ -10,9 +10,9 @@ import { updateVariantInventory } from '@/lib/actions/product-variants'
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
 
     const { searchParams } = new URL(request.url)
@@ -138,9 +138,9 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
 
     const { productId, variantId, quantity, operation } = await request.json()

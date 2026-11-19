@@ -104,16 +104,10 @@ export const viewport: Viewport = {
   ],
 }
 
-import { Space_Grotesk } from "next/font/google"
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: 'swap', // Prevent invisible text during load (FOIT)
-  preload: true,
-  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Arial', 'sans-serif'],
-  adjustFontFallback: true, // Reduce layout shift (CLS)
-})
+// Font variable is defined via @import in globals.css with system-ui fallbacks
+const spaceGrotesk = {
+  variable: "",
+}
 
 export default function RootLayout({
   children,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { hasRole } from '@/lib/auth/admin-roles'
 import {
   getElevatorTypes,
@@ -11,15 +11,9 @@ import {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check admin role
-    const isAuthorized = await hasRole('staff')
-    if (!isAuthorized) {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
 
     const { searchParams } = new URL(request.url)
@@ -52,9 +46,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
 
     // Check admin role - only managers and above can create

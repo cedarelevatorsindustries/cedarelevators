@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
+import { createAdminClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/admin/customers - Fetch customers with filters
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
     }
 
-    // TODO: Add admin role verification
-
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
     const { searchParams } = new URL(request.url)
 
     const search = searchParams.get('search') || undefined
@@ -89,11 +87,11 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * GET /api/admin/customers/[id] - Get single customer details
+ * Helper - Get single customer details
  */
-export async function getCustomerDetails(clerkUserId: string) {
+async function getCustomerDetails(clerkUserId: string) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createAdminClient()
 
     // Get customer meta
     const { data: customer, error: customerError } = await supabase
@@ -122,7 +120,7 @@ export async function getCustomerDetails(clerkUserId: string) {
       .eq('clerk_user_id', clerkUserId)
       .eq('payment_status', 'paid')
 
-    const totalSpent = paidOrders?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0
+    const totalSpent = paidOrders?.reduce((sum: number, o: { total_amount: number | string | null }) => sum + Number(o.total_amount || 0), 0) || 0
 
     // Get business profile if business user
     let businessProfile = null

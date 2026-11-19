@@ -1,12 +1,9 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
-import { useUser } from "@/lib/auth/client"
 import { getNavbarVariant, mergeNavbarConfig, type NavbarConfig } from "../../desktop/navbar/config"
 import { NavItem } from "./components/nav-item"
-import { getFilteredNavItems, getQuoteTabLabel } from "./components/nav-items-config"
-import type { UserType } from "@/types/cart.types"
+import { getFilteredNavItems } from "./components/nav-items-config"
 
 interface MobileBottomNavigationProps {
   className?: string
@@ -15,38 +12,12 @@ interface MobileBottomNavigationProps {
 
 export default function MobileBottomNavigation({ className = "", customConfig }: MobileBottomNavigationProps) {
   const pathname = usePathname()
-  const [quoteLabel, setQuoteLabel] = useState("Quote")
-  const [showVerifiedBadge, setShowVerifiedBadge] = useState(false)
 
   // Get variant-based configuration
   const variant = getNavbarVariant(pathname)
   const config = mergeNavbarConfig(variant, customConfig)
 
-  // Use enhanced auth hook for reactive updates
-  const { user } = useUser()
-
-  // Determine user type for filtering nav items
-  const userType: UserType = user?.userType === 'verified' ? 'business_verified' :
-    user?.userType === 'business' ? 'business_unverified' :
-      user?.userType === 'individual' ? 'individual' : 'guest'
-
-  useEffect(() => {
-    if (user) {
-      setQuoteLabel(getQuoteTabLabel(user.userType))
-
-      // Show green badge only for verified business users
-      if (user.userType === 'verified') {
-        setShowVerifiedBadge(true)
-      } else {
-        setShowVerifiedBadge(false)
-      }
-    } else {
-      setQuoteLabel(getQuoteTabLabel('guest'))
-      setShowVerifiedBadge(false)
-    }
-  }, [user])
-
-  // Hide bottom nav if config says so (e.g., checkout page)
+  // Hide bottom nav if config specifies
   if (!config.mobile.showBottomNav) {
     return null
   }
@@ -56,8 +27,7 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
     return pathname.startsWith(href)
   }
 
-  // Get filtered nav items based on user type
-  const filteredNavItems = getFilteredNavItems(userType)
+  const filteredNavItems = getFilteredNavItems()
 
   return (
     <div className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 ${className}`}>
@@ -67,13 +37,11 @@ export default function MobileBottomNavigation({ className = "", customConfig }:
             key={item.href}
             href={item.href}
             icon={item.icon}
-            label={item.href === "/quotes" ? quoteLabel : item.label}
+            label={item.label}
             isActive={isActive(item.href)}
-            showBadge={item.href === "/quotes" && showVerifiedBadge}
           />
         ))}
       </div>
     </div>
   )
 }
-

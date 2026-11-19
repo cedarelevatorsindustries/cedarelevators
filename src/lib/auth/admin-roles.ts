@@ -1,4 +1,5 @@
 import { createServerSupabase, createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import type { AdminRole } from '@/types/b2b/quote'
 
 // =====================================================
@@ -19,35 +20,28 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 export async function getCurrentAdminUser() {
   'use server'
   try {
-    // Use session-aware client to access the authenticated admin user
-    const supabase = await createServerSupabase()
+    // 1. Primary: Verify Clerk admin authentication
+    const adminCheck = await requireAdmin()
+    if (adminCheck.authorized) {
+      return adminCheck.adminUser
+    }
 
-    // Get authenticated user from Supabase Auth (admin panel uses Supabase Auth)
+    // 2. Legacy fallback: Check Supabase Auth session if present
+    const supabase = await createServerSupabase()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      console.error('No Supabase auth user found:', authError)
       return null
     }
 
-    // Find admin user by email (matching with admin_users table)
-    const { data: adminUser, error } = await supabase
+    const { data: adminUser } = await supabase
       .from('admin_users')
       .select('*')
       .eq('email', user.email)
       .eq('is_active', true)
       .single()
 
-    if (error || !adminUser) {
-      console.error('Admin user not found or not active:', {
-        email: user.email,
-        userId: user.id,
-        error
-      })
-      return null
-    }
-
-    return adminUser
+    return adminUser || null
   } catch (error) {
     console.error('Error getting current admin user:', error)
     return null

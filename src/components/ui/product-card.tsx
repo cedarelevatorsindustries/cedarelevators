@@ -266,9 +266,9 @@ export default function ProductCard({
 
           {/* Status Messages - Informational */}
           {showPrice && (
-            <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
-              <span className="w-1 h-1 bg-green-600 rounded-full"></span>
-              Verified - Instant checkout
+            <p className="text-[10px] text-orange-600 font-medium flex items-center gap-1">
+              <span className="w-1 h-1 bg-orange-600 rounded-full"></span>
+              Direct Manufacturer Pricing
             </p>
           )}
 
@@ -507,9 +507,9 @@ export default function ProductCard({
 
         {/* Status Messages - Informational */}
         {showPrice && (
-          <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-            Verified - Instant checkout
+          <p className="text-xs text-orange-600 font-medium flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span>
+            Direct Manufacturer Pricing
           </p>
         )}
 

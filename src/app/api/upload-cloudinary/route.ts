@@ -5,9 +5,15 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadImage, uploadMultipleImages } from '@/lib/services/cloudinary'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 export async function POST(request: NextRequest) {
   try {
+    const adminCheck = await requireAdmin()
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status })
+    }
+
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
     const folder = formData.get('folder') as string | null

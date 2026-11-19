@@ -15,13 +15,14 @@ const VALID_PATHS = [
 ]
 
 interface PolicyPageProps {
-    params: {
+    params: Promise<{
         slug: string
-    }
+    }>
 }
 
 export async function generateMetadata({ params }: PolicyPageProps): Promise<Metadata> {
-    const path = `/${params.slug}`
+    const { slug: rawSlug } = await params
+    const path = `/${rawSlug}`
     const slug = getSlugFromPath(path)
     const page = await getCMSPageBySlug(slug)
 
@@ -38,7 +39,8 @@ export async function generateMetadata({ params }: PolicyPageProps): Promise<Met
 }
 
 export default async function PolicyPage({ params }: PolicyPageProps) {
-    const path = `/${params.slug}`
+    const { slug: rawSlug } = await params
+    const path = `/${rawSlug}`
 
     // Validate path
     if (!VALID_PATHS.includes(path)) {

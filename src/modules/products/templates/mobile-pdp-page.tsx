@@ -42,6 +42,49 @@ interface MobileProductDetailPageProps {
   reviews?: Review[]
 }
 
+function MobileVariantGroupSelector({ variantGroup }: { variantGroup: any }) {
+  const [selectedVariant, setSelectedVariant] = useState("")
+
+  return (
+    <div key={variantGroup.type} className="space-y-3">
+      <h3 className="text-xs font-bold text-gray-900 tracking-wide uppercase">
+        {variantGroup.type}
+      </h3>
+
+      <div className="flex flex-wrap gap-2">
+        {variantGroup.options.map((option: any) => {
+          const isSelected = selectedVariant === option.id
+          const isDisabled = !option.inStock
+
+          return (
+            <button
+              key={option.id}
+              onClick={() => !isDisabled && setSelectedVariant(option.id)}
+              disabled={isDisabled}
+              className={`
+                relative px-5 py-2.5 rounded-full font-medium text-sm transition-all
+                ${isSelected
+                  ? "bg-blue-50/80 backdrop-blur-sm text-blue-600 border-2 border-blue-600"
+                  : "bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400"
+                }
+                ${isDisabled
+                  ? "opacity-40 cursor-not-allowed"
+                  : "cursor-pointer"
+                }
+              `}
+            >
+              {isSelected && (
+                <Check className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-600" />
+              )}
+              <span className={isSelected ? "ml-3" : ""}>{option.value}</span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function MobileProductDetailPage({
   product,
   relatedProducts = [],
@@ -512,48 +555,9 @@ export default function MobileProductDetailPage({
           {/* Variant Selector - Under Name and Description */}
           {variants.length > 0 && (
             <div className="bg-white -mx-4 px-4 py-5 space-y-5">
-              {variants.map((variantGroup) => {
-                const [selectedVariant, setSelectedVariant] = useState("")
-
-                return (
-                  <div key={variantGroup.type} className="space-y-3">
-                    <h3 className="text-xs font-bold text-gray-900 tracking-wide uppercase">
-                      {variantGroup.type}
-                    </h3>
-
-                    <div className="flex flex-wrap gap-2">
-                      {variantGroup.options.map((option: any) => {
-                        const isSelected = selectedVariant === option.id
-                        const isDisabled = !option.inStock
-
-                        return (
-                          <button
-                            key={option.id}
-                            onClick={() => !isDisabled && setSelectedVariant(option.id)}
-                            disabled={isDisabled}
-                            className={`
-                              relative px-5 py-2.5 rounded-full font-medium text-sm transition-all
-                              ${isSelected
-                                ? "bg-blue-50/80 backdrop-blur-sm text-blue-600 border-2 border-blue-600"
-                                : "bg-white text-gray-700 border-2 border-gray-300 hover:border-blue-400"
-                              }
-                              ${isDisabled
-                                ? "opacity-40 cursor-not-allowed"
-                                : "cursor-pointer"
-                              }
-                            `}
-                          >
-                            {isSelected && (
-                              <Check className="absolute left-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-600" />
-                            )}
-                            <span className={isSelected ? "ml-3" : ""}>{option.value}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
+              {variants.map((variantGroup) => (
+                <MobileVariantGroupSelector key={variantGroup.type} variantGroup={variantGroup} />
+              ))}
             </div>
           )}
 

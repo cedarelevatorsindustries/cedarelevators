@@ -1,4 +1,4 @@
-import { House, ShoppingBag, ShoppingCart, User, FileText } from "lucide-react"
+import { House, ShoppingBag, FileText, Phone } from "lucide-react"
 
 export interface NavItemConfig {
   href: string
@@ -6,33 +6,24 @@ export interface NavItemConfig {
   label: string
 }
 
+// Phase 1: Product Catalogue & Quotation Discovery Navigation
 export const navItems: NavItemConfig[] = [
   { href: "/", icon: House, label: "Home" },
-  { href: "/catalog", icon: ShoppingBag, label: "Catalog" },
-  { href: "/quotes", icon: FileText, label: "Quote" },
-  { href: "/cart", icon: ShoppingCart, label: "Cart" },
-  { href: "/profile", icon: User, label: "My Cedar" }
+  { href: "/products", icon: ShoppingBag, label: "Catalog" },
+  { href: "/quotes/new", icon: FileText, label: "Get Quote" },
+  { href: "/contact", icon: Phone, label: "Contact" }
 ]
 
 /**
- * Get filtered nav items based on user type
- * Hides cart for individual and guest users (they can only request quotes)
+ * Filtered nav items for Phase 1 (customer-facing e-commerce & profile tabs disabled)
  */
-export function getFilteredNavItems(userType: "guest" | "individual" | "business_unverified" | "business_verified"): NavItemConfig[] {
-  // Hide cart for individual and guest users
-  if (userType === "guest" || userType === "individual") {
-    return navItems.filter(item => item.href !== "/cart")
-  }
+export function getFilteredNavItems(): NavItemConfig[] {
   return navItems
 }
 
 /**
- * Get intelligent quote tab label based on user type
- * Single entry point principle: /quotes for all users
+ * Single, friendly quote label for Phase 1 guest discovery
  */
-export function getQuoteTabLabel(userType: "guest" | "individual" | "business" | "verified"): string {
-  // Guest: "Get Quote" - encourages lead capture
-  // All logged-in users: "Quotes" - simple and consistent
-  return userType === "guest" ? "Get Quote" : "Quotes"
+export function getQuoteTabLabel(): string {
+  return "Get Quote"
 }
-
