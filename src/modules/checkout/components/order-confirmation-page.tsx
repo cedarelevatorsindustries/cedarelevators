@@ -404,7 +404,7 @@ export default function OrderConfirmationPage({
                             Visit Help Center
                         </Link>{' '}
                         or email us at{' '}
-                        <span className="font-semibold text-gray-800">support@cedarelevators.com</span>
+                        <span className="font-semibold text-gray-800">support@cedarelevators.in</span>
                     </p>
                 </footer>
             </div>

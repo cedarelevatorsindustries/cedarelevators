@@ -117,25 +117,42 @@ async function runTests() {
     '/admin'
   )
 
-  // Test 4: Configured exact admin hostname
-  process.env.ADMIN_DOMAIN = 'admin.cedarelevators.com'
+  // Test 4: Production exact admin hostname
+  process.env.ADMIN_DOMAIN = 'admin.cedarelevators.in'
   await testRoute(
-    'Configured exact admin hostname root (admin.cedarelevators.com/)',
-    'https://admin.cedarelevators.com/',
-    'admin.cedarelevators.com',
+    'Production admin hostname root (admin.cedarelevators.in/)',
+    'https://admin.cedarelevators.in/',
+    'admin.cedarelevators.in',
     'rewrite',
     '/admin'
   )
 
   await testRoute(
-    'Configured exact admin hostname subpage (admin.cedarelevators.com/products)',
-    'https://admin.cedarelevators.com/products',
-    'admin.cedarelevators.com',
+    'Production admin hostname subpage (admin.cedarelevators.in/products)',
+    'https://admin.cedarelevators.in/products',
+    'admin.cedarelevators.in',
     'rewrite',
     '/admin/products'
   )
 
-  // Test 5: Unrelated hostname beginning with admin. (must NOT rewrite to /admin)
+  // Test 5: Main domain /admin MUST NOT open admin; MUST redirect to admin subdomain
+  await testRoute(
+    'Production main domain /admin redirect to admin subdomain',
+    'https://cedarelevators.in/admin',
+    'cedarelevators.in',
+    'redirect',
+    'https://admin.cedarelevators.in/'
+  )
+
+  await testRoute(
+    'Production main domain /admin/products redirect to admin subdomain',
+    'https://cedarelevators.in/admin/products',
+    'cedarelevators.in',
+    'redirect',
+    'https://admin.cedarelevators.in/products'
+  )
+
+  // Test 6: Unrelated hostname beginning with admin. (must NOT rewrite to /admin)
   await testRoute(
     'Unrelated hostname beginning with admin. (admin.attacker.com/)',
     'https://admin.attacker.com/',
@@ -143,7 +160,7 @@ async function runTests() {
     'pass' // Passes to Clerk/customer storefront, NOT rewritten to /admin
   )
 
-  // Test 6: admin.localhost for local development
+  // Test 7: admin.localhost for local development
   await testRoute(
     'Local dev admin.localhost:3000 root',
     'http://admin.localhost:3000/',
@@ -152,22 +169,15 @@ async function runTests() {
     '/admin'
   )
 
-  // Test 7: Behavior when ADMIN_DOMAIN is missing/undefined
+  // Test 8: Missing ADMIN_DOMAIN: admin.cedarelevators.in still recognized via default
   delete process.env.ADMIN_DOMAIN
 
   await testRoute(
-    'Missing ADMIN_DOMAIN: admin.localhost still works for local dev',
-    'http://admin.localhost:3000/',
-    'admin.localhost:3000',
+    'Missing ADMIN_DOMAIN env: admin.cedarelevators.in still opens admin portal',
+    'https://admin.cedarelevators.in/',
+    'admin.cedarelevators.in',
     'rewrite',
     '/admin'
-  )
-
-  await testRoute(
-    'Missing ADMIN_DOMAIN: arbitrary admin.cedarelevators.com is NOT treated as admin subdomain',
-    'https://admin.cedarelevators.com/',
-    'admin.cedarelevators.com',
-    'pass' // Must NOT rewrite to /admin
   )
 
   await testRoute(
@@ -178,7 +188,7 @@ async function runTests() {
   )
 
   // Restore ADMIN_DOMAIN
-  process.env.ADMIN_DOMAIN = 'admin.cedarelevators.com'
+  process.env.ADMIN_DOMAIN = 'admin.cedarelevators.in'
 
   // Test 8: Dormant commerce routes redirect
   await testRoute(

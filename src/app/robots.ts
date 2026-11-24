@@ -5,7 +5,7 @@
 
 import { MetadataRoute } from 'next'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.in'
 
 export default function robots(): MetadataRoute.Robots {
   return {

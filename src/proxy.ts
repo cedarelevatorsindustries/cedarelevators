@@ -73,27 +73,28 @@ const clerkHandler = clerkMiddleware(async (auth, request) => {
 
 export default async function middleware(request: NextRequest, event: NextFetchEvent) {
   const url = request.nextUrl
-  const hostname = request.headers.get("host") || ""
+  const rawHost =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    url.hostname ||
+    ""
+  const hostWithoutPort = (rawHost.split(':')[0] || '').toLowerCase()
 
-  // 1. Phase 1 Scope: Redirect dormant e-commerce & customer profile routes to catalogue
-  if (isDormantCommerceRoute(request)) {
-    return NextResponse.redirect(new URL('/products', request.url))
-  }
+  const configuredAdminDomain = (
+    process.env.ADMIN_DOMAIN || 'admin.cedarelevators.in'
+  ).replace(/^https?:\/\//, '').split(':')[0].toLowerCase()
 
-  // Normalize legacy category routes to /catalog/categories/[handle]
-  if (url.pathname.startsWith('/categories/') && url.pathname !== '/categories/') {
-    const handle = url.pathname.replace(/^\/categories\//, '')
-    return NextResponse.redirect(new URL(`/catalog/categories/${handle}`, request.url), 301)
-  }
+  const isLocalhost = hostWithoutPort === 'localhost' || hostWithoutPort === '127.0.0.1'
 
-  // 2. Admin Subdomain Routing (e.g. admin.cedarelevators.com or admin.localhost:3000)
-  const hostWithoutPort = (hostname.split(':')[0] || '').toLowerCase()
-  const configuredAdminDomain = process.env.ADMIN_DOMAIN
-    ? process.env.ADMIN_DOMAIN.replace(/^https?:\/\//, '').split(':')[0].toLowerCase()
-    : null
+  // Admin subdomain identification
   const isAdminSubdomain =
     hostWithoutPort === 'admin.localhost' ||
+    hostWithoutPort === 'admin.cedarelevators.in' ||
     Boolean(configuredAdminDomain && hostWithoutPort === configuredAdminDomain)
+
+  // =========================================================================
+  // 1. ADMIN SUBDOMAIN ROUTING (admin.cedarelevators.in or admin.localhost:3000)
+  // =========================================================================
   if (isAdminSubdomain) {
     if (url.pathname.startsWith('/api/')) {
       return NextResponse.next() // Allow API routes to pass through directly
@@ -104,29 +105,66 @@ export default async function middleware(request: NextRequest, event: NextFetchE
       return NextResponse.redirect(new URL('/', request.url))
     }
 
+    // Root on admin subdomain -> rewrite directly to /admin (loads admin portal)
+    if (url.pathname === '/') {
+      const rewriteResponse = NextResponse.rewrite(new URL('/admin', request.url))
+      return await refreshAdminSupabaseSession(request, rewriteResponse)
+    }
+
+    // Other paths not starting with /admin (e.g. /products, /quotes, /settings) -> rewrite to /admin/...
     if (!url.pathname.startsWith('/admin')) {
       const rewriteResponse = NextResponse.rewrite(new URL(`/admin${url.pathname}`, request.url))
       return await refreshAdminSupabaseSession(request, rewriteResponse)
     }
 
+    // Paths starting with /admin -> allow through directly
     const nextResponse = NextResponse.next()
     return await refreshAdminSupabaseSession(request, nextResponse)
   }
 
-  // 3. Main Domain: Redirect legacy /admin/login directly to /admin entry point
-  if (url.pathname === '/admin/login' || url.pathname === '/admin/login/') {
-    return NextResponse.redirect(new URL('/admin', request.url))
-  }
+  // =========================================================================
+  // 2. MAIN DOMAIN: PROTECT ADMIN ACCESS
+  // In production, /admin routes MUST NOT open on the main domain (cedarelevators.in).
+  // They are strictly redirected to the dedicated admin subdomain (https://admin.cedarelevators.in).
+  // =========================================================================
+  if (url.pathname.startsWith('/admin')) {
+    if (!isLocalhost) {
+      // In production: Redirect https://cedarelevators.in/admin -> https://admin.cedarelevators.in/
+      const subPath =
+        url.pathname === '/admin' || url.pathname === '/admin/' || url.pathname === '/admin/login' || url.pathname === '/admin/login/'
+          ? '/'
+          : url.pathname.replace(/^\/admin/, '') || '/'
+      const redirectUrl = new URL(subPath, `https://${configuredAdminDomain}`)
+      redirectUrl.search = url.search
+      return NextResponse.redirect(redirectUrl, 308)
+    }
 
-  // 4. Admin Route Protection & Session Refresh:
-  // Admin routes are exclusively handled by Supabase Auth (requireAdmin).
-  // Clerk authentication is completely bypassed - clerkHandler is never called!
-  if (isAdminRoute(request)) {
+    // In local development (localhost:3000): Redirect legacy /admin/login to /admin
+    if (url.pathname === '/admin/login' || url.pathname === '/admin/login/') {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+
+    // In local development (localhost:3000): Allow /admin entry point with session refresh
     const nextResponse = NextResponse.next()
     return await refreshAdminSupabaseSession(request, nextResponse)
   }
 
-  // All other customer-facing routes: delegate to Clerk
+  // =========================================================================
+  // 3. STOREFRONT: REDIRECT DORMANT E-COMMERCE & PROFILE ROUTES TO CATALOGUE
+  // =========================================================================
+  if (isDormantCommerceRoute(request)) {
+    return NextResponse.redirect(new URL('/products', request.url))
+  }
+
+  // Normalize legacy category routes to /catalog/categories/[handle]
+  if (url.pathname.startsWith('/categories/') && url.pathname !== '/categories/') {
+    const handle = url.pathname.replace(/^\/categories\//, '')
+    return NextResponse.redirect(new URL(`/catalog/categories/${handle}`, request.url), 301)
+  }
+
+  // =========================================================================
+  // 4. ALL OTHER CUSTOMER-FACING STOREFRONT ROUTES: DELEGATE TO CLERK
+  // =========================================================================
   return clerkHandler(request, event)
 }
 

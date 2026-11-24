@@ -15,22 +15,22 @@ type Department = 'order' | 'technical' | 'bulk' | 'installation'
 const DEPARTMENTS = {
     order: {
         label: "Order Support",
-        email: "orders@cedarelevator.com",
+        email: "orders@cedarelevators.in",
         desc: "For status, cancellations, or tracking."
     },
     technical: {
         label: "Technical Support",
-        email: "tech@cedarelevator.com",
+        email: "tech@cedarelevators.in",
         desc: "For compatibility specs and troubleshooting."
     },
     bulk: {
         label: "Bulk / B2B Inquiry",
-        email: "sales@cedarelevator.com",
+        email: "sales@cedarelevators.in",
         desc: "For volume pricing and quotes."
     },
     installation: {
         label: "Installation Support",
-        email: "service@cedarelevator.com",
+        email: "service@cedarelevators.in",
         desc: "For scheduling and site visits."
     }
 }

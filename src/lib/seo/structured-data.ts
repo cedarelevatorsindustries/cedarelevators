@@ -6,7 +6,7 @@
 import { Organization, Product, BreadcrumbList, LocalBusiness, WebSite } from 'schema-dts'
 
 const SITE_NAME = 'Cedar Elevators'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.in'
 
 /**
  * Generate Organization schema
@@ -28,7 +28,7 @@ export function generateOrganizationSchema(): Organization {
       '@type': 'ContactPoint',
       telephone: '+91-XXXXXXXXXX',
       contactType: 'customer service',
-      email: 'support@cedarelevators.com',
+      email: 'support@cedarelevators.in',
     },
     sameAs: [
       'https://www.facebook.com/cedarelevators',

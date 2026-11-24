@@ -8,7 +8,7 @@ import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt"
 import { SplashScreen } from "@/components/pwa/splash-screen"
 import { QueryProvider } from "@/components/providers/query-provider"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.in'
 
 export const metadata: Metadata = {
   title: {

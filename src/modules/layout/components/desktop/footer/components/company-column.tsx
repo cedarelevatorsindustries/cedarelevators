@@ -8,7 +8,7 @@ import { getStoreSettings } from "@/lib/services/settings"
 
 export function CompanyColumn() {
   const [contactPhone, setContactPhone] = useState<string>("8220202757") // Fallback
-  const [contactEmail, setContactEmail] = useState<string>("contact@cedarelevator.com") // Fallback
+  const [contactEmail, setContactEmail] = useState<string>("contact@cedarelevators.in") // Fallback
   const [address, setAddress] = useState({
     line1: "67/37 North Mada Street, Padi,",
     line2: "Chennai - 600050, Tamil Nadu, India"

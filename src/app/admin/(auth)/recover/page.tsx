@@ -182,7 +182,7 @@ export default function AdminRecoverPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@cedarelevators.com"
+                      placeholder="admin@cedarelevators.in"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all text-sm text-gray-900"
                       required
                       disabled={isLoading}
@@ -217,7 +217,7 @@ export default function AdminRecoverPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@cedarelevators.com"
+                      placeholder="admin@cedarelevators.in"
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all text-sm text-gray-900"
                       required
                       disabled={isLoading}

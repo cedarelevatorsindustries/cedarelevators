@@ -14,7 +14,7 @@ The Cedar Elevators application has been transformed from an e-commerce platform
 
 Key business objectives achieved:
 1. **Quotation & Commercial Focus**: E-commerce cart, checkout, payments, and consumer account locks have been removed from user journeys. Visitors can browse products and submit single or multi-product quotation requests directly without authentication barriers.
-2. **Autonomous Admin Portal**: The administrative portal (`http://localhost:3000/admin/` locally and `https://admin.cedarelevators.com/` in production) is exclusively powered by **Supabase Auth** and verified against `public.admin_profiles`. Clerk customer authentication is completely bypassed on admin routes.
+2. **Autonomous Admin Portal**: The administrative portal (`http://localhost:3000/admin/` locally and `https://admin.cedarelevators.in/` in production) is exclusively powered by **Supabase Auth** and verified against `public.admin_profiles`. Clerk customer authentication is completely bypassed on admin routes.
 3. **Phase 2 Preservation**: Deferred e-commerce routes (`/checkout`, `/cart`, `/profile`, `/wishlist`, `/track`, `/order-confirmation`) are non-destructively gated at the Edge via `src/proxy.ts` (redirecting to `/products`), and order/payment APIs return HTTP 403 Forbidden. No database tables, legacy order history, or payment logic was deleted.
 
 ---
@@ -104,8 +104,8 @@ Key business objectives achieved:
 ## 7. Production Deployment & Readiness Prerequisites
 
 1. **Environment Variables**:
-   - `ADMIN_DOMAIN`: Set to `admin.cedarelevators.com` (or your chosen production domain).
-   - `NEXT_PUBLIC_SITE_URL`: Set to canonical customer domain (e.g. `https://cedarelevators.com`).
+   - `ADMIN_DOMAIN`: Set to `admin.cedarelevators.in` (or your chosen production domain).
+   - `NEXT_PUBLIC_SITE_URL`: Set to canonical customer domain (`https://cedarelevators.in`).
    - `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Configured and active.
    - `SUPABASE_SERVICE_ROLE_KEY`: Configured in secure server environment.
 2. **DNS & SSL Configuration**:
@@ -173,7 +173,7 @@ Key business objectives achieved:
 3. **Admin Dashboard Live Login**:
    - Log into the admin portal using `cedarelevatorsindustries@gmail.com` and review the new quotation in `/admin/quotes`.
 4. **Production Domain & SSL Setup**:
-   - Configure DNS records for the main domain and `admin` subdomain, set `ADMIN_DOMAIN` in production hosting, and verify HTTPS.
+   - Configure DNS records for the main domain (`cedarelevators.in`) and `admin` subdomain (`admin.cedarelevators.in`), set `ADMIN_DOMAIN=admin.cedarelevators.in` in production hosting, and verify HTTPS.
 
 ---
 

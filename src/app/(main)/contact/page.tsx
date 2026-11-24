@@ -50,7 +50,7 @@ export default function ContactPage() {
 
                                 {/* Email */}
                                 <a
-                                    href="mailto:contact@cedarelevator.com"
+                                    href="mailto:contact@cedarelevators.in"
                                     className="flex items-center gap-4 p-5 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                                 >
                                     <div className="bg-gray-100 text-gray-600 p-3 rounded-full group-hover:bg-blue-100 group-hover:text-blue-600">
@@ -58,7 +58,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 group-hover:text-blue-700">Email Support</h3>
-                                        <p className="text-sm text-gray-600">contact@cedarelevator.com</p>
+                                        <p className="text-sm text-gray-600">contact@cedarelevators.in</p>
                                     </div>
                                 </a>
 

@@ -51,6 +51,73 @@
 }
 
 @layer utilities {
+  .blur-vignette {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius, 24px);
+    -webkit-backdrop-filter: blur(var(--blur, 6px));
+    backdrop-filter: blur(var(--blur, 6px));
+    --r: max(var(--transition-length, 44px), calc(var(--radius, 24px) - var(--inset, 20px)));
+    --corner-size: calc(var(--r) + var(--inset, 20px)) calc(var(--r) + var(--inset, 20px));
+    --corner-gradient: transparent 0px, transparent calc(var(--r) - var(--transition-length, 44px)), black var(--r);
+    --fill-gradient: black, black var(--inset, 20px), transparent calc(var(--inset, 20px) + var(--transition-length, 44px)), transparent calc(100% - var(--transition-length, 44px) - var(--inset, 20px)), black calc(100% - var(--inset, 20px));
+    --fill-narrow-size: calc(100% - (var(--inset, 20px) + var(--r)) * 2);
+    --fill-farther-position: calc(var(--inset, 20px) + var(--r));
+    
+    -webkit-mask-image: 
+      linear-gradient(to right, var(--fill-gradient)),
+      linear-gradient(to bottom, var(--fill-gradient)),
+      radial-gradient(at top left, var(--corner-gradient)),
+      radial-gradient(at top right, var(--corner-gradient)),
+      radial-gradient(at bottom left, var(--corner-gradient)),
+      radial-gradient(at bottom right, var(--corner-gradient));
+
+    -webkit-mask-size: 
+      100% var(--fill-narrow-size),
+      var(--fill-narrow-size) 100%,
+      var(--corner-size),
+      var(--corner-size),
+      var(--corner-size),
+      var(--corner-size);
+
+    -webkit-mask-position: 
+      0 var(--fill-farther-position),
+      var(--fill-farther-position) 0,
+      0 0,
+      100% 0,
+      0 100%,
+      100% 100%;
+
+    -webkit-mask-repeat: no-repeat;
+    
+    mask-image: 
+      linear-gradient(to right, var(--fill-gradient)),
+      linear-gradient(to bottom, var(--fill-gradient)),
+      radial-gradient(at top left, var(--corner-gradient)),
+      radial-gradient(at top right, var(--corner-gradient)),
+      radial-gradient(at bottom left, var(--corner-gradient)),
+      radial-gradient(at bottom right, var(--corner-gradient));
+
+    mask-size: 
+      100% var(--fill-narrow-size),
+      var(--fill-narrow-size) 100%,
+      var(--corner-size),
+      var(--corner-size),
+      var(--corner-size),
+      var(--corner-size);
+
+    mask-position: 
+      0 var(--fill-farther-position),
+      var(--fill-farther-position) 0,
+      0 0,
+      100% 0,
+      0 100%,
+      100% 100%;
+
+    mask-repeat: no-repeat;
+    pointer-events: none;
+  }
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

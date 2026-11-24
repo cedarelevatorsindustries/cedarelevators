@@ -314,7 +314,7 @@ export default function ProductsPage() {
                         asChild
                         title="View on Store"
                       >
-                        <Link href={`https://cedarelevator.com/products/${product.slug}`} target="_blank">
+                        <Link href={`/products/${product.slug}`} target="_blank">
                           <ExternalLink className="h-4 w-4 text-gray-400" />
                         </Link>
                       </Button>

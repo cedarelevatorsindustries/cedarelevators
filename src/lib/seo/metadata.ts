@@ -6,7 +6,7 @@
 import { Metadata } from 'next'
 
 const SITE_NAME = 'Cedar Elevators'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.in'
 const SITE_DESCRIPTION = "Quality elevator components and parts for maintenance, repair, and installation. Shop safety gear, controllers, door systems, and more."
 
 export interface SEOConfig {
