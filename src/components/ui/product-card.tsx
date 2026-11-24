@@ -4,7 +4,7 @@ import { Product } from "@/lib/types/domain"
 import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
-import { getUserPricingState, canViewPrice } from "@/lib/utils/pricing-utils"
+import { getUserPricingState } from "@/lib/utils/pricing-utils"
 import { useState, useEffect } from "react"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed"
@@ -50,13 +50,8 @@ export default function ProductCard({
 
   // NOTE: removed local state isWishlisted, using hook state
 
-  // Determine user type and verification status using consistent utility
+  // Determine user type and verification status
   const userState = getUserPricingState(user)
-  const showPrice = canViewPrice(userState)
-
-  // Re-derive helpers for existing JSX logic
-  const isGuest = userState === 'guest'
-  const isIndividual = userState === 'individual'
   // Business includes both verified and unverified for general "business" logic
   const isBusiness = userState === 'business_unverified' || userState === 'business_verified'
   const isVerified = userState === 'business_verified'
@@ -186,6 +181,16 @@ export default function ProductCard({
                 {badgeConfig.text}
               </div>
             )}
+
+            {/* Wishlist Button - Top Right */}
+            <button
+              onClick={handleWishlist}
+              className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
+            >
+              <Heart
+                className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              />
+            </button>
           </div>
         </Link>
 
@@ -206,8 +211,8 @@ export default function ProductCard({
           </Link>
 
           {/* Price Section - With MRP and Discount */}
-          {showPrice && formattedPrice ? (
-            // Verified Business - Show Price with MRP and Discount
+          {formattedPrice ? (
+            // Show Price with MRP and Discount
             <div className="py-0.5">
               <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-base font-bold text-gray-900">{formattedPrice}</span>
@@ -222,40 +227,16 @@ export default function ProductCard({
               </div>
               <p className="text-[10px] text-gray-500">(Inclusive of all taxes)</p>
             </div>
-          ) : isGuest ? (
-            // Guest - Login Required
-            <div className="py-0.5">
-              <p className="text-xs font-medium text-orange-600">Price on request</p>
-              <p className="text-[10px] text-gray-600">Login to see pricing</p>
-            </div>
-          ) : isIndividual ? (
-            // Individual - Request Quote
-            <div className="py-0.5">
-              <p className="text-xs font-medium text-orange-600">Price on request</p>
-              <p className="text-[10px] text-gray-600">Request quote for pricing</p>
-            </div>
-          ) : isBusiness && !isVerified ? (
-            // Business Unverified - Verification Required
-            <div className="py-0.5">
-              <p className="text-xs font-medium text-orange-600">Price on request</p>
-              <p className="text-[10px] text-gray-600">Verify account to see pricing</p>
-            </div>
-          ) : isBusiness && isVerified ? (
-            // Verified Business but no price data for this product
-            <div className="py-0.5">
-              <p className="text-xs font-medium text-gray-700">Price not set</p>
-              <p className="text-[10px] text-gray-500">Request quote for pricing</p>
-            </div>
           ) : (
-            // Fallback
+            // Price on Request
             <div className="py-0.5">
               <p className="text-xs font-medium text-orange-600">Price on request</p>
-              <p className="text-[10px] text-gray-600">Contact for pricing</p>
+              <p className="text-[10px] text-gray-500">Request quote for pricing</p>
             </div>
           )}
 
           {/* Status Messages - Informational */}
-          {showPrice && (
+          {formattedPrice && (
             <p className="text-[10px] text-orange-600 font-medium flex items-center gap-1">
               <span className="w-1 h-1 bg-orange-600 rounded-full"></span>
               Direct Manufacturer Pricing
@@ -316,6 +297,15 @@ export default function ProductCard({
             </div>
           )}
 
+          {/* Wishlist - Top Right */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+            />
+          </button>
         </Link>
 
         {/* Content Outside Image */}
@@ -338,7 +328,7 @@ export default function ProductCard({
           <div className="flex items-center justify-between gap-2 mt-auto pt-1">
             {/* Price Display with MRP and Discount */}
             <div className="flex flex-col">
-              {showPrice && formattedPrice ? (
+              {formattedPrice ? (
                 <div className="flex items-center gap-1 flex-wrap">
                   <span className="text-sm font-bold text-gray-900">{formattedPrice}</span>
                   {formattedMRP && (
@@ -350,11 +340,9 @@ export default function ProductCard({
                     </span>
                   )}
                 </div>
-              ) : isBusiness && isVerified ? (
-                <span className="text-xs font-bold text-gray-600">Quote</span>
               ) : (
                 <span className="text-xs font-bold text-orange-600">
-                  {isBusiness && !isVerified ? "Verify for Price" : "Price on Request"}
+                  Price on Request
                 </span>
               )}
             </div>
@@ -408,6 +396,16 @@ export default function ProductCard({
               {badgeConfig.text}
             </div>
           )}
+
+          {/* Wishlist Button - Top Right */}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors z-10"
+          >
+            <Heart
+              className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+            />
+          </button>
         </div>
       </Link>
 
@@ -427,9 +425,9 @@ export default function ProductCard({
           )}
         </Link>
 
-        {/* Price Section - Role-based Display */}
-        {showPrice && formattedPrice ? (
-          // Verified Business - Show Price with MRP and Discount
+        {/* Price Section */}
+        {formattedPrice ? (
+          // Show Price with MRP and Discount
           <div className="py-1 mt-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-lg font-bold text-gray-900">{formattedPrice}</span>
@@ -444,40 +442,16 @@ export default function ProductCard({
             </div>
             <p className="text-xs text-gray-500">(Inclusive of all taxes)</p>
           </div>
-        ) : isGuest ? (
-          // Guest - Quote Required
-          <div className="py-1 mt-2">
-            <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-600">Commercial quote available</p>
-          </div>
-        ) : isIndividual ? (
-          // Individual - Request Quote
-          <div className="py-1 mt-2">
-            <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-600">Request quote for pricing</p>
-          </div>
-        ) : isBusiness && !isVerified ? (
-          // Business Unverified - Verification Required
-          <div className="py-1 mt-2">
-            <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-600">Verify account to see pricing</p>
-          </div>
-        ) : isBusiness && isVerified ? (
-          // Verified Business but no price data for this product
-          <div className="py-1 mt-2">
-            <p className="text-sm font-medium text-gray-700">Price not set</p>
-            <p className="text-xs text-gray-500">Request quote for pricing</p>
-          </div>
         ) : (
-          // Fallback
+          // Price on Request
           <div className="py-1 mt-2">
             <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-600">Contact for pricing</p>
+            <p className="text-xs text-gray-500">Request quote for pricing</p>
           </div>
         )}
 
         {/* Status Messages - Informational */}
-        {showPrice && (
+        {formattedPrice && (
           <p className="text-xs text-orange-600 font-medium flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span>
             Direct Manufacturer Pricing

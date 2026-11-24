@@ -7,6 +7,17 @@
 // STORE SETTINGS
 // =====================================================
 
+export interface HomepagePromotion {
+    enabled: boolean
+    title: string
+    description?: string
+    image_url?: string | null
+    cta_label?: string
+    cta_url?: string
+    start_date?: string | null
+    end_date?: string | null
+}
+
 export interface StoreSettings {
     id: string
     store_name: string
@@ -29,6 +40,7 @@ export interface StoreSettings {
     country: string | null
     business_hours: Record<string, string> | null
     social_media: Record<string, string> | null
+    homepage_promotion?: HomepagePromotion | null
     created_at: string
     updated_at: string
 }

@@ -19,7 +19,7 @@ export type NavbarVariant =
 
 export interface NavbarConfig {
   // Layout
-  position: 'fixed' | 'absolute'
+  position: 'fixed' | 'absolute' | 'sticky'
   transparent: boolean
   scrollBehavior: 'hero-fade' | 'sticky' | 'sticky-with-product-bar' | 'static'
   height: {
@@ -62,21 +62,21 @@ export interface NavbarConfig {
 }
 
 export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
-  // 1. Homepage - Hero with transparent navbar
+  // 1. Homepage - Transparent over hero, solid white on scroll
   homepage: {
-    position: 'absolute',
+    position: 'fixed',
     transparent: true,
-    scrollBehavior: 'hero-fade',
-    showMegaMenu: true,
-    showBrowseProducts: false,
+    scrollBehavior: 'sticky',
+    showMegaMenu: false,
+    showBrowseProducts: true,
     showBreadcrumb: false,
     showSecondaryFilterBar: false,
     showStickyProductBar: false,
     showCategoryHero: false,
     searchVariant: 'full',
-    scrollThreshold: 175,
+    scrollThreshold: 40,
     height: {
-      initial: 80,
+      initial: 70,
       scrolled: 70,
     },
     zIndex: {

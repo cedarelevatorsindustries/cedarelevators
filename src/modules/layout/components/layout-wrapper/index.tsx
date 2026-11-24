@@ -1,7 +1,5 @@
 import Layout from "@/modules/layout"
 import Footer from "@/modules/layout/components/desktop/footer"
-import FooterLite from "@/modules/layout/components/mobile/footer-lite"
-import AboutSectionMobile from "@/modules/layout/components/mobile/about-section-mobile"
 import { FloatingActionCard } from "@/components/ui/floating-actions"
 import { listCategories } from "@/lib/data"
 import { isAuthenticated, getUserType, getCompanyName } from "@/lib/auth/server"
@@ -41,16 +39,8 @@ export default async function LayoutWrapper({ children, customConfig }: LayoutWr
           {children}
         </main>
 
-        {/* Desktop Footer - Hidden on mobile */}
-        <div className="hidden md:block">
-          <Footer isAuthenticated={isLoggedIn} />
-        </div>
-
-        {/* Mobile Footer - Hidden on desktop */}
-        <div className="md:hidden">
-          <AboutSectionMobile />
-          <FooterLite />
-        </div>
+        {/* Universal Responsive Footer */}
+        <Footer isAuthenticated={isLoggedIn} />
 
         {/* Floating Action Buttons */}
         <FloatingActionCard

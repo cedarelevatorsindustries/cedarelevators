@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { getStoreSettings, updateStoreSettings } from "@/lib/services/settings"
 import { StoreSettings } from "@/lib/types/settings"
-import { LoaderCircle, Save } from "lucide-react"
+import { LoaderCircle, Save, Sparkles, ArrowRight } from "lucide-react"
+import Link from "next/link"
 import { useSettings } from "@/modules/admin/settings/settings-context"
 
 export function GeneralSettingsForm() {
@@ -400,6 +401,30 @@ export function GeneralSettingsForm() {
                     <p className="text-sm text-gray-500">
                         This description will be displayed on the About Us page
                     </p>
+                </div>
+            </div>
+
+            {/* Homepage Promotion Section */}
+            <div className="space-y-4 p-5 rounded-xl border border-orange-200 bg-orange-50/40">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-orange-600" />
+                            <h3 className="text-base font-semibold text-gray-900">
+                                Homepage Promotional Banner
+                            </h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Configure promotional announcements, active dates, and CTA buttons shown below the permanent hero.
+                        </p>
+                    </div>
+                    <Link
+                        href="/admin/settings/promotion"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-lg shadow-xs transition-colors whitespace-nowrap"
+                    >
+                        <span>Manage Promotion</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
                 </div>
             </div>
 

@@ -4,10 +4,10 @@ import Image from "next/image"
 import LocalizedClientLink from "@components/ui/localized-client-link"
 
 interface NavbarLogoProps {
-  isTransparent: boolean
+  isTransparent?: boolean
 }
 
-export function NavbarLogo({ isTransparent }: NavbarLogoProps) {
+export function NavbarLogo({}: NavbarLogoProps = {}) {
   return (
     <LocalizedClientLink
       href="/"
@@ -19,12 +19,9 @@ export function NavbarLogo({ isTransparent }: NavbarLogoProps) {
         alt="Cedar Elevators"
         width={240}
         height={80}
-        className={`h-8 w-auto transition-all duration-300 ${
-          isTransparent ? 'brightness-0 invert' : ''
-        }`}
+        className="h-8 w-auto transition-all duration-300"
         priority
       />
     </LocalizedClientLink>
   )
 }
-

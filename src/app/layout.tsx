@@ -5,7 +5,6 @@ import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
 import { Toaster } from "@/components/ui/sonner"
 import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt"
-import { SplashScreen } from "@/components/pwa/splash-screen"
 import { QueryProvider } from "@/components/providers/query-provider"
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cedarelevators.in'
@@ -168,7 +167,6 @@ export default function RootLayout({
         </head>
         <body className={spaceGrotesk.variable}>
           <QueryProvider>
-            <SplashScreen />
             {children}
             <PwaInstallPrompt />
           </QueryProvider>

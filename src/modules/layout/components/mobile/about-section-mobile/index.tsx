@@ -28,8 +28,8 @@ export default function AboutSectionMobile() {
     fetchSettings()
   }, [])
 
-  // Don't show About section on profile pages
-  if (pathname?.startsWith('/profile')) {
+  // Don't show About section on homepage or profile pages (homepage has Section 10)
+  if (pathname === '/' || pathname?.startsWith('/profile')) {
     return null
   }
 

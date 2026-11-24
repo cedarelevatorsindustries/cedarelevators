@@ -73,10 +73,8 @@ export function TopBarHeader({
     return 'Cedar Elevator Industries'
   }
 
-  // When transparent, use white text; when solid white bg, use dark text
-  const iconColorClass = isTransparent
-    ? 'text-white hover:text-blue-300'
-    : 'text-gray-700 hover:text-blue-700'
+  // Always use dark text for clear contrast against white or light orange gradient
+  const iconColorClass = 'text-gray-700 hover:text-blue-700'
 
   return (
     <nav className="flex items-center justify-between w-full h-full px-4 relative">
@@ -104,8 +102,7 @@ export function TopBarHeader({
         {pathname === '/' ? (
           <Link
             href="/"
-            className={`font-bold leading-tight tracking-[-0.015em] text-sm whitespace-nowrap ${isTransparent ? 'text-white' : 'text-gray-900'
-              }`}
+            className="font-bold leading-tight tracking-[-0.015em] text-sm whitespace-nowrap text-gray-900"
           >
             {getPageTitle()}
           </Link>

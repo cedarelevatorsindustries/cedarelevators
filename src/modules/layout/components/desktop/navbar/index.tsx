@@ -58,12 +58,14 @@ export default function DesktopNavbar({ categories, customConfig, isLoggedIn = f
 
   // Determine navbar visibility and styling
   const isTransparent = config.transparent && !isScrolled && !isMegaMenuOpen
-  const shouldShowHeader = config.position === 'fixed' || isScrolled
+  const shouldShowHeader = config.position === 'fixed' || config.position === 'sticky' || isScrolled
 
   // Dynamic classes based on config
   const positionClass = config.position === 'absolute'
     ? (isScrolled ? 'fixed' : 'absolute')
-    : 'fixed'
+    : config.position === 'sticky'
+      ? 'sticky'
+      : 'fixed'
 
   const bgClass = isTransparent
     ? 'bg-transparent border-transparent'

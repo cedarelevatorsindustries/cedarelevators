@@ -37,7 +37,12 @@ export default function MobileTopBar({ onMenuClick, customConfig, customerId }: 
   }, [config.scrollBehavior, config.scrollThreshold])
 
   const isTransparent = config.mobile.transparentTopBar && !isScrolled
-  const shouldShowHeader = config.position === 'fixed' || isScrolled
+  const shouldShowHeader = config.position === 'fixed' || config.position === 'sticky' || isScrolled
+  const positionClass = config.position === 'absolute'
+    ? (isScrolled ? 'fixed' : 'absolute')
+    : config.position === 'sticky'
+      ? 'sticky'
+      : 'fixed'
 
   const isPDP = pathname.startsWith('/products/') || pathname.startsWith('/p/')
 
@@ -47,7 +52,7 @@ export default function MobileTopBar({ onMenuClick, customConfig, customerId }: 
 
   return (
     <div
-      className={`${config.position === 'absolute' ? (isScrolled ? 'fixed' : 'absolute') : 'fixed'} top-0 inset-x-0 z-50 md:hidden transition-all duration-300 ease-in-out ${shouldShowHeader ? 'translate-y-0 opacity-100' : ''
+      className={`${positionClass} top-0 inset-x-0 z-50 md:hidden transition-all duration-300 ease-in-out ${shouldShowHeader ? 'translate-y-0 opacity-100' : ''
         }`}
       style={{
         height: '56px',

@@ -160,7 +160,7 @@ export function StoreSettingsForm() {
                 <Input
                   id="supportEmail"
                   type="email"
-                  placeholder="support@dudemenswears.com"
+                  placeholder="support@cedarelevators.in"
                   value={formData.support_email}
                   onChange={(e) => handleChange('support_email', e.target.value)}
                   className="w-full"

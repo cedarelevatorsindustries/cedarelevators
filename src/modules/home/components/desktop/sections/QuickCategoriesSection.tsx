@@ -65,15 +65,22 @@ const QuickCategoriesSection = ({ categories = [] }: QuickCategoriesSectionProps
                   href={href}
                   className="flex flex-col gap-3 items-center min-w-[140px] group"
                 >
-                  <div className="w-28 h-28 rounded-lg bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden">
+                  <div 
+                    className="w-28 h-28 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden shadow-2xs shrink-0"
+                    style={{ aspectRatio: "1 / 1", borderRadius: "9999px" }}
+                  >
                     {category.thumbnail ? (
                       <img
                         src={category.thumbnail}
                         alt={category.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <Package className="w-12 h-12 text-gray-400" strokeWidth={1.5} />
+                      <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+                        <span className="text-3xl font-bold text-blue-600 uppercase select-none">
+                          {category.name?.charAt(0) || "C"}
+                        </span>
+                      </div>
                     )}
                   </div>
                   <p className="text-[#181411] text-sm font-medium leading-normal text-center">

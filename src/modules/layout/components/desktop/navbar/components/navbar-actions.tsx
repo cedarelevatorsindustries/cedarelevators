@@ -6,13 +6,13 @@ import { useUser } from "@/lib/auth/client"
 import type { NavbarConfig } from "../config"
 
 interface NavbarActionsProps {
-  config: NavbarConfig
-  isTransparent: boolean
-  pathname: string
-  isScrolled: boolean
+  config?: NavbarConfig
+  isTransparent?: boolean
+  pathname?: string
+  isScrolled?: boolean
 }
 
-export function NavbarActions({ isTransparent }: NavbarActionsProps) {
+export function NavbarActions({}: NavbarActionsProps = {}) {
   const { user, isLoaded } = useUser()
 
   return (
@@ -20,11 +20,7 @@ export function NavbarActions({ isTransparent }: NavbarActionsProps) {
       {/* Contact Quick Link */}
       <Link
         href="/contact"
-        className={`hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
-          isTransparent
-            ? 'text-white/90 hover:text-white hover:bg-white/10'
-            : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-        }`}
+        className="hidden lg:flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors text-gray-700 hover:text-gray-900 hover:bg-black/5"
       >
         <Phone size={16} />
         <span>Contact</span>

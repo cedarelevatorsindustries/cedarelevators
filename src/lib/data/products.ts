@@ -200,7 +200,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
             title: p.name,
             handle: p.slug,
             images: parsedImages,
-            thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+            thumbnail: p.thumbnail_url || p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
             variants: (p.product_variants || []).map((v: any) => ({
               ...v,
               title: v.name || v.variant_title,
@@ -299,7 +299,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
         title: p.name, // Map name to title for compatibility
         handle: p.slug, // Map slug to handle for compatibility
         images: parsedImages,
-        thumbnail: p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
+        thumbnail: p.thumbnail_url || p.thumbnail || (Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages[0].url : null),
         variants: (p.product_variants || []).map((v: any) => ({
           ...v,
           title: v.name || v.variant_title,

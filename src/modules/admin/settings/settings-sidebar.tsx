@@ -21,7 +21,8 @@ import {
   FileText,
   AlertTriangle,
   Shield,
-  Star
+  Star,
+  Sparkles
 } from "lucide-react"
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
 import { AdminProfile } from '@/lib/admin-auth-client'
@@ -46,7 +47,8 @@ const ICON_MAP: Record<string, any> = {
   FileText,
   AlertTriangle,
   Shield,
-  Star
+  Star,
+  Sparkles
 }
 
 interface SettingsSidebarProps {

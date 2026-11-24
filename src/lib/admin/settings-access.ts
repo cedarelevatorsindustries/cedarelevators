@@ -102,6 +102,16 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     group: 'access'
   },
   {
+    id: 'promotion',
+    title: 'Homepage Promotion',
+    href: '/admin/settings/promotion',
+    description: 'Manage homepage promotional banner',
+    tier: 'operational',
+    allowedRoles: TIER_2_ROLES,
+    icon: 'Sparkles',
+    group: 'cms'
+  },
+  {
     id: 'why-choose-cedar',
     title: 'Why Choose Cedar',
     href: '/admin/settings/cms/why-choose',

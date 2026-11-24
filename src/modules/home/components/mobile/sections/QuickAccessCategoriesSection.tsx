@@ -33,15 +33,19 @@ export default function QuickAccessCategoriesSection({ categories = [] }: QuickA
                   href={href}
                   className="flex flex-col gap-2 items-center min-w-[100px] group"
                 >
-                  <div className="w-20 h-20 rounded-lg bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden">
+                  <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center group-hover:border-blue-500 transition-colors cursor-pointer overflow-hidden shadow-2xs">
                     {category.thumbnail ? (
                       <img
                         src={category.thumbnail}
                         alt={category.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <Package className="w-9 h-9 text-gray-400" strokeWidth={1.5} />
+                      <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-blue-600 uppercase select-none">
+                          {category.name?.charAt(0) || "C"}
+                        </span>
+                      </div>
                     )}
                   </div>
                   <p className="text-[#181411] text-xs font-medium leading-normal text-center">
