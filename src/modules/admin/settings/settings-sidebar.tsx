@@ -26,6 +26,7 @@ import {
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
 import { AdminProfile } from '@/lib/admin-auth-client'
 import { createClient } from '@/lib/supabase/client'
+import { performAdminLogout } from '@/lib/auth/admin-logout'
 import {
   SETTINGS_MODULES,
   SETTINGS_GROUPS,
@@ -92,13 +93,7 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
   }
 
   const handleLogout = async () => {
-    try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/admin/login')
-    } catch (error) {
-      console.error('Error logging out:', error)
-    }
+    await performAdminLogout()
   }
 
   const groupedModules = getGroupedModules()

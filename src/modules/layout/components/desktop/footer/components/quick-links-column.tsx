@@ -9,7 +9,7 @@ export function QuickLinksColumn() {
       <ul className="space-y-3 text-sm text-gray-600">
         <li><Link href="/quotes/new" className="hover:text-blue-600 transition-colors">Request Quote</Link></li>
         <li><Link href="/catalog" className="hover:text-blue-600 transition-colors">All Products</Link></li>
-        <li><Link href="/wishlist" className="hover:text-blue-600 transition-colors">Saved Items</Link></li>
+        <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
       </ul>
     </div>
   )

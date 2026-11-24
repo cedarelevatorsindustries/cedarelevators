@@ -71,7 +71,7 @@ export const ROUTES = {
 
 export const ADMIN_ROUTES = {
     // Auth
-    LOGIN: '/admin/login',
+    LOGIN: '/admin',
     LOGOUT: '/admin/logout',
     SETUP: '/admin/setup',
     PENDING: '/admin/pending',

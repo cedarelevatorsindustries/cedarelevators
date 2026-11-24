@@ -26,16 +26,16 @@ function isRateLimited(ip: string): boolean {
 const quoteItemSchema = z.object({
   product_id: z.string().min(1, 'Product ID is required'),
   variant_id: z.string().nullable().optional(),
-  quantity: z.number().int().min(1, 'Quantity must be at least 1').default(1),
+  quantity: z.coerce.number().int().min(1, 'Quantity must be at least 1').default(1),
 })
 
 const quoteSubmissionSchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().trim().email('Valid email address is required').max(150),
-  phone: z.string().trim().min(10, 'Valid contact phone number is required').max(20),
+  phone: z.string().trim().min(10, 'Valid contact phone number is required (at least 10 digits)').max(20),
   company_name: z.string().trim().max(150).optional(),
   notes: z.string().trim().max(2000).optional(),
-  items: z.array(quoteItemSchema).min(1, 'At least one product item is required'),
+  items: z.array(quoteItemSchema).default([]),
   // Honeypot field for bot spam trap (should be empty for humans)
   hp_website: z.string().optional(),
 })
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const quoteNumber = await generateQuoteNumber('guest')
 
     // 5. Insert Quote Record
-    const quotePayload = {
+    const quotePayload: any = {
       quote_number: quoteNumber,
       user_id: null,
       account_type: 'guest',
@@ -92,6 +92,9 @@ export async function POST(request: NextRequest) {
       guest_name: validData.name,
       guest_email: validData.email.toLowerCase(),
       guest_phone: validData.phone,
+      requester_name: validData.name,
+      requester_email: validData.email.toLowerCase(),
+      requester_phone: validData.phone,
       notes: validData.company_name
         ? `[Company: ${validData.company_name}] ${validData.notes || ''}`.trim()
         : validData.notes || null,
@@ -111,35 +114,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 6. Fetch Product Details and Insert Quote Items
-    const productIds = validData.items.map(item => item.product_id)
-    const { data: products } = await supabase
-      .from('products')
-      .select('id, name, thumbnail_url, sku')
-      .in('id', productIds)
+    // 6. Fetch Product Details and Insert Quote Items (if items provided)
+    const validItems = (validData.items || []).filter(item => Boolean(item && item.product_id && item.product_id.trim()))
+    if (validItems.length > 0) {
+      const productIds = validItems.map(item => item.product_id)
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, name, thumbnail_url, sku')
+        .in('id', productIds)
 
-    const productMap = new Map((products || []).map((p: any) => [p.id, p]))
+      const productMap = new Map((products || []).map((p: any) => [p.id, p]))
 
-    const quoteItemsData = validData.items.map(item => {
-      const product = productMap.get(item.product_id)
-      return {
-        quote_id: quote.id,
-        product_id: item.product_id,
-        variant_id: item.variant_id || null,
-        quantity: item.quantity,
-        product_name: product?.name || 'Elevator Product',
-        product_sku: product?.sku || null,
-        product_thumbnail: product?.thumbnail_url || null,
+      const quoteItemsData = validItems.map(item => {
+        const product = productMap.get(item.product_id)
+        return {
+          quote_id: quote.id,
+          product_id: item.product_id,
+          variant_id: item.variant_id || null,
+          quantity: item.quantity,
+          product_name: product?.name || 'Elevator Product',
+          product_sku: product?.sku || null,
+          product_thumbnail: product?.thumbnail_url || null,
+        }
+      })
+
+      const { error: itemsError } = await supabase
+        .from('quote_items')
+        .insert(quoteItemsData)
+
+      if (itemsError) {
+        console.error('[Quotes API] Quote items insert error:', itemsError)
+        // Parent quote was recorded; proceed with success response
       }
-    })
-
-    const { error: itemsError } = await supabase
-      .from('quote_items')
-      .insert(quoteItemsData)
-
-    if (itemsError) {
-      console.error('[Quotes API] Quote items insert error:', itemsError)
-      // The parent quote still exists; return success with quote number so user has reference
     }
 
     return NextResponse.json({

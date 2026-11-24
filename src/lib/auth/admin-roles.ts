@@ -1,17 +1,7 @@
-import { createServerSupabase, createAdminClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth/require-admin'
+import { requireAdmin, ROLE_HIERARCHY, hasRolePermission } from '@/lib/auth/require-admin'
 import type { AdminRole } from '@/types/b2b/quote'
 
-// =====================================================
-// Role Hierarchy
-// =====================================================
-
-const ROLE_HIERARCHY: Record<AdminRole, number> = {
-  staff: 1,
-  manager: 2,
-  admin: 3,
-  super_admin: 4,
-}
+export { ROLE_HIERARCHY, hasRolePermission }
 
 // =====================================================
 // Permission Checks
@@ -20,28 +10,12 @@ const ROLE_HIERARCHY: Record<AdminRole, number> = {
 export async function getCurrentAdminUser() {
   'use server'
   try {
-    // 1. Primary: Verify Clerk admin authentication
-    const adminCheck = await requireAdmin()
+    // Authoritative check via Supabase Auth + admin_profiles
+    const adminCheck = await requireAdmin('staff')
     if (adminCheck.authorized) {
       return adminCheck.adminUser
     }
-
-    // 2. Legacy fallback: Check Supabase Auth session if present
-    const supabase = await createServerSupabase()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return null
-    }
-
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('email', user.email)
-      .eq('is_active', true)
-      .single()
-
-    return adminUser || null
+    return null
   } catch (error) {
     console.error('Error getting current admin user:', error)
     return null

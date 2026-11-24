@@ -14,6 +14,8 @@ function QuoteSuccessContent() {
     // Get both UUID and formatted quote number
     const quoteId = searchParams.get('quoteId') || 'UNKNOWN'
     const quoteNumber = searchParams.get('quoteNumber') || quoteId
+    const itemsCountParam = searchParams.get('itemsCount')
+    const itemsCount = itemsCountParam !== null ? parseInt(itemsCountParam, 10) : 1
 
     // Determine account type display text
     const getAccountTypeText = () => {

@@ -66,7 +66,8 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     tier: 'operational',
     allowedRoles: TIER_2_ROLES,
     icon: 'Truck',
-    group: 'commerce'
+    group: 'commerce',
+    hidden: true
   },
   {
     id: 'payments',
@@ -76,7 +77,8 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     tier: 'critical',
     allowedRoles: TIER_1_ROLES,
     icon: 'CreditCard',
-    group: 'commerce'
+    group: 'commerce',
+    hidden: true
   },
   {
     id: 'tax',
@@ -86,7 +88,8 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     tier: 'critical',
     allowedRoles: TIER_1_ROLES,
     icon: 'Receipt',
-    group: 'commerce'
+    group: 'commerce',
+    hidden: true
   },
   {
     id: 'users',

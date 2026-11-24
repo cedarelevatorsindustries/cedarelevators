@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabase } from '@/lib/supabase/server'
+import { requireAdmin, type AdminUserRecord } from '@/lib/auth/require-admin'
 import { createClient } from '@supabase/supabase-js'
 import {
     getAdminProfile,
@@ -33,75 +34,83 @@ import { revalidatePath } from 'next/cache'
 
 /**
  * Admin Login Action
- * Validates credentials and checks admin profile
+ * Validates credentials via Supabase Auth and authoritatively verifies
+ * administrator status using requireAdmin('staff').
  */
 export async function adminLoginAction(email: string, password: string) {
     try {
-        console.log('[Admin Login] Starting login for:', email)
+        // 1. Input Validation
+        if (!email || typeof email !== 'string' || !email.trim()) {
+            return {
+                success: false,
+                error: 'Email address is required.'
+            }
+        }
 
-        // Check environment variables
-        console.log('[Admin Login] Environment check:', {
-            hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-            hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-            nodeEnv: process.env.NODE_ENV
-        })
+        const cleanEmail = email.trim().toLowerCase()
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(cleanEmail)) {
+            return {
+                success: false,
+                error: 'Please enter a valid email address.'
+            }
+        }
+
+        if (!password || typeof password !== 'string' || password.length === 0) {
+            return {
+                success: false,
+                error: 'Password is required.'
+            }
+        }
 
         const supabase = await createServerSupabase()
 
-        // Sign in with Supabase Auth
+        // 2. Sign in with Supabase Auth
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
+            email: cleanEmail,
             password
         })
 
         if (signInError || !data.user) {
-            console.log('[Admin Login] Sign in failed:', signInError?.message)
             return {
                 success: false,
-                error: 'Invalid credentials'
+                error: 'Invalid email or password.'
             }
         }
 
-        console.log('[Admin Login] Sign in successful, user ID:', data.user.id)
+        // 3. Authoritative Server-Side Authorization Check via requireAdmin()
+        // Validates UUID against public.admin_profiles, role hierarchy, and active status
+        const authResult = await requireAdmin('staff')
 
-        // Check if user has admin profile
-        const adminProfile = await getAdminProfile(data.user.id)
-        console.log('[Admin Login] Admin profile:', adminProfile)
-
-        if (!adminProfile) {
-            console.log('[Admin Login] No admin profile found')
-            // Sign out the user
+        if (!authResult.authorized) {
+            // Immediately purge session to prevent lingering cookies for non-admins
             await supabase.auth.signOut()
+
+            if (authResult.error?.toLowerCase().includes('inactive')) {
+                return {
+                    success: false,
+                    error: 'Your administrator account is inactive or pending approval.',
+                    pending: true
+                }
+            }
+
             return {
                 success: false,
-                error: 'Unauthorized - No admin profile'
+                error: 'Access denied: Administrator privileges required.'
             }
         }
 
-        // Check if admin is active
-        if (!adminProfile.is_active) {
-            console.log('[Admin Login] Admin not active')
-            // Don't sign out - allow them to see pending page
-            return {
-                success: false,
-                error: 'Access not approved',
-                pending: true
-            }
-        }
-
-        console.log('[Admin Login] Login successful, role:', adminProfile.role)
         return {
             success: true,
-            role: adminProfile.role,
-            userId: data.user.id
+            role: authResult.adminUser.role,
+            userId: authResult.adminUser.user_id,
+            displayName: authResult.adminUser.display_name
         }
     } catch (error: any) {
-        console.error('[Admin Login] Exception caught:', error)
-        console.error('[Admin Login] Error stack:', error.stack)
+        console.error('[Admin Login] Login exception:', error.message)
         return {
             success: false,
-            error: 'Login failed: ' + error.message
+            error: 'An unexpected error occurred during login. Please try again.'
         }
     }
 }
@@ -229,25 +238,31 @@ export async function adminRecoveryAction(
             }
         }
 
-        // Generate new password reset token
-        const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'recovery',
-            email: email
+        // Security: Dispatch recovery link to the verified email rather than exposing raw action link in HTTP response
+        let adminOrigin = 'http://localhost:3000'
+        if (process.env.ADMIN_DOMAIN) {
+            const domain = process.env.ADMIN_DOMAIN.replace(/^https?:\/\//, '')
+            adminOrigin = `https://${domain}`
+        } else if (process.env.NEXT_PUBLIC_APP_URL) {
+            adminOrigin = process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+        }
+
+        const supabase = await createServerSupabase()
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${adminOrigin}/api/admin/auth/callback?next=/admin/reset-password`
         })
 
-        if (resetError || !resetData) {
+        if (resetError) {
+            console.error('Admin recovery email error:', resetError)
             return {
                 success: false,
-                error: 'Failed to generate recovery link.'
+                error: 'Failed to send recovery email.'
             }
         }
 
-        // In production, you might want to send this via email
-        // For now, return the reset link
         return {
             success: true,
-            resetLink: resetData.properties.action_link,
-            message: 'Recovery successful. Use the provided link to reset your password.'
+            message: 'Recovery key verified. Password reset instructions have been dispatched to the super-admin email address.'
         }
     } catch (error: any) {
         console.error('Admin recovery error:', error)
@@ -451,6 +466,192 @@ export async function getCurrentAdminAction() {
         return {
             success: false,
             error: 'An unexpected error occurred.'
+        }
+    }
+}
+
+/**
+ * Authoritative Server Session Verification for Admin Portal
+ * Uses requireAdmin('staff') to cryptographically verify user and check admin_profiles
+ */
+export async function checkAdminSessionAction(): Promise<{
+    status: 'authenticated' | 'unauthenticated' | 'unauthorized' | 'inactive'
+    user?: {
+        id: string
+        email: string
+    }
+    admin?: {
+        id: string
+        role: AdminRole
+        display_name: string | null
+        is_active: boolean
+    }
+    error?: string
+}> {
+    try {
+        const res = await requireAdmin('staff')
+        if (res.authorized) {
+            return {
+                status: 'authenticated',
+                user: {
+                    id: res.adminUser.user_id,
+                    email: res.adminUser.email
+                },
+                admin: {
+                    id: res.adminUser.id,
+                    role: res.adminUser.role,
+                    display_name: res.adminUser.display_name,
+                    is_active: res.adminUser.is_active
+                }
+            }
+        }
+
+        if (res.status === 401) {
+            return {
+                status: 'unauthenticated',
+                error: res.error
+            }
+        }
+
+        if (res.error?.toLowerCase().includes('inactive')) {
+            return {
+                status: 'inactive',
+                error: res.error
+            }
+        }
+
+        return {
+            status: 'unauthorized',
+            error: res.error
+        }
+    } catch (err: any) {
+        console.error('[checkAdminSessionAction] error:', err)
+        return {
+            status: 'unauthenticated',
+            error: err.message
+        }
+    }
+}
+
+/**
+ * Admin Logout Action
+ * Signs out of Supabase Auth server session
+ */
+export async function adminLogoutAction() {
+    try {
+        const supabase = await createServerSupabase()
+        await supabase.auth.signOut()
+        return { success: true }
+    } catch (err: any) {
+        console.error('[adminLogoutAction] error:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+/**
+ * Request Administrator Password Recovery via Email
+ * Sends a password reset email using Supabase Auth.
+ * Generic response prevents email enumeration attacks.
+ */
+export async function adminRequestPasswordRecoveryAction(email: string) {
+    try {
+        if (!email || typeof email !== 'string' || !email.trim()) {
+            return {
+                success: false,
+                error: 'Email address is required.'
+            }
+        }
+
+        const cleanEmail = email.trim().toLowerCase()
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(cleanEmail)) {
+            return {
+                success: false,
+                error: 'Please enter a valid email address.'
+            }
+        }
+
+        // Determine base URL dynamically based on environment configuration
+        let adminOrigin = 'http://localhost:3000'
+        if (process.env.ADMIN_DOMAIN) {
+            const domain = process.env.ADMIN_DOMAIN.replace(/^https?:\/\//, '')
+            adminOrigin = `https://${domain}`
+        } else if (process.env.NEXT_PUBLIC_APP_URL) {
+            adminOrigin = process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+        }
+
+        const redirectTo = `${adminOrigin}/api/admin/auth/callback?next=/admin/reset-password`
+
+        const supabase = await createServerSupabase()
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+            redirectTo
+        })
+
+        if (error) {
+            console.error('[adminRequestPasswordRecoveryAction] Supabase error:', error.message)
+        }
+
+        // Generic response: Never expose whether the email exists or belongs to an administrator
+        return {
+            success: true,
+            message: 'If an administrator account exists with this email address, password reset instructions have been sent.'
+        }
+    } catch (err: any) {
+        console.error('[adminRequestPasswordRecoveryAction] Exception:', err)
+        return {
+            success: true,
+            message: 'If an administrator account exists with this email address, password reset instructions have been sent.'
+        }
+    }
+}
+
+/**
+ * Reset Administrator Password
+ * Updates the authenticated recovery session with a new password via Supabase Auth.
+ */
+export async function adminResetPasswordAction(password: string) {
+    try {
+        if (!password || typeof password !== 'string' || password.length < 8) {
+            return {
+                success: false,
+                error: 'Password must be at least 8 characters long.'
+            }
+        }
+
+        const supabase = await createServerSupabase()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+            return {
+                success: false,
+                error: 'Your password reset session is invalid or has expired. Please request a new recovery link.'
+            }
+        }
+
+        // Update the user's password in Supabase Auth
+        const { error: updateError } = await supabase.auth.updateUser({
+            password
+        })
+
+        if (updateError) {
+            return {
+                success: false,
+                error: updateError.message || 'Failed to update password.'
+            }
+        }
+
+        // Sign out of recovery session so admin logs in cleanly with new credentials
+        await supabase.auth.signOut()
+
+        return {
+            success: true,
+            message: 'Your password has been successfully updated. You can now sign in with your new password.'
+        }
+    } catch (err: any) {
+        console.error('[adminResetPasswordAction] Exception:', err)
+        return {
+            success: false,
+            error: 'An unexpected error occurred while resetting your password.'
         }
     }
 }

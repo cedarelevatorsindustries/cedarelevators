@@ -42,68 +42,13 @@ export async function GET(request: NextRequest) {
  * POST /api/orders - Create new order from cart
  */
 export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const {
-      cartId,
-      shippingAddress,
-      billingAddress,
-      paymentMethod,
-      notes
-    } = body
-
-    // Validate required fields
-    if (!cartId || !shippingAddress || !paymentMethod) {
-      return NextResponse.json(
-        { error: 'Missing required fields: cartId, shippingAddress, paymentMethod' },
-        { status: 400 }
-      )
-    }
-
-    // Validate shipping address
-    const requiredAddressFields = ['name', 'address_line1', 'city', 'state', 'postal_code', 'country', 'phone']
-    for (const field of requiredAddressFields) {
-      if (!shippingAddress[field]) {
-        return NextResponse.json(
-          { error: `Missing required shipping address field: ${field}` },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Create order
-    const result = await createOrderFromCart({
-      cartId,
-      shippingAddress,
-      billingAddress,
-      paymentMethod,
-      notes
-    })
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      order: result.order,
-      razorpayOrderId: result.razorpayOrderId
-    })
-
-  } catch (error: any) {
-    console.error('Create order error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to create order' },
-      { status: 500 }
-    )
-  }
+  // Phase 1 Scope: Online order placement is deferred in favor of quotation requests
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Online order placement is deferred in Phase 1. Please submit a quotation request via /quotes/new.'
+    },
+    { status: 403 }
+  )
 }
 

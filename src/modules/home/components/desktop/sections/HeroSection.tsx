@@ -116,7 +116,7 @@ const HeroSection = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out"
           style={{
-            backgroundImage: 'url("/images/hero/desktop hero.webp?v=2")',
+            backgroundImage: 'url("/images/hero/desktop-hero.webp?v=20261121")',
             transform: isLoaded ? 'scale(1)' : 'scale(1.1)'
           }}
           role="img"
@@ -150,12 +150,13 @@ const HeroSection = () => {
             >
               {/* Desktop Main Headline */}
               <h1
-                className={`font-space-grotesk text-white text-2xl md:text-3xl lg:text-4xl font-light leading-snug tracking-wide mb-4 transition-all duration-800 delay-300 max-w-xl uppercase ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`font-space-grotesk text-white text-lg md:text-xl lg:text-2xl font-light leading-snug tracking-wider mb-3 transition-all duration-800 delay-300 max-w-lg uppercase ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
                   fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 300,
                   textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
-                  letterSpacing: '0.06em',
+                  letterSpacing: '0.08em',
                   fontOpticalSizing: 'auto'
                 }}
               >
@@ -164,12 +165,13 @@ const HeroSection = () => {
 
               {/* Desktop Subheadline/Tagline */}
               <p
-                className={`font-space-grotesk text-white/85 text-xs sm:text-sm lg:text-base font-extralight mb-8 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`font-space-grotesk text-white/80 text-xs lg:text-sm font-light mb-6 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
                   fontFamily: '"Space Grotesk", sans-serif',
+                  fontWeight: 300,
                   textShadow: '0 1px 6px rgba(0, 0, 0, 0.5)',
-                  letterSpacing: '0.16em',
+                  letterSpacing: '0.14em',
                   fontOpticalSizing: 'auto'
                 }}
               >

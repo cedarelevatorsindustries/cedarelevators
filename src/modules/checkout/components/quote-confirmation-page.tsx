@@ -291,47 +291,30 @@ export default function QuoteConfirmationPage({
                     <div className="lg:col-span-5 flex flex-col gap-6">
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3">
-                            {accountType === 'Guest' ? (
-                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
-                                    <h4 className="font-semibold text-gray-900 mb-2">Want to track this quote?</h4>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Create an account or log in to view detailed quote status, download PDFs, and manage your requests.
-                                    </p>
-                                    <div className="flex gap-3">
-                                        <Link href="/sign-in?redirect=/quotes" className="flex-1">
-                                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                                                Log In
-                                            </Button>
-                                        </Link>
-                                        <Link href="/sign-up?redirect=/quotes" className="flex-1">
-                                            <Button variant="outline" className="w-full">
-                                                Sign Up
-                                            </Button>
-                                        </Link>
-                                    </div>
+                            <div className="bg-orange-50/70 border border-orange-200/80 rounded-xl p-6 text-center space-y-4">
+                                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto text-orange-600">
+                                    <CheckCircle2 className="w-6 h-6" />
                                 </div>
-                            ) : (
-                                <>
-                                    <Link href={`/quotes/${quoteId}`}>
-                                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6 px-6 rounded-xl shadow-lg shadow-blue-500/10 flex items-center justify-center gap-3">
-                                            <Eye className="w-5 h-5" />
-                                            View Quote Details
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 text-base">What happens next?</h4>
+                                    <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                                        Your enquiry has been assigned to our technical sales desk. An elevator specialist will review your specifications, component compatibility, and bulk pricing, then contact you within 24–48 hours.
+                                    </p>
+                                </div>
+                                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                                    <Link href="/catalog" className="flex-1">
+                                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium">
+                                            Browse Catalog
                                         </Button>
                                     </Link>
-                                    <Link href={`/quotes/${quoteId}`}>
-                                        <Button
-                                            variant="outline"
-                                            className="w-full font-semibold py-6 px-6 rounded-xl flex items-center justify-center gap-3"
-                                        >
-                                            <Download className="w-5 h-5" />
-                                            Download PDF Summary
+                                    <Link href="/" className="flex-1">
+                                        <Button variant="outline" className="w-full border-gray-300">
+                                            Return Home
                                         </Button>
                                     </Link>
-                                </>
-                            )}
+                                </div>
+                            </div>
                         </div>
-
-
                     </div>
                 </div>
 

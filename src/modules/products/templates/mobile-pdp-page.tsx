@@ -628,53 +628,33 @@ export default function MobileProductDetailPage({
                   </>
                 ) : (
                   <>
-                    <p className="text-xs text-gray-500">Pricing</p>
+                    <p className="text-xs text-gray-500">Commercial</p>
                     <p className="text-sm font-semibold text-orange-600">
-                      {isGuest ? "Login to see price" : isBusiness && !isVerified ? "Verify to see price" : "Price on request"}
+                      Price on Request
                     </p>
                   </>
                 )}
               </div>
 
-              {/* Action Buttons - Based on User Type */}
+              {/* Phase 1 Action Buttons */}
               <div className="flex gap-2">
-                {isGuest ? (
-                  <Link
-                    href="/sign-in"
-                    className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  >
-                    Login
-                  </Link>
-                ) : userType === "individual" ? (
-                  <Link
-                    href="/profile/account"
-                    className="px-4 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    Upgrade
-                  </Link>
-                ) : isBusiness && !isVerified ? (
-                  <Link
-                    href="/profile/verification"
-                    className="px-4 py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    Verify
-                  </Link>
-                ) : showPrice ? (
-                  <button
-                    onClick={() => handleAddToCart(1)}
-                    className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    Add
-                  </button>
-                ) : null}
+                <a
+                  href={`https://wa.me/918220202757?text=${encodeURIComponent(
+                    `Hi Cedar Elevators, I am inquiring about product: ${product.title}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2.5 bg-green-50 text-green-700 border border-green-200 rounded-lg font-semibold hover:bg-green-100 transition-colors flex items-center gap-1.5 text-xs"
+                >
+                  WhatsApp
+                </a>
 
                 <button
                   onClick={() => handleRequestQuote(1)}
-                  className="px-4 py-2.5 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center gap-1.5 text-sm shadow-sm"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  Quote
+                  Request Quote
                 </button>
               </div>
             </div>

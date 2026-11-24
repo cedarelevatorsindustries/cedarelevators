@@ -11,9 +11,9 @@ import { getQuickStats, QuickStats } from "@/lib/actions/admin-dashboard"
 import { getRecentActivity, RecentActivity } from "@/lib/actions/analytics"
 
 const quickActions = [
-  { title: "Add Product", href: "/admin/products/create", icon: Plus, primary: true },
-  { title: "View Orders", href: "/admin/orders", icon: ShoppingCart },
-  { title: "View Quotes", href: "/admin/quotes", icon: FileText },
+  { title: "Review Quotes", href: "/admin/quotes", icon: FileText, primary: true },
+  { title: "Add Product", href: "/admin/products/create", icon: Plus },
+  { title: "Manage Categories", href: "/admin/categories", icon: FolderTree },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
@@ -49,11 +49,9 @@ export default function AdminDashboard() {
   }
 
   const quickStats = [
-    { title: "Total Products", value: stats?.totalProducts || 0, icon: Package, href: "/admin/products" },
-    { title: "Total Orders", value: stats?.totalOrders || 0, icon: ShoppingCart, href: "/admin/orders" },
     { title: "Quote Requests", value: stats?.quoteRequests || 0, icon: FileText, href: "/admin/quotes" },
+    { title: "Total Products", value: stats?.totalProducts || 0, icon: Package, href: "/admin/products" },
     { title: "Categories", value: stats?.totalCategories || 0, icon: FolderTree, href: "/admin/categories" },
-    { title: "Customers", value: stats?.totalCustomers || 0, icon: Users, href: "/admin/customers" },
   ]
 
   return (

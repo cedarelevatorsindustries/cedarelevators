@@ -101,7 +101,7 @@ const HeroSection = () => {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out"
         style={{
-          backgroundImage: 'url("/images/hero/desktop hero.webp?v=2")',
+          backgroundImage: 'url("/images/hero/desktop-hero.webp?v=20261121")',
           backgroundPosition: 'center 30%', // Adjust crop position for mobile
           transform: isLoaded ? 'scale(1.1)' : 'scale(1.2)' // Zoom for 9:16 mobile ratio
         }}
@@ -160,13 +160,14 @@ const HeroSection = () => {
       {/* Mobile Content - Centered with safe spacing from search bar */}
       <div className="relative z-10 flex flex-col justify-center h-full px-4 pt-32 pb-8">
         {/* Mobile Primary Text */}
-        <div className="mb-2 sm:mb-3">
+        <div className="mb-2">
           <h1
-            className={`font-space-grotesk text-white text-base sm:text-lg font-light leading-snug uppercase tracking-wider transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`font-space-grotesk text-white text-xs sm:text-sm font-light leading-snug uppercase tracking-wider transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
               textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)',
-              letterSpacing: '0.06em',
+              letterSpacing: '0.08em',
+              fontWeight: 300,
               fontOpticalSizing: 'auto'
             }}
           >
@@ -175,13 +176,14 @@ const HeroSection = () => {
         </div>
 
         {/* Mobile Secondary Text */}
-        <div className="mb-5 sm:mb-6">
+        <div className="mb-4">
           <p
-            className={`font-space-grotesk text-white/80 text-[11px] sm:text-xs font-extralight tracking-widest transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`font-space-grotesk text-white/80 text-[10px] sm:text-[11px] font-light tracking-widest transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
               textShadow: '0 1px 6px rgba(0, 0, 0, 0.6)',
-              letterSpacing: '0.12em',
+              letterSpacing: '0.14em',
+              fontWeight: 300,
               fontOpticalSizing: 'auto'
             }}
           >

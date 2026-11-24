@@ -55,7 +55,7 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
     const router = useRouter();
 
     const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
-    const [successData, setSuccessData] = useState<{ id: string; quoteNumber: string } | null>(null);
+    const [successData, setSuccessData] = useState<{ id: string; quoteNumber: string; itemsCount?: number } | null>(null);
 
     const getSchema = () => {
         switch (userType) {
@@ -71,81 +71,78 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
 
     const form = useForm<any>({
         resolver: zodResolver(quoteSchema),
-        defaultValues: userType === 'guest'
-            ? {
-                product_id: prefilledProduct?.id || "",
-                variant_id: (prefilledProduct as any)?.variantId || "",
-                quantity: prefilledProduct?.quantity || 1,
-                name: "",
-                email: "",
-                phone: "",
-                notes: ""
-            }
-            : {
-                items: [{
-                    product_id: prefilledProduct?.id || "",
+        defaultValues: {
+            items: prefilledProduct?.id
+                ? [{
+                    product_id: prefilledProduct.id,
                     variant_id: (prefilledProduct as any)?.variantId || "",
                     quantity: prefilledProduct?.quantity || 1
+                }]
+                : [{
+                    product_id: "",
+                    variant_id: "",
+                    quantity: 1
                 }],
-                bulk_pricing_requested: false,
-                notes: "",
-                // Pre-fill contact info from user profile for logged-in users
-                name: userProfile?.name || "",
-                email: userProfile?.email || "",
-                phone: userProfile?.phone || ""
-            }
+            name: userProfile?.name || "",
+            email: userProfile?.email || "",
+            phone: userProfile?.phone || "",
+            company_name: "",
+            notes: "",
+            hp_website: "",
+        }
     });
 
     const { register, control, handleSubmit, setValue, setError, clearErrors, watch, formState: { errors } } = form;
 
     const onSubmit = async (data: any) => {
         setIsSubmitting(true);
-        setSubmitError(null); // This will be replaced by toast
+        setSubmitError(null);
 
         try {
-            // Transform data to match createQuote input format
-            const quoteData = userType === 'guest'
-                ? {
-                    items: [{ product_id: data.product_id, quantity: data.quantity, variant_id: data.variant_id }],
-                    account_type: 'guest' as const,
-                    notes: data.notes,
-                    name: data.name,
-                    email: data.email,
-                    attachments: attachments.map(file => ({
-                        file_name: file.name,
-                        file_url: file.url,
-                        file_size: file.size
-                    }))
-                }
-                : {
-                    items: data.items,
-                    account_type: userType === 'verified' ? 'business' as const : userType as 'individual' | 'business',
-                    notes: data.notes,
-                    bulk_pricing_requested: data.bulk_pricing_requested,
-                    // Include contact info for logged-in users
-                    name: data.name,
-                    email: data.email,
-                    phone: data.phone,
-                    attachments: attachments.map(file => ({
-                        file_name: file.name,
-                        file_url: file.url,
-                        file_size: file.size
-                    }))
-                };
+            // Filter out any empty items where product_id / productId was not selected
+            const validItems = (data.items || [])
+                .filter((item: any) => item && ((typeof item.product_id === 'string' && item.product_id.trim() !== '') || (typeof item.productId === 'string' && item.productId.trim() !== '')))
+                .map((item: any) => ({
+                    product_id: (item.product_id || item.productId || '').trim(),
+                    variant_id: (item.variant_id || item.variantId || '') ? (item.variant_id || item.variantId).trim() : null,
+                    quantity: Math.max(1, parseInt(item.quantity, 10) || 1)
+                }));
 
-            const result = await createQuote(quoteData);
+            const payload = {
+                name: data.name?.trim(),
+                email: data.email?.trim()?.toLowerCase(),
+                phone: data.phone?.trim(),
+                company_name: data.company_name?.trim() || undefined,
+                notes: data.notes?.trim() || undefined,
+                items: validItems,
+                hp_website: data.hp_website || undefined,
+            };
 
-            if (result.success) {
-                setSuccessData({
-                    id: result.id,
-                    quoteNumber: result.quote_number || result.id
-                });
-                setShowSuccessAnimation(true);
-            } else {
-                toast.error(result.error || 'Failed to submit quote request');
+            const response = await fetch('/api/quotes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                const errorMsg = result.error || (result.details ? Object.values(result.details).flat().join(', ') : 'Failed to submit quote enquiry');
+                setSubmitError(errorMsg);
+                toast.error(errorMsg);
+                return;
             }
+
+            setSuccessData({
+                id: result.quoteId,
+                quoteNumber: result.quoteNumber || result.quoteId,
+                itemsCount: data.items?.length || 0
+            });
+            setShowSuccessAnimation(true);
         } catch (error: any) {
-            toast.error(error.message || 'An unexpected error occurred');
+            const msg = error.message || 'Network error while submitting quote. Please check your connection and try again.';
+            setSubmitError(msg);
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -155,7 +152,7 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
         if (!successData) return;
 
         // All users go to quote success/confirmation page
-        router.push(`/quotes/success?quoteId=${successData.id}&quoteNumber=${encodeURIComponent(successData.quoteNumber)}`);
+        router.push(`/quotes/success?quoteId=${successData.id}&quoteNumber=${encodeURIComponent(successData.quoteNumber)}&itemsCount=${successData.itemsCount ?? 1}`);
     };
 
     if (showSuccessAnimation) {
@@ -194,26 +191,21 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
             </div>
 
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Tier-Specific Alerts & Nudges */}
-                {userType === 'verified' && <VerifiedBadge />}
-
-                {userType === 'business' && (
-                    <VerificationAlert verificationStatus={verificationStatus} />
-                )}
-
-                {userType === 'guest' && (
-                    <UpgradeNudge currentTier="guest" variant="banner" />
-                )}
-
-                {userType === 'individual' && (
-                    <UpgradeNudge currentTier="individual" variant="banner" dismissible />
-                )}
+                {/* Phase 1 Trust & Reassurance Banner */}
+                <div className="bg-orange-50/70 border border-orange-200/80 rounded-xl p-4 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600">
+                        <Shield className="w-5 h-5" />
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-700">
+                        <span className="font-semibold text-gray-900">Direct Factory Quotation:</span> No registration or login required. Submit your requirements and our technical engineering team will review specifications and contact you with formal pricing within 24 hours.
+                    </div>
+                </div>
 
                 {/* Items Section */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
                         <h2 className="text-lg font-semibold text-gray-900">Product Details</h2>
-                        <p className="text-sm text-gray-600 mt-1">Select the products you need</p>
+                        <p className="text-sm text-gray-600 mt-1">Select the products you need (or leave empty for general project enquiries)</p>
                     </div>
                     <div className="p-6">
                         <QuoteItemsInput
@@ -231,114 +223,98 @@ export function QuoteForm({ userType = 'guest', verificationStatus = null, prefi
                     </div>
                 </div>
 
-                {/* Contact Information (Guest Only) */}
-                {userType === 'guest' && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
-                            <p className="text-sm text-gray-600 mt-1">How can we reach you?</p>
-                        </div>
-                        <div className="p-6 grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    {...register("name")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="John Doe"
-                                />
-                                {errors.name && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errors.name.message as string}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    {...register("email")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="john@example.com"
-                                />
-                                {errors.email && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errors.email.message as string}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
+                {/* Contact Information */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
+                        <p className="text-sm text-gray-600 mt-1">Where should our sales and engineering team send your quote?</p>
                     </div>
-                )}
+                    <div className="p-6 grid md:grid-cols-2 gap-6">
+                        {/* Hidden Honeypot Anti-Spam Trap */}
+                        <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
+                            <label htmlFor="hp_website">Website</label>
+                            <input
+                                id="hp_website"
+                                type="text"
+                                {...register("hp_website")}
+                                tabIndex={-1}
+                                autoComplete="off"
+                            />
+                        </div>
 
-                {/* Contact Information (Logged-in Users) */}
-                {userType !== 'guest' && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
-                            <p className="text-sm text-gray-600 mt-1">Your profile information (editable if needed)</p>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Full Name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                {...register("name")}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                placeholder="e.g. Rajesh Kumar"
+                            />
+                            {errors.name && (
+                                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errors.name.message as string}
+                                </p>
+                            )}
                         </div>
-                        <div className="p-6 grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    {...register("name")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="Your name"
-                                />
-                                {errors.name && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errors.name.message as string}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    {...register("email")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="your@email.com"
-                                />
-                                {errors.email && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errors.email.message as string}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Phone Number (Optional)
-                                </label>
-                                <input
-                                    type="tel"
-                                    {...register("phone")}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="+91 1234567890"
-                                />
-                                {errors.phone && (
-                                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errors.phone.message as string}
-                                    </p>
-                                )}
-                            </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Phone Number <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="tel"
+                                {...register("phone")}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                placeholder="+91 98765 43210"
+                            />
+                            {errors.phone && (
+                                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errors.phone.message as string}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                {...register("email")}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                placeholder="rajesh@example.com"
+                            />
+                            {errors.email && (
+                                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errors.email.message as string}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Company / Organization <span className="text-gray-400 font-normal">(Optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                {...register("company_name")}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
+                                placeholder="e.g. Apex Elevators Pvt Ltd"
+                            />
+                            {errors.company_name && (
+                                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errors.company_name.message as string}
+                                </p>
+                            )}
                         </div>
                     </div>
-                )}
+                </div>
 
                 {/* Additional Options */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm">

@@ -1,25 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { performAdminLogout } from '@/lib/auth/admin-logout'
 import { Clock, AlertCircle, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
 export default function AdminPendingPage() {
-  const router = useRouter()
-  const supabase = createClient()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
-    try {
-      await supabase.auth.signOut()
-      router.push('/admin/login')
-      router.refresh()
-    } catch (error) {
-      console.error('Logout error:', error)
-      setIsLoggingOut(false)
-    }
+    await performAdminLogout()
   }
 
   return (

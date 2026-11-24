@@ -28,17 +28,20 @@ const fileValidation = z.custom<FileList>()
 
 // --- GUEST FORM ---
 export const guestQuoteSchema = z.object({
-    // Guest only adds 1 product at a time
-    product_id: z.string().min(1, "Product is required"),
-    variant_id: z.string().optional().nullable(),
-    quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
+    // Supports one or more items (or empty for general inquiries)
+    items: z.array(quoteItemSchema).default([]),
 
-    // Contact Info
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional().or(z.literal('')),
+    // Contact Info (required for guest enquiry)
+    name: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name cannot exceed 100 characters"),
+    email: z.string().trim().email("Valid email address is required").max(150, "Email cannot exceed 150 characters"),
+    phone: z.string().trim().min(10, "Valid contact phone number is required (at least 10 digits)").max(20, "Phone number cannot exceed 20 characters"),
 
-    notes: z.string().max(300, "Notes cannot exceed 300 characters").optional(),
+    // Optional Company & Requirements
+    company_name: z.string().trim().max(150, "Company name cannot exceed 150 characters").optional().or(z.literal('')),
+    notes: z.string().trim().max(2000, "Notes cannot exceed 2000 characters").optional().or(z.literal('')),
+
+    // Anti-spam honeypot (should stay empty)
+    hp_website: z.string().optional(),
 });
 
 // --- INDIVIDUAL FORM ---

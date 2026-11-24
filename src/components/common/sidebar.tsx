@@ -5,18 +5,16 @@ import NextImage from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { performAdminLogout } from "@/lib/auth/admin-logout"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     LayoutDashboard,
-    ShoppingCart,
     Package,
     FolderTree,
     Layers,
     Image,
-    Warehouse,
-    Users,
     Settings,
     Store,
     LogOut,
@@ -32,19 +30,9 @@ const mainNavItems = [
         icon: LayoutDashboard,
     },
     {
-        title: "Orders",
-        href: "/admin/orders",
-        icon: ShoppingCart,
-    },
-    {
         title: "Quotes",
         href: "/admin/quotes",
         icon: FileText,
-    },
-    {
-        title: "Customers",
-        href: "/admin/customers",
-        icon: Users,
     },
     {
         title: "Products",
@@ -79,11 +67,6 @@ const catalogNavItems = [
 
 const otherNavItems = [
     {
-        title: "Inventory",
-        href: "/admin/inventory",
-        icon: Warehouse,
-    },
-    {
         title: "Banners",
         href: "/admin/banners",
         icon: Image,
@@ -114,14 +97,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
 
     const handleLogout = async () => {
         setIsLoggingOut(true)
-        try {
-            await supabase.auth.signOut()
-            router.push('/admin/login')
-            router.refresh()
-        } catch (error) {
-            console.error('Logout error:', error)
-            setIsLoggingOut(false)
-        }
+        await performAdminLogout()
     }
 
     return (

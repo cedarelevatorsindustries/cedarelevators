@@ -186,16 +186,6 @@ export default function ProductCard({
                 {badgeConfig.text}
               </div>
             )}
-
-            {/* Wishlist Button - Top Right */}
-            <button
-              onClick={handleWishlist}
-              className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
-            >
-              <Heart
-                className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
-              />
-            </button>
           </div>
         </Link>
 
@@ -326,15 +316,6 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Wishlist - Top Right */}
-          <button
-            onClick={handleWishlist}
-            className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
-          >
-            <Heart
-              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
-            />
-          </button>
         </Link>
 
         {/* Content Outside Image */}
@@ -427,16 +408,6 @@ export default function ProductCard({
               {badgeConfig.text}
             </div>
           )}
-
-          {/* Wishlist Button - Top Right */}
-          <button
-            onClick={handleWishlist}
-            className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors z-10"
-          >
-            <Heart
-              className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
-            />
-          </button>
         </div>
       </Link>
 
@@ -474,10 +445,10 @@ export default function ProductCard({
             <p className="text-xs text-gray-500">(Inclusive of all taxes)</p>
           </div>
         ) : isGuest ? (
-          // Guest - Login Required
+          // Guest - Quote Required
           <div className="py-1 mt-2">
             <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-600">Login to see pricing</p>
+            <p className="text-xs text-gray-600">Commercial quote available</p>
           </div>
         ) : isIndividual ? (
           // Individual - Request Quote

@@ -25,7 +25,7 @@ export default function AdminSetupPage() {
     // Check if setup is already completed
     checkSetupStatusAction().then(result => {
       if (result.setupCompleted) {
-        router.push('/admin/login')
+        router.push('/admin')
       }
       setCheckingSetup(false)
     })
@@ -94,7 +94,7 @@ export default function AdminSetupPage() {
   }
 
   const handleContinue = () => {
-    router.push('/admin/login')
+    router.push('/admin')
   }
 
   if (checkingSetup) {

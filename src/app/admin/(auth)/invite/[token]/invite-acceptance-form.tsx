@@ -49,7 +49,7 @@ export function InviteAcceptanceForm({ token, email }: Props) {
             }
 
             toast.success('Account created successfully!')
-            router.push('/admin/login?invited=true')
+            router.push('/admin?invited=true')
 
         } catch (err) {
             setError('An unexpected error occurred')

@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { checkAdminSessionAction } from "@/lib/actions/admin-auth"
+import { AdminLoginView } from "@/components/admin/admin-login-view"
+import { AdminAccessDeniedView } from "@/components/admin/admin-access-denied-view"
 import { Sidebar } from "@/components/common/sidebar"
 import { Header } from "@/components/common/header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -19,7 +22,7 @@ function LoadingScreen() {
           </div>
         </div>
         <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">Admin Portal</h3>
-        <p className="text-gray-500">Verifying authentication...</p>
+        <p className="text-gray-500">Verifying administrator session...</p>
       </div>
     </div>
   )
@@ -35,59 +38,94 @@ export default function AdminLayout({
   const supabase = createClient()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [authStatus, setAuthStatus] = useState<
+    'loading' | 'authenticated' | 'unauthenticated' | 'unauthorized' | 'inactive'
+  >('loading')
+  const [authError, setAuthError] = useState<string>('')
 
-  // Auth routes that don't need the admin layout
-  const authRoutes = ['/admin/login', '/admin/setup', '/admin/recover', '/admin/pending', '/admin/logout', '/admin/invite']
+  // Specific admin utility routes that bypass dashboard layout
+  const authRoutes = ['/admin/setup', '/admin/recover', '/admin/reset-password', '/admin/pending', '/admin/logout', '/admin/invite']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-  // Settings routes that have their own complete layout
-  const isSettingsRoute = pathname.startsWith('/admin/settings')
+  const isRootAdmin = pathname === '/admin' || pathname === '/admin/' || pathname === '/'
 
-  // Client-side auth verification (backup to middleware)
-  // IMPORTANT: ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const verifySession = useCallback(async () => {
+    try {
+      const res = await checkAdminSessionAction()
+      if (res.status === 'authenticated') {
+        setAuthStatus('authenticated')
+        setAuthError('')
+      } else if (res.status === 'inactive') {
+        setAuthStatus('inactive')
+        setAuthError(res.error || 'Your administrator account is awaiting approval or has been deactivated.')
+      } else if (res.status === 'unauthorized') {
+        setAuthStatus('unauthorized')
+        setAuthError(res.error || 'Access denied: You do not have administrator permissions.')
+      } else {
+        setAuthStatus('unauthenticated')
+        setAuthError('')
+      }
+    } catch (err: any) {
+      console.error('[AdminLayout] Session verification error:', err)
+      setAuthStatus('unauthenticated')
+    }
+  }, [])
+
   useEffect(() => {
-    // Skip auth check for auth routes
-    const skipAuth = authRoutes.some(route => pathname.startsWith(route))
-    if (skipAuth) {
-      setIsCheckingAuth(false)
+    if (isAuthRoute) {
+      setAuthStatus('authenticated')
       return
     }
 
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+    verifySession()
 
-      if (!user) {
-        router.push('/admin/login')
-        return
+    // Listen to Supabase client auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        await verifySession()
+      } else if (event === 'SIGNED_OUT') {
+        setAuthStatus('unauthenticated')
       }
+    })
 
-      setIsCheckingAuth(false)
+    return () => {
+      subscription.unsubscribe()
     }
+  }, [pathname, isAuthRoute, verifySession, supabase])
 
-    checkAuth()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname])
+  // Redirect unauthenticated visitors attempting to access inner admin sub-routes
+  useEffect(() => {
+    if (authStatus === 'unauthenticated' && !isRootAdmin && !isAuthRoute) {
+      router.push(pathname.startsWith('/admin') ? '/admin' : '/')
+    }
+  }, [authStatus, isRootAdmin, isAuthRoute, pathname, router])
 
-  // If it's an auth route, just render the children without the admin layout
+  // If it's a utility auth route (recover, invite, etc.), render directly
   if (isAuthRoute) {
     return <>{children}</>
   }
 
-  // If it's a settings route, render children without the admin layout wrapper
-  // Settings has its own complete layout
-  if (pathname.startsWith('/admin/settings')) {
-    if (isCheckingAuth) {
-      return <LoadingScreen />
-    }
-    return <QueryProvider>{children}</QueryProvider>
-  }
-
-  // Show loading state while checking auth
-  if (isCheckingAuth) {
+  // Show loading state while verifying
+  if (authStatus === 'loading') {
     return <LoadingScreen />
   }
 
+  // Unauthenticated visitor on root admin path -> render Supabase login UI directly
+  if (authStatus === 'unauthenticated') {
+    return <AdminLoginView onLoginSuccess={verifySession} />
+  }
+
+  // Unauthorized visitor (e.g. ordinary customer) or inactive admin -> render access denied view
+  if (authStatus === 'unauthorized' || authStatus === 'inactive') {
+    return <AdminAccessDeniedView type={authStatus} error={authError} onSignOut={verifySession} />
+  }
+
+  // If it's a settings route, render children without duplicating sidebar (settings has its own layout)
+  if (pathname.startsWith('/admin/settings')) {
+    return <QueryProvider>{children}</QueryProvider>
+  }
+
+  // Authenticated active administrator: Render dashboard shell
   return (
     <QueryProvider>
       <div className="flex h-screen bg-gradient-to-br from-orange-50/50 to-orange-100/30">
@@ -130,4 +168,3 @@ export default function AdminLayout({
     </QueryProvider>
   )
 }
-
