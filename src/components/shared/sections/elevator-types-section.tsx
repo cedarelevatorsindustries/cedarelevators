@@ -71,7 +71,7 @@ function DesktopGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {elevatorTypes.map((type) => {
                 const imageSrc = type.thumbnail_image || type.banner_image || '/images/image.png'
-                const href = `/catalog?type=${type.slug}`
+                const href = `/products?type=${type.slug}`
 
                 return (
                     <LocalizedClientLink
@@ -117,7 +117,7 @@ function MobileGrid({ elevatorTypes }: { elevatorTypes: ElevatorType[] }) {
         <div className="grid grid-cols-2 gap-3">
             {elevatorTypes.map((type) => {
                 const imageSrc = type.thumbnail_image || type.banner_image || '/images/image.png'
-                const href = `/catalog?type=${type.slug}`
+                const href = `/products?type=${type.slug}`
 
                 return (
                     <div key={type.id} className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">

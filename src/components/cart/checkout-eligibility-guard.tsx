@@ -149,7 +149,7 @@ export function CheckoutEligibilityGuard({
             Add some products to your cart before proceeding to checkout.
           </p>
           <div className="space-y-3">
-            <Link href="/catalog">
+            <Link href="/products">
               <Button size="lg" className="w-full">
                 Browse Products
               </Button>

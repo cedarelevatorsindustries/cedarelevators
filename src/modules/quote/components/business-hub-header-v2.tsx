@@ -41,7 +41,7 @@ export function BusinessHubHeaderV2({ companyName }: BusinessHubHeaderV2Props) {
                     <a href="/dashboard" className="text-slate-600 text-sm font-medium hover:text-[#F97316] transition-colors">
                         Dashboard
                     </a>
-                    <a href="/catalog" className="text-slate-600 text-sm font-medium hover:text-[#F97316] transition-colors">
+                    <a href="/products" className="text-slate-600 text-sm font-medium hover:text-[#F97316] transition-colors">
                         Catalog
                     </a>
                     <a href="/orders" className="text-slate-600 text-sm font-medium hover:text-[#F97316] transition-colors">

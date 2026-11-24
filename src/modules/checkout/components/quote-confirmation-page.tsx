@@ -302,9 +302,9 @@ export default function QuoteConfirmationPage({
                                     </p>
                                 </div>
                                 <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                                    <Link href="/catalog" className="flex-1">
+                                    <Link href="/products" className="flex-1">
                                         <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium">
-                                            Browse Catalog
+                                            Browse Products
                                         </Button>
                                     </Link>
                                     <Link href="/" className="flex-1">

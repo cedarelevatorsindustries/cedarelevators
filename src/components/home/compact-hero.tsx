@@ -29,23 +29,23 @@ export function CompactHero() {
             </p>
           </div>
 
-          {/* Right Side: CTA Buttons side-by-side on mobile, generous padding */}
-          <div className="flex flex-row items-center gap-4 sm:gap-6 lg:gap-8 flex-shrink-0 w-full sm:w-auto mt-6 md:mt-0">
+          {/* Right Side: CTA Buttons with generous padding */}
+          <div className="flex flex-row items-center gap-4 sm:gap-6 flex-shrink-0 w-full sm:w-auto mt-6 md:mt-0">
             {/* Primary CTA - Orange */}
             <Link
               href="/products"
-              className="flex-1 sm:flex-initial font-space-grotesk group inline-flex items-center justify-center gap-2.5 px-6 py-3 sm:px-7 sm:py-3.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white text-sm sm:text-base font-semibold rounded-lg shadow-xs hover:shadow transition-all duration-150 min-h-[46px] sm:min-h-[48px] whitespace-nowrap text-center"
+              className="flex-1 sm:flex-initial font-space-grotesk group inline-flex items-center justify-center gap-3 px-7 py-3.5 sm:px-8 sm:py-4 md:px-9 md:py-4 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white text-sm sm:text-base md:text-lg font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-150 min-h-[50px] sm:min-h-[54px] whitespace-nowrap text-center"
             >
               <span>Browse Products</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-0.5" />
             </Link>
 
             {/* Secondary CTA - Outlined */}
             <Link
               href="/quotes/new"
-              className="flex-1 sm:flex-initial font-space-grotesk inline-flex items-center justify-center gap-2.5 px-6 py-3 sm:px-7 sm:py-3.5 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-900 border border-gray-300 hover:border-gray-400 text-sm sm:text-base font-semibold rounded-lg shadow-xs transition-all duration-150 min-h-[46px] sm:min-h-[48px] whitespace-nowrap text-center"
+              className="flex-1 sm:flex-initial font-space-grotesk inline-flex items-center justify-center gap-3 px-7 py-3.5 sm:px-8 sm:py-4 md:px-9 md:py-4 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-900 border border-gray-300 hover:border-gray-400 text-sm sm:text-base md:text-lg font-semibold rounded-xl shadow-sm transition-all duration-150 min-h-[50px] sm:min-h-[54px] whitespace-nowrap text-center"
             >
-              <FileText className="w-4 h-4 text-gray-500" />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
               <span>Request a Quote</span>
             </Link>
           </div>

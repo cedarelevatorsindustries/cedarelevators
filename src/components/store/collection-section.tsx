@@ -20,10 +20,10 @@ export default function CollectionSection({
     variant = "default",
     category
 }: CollectionSectionProps) {
-    // Build View All link - navigate to catalog with collection filter
+    // Build View All link - navigate to canonical products with collection filter
     const viewAllLink = category
-        ? `/catalog?collection=${slug}&category=${category}`
-        : `/catalog?collection=${slug}`
+        ? `/products?collection=${slug}&category=${category}`
+        : `/products?collection=${slug}`
 
     if (products.length === 0) {
         return null

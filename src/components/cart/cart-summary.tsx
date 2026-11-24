@@ -202,7 +202,7 @@ export function CartSummary({ summary, items = [], onCheckout, onRequestQuote, o
 
         {/* Continue Shopping */}
         <div className="text-center">
-          <Link href="/catalog" className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium block py-2">
+          <Link href="/products" className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium block py-2">
             Continue Shopping
           </Link>
         </div>

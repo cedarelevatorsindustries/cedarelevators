@@ -202,7 +202,7 @@ const HeroSection = () => {
             </button>
           </LocalizedClientLink>
 
-          <LocalizedClientLink href="/catalog">
+          <LocalizedClientLink href="/products">
             <button
               className="w-full bg-white/15 backdrop-blur-sm border border-white/30 text-white hover:bg-white/25 focus:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/40 px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 shadow-md font-space-grotesk"
               aria-label="Browse our premium lift components catalog"

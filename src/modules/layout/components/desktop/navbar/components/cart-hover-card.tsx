@@ -25,7 +25,7 @@ export function CartHoverCardContent({ items, total, subtotal = 0, shipping = 0,
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Shopping cart</h3>
         <p className="text-sm text-gray-600 mb-4">Your cart is empty</p>
         <LocalizedClientLink
-          href="/catalog"
+          href="/products"
           className="block w-full bg-orange-500 hover:bg-orange-600 text-white text-center font-semibold py-3 px-4 rounded-lg transition-colors"
         >
           Start Shopping

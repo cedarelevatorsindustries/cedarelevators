@@ -44,7 +44,7 @@ export function FeaturedProductsSection({
         displayLocation: [],
         layout: isMobile ? 'horizontal-scroll' as const : 'grid-5' as const,
         icon: 'none' as const,
-        viewAllLink: '/catalog',
+        viewAllLink: '/products',
         products: randomProducts,
         isActive: true,
         sortOrder: 0,

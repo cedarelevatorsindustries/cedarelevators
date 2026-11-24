@@ -138,7 +138,7 @@ function OrderConfirmationContent({ params }: OrderConfirmationPageProps) {
           },
           {
             label: 'Continue Shopping',
-            href: '/catalog',
+            href: '/products',
             variant: 'outline',
           },
         ]}

@@ -198,7 +198,7 @@ const HeroSection = () => {
                 </LocalizedClientLink>
 
                 {/* Secondary CTA */}
-                <LocalizedClientLink href="/catalog">
+                <LocalizedClientLink href="/products">
                   <button
                     className="group relative overflow-hidden bg-transparent border border-white/70 text-white hover:bg-white/15 focus:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/40 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl font-space-grotesk"
                     style={{

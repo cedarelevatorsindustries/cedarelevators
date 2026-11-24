@@ -81,7 +81,7 @@ export function BlockedCheckoutScreen({ userType, reason, itemCount = 0 }: Block
       },
       secondaryAction: {
         text: 'Browse Products',
-        href: '/catalog'
+        href: '/products'
       }
     }
   }

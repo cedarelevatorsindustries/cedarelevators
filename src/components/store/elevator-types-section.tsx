@@ -45,8 +45,8 @@ export function ElevatorTypesSection() {
     ]
 
     const handleElevatorTypeClick = (slug: string) => {
-        // Navigate to catalog page with elevator type filter
-        router.push(`/catalog?type=${slug}`)
+        // Navigate to canonical products page with elevator type filter
+        router.push(`/products?type=${slug}`)
     }
 
     return (

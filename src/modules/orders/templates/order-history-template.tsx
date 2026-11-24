@@ -184,7 +184,7 @@ export default function OrderHistoryTemplate({
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/catalog"
+                href="/products"
                 className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
               >
                 Browse Products

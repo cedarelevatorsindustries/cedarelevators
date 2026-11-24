@@ -326,7 +326,7 @@ function OrderConfirmationContent() {
                   Track Order
                 </Button>
               </Link>
-              <Link href="/catalog" className="block">
+              <Link href="/products" className="block">
                 <Button
                   variant="ghost"
                   className="w-full text-gray-700 font-semibold py-6 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all flex items-center justify-center gap-3"

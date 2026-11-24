@@ -380,7 +380,7 @@ export default function OrderConfirmationPage({
                                     Track Order
                                 </Button>
                             </Link>
-                            <Link href="/catalog">
+                            <Link href="/products">
                                 <Button
                                     variant="outline"
                                     className="w-full font-bold py-6 rounded-xl flex items-center justify-center gap-2"

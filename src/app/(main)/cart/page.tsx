@@ -85,7 +85,7 @@ export default function CartPage() {
     }
 
     if (isSignedIn && userType !== 'business_verified') {
-      router.push('/catalog')
+      router.push('/products')
     } else if (!isSignedIn) {
       router.push('/sign-in?redirect=/cart')
     }
@@ -145,8 +145,8 @@ export default function CartPage() {
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Cart</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link href="/catalog">
-            <Button>Return to Catalog</Button>
+          <Link href="/products">
+            <Button>Return to Products</Button>
           </Link>
         </div>
       </div>

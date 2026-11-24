@@ -16,9 +16,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     const params = await searchParams
     const query = params.q || ''
 
-    // Redirect to catalog with search param
+    // Redirect to canonical products page with search param
     // This maintains SEO while providing unified browsing experience
-    redirect(`/catalog?search=${encodeURIComponent(query)}`)
+    redirect(`/products?q=${encodeURIComponent(query)}`)
 }
 
 

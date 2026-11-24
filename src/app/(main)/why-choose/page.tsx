@@ -140,7 +140,7 @@ export default async function WhyChoosePage() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <Link
-                            href="/catalog"
+                            href="/products"
                             className="w-full sm:w-auto px-10 py-5 bg-[#ec9213] text-white font-black rounded-lg shadow-xl shadow-[#ec9213]/20 hover:scale-105 active:scale-95 transition-all"
                         >
                             View Products

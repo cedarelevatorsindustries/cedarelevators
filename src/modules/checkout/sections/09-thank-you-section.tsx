@@ -156,7 +156,7 @@ export default function ThankYouSection({
         {/* Continue Shopping */}
         <div className="mt-6 text-center">
           <Link
-            href="/catalog"
+            href="/products"
             className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
           >
             Continue Shopping

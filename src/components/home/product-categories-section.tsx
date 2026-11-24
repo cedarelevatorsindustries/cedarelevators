@@ -84,7 +84,7 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
         </div>
 
         {/* Categories Flex List - Left Aligned with Guaranteed Geometric Circle */}
-        <div className="flex flex-wrap items-start justify-start gap-8 sm:gap-10 lg:gap-14">
+        <div className="flex flex-wrap items-start justify-start gap-8 sm:gap-10 md:gap-12 lg:gap-16">
           {items.map((cat) => {
             const firstLetter = (cat.name || "C").trim().charAt(0).toUpperCase()
 
@@ -92,21 +92,20 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
               <Link
                 key={cat.slug}
                 href={`/products?category=${cat.slug}`}
-                className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1 duration-200"
+                className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1 duration-200 shrink-0"
               >
                 {/* Guaranteed 1:1 Geometric Circle Frame */}
                 <div
-                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-full bg-white border-2 border-zinc-200 group-hover:border-blue-600 group-hover:shadow-md flex items-center justify-center overflow-hidden transition-all duration-300 relative shrink-0 shadow-2xs mb-3"
+                  className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 aspect-square rounded-full bg-white border-2 border-zinc-200 group-hover:border-blue-600 group-hover:shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300 relative shrink-0 shadow-xs mb-3.5"
                   style={{
                     aspectRatio: "1 / 1",
-                    borderRadius: "9999px",
                   }}
                 >
                   {cat.image ? (
                     <img
                       src={cat.image}
                       alt={cat.name}
-                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform duration-300 pointer-events-none"
+                      className="w-18 h-18 sm:w-22 sm:h-22 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain group-hover:scale-110 transition-transform duration-300 pointer-events-none"
                       loading="lazy"
                     />
                   ) : (
@@ -119,7 +118,7 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
                 </div>
 
                 {/* Category Name */}
-                <h3 className="text-xs sm:text-sm font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight max-w-[150px] text-center">
+                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight max-w-[160px] text-center">
                   {cat.name}
                 </h3>
               </Link>

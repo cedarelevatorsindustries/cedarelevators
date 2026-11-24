@@ -58,7 +58,7 @@ export default function ThankYouUpsell({
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-gray-900">You Might Also Need</h3>
             <Link 
-              href="/catalog" 
+              href="/products" 
               className="text-sm text-blue-600 hover:underline flex items-center gap-1"
             >
               View All
@@ -115,7 +115,7 @@ export default function ThankYouUpsell({
           Don't forget essential accessories and installation tools for your elevator components.
         </p>
         <Link
-          href="/catalog?category=accessories"
+          href="/products?category=accessories"
           className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white 
             rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm"
         >

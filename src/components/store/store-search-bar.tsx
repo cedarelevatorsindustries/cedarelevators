@@ -90,7 +90,7 @@ export function StoreSearchBar() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
         if (query.trim()) {
-            router.push(`/catalog?search=${encodeURIComponent(query.trim())}`)
+            router.push(`/products?q=${encodeURIComponent(query.trim())}`)
             setShowSuggestions(false)
         }
     }

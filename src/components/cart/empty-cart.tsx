@@ -24,7 +24,7 @@ export function EmptyCart() {
         Looks like you haven't added any products to your cart yet. Start shopping to fill it up!
       </p>
       
-      <Link href="/catalog">
+      <Link href="/products">
         <Button size="lg" data-testid="start-shopping-btn">
           Start Shopping
         </Button>

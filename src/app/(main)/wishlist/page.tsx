@@ -45,7 +45,7 @@ export default function WishlistPage() {
           title="Your Wishlist is Empty"
           description="Save your favorite products to your wishlist and shop them later."
           actionLabel="Browse Products"
-          actionLink="/catalog"
+          actionLink="/products"
         />
       </div>
     )

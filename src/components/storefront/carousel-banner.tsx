@@ -55,12 +55,12 @@ export function CarouselBanner({
 
     if (!linkType || !linkId) return banner.cta_link || '#'
 
-    // Map link types to routes
+    // Map link types to canonical /products routes
     const routeMap: Record<string, string> = {
-      'application': `/catalog?application=${linkId}`,
-      'category': `/catalog?category=${linkId}`,
-      'elevator-type': `/catalog?type=${linkId}`,
-      'collection': `/collections/${linkId}`
+      'application': `/products?application=${linkId}`,
+      'category': `/products?category=${linkId}`,
+      'elevator-type': `/products?type=${linkId}`,
+      'collection': `/products?collection=${linkId}`
     }
 
     return routeMap[linkType] || '#'

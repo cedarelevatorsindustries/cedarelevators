@@ -153,16 +153,52 @@ export default clerkMiddleware(async (_auth, request) => {
   }
 
   // =========================================================================
-  // 3. STOREFRONT: REDIRECT DORMANT E-COMMERCE & PROFILE ROUTES TO CATALOGUE
+  // 3. STOREFRONT: REDIRECT DORMANT E-COMMERCE & LEGACY ROUTES TO CANONICAL PRODUCTS
   // =========================================================================
   if (isDormantCommerceRoute(request)) {
     return NextResponse.redirect(new URL('/products', request.url))
   }
 
-  // Normalize legacy category routes to /catalog/categories/[handle]
+  // Canonicalize legacy /catalog to single /products destination with query preservation
+  if (url.pathname === '/catalog' || url.pathname === '/catalog/') {
+    const redirectUrl = new URL('/products', request.url)
+    redirectUrl.search = url.search
+    return NextResponse.redirect(redirectUrl, 301)
+  }
+
+  if (url.pathname.startsWith('/catalog/categories/')) {
+    const handle = url.pathname.replace(/^\/catalog\/categories\//, '')
+    return NextResponse.redirect(new URL(`/products?category=${handle}`, request.url), 301)
+  }
+
+  if (url.pathname.startsWith('/catalog/applications/')) {
+    const handle = url.pathname.replace(/^\/catalog\/applications\//, '')
+    return NextResponse.redirect(new URL(`/products?application=${handle}`, request.url), 301)
+  }
+
+  if (url.pathname.startsWith('/catalog/types/')) {
+    const handle = url.pathname.replace(/^\/catalog\/types\//, '')
+    return NextResponse.redirect(new URL(`/products?type=${handle}`, request.url), 301)
+  }
+
+  if (url.pathname.startsWith('/catalog/collections/')) {
+    const handle = url.pathname.replace(/^\/catalog\/collections\//, '')
+    return NextResponse.redirect(new URL(`/products?collection=${handle}`, request.url), 301)
+  }
+
+  // Normalize legacy category routes to canonical /products?category=...
+  if (url.pathname === '/categories' || url.pathname === '/categories/') {
+    return NextResponse.redirect(new URL('/products', request.url), 301)
+  }
+
   if (url.pathname.startsWith('/categories/') && url.pathname !== '/categories/') {
     const handle = url.pathname.replace(/^\/categories\//, '')
-    return NextResponse.redirect(new URL(`/catalog/categories/${handle}`, request.url), 301)
+    return NextResponse.redirect(new URL(`/products?category=${handle}`, request.url), 301)
+  }
+
+  // Legacy /store route normalization
+  if (url.pathname === '/store' || url.pathname === '/store/') {
+    return NextResponse.redirect(new URL('/products', request.url), 301)
   }
 
   // =========================================================================

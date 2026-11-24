@@ -11,12 +11,12 @@ export const ROUTES = {
     // Homepage
     HOME: '/',
 
-    // Catalog
-    CATALOG: '/catalog',
-    CATALOG_APPLICATIONS: (handle: string) => `/catalog/applications/${handle}`,
-    CATALOG_CATEGORIES: (handle: string) => `/catalog/categories/${handle}`,
-    CATALOG_TYPES: (handle: string) => `/catalog/types/${handle}`,
-    CATALOG_COLLECTIONS: (handle: string) => `/catalog/collections/${handle}`,
+    // Products & Unified Catalog
+    CATALOG: '/products',
+    CATALOG_APPLICATIONS: (handle: string) => `/products?application=${handle}`,
+    CATALOG_CATEGORIES: (handle: string) => `/products?category=${handle}`,
+    CATALOG_TYPES: (handle: string) => `/products?type=${handle}`,
+    CATALOG_COLLECTIONS: (handle: string) => `/products?collection=${handle}`,
 
     // Products
     PRODUCT: (handle: string) => `/products/${handle}`,

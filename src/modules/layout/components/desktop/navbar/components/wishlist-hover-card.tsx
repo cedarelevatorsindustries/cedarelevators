@@ -17,7 +17,7 @@ export function WishlistHoverCardContent() {
           <p className="text-sm text-gray-600">Your wishlist is empty</p>
         </div>
         <LocalizedClientLink
-          href="/catalog"
+          href="/products"
           className="block w-full bg-orange-500 hover:bg-orange-600 text-white text-center font-semibold py-3 px-4 rounded-lg transition-colors mt-4"
         >
           Start Shopping

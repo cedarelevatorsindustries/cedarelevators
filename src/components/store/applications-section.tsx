@@ -46,8 +46,8 @@ export function ApplicationsSection({ applications }: ApplicationsSectionProps) 
     }
 
     const handleApplicationClick = (app: Application) => {
-        // Navigate to catalog page for both mobile and desktop
-        router.push(`/catalog?application=${app.slug}`)
+        // Navigate to canonical products page for both mobile and desktop
+        router.push(`/products?application=${app.slug}`)
     }
 
     return (
