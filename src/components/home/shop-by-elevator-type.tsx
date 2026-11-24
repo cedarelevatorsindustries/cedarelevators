@@ -60,7 +60,7 @@ export function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevatorTypePro
   }
 
   return (
-    <section className="w-full py-8 sm:py-16 bg-zinc-50">
+    <section id="elevator-types" className="w-full py-8 sm:py-16 bg-zinc-50">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Section Header with Blue & Orange Theme */}
         <div className="flex items-end justify-between mb-6 sm:mb-8">

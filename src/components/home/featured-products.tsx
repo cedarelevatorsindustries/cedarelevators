@@ -13,7 +13,7 @@ export function FeaturedProducts({ products = [] }: FeaturedProductsProps) {
   const displayProducts = (products.length > 0 ? products : []).slice(0, 8)
 
   return (
-    <section className="w-full py-8 sm:py-14 bg-white">
+    <section id="featured-products" className="w-full py-8 sm:py-14 bg-white">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Section Header with Orange & Blue Theme */}
         <div className="flex items-end justify-between mb-6 sm:mb-8">

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type {
     Banner,
@@ -24,7 +24,7 @@ export async function getBanners(filters?: BannerFilters): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('banners')
@@ -86,7 +86,7 @@ export async function getBannerById(id: string): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('banners')
@@ -131,7 +131,7 @@ export async function getBannersByPlacement(
             return { success: true, banners: [] }
         }
 
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('banners')
@@ -176,7 +176,7 @@ export async function getBannersByCollection(
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         let query = supabase
             .from('banners')
@@ -216,7 +216,7 @@ export async function createBanner(data: BannerFormData): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // VALIDATION: Only allow All Products Carousel
         const placement = data.placement || 'hero-carousel'
@@ -299,7 +299,7 @@ export async function updateBanner(id: string, data: Partial<BannerFormData>): P
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Prepare update data by mapping form fields to DB columns
         const updateData: any = { ...data }
@@ -352,7 +352,7 @@ export async function deleteBanner(id: string): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('banners')
@@ -383,7 +383,7 @@ export async function toggleBannerStatus(id: string): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Get current status
         const { data: current, error: fetchError } = await supabase
@@ -430,7 +430,7 @@ export async function reorderBanners(
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Update position for each banner
         const updates = orderedIds.map((id, index) =>

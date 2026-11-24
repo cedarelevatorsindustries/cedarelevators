@@ -26,11 +26,16 @@ export default function ProductCard({
   const { trackView } = useRecentlyViewed()
   const router = useRouter()
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Get variant and price info for wishlist
   // Use variant ID if available, otherwise use product ID as fallback
   const variantId = product.variants?.[0]?.id || product.id || ""
   const wishlistPrice = product.variants?.[0]?.calculated_price?.calculated_amount || product.variants?.[0]?.price || 0
-  const isWishlisted = isInWishlist(variantId)
+  const isWishlisted = mounted ? isInWishlist(variantId) : false
 
   // Track view on mount (only for default/special variants, not mobile list to avoid spam?)
   // User asked for "Recently Viewed - Help user resume browsing".
@@ -233,14 +238,6 @@ export default function ProductCard({
               <p className="text-xs font-medium text-orange-600">Price on request</p>
               <p className="text-[10px] text-gray-500">Request quote for pricing</p>
             </div>
-          )}
-
-          {/* Status Messages - Informational */}
-          {formattedPrice && (
-            <p className="text-[10px] text-orange-600 font-medium flex items-center gap-1">
-              <span className="w-1 h-1 bg-orange-600 rounded-full"></span>
-              Direct Manufacturer Pricing
-            </p>
           )}
 
           {/* CTA Buttons - Quote only (users add variants to cart from product detail page) */}
@@ -448,14 +445,6 @@ export default function ProductCard({
             <p className="text-sm font-medium text-orange-600">Price on request</p>
             <p className="text-xs text-gray-500">Request quote for pricing</p>
           </div>
-        )}
-
-        {/* Status Messages - Informational */}
-        {formattedPrice && (
-          <p className="text-xs text-orange-600 font-medium flex items-center gap-1">
-            <span className="w-1.5 h-1.5 bg-orange-600 rounded-full"></span>
-            Direct Manufacturer Pricing
-          </p>
         )}
 
         {/* CTA Buttons - Quote only (users add variants to cart from product detail page) */}

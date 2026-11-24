@@ -45,7 +45,12 @@ export async function createClerkSupabaseClient() {
     throw new Error('Supabase URL and Key are required. Check your environment variables.')
   }
 
-  const { getToken } = await auth()
+  let clerkAuth: any = null
+  try {
+    clerkAuth = await auth()
+  } catch (err) {
+    // If Clerk middleware is not active for this context, proceed without crashing
+  }
 
   return createClient(
     supabaseUrl,
@@ -55,13 +60,18 @@ export async function createClerkSupabaseClient() {
         // Use standard Clerk session token (native integration - NO template!)
         fetch: async (url, options = {}) => {
           // Get standard Clerk token without template (Native Integration method)
-          const clerkToken = await getToken()
+          let clerkToken: string | null = null
+          try {
+            if (clerkAuth?.getToken) {
+              clerkToken = await clerkAuth.getToken()
+            }
+          } catch {
+            // No clerk session token
+          }
 
           const headers = new Headers(options?.headers)
           if (clerkToken) {
             headers.set('Authorization', `Bearer ${clerkToken}`)
-          } else {
-            console.warn('createClerkSupabaseClient: No Clerk token found. Request will be anonymous.')
           }
 
           return fetch(url, {

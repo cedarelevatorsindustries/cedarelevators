@@ -16,7 +16,15 @@ import type {
 
 export async function getCollections(filters?: CollectionFilters) {
     try {
-        const supabase = await createClerkSupabaseClient()
+        let supabase
+        try {
+            supabase = await createClerkSupabaseClient()
+        } catch {
+            supabase = createAdminClient()
+        }
+        if (!supabase) {
+            supabase = createAdminClient()
+        }
 
         // Calculate pagination
         const page = filters?.page || 1

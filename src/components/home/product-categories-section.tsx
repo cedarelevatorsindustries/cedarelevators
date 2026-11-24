@@ -75,7 +75,7 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
             </p>
           </div>
           <Link
-            href="/categories"
+            href="/catalog"
             className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-orange-600 hover:text-blue-600 transition-colors"
           >
             <span>All Categories</span>

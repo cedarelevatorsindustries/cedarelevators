@@ -1,6 +1,6 @@
 'use server'
 
-import { createClerkSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { BannerSlide } from '@/lib/types/banners'
 
@@ -13,7 +13,7 @@ export async function getBannerSlides(bannerId: string): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('banner_slides')
@@ -50,7 +50,7 @@ export async function createBannerSlide(
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { data, error } = await supabase
             .from('banner_slides')
@@ -85,7 +85,7 @@ export async function updateBannerSlide(
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('banner_slides')
@@ -113,7 +113,7 @@ export async function deleteBannerSlide(slideId: string): Promise<{
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('banner_slides')
@@ -144,7 +144,7 @@ export async function reorderBannerSlides(
     error?: string
 }> {
     try {
-        const supabase = await createClerkSupabaseClient()
+        const supabase = createAdminClient()
 
         // Update each slide's sort_order
         const updates = slideIds.map((id, index) =>

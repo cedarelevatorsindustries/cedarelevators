@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { createServerClient } from '@supabase/ssr'
-import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Routes requiring administrative authentication
 const isAdminRoute = createRouteMatcher([
@@ -67,11 +67,7 @@ async function refreshAdminSupabaseSession(request: NextRequest, response: NextR
   return response
 }
 
-const clerkHandler = clerkMiddleware(async (auth, request) => {
-  // All customer-facing routes: continue with Clerk
-})
-
-export default async function middleware(request: NextRequest, event: NextFetchEvent) {
+export default clerkMiddleware(async (_auth, request) => {
   const url = request.nextUrl
   const rawHost =
     request.headers.get("x-forwarded-host") ||
@@ -170,10 +166,10 @@ export default async function middleware(request: NextRequest, event: NextFetchE
   }
 
   // =========================================================================
-  // 4. ALL OTHER CUSTOMER-FACING STOREFRONT ROUTES: DELEGATE TO CLERK
+  // 4. ALL OTHER CUSTOMER-FACING STOREFRONT ROUTES: ALLOW THROUGH
   // =========================================================================
-  return clerkHandler(request, event)
-}
+  return NextResponse.next()
+})
 
 export const config = {
   matcher: [

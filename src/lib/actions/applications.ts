@@ -12,11 +12,13 @@ import type {
 
 // Helper to ensure supabase client is not null
 async function ensureSupabase() {
-  const client = await createClerkSupabaseClient()
-  if (!client) {
-    throw new Error('Failed to create Supabase client')
+  try {
+    const client = await createClerkSupabaseClient()
+    if (client) return client
+  } catch {
+    // fallback to admin client
   }
-  return client
+  return createAdminClient()
 }
 
 // =============================================

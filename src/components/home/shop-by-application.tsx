@@ -43,7 +43,7 @@ export function ShopByApplication({ applications = [] }: ShopByApplicationProps)
     : DEFAULT_APPLICATIONS
 
   return (
-    <section className="w-full py-8 sm:py-14 bg-white">
+    <section id="applications" className="w-full py-8 sm:py-14 bg-white">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Header with Blue & Orange Theme */}
         <div className="flex items-end justify-between mb-6 sm:mb-8">
