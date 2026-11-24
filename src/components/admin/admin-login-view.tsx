@@ -83,7 +83,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center selection:bg-orange-500 selection:text-white"
+      className="fixed inset-0 h-[100dvh] max-h-[100dvh] w-full flex items-center justify-center overflow-hidden selection:bg-orange-500 selection:text-white"
       style={{ backgroundColor: '#000000' }}
       data-testid="admin-login-screen"
     >
@@ -91,20 +91,20 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
       {/* 1. DESKTOP VIEW (min-width: 768px): Un-dimmed video with BlurVignette     */}
       {/* ========================================================================= */}
       <div
-        className="hidden md:flex min-h-screen w-full p-2 lg:p-3 items-stretch justify-between"
+        className="hidden md:flex h-full w-full p-2 lg:p-3 items-stretch justify-between overflow-hidden"
         style={{ backgroundColor: '#000000' }}
       >
         {/* Left Side: Video Showcase Card (No dimming, vibrant video) */}
         <div
-          className="w-1/2 relative rounded-lg lg:rounded-xl overflow-hidden border border-zinc-800/70 shadow-2xl flex flex-col justify-between"
-          style={{ minHeight: 'calc(100vh - 1rem)', backgroundColor: '#090a0c' }}
+          className="w-1/2 relative rounded-xl lg:rounded-2xl overflow-hidden border border-zinc-800/80 shadow-2xl flex flex-col justify-between h-full"
+          style={{ backgroundColor: '#090a0c' }}
         >
           {/* Apple Vision Pro-style BlurVignette Wrapper without heavy dimming */}
           <BlurVignette
             radius="16px"
             inset="10px"
             transitionLength="100px"
-            blur="15px"
+            blur="16px"
             classname="w-full h-full overflow-hidden absolute inset-0"
           >
             <video
@@ -113,6 +113,13 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
               muted
               playsInline
               preload="auto"
+              ref={(el) => {
+                if (el) {
+                  el.defaultMuted = true
+                  el.muted = true
+                  el.play().catch(() => {})
+                }
+              }}
               className="w-full h-full object-cover object-center transition-all hover:scale-105 duration-700 pointer-events-none"
             >
               <source src="/videos/auth/elevator-machinery-showcase.mp4" type="video/mp4" />
@@ -120,13 +127,13 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             <BlurVignetteArticle />
           </BlurVignette>
 
-          {/* Top Left: Increased Logo Size */}
-          <div className="relative z-20 p-6 lg:p-8">
+          {/* Top Left: Cedar Elevators Brand Logo */}
+          <div className="relative z-20 p-5 lg:p-7">
             <Link href="/" className="inline-block group">
               <img
                 src="/logo/cedarelevators.webp"
                 alt="Cedar Elevators"
-                className="h-10 lg:h-12 w-auto object-contain brightness-125 drop-shadow-xl group-hover:opacity-90 transition-opacity"
+                className="h-9 lg:h-11 w-auto object-contain brightness-125 drop-shadow-xl group-hover:opacity-90 transition-opacity"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   target.src = '/logo/cedarelevators.png'
@@ -136,23 +143,26 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
           </div>
 
           {/* Bottom-Aligned Minimal Brand Copy (Drop-shadow for legibility) */}
-          <div className="relative z-20 p-6 lg:p-8 text-white flex flex-col justify-end">
-            <h2 className="text-xl lg:text-2xl font-semibold tracking-tight text-white leading-tight max-w-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+          <div className="relative z-20 p-5 lg:p-7 text-white flex flex-col justify-end">
+            <h2 className="text-xl lg:text-3xl font-semibold tracking-tight text-white leading-tight max-w-md drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
               Engineering Vertical Mobility.
             </h2>
-            <p className="text-xs lg:text-sm text-zinc-200 mt-2 font-normal leading-relaxed max-w-md drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
+            <p className="text-xs lg:text-sm text-zinc-200 mt-1.5 font-normal leading-relaxed max-w-md drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]">
               Precision components. Reliable solutions. Built for every journey.
             </p>
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400 mt-2.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+              CEDAR ELEVATORS INDUSTRIES
+            </span>
           </div>
         </div>
 
-        {/* Right Side: Spacious Form directly on Black Background */}
-        <div className="w-1/2 flex flex-col justify-between py-6 px-6 lg:px-14 xl:px-20 max-w-[560px] mx-auto">
+        {/* Right Side: Spacious Form directly on Black Background (Matches Reference) */}
+        <div className="w-1/2 h-full flex flex-col justify-between py-4 lg:py-6 px-6 lg:px-12 xl:px-16 max-w-[540px] mx-auto overflow-hidden">
           {/* Top Right: Subtle "Back to website" Link */}
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end mb-2">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors py-1.5 px-3 rounded-md hover:bg-zinc-900 border border-transparent hover:border-zinc-800"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-900 border border-transparent hover:border-zinc-800"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to website</span>
@@ -160,20 +170,20 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
           </div>
 
           {/* Centered Form Workspace */}
-          <div className="w-full max-w-[400px] mx-auto my-auto py-4">
-            <div className="mb-8">
+          <div className="w-full max-w-[390px] mx-auto my-auto py-2">
+            <div className="mb-6">
               <h1 className="text-3xl font-semibold text-white tracking-tight">
-                Welcome back
+                Welcome back.
               </h1>
-              <p className="text-sm text-zinc-400 mt-2 font-normal">
-                Sign in to access your administrative dashboard
+              <p className="text-sm text-zinc-400 mt-1.5 font-normal">
+                Sign in to access your admin workspace.
               </p>
             </div>
 
             {/* Success Alert */}
             {isSuccess && (
               <div
-                className="rounded-md p-3.5 flex items-start gap-2.5 mb-6 text-emerald-200 border"
+                className="rounded-lg p-3 flex items-start gap-2.5 mb-4 text-emerald-200 border"
                 style={{ backgroundColor: 'rgba(6, 78, 59, 0.3)', borderColor: 'rgba(5, 150, 105, 0.4)' }}
                 data-testid="admin-login-success"
               >
@@ -188,7 +198,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             {/* Error Message */}
             {error && (
               <div
-                className="rounded-md p-3.5 flex items-start gap-2.5 mb-6 text-red-200 border"
+                className="rounded-lg p-3 flex items-start gap-2.5 mb-4 text-red-200 border"
                 style={{ backgroundColor: 'rgba(127, 29, 29, 0.3)', borderColor: 'rgba(220, 38, 38, 0.4)' }}
                 data-testid="admin-login-error"
               >
@@ -200,13 +210,13 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
               </div>
             )}
 
-            {/* Desktop Form with Spacious Input Padding */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Desktop Form with Spacious Input Padding & Crisp Radii */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Address */}
               <div>
                 <label
                   htmlFor="desktop-email"
-                  className="block text-xs font-medium text-zinc-300 mb-2"
+                  className="block text-xs font-medium text-zinc-300 mb-1.5"
                 >
                   Email address <span className="text-orange-500">*</span>
                 </label>
@@ -218,8 +228,8 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="name@cedarelevators.in"
-                    className="w-full h-12 pl-10 pr-4 rounded-md text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/40 border transition-all"
-                    style={{ backgroundColor: '#0c0d0f', borderColor: '#202227' }}
+                    className="w-full h-11 pl-10 pr-4 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/40 border transition-all"
+                    style={{ backgroundColor: '#0c0d0f', borderColor: '#27272a' }}
                     required
                     disabled={isLoading || isSuccess}
                     data-testid="admin-login-email"
@@ -229,7 +239,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
 
               {/* Password */}
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="desktop-password"
                     className="block text-xs font-medium text-zinc-300"
@@ -252,8 +262,8 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Enter your password"
-                    className="w-full h-12 pl-10 pr-10 rounded-md text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/40 border transition-all"
-                    style={{ backgroundColor: '#0c0d0f', borderColor: '#202227' }}
+                    className="w-full h-11 pl-10 pr-10 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/40 border transition-all"
+                    style={{ backgroundColor: '#0c0d0f', borderColor: '#27272a' }}
                     required
                     disabled={isLoading || isSuccess}
                     data-testid="admin-login-password"
@@ -272,11 +282,11 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
               </div>
 
               {/* Primary Sign In Button */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
                   type="submit"
                   disabled={isLoading || isSuccess}
-                  className="w-full h-12 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-medium text-sm rounded-md transition duration-150 shadow-md shadow-orange-950/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full h-11 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-medium text-sm rounded-lg transition duration-150 shadow-md shadow-orange-950/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                   data-testid="admin-login-submit"
                 >
                   {isLoading ? (
@@ -306,10 +316,15 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                   )}
                 </button>
               </div>
+
+              {/* Authorized Personnel Only */}
+              <p className="text-center text-xs text-zinc-500 font-medium">
+                Authorized personnel only
+              </p>
             </form>
 
-            {/* Terms and Privacy Policy Note */}
-            <div className="mt-8 pt-4 border-t border-zinc-900 text-center">
+            {/* Terms and Privacy Policy Note (Matches Reference 1 & 4) */}
+            <div className="mt-6 pt-3 border-t border-zinc-900 text-center">
               <p className="text-[11px] text-zinc-500 font-normal leading-relaxed">
                 By signing in, you agree to Cedar Elevators{' '}
                 <Link
@@ -330,14 +345,14 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             </div>
           </div>
 
-          <div className="h-4" />
+          <div className="h-2" />
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. MOBILE VIEW (below 768px): Light Frosted Glassmorphism Card            */}
+      {/* 2. MOBILE VIEW (below 768px): Light Frosted Glassmorphism Card (Ref 2)    */}
       {/* ========================================================================= */}
-      <div className="flex md:hidden min-h-screen w-full relative overflow-x-hidden flex-col justify-center items-center p-4 sm:p-6">
+      <div className="flex md:hidden h-[100dvh] max-h-[100dvh] w-full relative overflow-hidden flex-col justify-center items-center p-4">
         {/* Full Viewport Un-Dimmed Video Background */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <video
@@ -346,19 +361,26 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             muted
             playsInline
             preload="auto"
+            ref={(el) => {
+              if (el) {
+                el.defaultMuted = true
+                el.muted = true
+                el.play().catch(() => {})
+              }
+            }}
             className="absolute inset-0 w-full h-full object-cover object-center"
           >
             <source src="/videos/auth/elevator-machinery-showcase.mp4" type="video/mp4" />
           </video>
         </div>
 
-        {/* Top Center Logo (Outside the card, no manual duplicate typography) */}
-        <div className="relative z-10 flex flex-col items-center justify-center mb-5">
+        {/* Top Center Logo (Outside card, no redundant manual text duplicate) */}
+        <div className="relative z-10 flex flex-col items-center justify-center mb-3">
           <Link href="/" className="inline-block group">
             <img
               src="/logo/cedarelevators.webp"
               alt="Cedar Elevators"
-              className="h-10 w-auto object-contain brightness-125 drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] group-hover:scale-105 transition-transform"
+              className="h-8 sm:h-9 w-auto object-contain brightness-125 drop-shadow-[0_4px_12px_rgba(0,0,0,0.7)] group-hover:scale-105 transition-transform"
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.src = '/logo/cedarelevators.png'
@@ -367,19 +389,19 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
           </Link>
         </div>
 
-        {/* Centered Floating Light Frosted Glass Card */}
+        {/* Centered Floating Light Frosted Glass Card (Clean borders, no awkward outlines) */}
         <div
-          className="relative z-10 w-full max-w-[400px] rounded-xl p-6 sm:p-7 shadow-2xl border"
+          className="relative z-10 w-full max-w-[380px] rounded-2xl p-5 sm:p-6 shadow-2xl"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.74)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            borderColor: 'rgba(255, 255, 255, 0.65)',
-            boxShadow: '0 24px 48px -12px rgba(0,0,0,0.35), 0 0 1px 1px rgba(255,255,255,0.85) inset'
+            backgroundColor: 'rgba(255, 255, 255, 0.82)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.75)',
+            boxShadow: '0 20px 40px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.4) inset'
           }}
         >
           {/* Header Row: Back Link */}
-          <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center justify-between gap-3 mb-3">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
               Admin Portal
             </span>
@@ -393,19 +415,19 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
           </div>
 
           {/* Heading */}
-          <div className="mb-6">
+          <div className="mb-4">
             <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
-              Welcome back
+              Welcome back.
             </h1>
-            <p className="text-xs text-zinc-600 mt-1 font-normal">
-              Sign in to your admin workspace
+            <p className="text-xs text-zinc-600 mt-0.5 font-normal">
+              Sign in to access your admin workspace.
             </p>
           </div>
 
           {/* Success Notification */}
           {isSuccess && (
             <div
-              className="rounded-md p-3 flex items-start gap-2 mb-4 bg-emerald-100/90 border border-emerald-400 text-emerald-900"
+              className="rounded-lg p-2.5 flex items-start gap-2 mb-3 bg-emerald-100/90 border border-emerald-400 text-emerald-900"
               data-testid="admin-login-success"
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -419,7 +441,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
           {/* Error Message */}
           {error && (
             <div
-              className="rounded-md p-3 flex items-start gap-2 mb-4 bg-red-100/90 border border-red-400 text-red-900"
+              className="rounded-lg p-2.5 flex items-start gap-2 mb-3 bg-red-100/90 border border-red-400 text-red-900"
               data-testid="admin-login-error"
             >
               <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
@@ -430,13 +452,13 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             </div>
           )}
 
-          {/* Mobile Form with Light Frosted Inputs & Crisp Radii */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Mobile Form with Clean Rounded-lg Inputs & No Awkward Outlines */}
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Email Address */}
             <div>
               <label
                 htmlFor="mobile-email"
-                className="block text-xs font-medium text-zinc-800 mb-1.5"
+                className="block text-xs font-medium text-zinc-800 mb-1"
               >
                 Email address <span className="text-orange-600">*</span>
               </label>
@@ -448,9 +470,10 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="name@cedarelevators.in"
-                  className="w-full h-11 pl-10 pr-4 rounded-md text-sm text-zinc-900 placeholder-zinc-500 border border-zinc-300/80 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition-all"
+                  className="w-full h-11 pl-10 pr-4 rounded-lg text-sm text-zinc-900 placeholder-zinc-500 border focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
                     outline: 'none'
                   }}
                   required
@@ -462,7 +485,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
 
             {/* Password */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <label
                   htmlFor="mobile-password"
                   className="block text-xs font-medium text-zinc-800"
@@ -485,9 +508,10 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Enter your password"
-                  className="w-full h-11 pl-10 pr-10 rounded-md text-sm text-zinc-900 placeholder-zinc-500 border border-zinc-300/80 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/30 transition-all"
+                  className="w-full h-11 pl-10 pr-10 rounded-lg text-sm text-zinc-900 placeholder-zinc-500 border focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
                     outline: 'none'
                   }}
                   required
@@ -511,7 +535,7 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
             <button
               type="submit"
               disabled={isLoading || isSuccess}
-              className="w-full h-11 mt-2 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-medium text-sm rounded-md transition duration-150 shadow-md shadow-orange-950/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-11 mt-1 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-medium text-sm rounded-lg transition duration-150 shadow-md shadow-orange-950/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               data-testid="admin-login-submit"
             >
               {isLoading ? (
@@ -540,20 +564,27 @@ export function AdminLoginView({ onLoginSuccess }: AdminLoginViewProps) {
                 'Sign in'
               )}
             </button>
+
+            {/* Authorized Personnel Only */}
+            <p className="text-center text-[11px] text-zinc-500 font-medium pt-0.5">
+              Authorized personnel only
+            </p>
           </form>
 
           {/* Terms & Privacy Note */}
-          <p className="text-center text-[11px] text-zinc-600 mt-5 font-normal leading-relaxed">
-            By signing in, you agree to our{' '}
-            <Link href="/terms" className="text-zinc-900 font-medium hover:text-orange-600 underline transition-colors">
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-zinc-900 font-medium hover:text-orange-600 underline transition-colors">
-              Privacy Policy
-            </Link>
-            .
-          </p>
+          <div className="mt-3 pt-2.5 border-t border-zinc-900/10 text-center">
+            <p className="text-[11px] text-zinc-600 font-normal leading-relaxed">
+              By signing in, you agree to our{' '}
+              <Link href="/terms" className="text-zinc-900 font-medium hover:text-orange-600 underline transition-colors">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="text-zinc-900 font-medium hover:text-orange-600 underline transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </div>
     </div>

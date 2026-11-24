@@ -240,6 +240,21 @@ async function runTests() {
     '/catalog/categories/gearless-motors'
   )
 
+  // Test 10: Production static video and asset requests on admin subdomain
+  await testRoute(
+    'Production admin video request (/videos/auth/elevator-machinery-showcase.mp4)',
+    'https://admin.cedarelevators.in/videos/auth/elevator-machinery-showcase.mp4',
+    'admin.cedarelevators.in',
+    'pass'
+  )
+
+  await testRoute(
+    'Production admin logo request (/logo/cedarelevators.webp)',
+    'https://admin.cedarelevators.in/logo/cedarelevators.webp',
+    'admin.cedarelevators.in',
+    'pass'
+  )
+
   console.log(`\nSimulation Results: ${passed} passed, ${failed} failed.`)
   if (failed > 0) process.exit(1)
 }

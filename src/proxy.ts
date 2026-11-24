@@ -96,8 +96,15 @@ export default async function middleware(request: NextRequest, event: NextFetchE
   // 1. ADMIN SUBDOMAIN ROUTING (admin.cedarelevators.in or admin.localhost:3000)
   // =========================================================================
   if (isAdminSubdomain) {
-    if (url.pathname.startsWith('/api/')) {
-      return NextResponse.next() // Allow API routes to pass through directly
+    if (
+      url.pathname.startsWith('/api/') ||
+      url.pathname.startsWith('/videos/') ||
+      url.pathname.startsWith('/logo/') ||
+      url.pathname.startsWith('/images/') ||
+      url.pathname.startsWith('/_next/') ||
+      url.pathname === '/favicon.ico'
+    ) {
+      return NextResponse.next() // Allow API routes and static media to pass through directly
     }
 
     // Redirect legacy login entry points to root on subdomain
@@ -171,7 +178,7 @@ export default async function middleware(request: NextRequest, event: NextFetchE
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|mp4|webm|ogg|mov|mp3|wav|m4a|avi)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

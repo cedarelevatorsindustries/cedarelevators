@@ -139,6 +139,32 @@ export default function RootLayout({
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://res.cloudinary.com" />
           <link rel="dns-prefetch" href="https://img.clerk.com" />
+
+          {/* Service Worker & Cache Purger to prevent stale bundle retention across browser profiles */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  if (typeof window !== 'undefined') {
+                    if ('serviceWorker' in navigator) {
+                      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                        for (var i = 0; i < registrations.length; i++) {
+                          registrations[i].unregister();
+                        }
+                      });
+                    }
+                    if ('caches' in window) {
+                      caches.keys().then(function(names) {
+                        for (var i = 0; i < names.length; i++) {
+                          caches.delete(names[i]);
+                        }
+                      });
+                    }
+                  }
+                })();
+              `,
+            }}
+          />
         </head>
         <body className={spaceGrotesk.variable}>
           <QueryProvider>
