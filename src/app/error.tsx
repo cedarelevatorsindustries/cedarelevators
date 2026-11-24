@@ -42,7 +42,7 @@ export default function Error({
                   Go to Homepage
                 </Link>
                 <Link
-                  href="/catalog"
+                  href="/products"
                   className="flex min-w-[140px] items-center justify-center rounded-lg h-12 px-6 bg-white hover:bg-[#f4ede7] transition-colors border border-[#e6dbd1] text-[#1c140d] text-base font-bold"
                 >
                   Browse Products

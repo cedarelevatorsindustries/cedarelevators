@@ -77,7 +77,7 @@ export function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevatorTypePro
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/catalog"
+              href="/products"
               className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-orange-600 hover:text-blue-600 transition-colors"
             >
               <span>All Types</span>
@@ -115,7 +115,7 @@ export function ShopByElevatorType({ elevatorTypes = [] }: ShopByElevatorTypePro
           {items.map((type) => (
             <Link
               key={type.slug}
-              href={`/catalog?type=${type.slug}`}
+              href={`/products?type=${type.slug}`}
               className="group relative rounded-xl overflow-hidden border border-zinc-200 shadow-xs hover:shadow-lg hover:border-blue-300 transition-all duration-300 w-[78vw] sm:w-[300px] md:w-[320px] lg:w-[340px] flex-shrink-0 snap-start aspect-[4/3] flex flex-col justify-end p-3.5 sm:p-5"
             >
               {/* Image */}

@@ -59,7 +59,7 @@ export function ShopByApplication({ applications = [] }: ShopByApplicationProps)
             </p>
           </div>
           <Link
-            href="/catalog"
+            href="/products"
             className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-orange-600 hover:text-blue-600 transition-colors"
           >
             <span>All Applications</span>
@@ -72,7 +72,7 @@ export function ShopByApplication({ applications = [] }: ShopByApplicationProps)
           {items.map((app) => (
             <Link
               key={app.slug}
-              href={`/catalog?application=${app.slug}`}
+              href={`/products?application=${app.slug}`}
               className="group relative rounded-xl overflow-hidden border border-zinc-200/80 shadow-2xs hover:shadow-md hover:border-blue-300 transition-all duration-300 w-[78vw] sm:w-[320px] md:w-auto flex-shrink-0 snap-center aspect-[4/3] flex flex-col justify-end p-4 sm:p-6"
             >
               {/* Background Image */}

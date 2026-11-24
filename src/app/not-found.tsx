@@ -49,7 +49,7 @@ export default function NotFound() {
               Go to Homepage
             </Link>
             <Link
-              href="/catalog"
+              href="/products"
               className="inline-flex items-center justify-center h-12 px-8 rounded-lg bg-white border border-[#e6dbd1] text-[#1c140d] text-base font-semibold hover:bg-[#f4ede7] transition-all shadow-sm"
             >
               <Package className="mr-2 h-5 w-5" />
