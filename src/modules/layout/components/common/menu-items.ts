@@ -4,14 +4,9 @@ import {
   FileText,
   Info,
   Phone,
-  CircleHelp,
   Grid3X3,
-  ShoppingCart,
-  Heart,
-  Bell,
-  ClipboardList,
-  UserPlus,
-  Settings
+  Bookmark,
+  ShieldCheck,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -21,62 +16,38 @@ export interface MenuItem {
   badge?: string
 }
 
-// Guest user more menu items
+// Guest & Phase 1 catalog/quote navigation items
+export const guestCatalogItems: MenuItem[] = [
+  { icon: Package, label: "Browse Products", href: "/products" },
+  { icon: Grid3X3, label: "All Categories", href: "/categories" },
+  { icon: Bookmark, label: "Quote List", href: "/wishlist" },
+  { icon: FileText, label: "Request a Quote", href: "/quotes/new" },
+]
+
 export const guestMoreMenuItems: MenuItem[] = [
-
-
-
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
-
 ]
 
-// Logged-in user more menu items (Contact and Help Center included for sticky navbar)
 export const loggedInMoreMenuItems: MenuItem[] = [
-  { icon: Truck, label: "Track Order", href: "/profile/orders" },
-
   { icon: Info, label: "About Us", href: "/about" },
   { icon: Phone, label: "Contact", href: "/contact" },
-
-]
-
-// Mobile hamburger menu items - Logged-in user
-export const loggedInShoppingItems: MenuItem[] = [
-  { icon: ShoppingCart, label: "My Cart", href: "/cart" },
-  { icon: Heart, label: "Saved Items / Wishlist", href: "/wishlist" }
-]
-
-export const loggedInActivityItems: MenuItem[] = [
-  { icon: FileText, label: "My Orders", href: "/profile/orders" },
-  { icon: Truck, label: "Track Order", href: "/track" },
-  { icon: Bell, label: "My Notifications", href: "/notifications" },
-
 ]
 
 export const companyInfoItems: MenuItem[] = [
   { icon: Info, label: "About Cedar", href: "/about" },
+  { icon: ShieldCheck, label: "Why Choose Cedar", href: "/why-choose" },
+  { icon: FileText, label: "Warranty Information", href: "/warranty" },
   { icon: Phone, label: "Contact Us", href: "/contact" },
-
 ]
 
 export const legalPolicyItems: MenuItem[] = [
-  { icon: FileText, label: "Terms & Privacy", href: "/terms" },
-  { icon: FileText, label: "Additional Legal Pages", href: "/legal" }
-]
-
-// Mobile hamburger menu items - Guest user
-// Note: Shopping and Get Started sections removed as per user requirements
-
-export const guestAboutItems: MenuItem[] = [
-  { icon: Settings, label: "Why Choose Cedar", href: "/why-cedar" },
-  { icon: FileText, label: "Warranty Information", href: "/warranty" },
-  { icon: Phone, label: "Contact Us", href: "/contact" }
-]
-
-export const guestLegalItems: MenuItem[] = [
-  { icon: FileText, label: "Privacy Policy", href: "/privacy-policy" },
-  { icon: FileText, label: "Terms & Conditions", href: "/terms-conditions" },
+  { icon: FileText, label: "Privacy Policy", href: "/privacy" },
+  { icon: FileText, label: "Terms & Conditions", href: "/terms" },
   { icon: Package, label: "Return Policy", href: "/return-policy" },
-  { icon: Truck, label: "Shipping Policy", href: "/shipping-policy" }
+  { icon: Truck, label: "Shipping Policy", href: "/shipping-policy" },
 ]
 
+export const guestAboutItems: MenuItem[] = companyInfoItems
+
+export const guestLegalItems: MenuItem[] = legalPolicyItems

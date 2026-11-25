@@ -80,8 +80,8 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
           </Link>
         </div>
 
-        {/* Categories Flex List - Left Aligned with Guaranteed Geometric Circle */}
-        <div className="flex flex-wrap items-start justify-start gap-8 sm:gap-10 md:gap-12 lg:gap-16">
+        {/* Categories Flex List - Horizontal Scroll (3 in a row) on Mobile, Wrapped on Desktop */}
+        <div className="flex flex-nowrap overflow-x-auto no-scrollbar gap-4 pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0 items-start justify-start sm:gap-10 md:gap-12 lg:gap-16">
           {items.map((cat) => {
             const firstLetter = (cat.name || "C").trim().charAt(0).toUpperCase()
 
@@ -89,11 +89,11 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
               <Link
                 key={cat.slug}
                 href={`/products?category=${cat.slug}`}
-                className="flex flex-col items-center text-center shrink-0"
+                className="flex flex-col items-center text-center shrink-0 w-[calc((100%-2rem)/3)] min-w-[96px] sm:w-auto sm:min-w-0"
               >
                 {/* Guaranteed 1:1 Geometric Circle Frame */}
                 <div
-                  className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 aspect-square rounded-full bg-white border-2 border-zinc-200 flex items-center justify-center overflow-hidden relative shrink-0 shadow-xs mb-3.5"
+                  className="w-20 h-20 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 aspect-square rounded-full bg-white border-2 border-zinc-200 flex items-center justify-center overflow-hidden relative shrink-0 shadow-xs mb-2 sm:mb-3.5"
                   style={{
                     aspectRatio: "1 / 1",
                   }}
@@ -102,20 +102,20 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
                     <img
                       src={cat.image}
                       alt={cat.name}
-                      className="w-18 h-18 sm:w-22 sm:h-22 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain pointer-events-none"
+                      className="w-12 h-12 sm:w-22 sm:h-22 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain pointer-events-none"
                       loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100/70 flex items-center justify-center">
-                      <span className="text-3xl sm:text-4xl md:text-5xl font-light text-blue-600 uppercase select-none">
+                      <span className="text-2xl sm:text-4xl md:text-5xl font-light text-blue-600 uppercase select-none">
                         {firstLetter}
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Category Name */}
-                <h3 className="type-product text-zinc-900 line-clamp-2 max-w-[160px] text-center">
+                {/* Category Name - Single line on mobile, 2 lines max on desktop */}
+                <h3 className="type-product text-xs sm:text-base text-zinc-900 truncate w-full sm:w-auto sm:whitespace-normal sm:line-clamp-2 sm:max-w-[160px] text-center">
                   {cat.name}
                 </h3>
               </Link>

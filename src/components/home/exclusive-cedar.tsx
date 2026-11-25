@@ -58,22 +58,20 @@ function EditorialContent() {
         </div>
       </div>
 
-      {/* CTAs */}
-      <div className="pt-4 flex flex-wrap items-center gap-4" style={{ gap: "1rem" }}>
+      {/* CTAs - Side-by-side on mobile, unchanged on desktop */}
+      <div className="pt-4 flex flex-row flex-nowrap sm:flex-wrap items-center gap-2.5 sm:gap-4">
         <Link
           href="/products"
-          className="type-button inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-600 hover:bg-orange-500 text-white transition-colors min-h-[44px]"
-          style={{ padding: "0.75rem 1.5rem" }}
+          className="type-button inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm rounded-lg bg-orange-600 hover:bg-orange-500 text-white transition-colors min-h-[44px] whitespace-nowrap flex-1 sm:flex-initial"
         >
           <span>Explore the Collection</span>
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
         </Link>
         <Link
           href="/quotes/new"
-          className="type-button inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 text-blue-100 transition-colors min-h-[44px]"
-          style={{ padding: "0.75rem 1.5rem" }}
+          className="type-button inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm rounded-lg border border-blue-500/30 bg-blue-950/40 hover:bg-blue-900/60 text-blue-100 transition-colors min-h-[44px] whitespace-nowrap flex-1 sm:flex-initial"
         >
-          <FileText className="w-4 h-4 text-blue-300" />
+          <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-300 flex-shrink-0" />
           <span>Request a Quote</span>
         </Link>
       </div>

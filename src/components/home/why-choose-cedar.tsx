@@ -49,8 +49,8 @@ export function WhyChooseCedar() {
           </p>
         </div>
 
-        {/* Full-Width 4-Column Grid with Minimal Padding */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+        {/* 2x2 Grid on Mobile, 4-Column Grid on Desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
           {VALUE_PROPOSITIONS.map((prop, idx) => {
             const Icon = prop.icon
             return (
