@@ -1,57 +1,84 @@
 'use client'
 
-import QuoteConfirmationPage from '@/modules/checkout/components/quote-confirmation-page'
+import React, { Suspense, useSyncExternalStore } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import QuoteConfirmationPage from '@/modules/checkout/components/quote-confirmation-page'
+import {
+  readLastQuoteSuccess,
+  formatIndiaDateTime,
+} from '@/modules/quote/components/shared/quote-confirmation-storage'
+
+const emptySubscribe = () => () => {}
 
 function QuoteSuccessContent() {
   const searchParams = useSearchParams()
+  const queryQuoteNumber = searchParams.get('quoteNumber')?.trim() || null
+  const queryItemsParam = searchParams.get('itemsCount')
+  const queryRequestType = searchParams.get('requestType')
+  const queryEmailStatus = searchParams.get('emailStatus')
 
-  const quoteId = searchParams.get('quoteId') || 'UNKNOWN'
-  const quoteNumber = searchParams.get('quoteNumber') || quoteId
-  const itemsCountParam = searchParams.get('itemsCount')
-  const parsedCount = itemsCountParam !== null ? parseInt(itemsCountParam, 10) : 0
-  const itemsCount = !isNaN(parsedCount) && parsedCount >= 0 ? parsedCount : 0
-  const requestTypeParam = searchParams.get('requestType')
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
 
-  const accountTypeText =
-    requestTypeParam === 'bulk'
-      ? 'Bulk Multi-Product Quote'
-      : requestTypeParam === 'single' || itemsCount === 1
-        ? 'Single-Product Quote'
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF9] pt-24 pb-16 px-4">
+        <div className="max-w-3xl mx-auto h-64 rounded-2xl bg-white border border-gray-200 animate-pulse" />
+      </div>
+    )
+  }
+
+  const stored = readLastQuoteSuccess(queryQuoteNumber)
+  const effectiveQuoteNumber = stored?.quoteNumber || queryQuoteNumber
+  const parsedCount =
+    queryItemsParam !== null && !Number.isNaN(parseInt(queryItemsParam, 10))
+      ? Math.max(0, parseInt(queryItemsParam, 10))
+      : 0
+  const effectiveItemsCount =
+    typeof stored?.itemsCount === 'number' ? stored.itemsCount : parsedCount
+
+  const effectiveRequestType = stored?.requestType || queryRequestType || 'general'
+  const requestTypeLabel =
+    effectiveRequestType === 'bulk' || effectiveItemsCount >= 2
+      ? 'Multi-Product Quotation'
+      : effectiveRequestType === 'single' || effectiveItemsCount === 1
+        ? 'Single-Product Quotation'
         : 'General Enquiry'
 
-  const now = new Date()
-  const submittedDate = now.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-  const submittedTime =
-    now.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }) + ' IST'
+  const submittedDateTime = stored?.submittedAt
+    ? formatIndiaDateTime(stored.submittedAt)
+    : effectiveQuoteNumber
+      ? formatIndiaDateTime(new Date().toISOString())
+      : null
+
+  const emailStatus: 'sent' | 'failed' =
+    stored?.emailStatus === 'failed' || queryEmailStatus === 'failed' ? 'failed' : 'sent'
 
   return (
     <QuoteConfirmationPage
-      quoteId={quoteId}
-      quoteNumber={quoteNumber}
-      submittedDate={submittedDate}
-      submittedTime={submittedTime}
-      accountType={accountTypeText}
-      isVerified={false}
-      itemsCount={itemsCount}
-      priority="Standard"
-      expectedResponseTime="24–48 business hours"
+      hasContext={Boolean(effectiveQuoteNumber)}
+      quoteNumber={effectiveQuoteNumber}
+      submittedDateTime={submittedDateTime}
+      requestTypeLabel={requestTypeLabel}
+      itemsCount={effectiveItemsCount}
+      customerEmail={stored?.customerEmail || null}
+      emailStatus={emailStatus}
     />
   )
 }
 
 export default function QuoteSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAFAF9] pt-24 pb-16 px-4">
+          <div className="max-w-3xl mx-auto h-64 rounded-2xl bg-white border border-gray-200 animate-pulse" />
+        </div>
+      }
+    >
       <QuoteSuccessContent />
     </Suspense>
   )

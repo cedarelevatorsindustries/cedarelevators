@@ -73,7 +73,7 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
                         }}
                     >
                         <Search className="mr-3 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Search orders, products...</span>
+                        <span className="truncate">Search quotations, customers, products...</span>
                         <div className="ml-auto hidden sm:flex items-center space-x-1">
                             <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-gray-100 px-1.5 font-mono text-[10px] font-medium text-gray-600">
                                 <Command className="h-3 w-3" />

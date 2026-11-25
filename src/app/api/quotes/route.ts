@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
         itemsCount: result.itemsCount,
         requestType: result.requestType,
         duplicate: result.duplicate,
+        emailStatus: result.emailStatus,
+        submittedAt: result.submittedAt,
         message: result.message,
       },
       { status: result.duplicate ? 200 : 201 }

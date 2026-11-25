@@ -12,8 +12,10 @@ export {
   getAdminQuotes,
   getAdminQuoteById,
   getAdminQuoteStats,
+  getAdminNewQuotesCount,
   getQuoteAuditLog,
   type AdminQuoteFilters,
+  type QuoteListMetrics,
 } from './quote-queries'
 
 export {

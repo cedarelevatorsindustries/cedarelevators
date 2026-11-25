@@ -4,4 +4,8 @@ export { QuoteItemsPricing } from './quote-items-pricing'
 export { CustomerNotesAttachments } from './customer-notes-attachments'
 export { DecisionPanel } from './decision-panel'
 export { QuoteSidebar } from './quote-sidebar'
-export { getStatusConfig, getUserTypeBadge, getRequestTypeBadge } from './quote-helpers'
+export {
+  getStatusConfig,
+  getRequestTypeBadge,
+  deriveEffectiveRequestType,
+} from './quote-helpers'

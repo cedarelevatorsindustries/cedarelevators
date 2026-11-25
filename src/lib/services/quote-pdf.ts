@@ -59,6 +59,7 @@ export interface QuotePdfPayload {
   grandTotal: number
   customerMessage?: string | null
   termsAndConditions?: string | null
+  isDraft?: boolean
 }
 
 function loadCedarLogoBase64(): string | null {
@@ -164,12 +165,17 @@ export function generateQuotationPdfBuffer(data: QuotePdfPayload): Buffer {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(15)
   doc.setTextColor(...brandOrange)
-  doc.text('QUOTATION', metaBoxX + metaBoxW - 4, metaBoxY + 8, { align: 'right' })
+  doc.text(
+    data.isDraft ? 'DRAFT PREVIEW' : 'QUOTATION',
+    metaBoxX + metaBoxW - 4,
+    metaBoxY + 8,
+    { align: 'right' }
+  )
 
   const metaRows: Array<[string, string]> = [
     ['Quote #:', data.quoteNumber],
-    ['Revision:', `Rev ${data.revisionNumber}`],
-    ['Issue Date:', formatDateIN(data.issuedAt)],
+    ['Revision:', data.isDraft ? 'Draft (Unissued)' : `Rev ${data.revisionNumber}`],
+    [data.isDraft ? 'Prepared:' : 'Issue Date:', formatDateIN(data.issuedAt)],
     ['Valid Until:', formatDateIN(data.validUntil)],
   ]
 

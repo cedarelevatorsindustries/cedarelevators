@@ -3,9 +3,10 @@
 import Link from "next/link"
 import NextImage from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { performAdminLogout } from "@/lib/auth/admin-logout"
+import { getAdminNewQuotesCount } from "@/lib/actions/admin-quotes/quote-queries"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -94,6 +95,19 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const [catalogExpanded, setCatalogExpanded] = useState(true)
     const [otherExpanded, setOtherExpanded] = useState(true)
+    const [newQuotesCount, setNewQuotesCount] = useState(0)
+
+    useEffect(() => {
+        let active = true
+        getAdminNewQuotesCount().then((res) => {
+            if (active && res.success) {
+                setNewQuotesCount(res.count)
+            }
+        })
+        return () => {
+            active = false
+        }
+    }, [pathname])
 
     const handleLogout = async () => {
         setIsLoggingOut(true)
@@ -154,7 +168,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                 asChild
                                 title={collapsed ? item.title : undefined}
                             >
-                                <Link href={item.href}>
+                                    <Link href={item.href}>
                                     <item.icon className={cn(
                                         "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                                         collapsed ? "" : "mr-2 lg:mr-3",
@@ -162,7 +176,22 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                             ? "text-white"
                                             : "text-gray-400 group-hover:text-gray-500"
                                     )} />
-                                    {!collapsed && <span className="truncate">{item.title}</span>}
+                                    {!collapsed && (
+                                        <span className="truncate flex-1 text-left">{item.title}</span>
+                                    )}
+                                    {!collapsed && item.href === "/admin/quotes" && newQuotesCount > 0 && (
+                                        <span
+                                            aria-label={`${newQuotesCount} new quotation submissions`}
+                                            className={cn(
+                                                "ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium tabular-nums",
+                                                pathname.startsWith("/admin/quotes")
+                                                    ? "bg-white/20 text-white"
+                                                    : "bg-orange-100 text-orange-700"
+                                            )}
+                                        >
+                                            {newQuotesCount > 99 ? "99+" : newQuotesCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </Button>
                         ))}
@@ -201,7 +230,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                 asChild
                                 title={collapsed ? item.title : undefined}
                             >
-                                <Link href={item.href}>
+                                    <Link href={item.href}>
                                     <item.icon className={cn(
                                         "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                                         collapsed ? "" : "mr-2 lg:mr-3",
@@ -209,7 +238,22 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                             ? "text-white"
                                             : "text-gray-400 group-hover:text-gray-500"
                                     )} />
-                                    {!collapsed && <span className="truncate">{item.title}</span>}
+                                    {!collapsed && (
+                                        <span className="truncate flex-1 text-left">{item.title}</span>
+                                    )}
+                                    {!collapsed && item.href === "/admin/quotes" && newQuotesCount > 0 && (
+                                        <span
+                                            aria-label={`${newQuotesCount} new quotation submissions`}
+                                            className={cn(
+                                                "ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium tabular-nums",
+                                                pathname.startsWith("/admin/quotes")
+                                                    ? "bg-white/20 text-white"
+                                                    : "bg-orange-100 text-orange-700"
+                                            )}
+                                        >
+                                            {newQuotesCount > 99 ? "99+" : newQuotesCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </Button>
                         ))}
@@ -248,7 +292,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                 asChild
                                 title={collapsed ? item.title : undefined}
                             >
-                                <Link href={item.href}>
+                                    <Link href={item.href}>
                                     <item.icon className={cn(
                                         "h-3.5 w-3.5 lg:h-4 lg:w-4 transition-colors flex-shrink-0",
                                         collapsed ? "" : "mr-2 lg:mr-3",
@@ -256,7 +300,22 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                                             ? "text-white"
                                             : "text-gray-400 group-hover:text-gray-500"
                                     )} />
-                                    {!collapsed && <span className="truncate">{item.title}</span>}
+                                    {!collapsed && (
+                                        <span className="truncate flex-1 text-left">{item.title}</span>
+                                    )}
+                                    {!collapsed && item.href === "/admin/quotes" && newQuotesCount > 0 && (
+                                        <span
+                                            aria-label={`${newQuotesCount} new quotation submissions`}
+                                            className={cn(
+                                                "ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-medium tabular-nums",
+                                                pathname.startsWith("/admin/quotes")
+                                                    ? "bg-white/20 text-white"
+                                                    : "bg-orange-100 text-orange-700"
+                                            )}
+                                        >
+                                            {newQuotesCount > 99 ? "99+" : newQuotesCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </Button>
                         ))}

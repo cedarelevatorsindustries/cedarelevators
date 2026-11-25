@@ -23,6 +23,16 @@ import {
 } from "lucide-react"
 
 const searchData = [
+    // Quotations
+    {
+        id: "quotations",
+        title: "Quotation Requests",
+        description: "Review, price, and issue customer quotations",
+        icon: FileText,
+        href: "/admin/quotes",
+        category: "Navigation"
+    },
+
     // Orders
     {
         id: "orders",
@@ -145,7 +155,7 @@ export function GlobalSearch() {
     return (
         <>
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput placeholder="Search orders, products, customers..." />
+                <CommandInput placeholder="Search quotations, customers, products..." />
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
 

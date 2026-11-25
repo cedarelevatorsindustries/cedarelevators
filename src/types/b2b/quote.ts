@@ -73,6 +73,14 @@ export interface QuoteMessage {
   created_at: string
 }
 
+export interface AdminInternalResponse {
+  id: string
+  quote_id: string
+  response_note: string
+  responded_by?: string | null
+  responded_at: string
+}
+
 export interface QuoteAttachment {
   id: string
   quote_id: string
@@ -201,6 +209,7 @@ export interface Quote {
   attachments?: QuoteAttachment[]
   revisions?: QuoteRevision[]
   notifications?: QuoteNotification[]
+  admin_responses?: AdminInternalResponse[]
 }
 
 export interface QuoteFilters {

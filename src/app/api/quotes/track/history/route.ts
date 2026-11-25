@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     const statusParam = request.nextUrl.searchParams.get('status') || 'all'
+    const sortParam = request.nextUrl.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest'
     const pageParam = parseInt(request.nextUrl.searchParams.get('page') || '1', 10)
     const page = !isNaN(pageParam) && pageParam >= 1 ? pageParam : 1
     const pageSize = 20
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
         { count: 'exact' }
       )
       .or(`requester_email.ilike.${emailNorm},guest_email.ilike.${emailNorm}`)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: sortParam === 'oldest' })
 
     if (statusParam !== 'all') {
       if (statusParam === 'quoted') {
@@ -80,13 +81,16 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    const total = count || 0
     return NextResponse.json({
       success: true,
       email: emailNorm,
       quotes,
-      total: count || 0,
+      total,
       page,
       pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      sort: sortParam,
     })
   } catch (err: any) {
     console.error('[GuestHistory] Error:', err)

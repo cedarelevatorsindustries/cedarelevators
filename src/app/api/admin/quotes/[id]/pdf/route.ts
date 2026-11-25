@@ -7,6 +7,7 @@ import {
 } from '@/lib/services/quote-pdf'
 import { getVerifiedCompanyConfig } from '@/lib/services/quote-notifications'
 import { calculateQuoteTotals } from '@/lib/utils/quote-pricing'
+import { logQuoteAction } from '@/lib/actions/admin-quotes/quote-audit'
 
 /**
  * Admin Quotation PDF Route:
@@ -176,9 +177,18 @@ export async function GET(
       customerMessage: quote.admin_response_message || null,
       termsAndConditions:
         quote.terms_and_conditions || storeSettings?.quote_terms_and_conditions || null,
+      isDraft: preview || Number(quote.current_revision || 0) === 0,
     })
 
-    const suffix = preview ? '-PREVIEW' : ''
+    if (preview) {
+      await logQuoteAction(quoteId, 'pdf_generated', {
+        actorType: 'admin',
+        notes: 'Admin generated Draft Quotation PDF preview',
+        metadata: { preview: true, quote_number: quote.quote_number },
+      })
+    }
+
+    const suffix = preview ? '-DRAFT-PREVIEW' : ''
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',

@@ -16,6 +16,7 @@ export type NavbarVariant =
   | 'account'
   | 'content-pages'
   | 'wishlist'
+  | 'quote'
 
 export interface NavbarConfig {
   // Layout
@@ -363,6 +364,36 @@ export const navbarConfig: Record<NavbarVariant, NavbarConfig> = {
       showSidebar: true,
     },
   },
+
+  // 11. Quotation Routes - Solid mobile header, focused experience
+  quote: {
+    position: 'fixed',
+    transparent: false,
+    scrollBehavior: 'sticky',
+    showMegaMenu: false,
+    showBrowseProducts: true,
+    showBreadcrumb: false,
+    showSecondaryFilterBar: false,
+    showStickyProductBar: false,
+    showCategoryHero: false,
+    searchVariant: 'full',
+    scrollThreshold: 0,
+    height: {
+      initial: 70,
+      scrolled: 70,
+    },
+    zIndex: {
+      initial: 1000,
+      scrolled: 1000,
+    },
+    mobile: {
+      showLogo: false,
+      showPageTitle: true,
+      transparentTopBar: false,
+      showBottomNav: false,
+      showSidebar: true,
+    },
+  },
 }
 
 /**
@@ -381,11 +412,8 @@ export function getNavbarVariant(pathname: string): NavbarVariant {
   // Catalog - Show page title with solid topbar
   if (pathname === '/catalog' || pathname.startsWith('/catalog/')) return 'browse-products'
 
-  // Quote pages - Show page title with bottom nav ONLY on listing page
-  if (pathname === '/quotes') return 'account'
-
-  // Quote detail pages - Hide bottom nav (secondary page)
-  if (pathname.startsWith('/quotes/')) return 'product-detail'
+  // Quotation Journey (/quotes, /quotes/new, /quotes/success, /quotes/track, /quotes/view/*)
+  if (pathname === '/quotes' || pathname.startsWith('/quotes/')) return 'quote'
 
   // Cart - Show page title
   if (pathname === '/cart') return 'account'

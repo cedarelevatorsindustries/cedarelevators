@@ -69,7 +69,7 @@ export const unifiedQuoteSchema = z
     notes: z
       .string()
       .trim()
-      .max(2000, 'Additional details cannot exceed 2000 characters')
+      .max(1000, 'Additional notes cannot exceed 1000 characters')
       .optional()
       .or(z.literal('')),
 

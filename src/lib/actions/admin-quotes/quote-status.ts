@@ -148,7 +148,15 @@ export async function issueQuotation(
       }
     }
 
-    // 1. Validate verified business & tax configuration
+    // 1. Validate customer email + verified business & tax configuration
+    const recipientEmail = (quote.requester_email || quote.guest_email || '').trim().toLowerCase()
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      return {
+        success: false,
+        error: 'A valid customer email address is required before issuing a quotation.',
+      }
+    }
+
     const { storeSettings, taxSettings } = await getVerifiedCompanyConfig()
     if (!storeSettings || !storeSettings.store_name) {
       return {
@@ -171,10 +179,19 @@ export async function issueQuotation(
           ? Number(quote.tax_rate)
           : Number(taxSettings?.default_gst_percentage || 0)
 
-    if (taxEnabled && (!Number.isFinite(configuredTaxRate) || configuredTaxRate <= 0)) {
-      return {
-        success: false,
-        error: 'GST rate must be configured (> 0%) when GST is enabled before issuing a quotation.',
+    const effectiveGstin = taxSettings?.store_gstin || storeSettings?.gst_number || null
+    if (taxEnabled) {
+      if (!Number.isFinite(configuredTaxRate) || configuredTaxRate <= 0) {
+        return {
+          success: false,
+          error: 'GST rate must be configured (> 0%) when GST is enabled before issuing a quotation.',
+        }
+      }
+      if (!effectiveGstin) {
+        return {
+          success: false,
+          error: 'Store GSTIN must be configured in Tax/Store Settings when GST is enabled before issuing.',
+        }
       }
     }
 
@@ -440,7 +457,6 @@ export async function issueQuotation(
     })
 
     // 8. Notify customer via outbox with fresh secure token & PDF download link
-    const recipientEmail = (quote.requester_email || quote.guest_email || '').trim().toLowerCase()
     if (recipientEmail && options.notifyCustomer !== false) {
       const rawToken = await issueAccessTokenForQuote(quoteId)
       const baseUrl = getAppBaseUrl()

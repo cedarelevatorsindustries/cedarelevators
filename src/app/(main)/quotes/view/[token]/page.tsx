@@ -8,7 +8,6 @@ import { checkAndExpireQuote, logQuoteAction } from '@/lib/actions/admin-quotes/
 import { CustomerQuoteView } from '@/modules/quote/components/customer-quote-view'
 import { buildSanitizedCustomerQuote } from '@/lib/services/quote-sanitizer'
 import { AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,11 +25,11 @@ export default async function SecureTokenQuoteViewPage({
   const rl = await checkRateLimit(`quote-view-page:ip:${ip}`, 40, 300)
   if (!rl.allowed) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-28 px-4 flex justify-center">
-        <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-4 h-fit">
+      <div className="min-h-screen bg-[#FAFAF9] pt-24 pb-16 px-4 flex justify-center">
+        <div className="max-w-[540px] w-full bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-8 text-center space-y-4 h-fit">
           <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
-          <h1 className="text-xl font-bold text-gray-900">Too Many Requests</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="type-subsection text-gray-900">Too Many Requests</h1>
+          <p className="type-body-sm text-gray-600">
             Please wait a few minutes before accessing this quotation link again.
           </p>
         </div>
@@ -43,31 +42,33 @@ export default async function SecureTokenQuoteViewPage({
 
   if (!verification.valid) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-28 px-4 flex justify-center">
-        <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-4 h-fit">
+      <div className="min-h-screen bg-[#FAFAF9] pt-24 pb-16 px-4 flex justify-center">
+        <div className="max-w-[540px] w-full bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-8 text-center space-y-4 h-fit">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="type-subsection text-gray-900">
             {verification.reason === 'expired'
               ? 'Quotation Link Expired'
               : verification.reason === 'revoked'
                 ? 'Quotation Link Revoked'
                 : 'Invalid Quotation Link'}
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="type-body-sm text-gray-600">
             {verification.reason === 'expired'
               ? 'This secure link has expired. Verify your email address to access all your Cedar Elevators quotations.'
               : 'We could not verify this quotation link. You can access your quotations securely by verifying your email address.'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Link href="/quotes/track" className="flex-1">
-              <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                Track by Email
-              </Button>
+            <Link
+              href="/quotes/track"
+              className="flex-1 inline-flex items-center justify-center px-5 py-2.5 bg-[#FF5A1F] hover:bg-[#e54e18] text-white rounded-lg text-sm transition-colors"
+            >
+              Track Your Quotations
             </Link>
-            <Link href="/quotes/new" className="flex-1">
-              <Button variant="outline" className="w-full">
-                New Quote Request
-              </Button>
+            <Link
+              href="/quotes/new"
+              className="flex-1 inline-flex items-center justify-center px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-lg text-sm transition-colors"
+            >
+              Request a Quotation
             </Link>
           </div>
         </div>

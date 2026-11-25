@@ -60,9 +60,31 @@ export async function saveQuoteCommercialPricing(
     const dbItems = quote.items || []
     const inputMap = new Map((input.items || []).map((i) => [i.id, i]))
 
+    if (input.taxEnabled && (!Number.isFinite(Number(input.taxRate)) || Number(input.taxRate) <= 0)) {
+      return {
+        success: false,
+        error: 'GST rate must be greater than 0% when tax is enabled. Verify Admin Tax Settings.',
+      }
+    }
+
+    const qtyChanges: Array<{
+      item_id: string
+      product_name: string
+      previous_quantity: number
+      new_quantity: number
+    }> = []
+
     const pricingInputs = dbItems.map((dbItem: any) => {
       const edited = inputMap.get(dbItem.id)
-      const qty = edited?.quantity && edited.quantity >= 1 ? Math.floor(edited.quantity) : dbItem.quantity
+      const qty = edited?.quantity && edited.quantity >= 1 ? Math.min(10000, Math.floor(edited.quantity)) : dbItem.quantity
+      if (edited && qty !== dbItem.quantity) {
+        qtyChanges.push({
+          item_id: dbItem.id,
+          product_name: dbItem.product_name,
+          previous_quantity: dbItem.quantity,
+          new_quantity: qty,
+        })
+      }
       const unitPrice = edited ? Math.max(0, Number(edited.unit_price) || 0) : Math.max(0, Number(dbItem.unit_price) || 0)
       const discPct = edited
         ? Math.min(100, Math.max(0, Number(edited.discount_percentage) || 0))
@@ -159,20 +181,31 @@ export async function saveQuoteCommercialPricing(
       newStatus: nextStatus,
       oldTotal: Number(quote.estimated_total) || 0,
       newTotal: totals.grand_total,
-      notes: 'Admin saved commercial pricing configuration',
+      notes:
+        qtyChanges.length > 0
+          ? `Admin saved commercial pricing & adjusted ${qtyChanges.length} item quantity(s)`
+          : 'Admin saved commercial pricing configuration',
       metadata: {
         subtotal: totals.subtotal,
         discount_total: totals.discount_total,
         tax_rate: totals.tax_rate,
         tax_total: totals.tax_total,
         grand_total: totals.grand_total,
+        ...(qtyChanges.length > 0 ? { qty_changes: qtyChanges } : {}),
       },
     })
+
+    if ((input.customerMessage || '').trim() !== (quote.admin_response_message || '').trim()) {
+      await logQuoteAction(quoteId, 'message_sent', {
+        actorType: 'admin',
+        notes: 'Customer response message updated',
+      })
+    }
 
     if ((input.internalNotes || '').trim() !== (quote.admin_internal_notes || '').trim()) {
       await logQuoteAction(quoteId, 'internal_note_added', {
         actorType: 'admin',
-        notes: 'Internal admin notes updated',
+        notes: 'Private internal admin notes updated',
       })
     }
 

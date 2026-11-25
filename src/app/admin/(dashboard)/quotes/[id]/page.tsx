@@ -10,12 +10,14 @@ import {
   issueQuotation,
   rejectQuote,
   retryQuoteNotification,
+  addAdminNote,
 } from '@/lib/actions/admin-quotes'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, FileText } from 'lucide-react'
+import { format, addDays } from 'date-fns'
 import { calculateQuoteTotals, formatINR } from '@/lib/utils/quote-pricing'
 import { canIssueQuoteStatus } from '@/lib/quote-state-machine'
 
@@ -27,11 +29,27 @@ import {
   DecisionPanel,
   QuoteSidebar,
   getStatusConfig,
-  getUserTypeBadge,
 } from '../../../../../domains/admin/components'
 
 interface AdminQuoteDetailProps {
   params: Promise<{ id: string }>
+}
+
+interface TaxConfigState {
+  gst_enabled: boolean
+  default_gst_percentage: number
+  store_gstin?: string | null
+  store_state?: string | null
+  use_cgst_sgst_igst?: boolean
+}
+
+interface StoreConfigState {
+  store_name: string
+  gst_number?: string | null
+  support_email?: string | null
+  support_phone?: string | null
+  default_quote_validity_days?: number | null
+  quote_terms_and_conditions?: string | null
 }
 
 export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) {
@@ -40,6 +58,8 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
 
   const [quote, setQuote] = useState<Quote | null>(null)
   const [auditLogs, setAuditLogs] = useState<QuoteAuditLog[]>([])
+  const [taxConfig, setTaxConfig] = useState<TaxConfigState | undefined>(undefined)
+  const [storeConfig, setStoreConfig] = useState<StoreConfigState | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isRetryingNotifId, setIsRetryingNotifId] = useState<string | null>(null)
@@ -47,9 +67,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
   const [editedItems, setEditedItems] = useState<QuoteItem[]>([])
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
-  // Commercial settings
-  const [taxEnabled, setTaxEnabled] = useState(true)
-  const [taxRate, setTaxRate] = useState(18)
+  // Commercial settings driven by store & tax configuration
+  const [taxEnabled, setTaxEnabled] = useState(false)
+  const [taxRate, setTaxRate] = useState(0)
   const [overallDiscountType, setOverallDiscountType] = useState<'fixed' | 'percentage'>('fixed')
   const [overallDiscountValue, setOverallDiscountValue] = useState(0)
   const [customGeneralAmount, setCustomGeneralAmount] = useState(0)
@@ -57,7 +77,6 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
   const [validUntilDays, setValidUntilDays] = useState(30)
   const [adminResponseMessage, setAdminResponseMessage] = useState('')
   const [adminInternalNotes, setAdminInternalNotes] = useState('')
-  const [gstWarning, setGstWarning] = useState<string | null>(null)
 
   // Confirmation Modals
   const [showIssueModal, setShowIssueModal] = useState(false)
@@ -74,6 +93,8 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
       if (result.success && result.quote) {
         const q = result.quote
         setQuote(q)
+        setTaxConfig(result.taxConfig)
+        setStoreConfig(result.storeConfig)
         setEditedItems(q.items || [])
         setAdminResponseMessage(q.admin_response_message || '')
         setAdminInternalNotes(q.admin_internal_notes || '')
@@ -85,14 +106,12 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
         const resolvedTaxEnabled =
           q.tax_enabled !== undefined && q.tax_enabled !== null
             ? Boolean(q.tax_enabled)
-            : result.taxConfig
-              ? Boolean(result.taxConfig.gst_enabled)
-              : true
+            : Boolean(result.taxConfig?.gst_enabled)
 
         const resolvedTaxRate =
           Number(q.tax_rate) > 0
             ? Number(q.tax_rate)
-            : Number(result.taxConfig?.default_gst_percentage || 18)
+            : Number(result.taxConfig?.default_gst_percentage || 0)
 
         setTaxEnabled(resolvedTaxEnabled)
         setTaxRate(resolvedTaxRate)
@@ -100,13 +119,6 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
         setOverallDiscountValue(Number(q.overall_discount_value || 0))
         if ((q.items || []).length === 0) {
           setCustomGeneralAmount(Number(q.subtotal || 0))
-        }
-
-        const effectiveGstin = result.taxConfig?.store_gstin || result.storeConfig?.gst_number
-        if (!effectiveGstin) {
-          setGstWarning('Store GSTIN is not configured in Tax/Store Settings.')
-        } else {
-          setGstWarning(null)
         }
 
         setHasUnsavedChanges(false)
@@ -129,6 +141,47 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
   useEffect(() => {
     loadQuote()
   }, [loadQuote])
+
+  // Derive original customer-submitted quantities cleanly from earliest qty audit event if adjusted previously
+  const submittedQuantities = useMemo(() => {
+    const origMap: Record<string, number> = {}
+    for (const item of quote?.items || []) {
+      origMap[item.id] = item.quantity
+    }
+    const chronological = [...auditLogs].reverse()
+    for (const log of chronological) {
+      const changes = (log.metadata as any)?.qty_changes
+      if (Array.isArray(changes)) {
+        for (const ch of changes) {
+          if (ch?.item_id && typeof ch?.previous_quantity === 'number') {
+            // Preserve the very first quantity before any admin adjustment
+            if (origMap[ch.item_id] === (quote?.items || []).find((i) => i.id === ch.item_id)?.quantity) {
+              origMap[ch.item_id] = ch.previous_quantity
+            }
+          }
+        }
+      }
+    }
+    return origMap
+  }, [quote?.items, auditLogs])
+
+  const configWarnings = useMemo(() => {
+    const warnings: string[] = []
+    if (!storeConfig || !storeConfig.store_name) {
+      warnings.push('Company profile is missing in Admin Store Settings.')
+    }
+    if (!taxConfig) {
+      warnings.push('Tax settings are not configured in Admin Tax Settings.')
+    }
+    const effectiveGstin = taxConfig?.store_gstin || storeConfig?.gst_number
+    if (taxEnabled && !effectiveGstin) {
+      warnings.push('Store GSTIN is not configured in Tax/Store Settings.')
+    }
+    if (taxEnabled && (!Number.isFinite(taxRate) || taxRate <= 0)) {
+      warnings.push('GST rate must be greater than 0% when GST is enabled.')
+    }
+    return warnings
+  }, [storeConfig, taxConfig, taxEnabled, taxRate])
 
   const calculatedTotals = useMemo(() => {
     const inputs =
@@ -166,7 +219,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     setIsSaving(false)
     if (result.success) {
       toast.success('Quotation moved to Under Review')
-      loadQuote()
+      await loadQuote()
     } else {
       toast.error(result.error || 'Failed to update status')
     }
@@ -216,10 +269,21 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     }
   }
 
+  const handleAddTimestampedInternalNote = async (noteText: string) => {
+    if (!quote) return
+    const result = await addAdminNote(quote.id, noteText, true)
+    if (result.success) {
+      toast.success('Internal note added')
+      await loadQuote()
+    } else {
+      toast.error(result.error || 'Failed to save note')
+    }
+  }
+
   const handlePreviewPdf = () => {
     if (!quote) return
     if (hasUnsavedChanges) {
-      toast.info('Save pricing first so preview reflects your latest edits.')
+      toast.info('Save draft pricing first so the preview reflects your latest edits.')
       return
     }
     window.open(`/api/admin/quotes/${quote.id}/pdf?preview=1`, '_blank', 'noopener,noreferrer')
@@ -231,8 +295,36 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     window.open(`/api/admin/quotes/${quote.id}/pdf${q}`, '_blank', 'noopener,noreferrer')
   }
 
-  const handleIssueConfirmed = async () => {
+  const handleOpenIssueModal = () => {
     if (!quote) return
+    if (hasUnsavedChanges) {
+      toast.error('Save your draft pricing changes before issuing this quotation.')
+      return
+    }
+    const recipientEmail = (quote.requester_email || quote.guest_email || '').trim()
+    if (!recipientEmail) {
+      toast.error('Customer email address is required before issuing a quotation.')
+      return
+    }
+    if (editedItems.length > 0) {
+      const missingPriceItem = editedItems.find((i) => !i.unit_price || Number(i.unit_price) <= 0)
+      if (missingPriceItem) {
+        toast.error(`Enter unit price (> 0) for "${missingPriceItem.product_name}" and save pricing.`)
+        return
+      }
+    } else if (calculatedTotals.grand_total <= 0) {
+      toast.error('Enter a valid quoted amount (> 0) for this general enquiry and save pricing.')
+      return
+    }
+    if (configWarnings.length > 0) {
+      toast.error(configWarnings[0])
+      return
+    }
+    setShowIssueModal(true)
+  }
+
+  const handleIssueConfirmed = async () => {
+    if (!quote || isSaving) return
     setIsSaving(true)
     try {
       const result = await issueQuotation(quote.id, {
@@ -249,7 +341,7 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
       })
 
       if (result.success) {
-        toast.success(`Quotation Revision ${result.revisionNumber} issued and sent to customer!`)
+        toast.success(`Quotation Revision ${result.revisionNumber} issued and sent to customer.`)
         setShowIssueModal(false)
         await loadQuote()
       } else {
@@ -263,14 +355,14 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
   const handleReject = async () => {
     if (!quote) return
     if (!rejectReason || rejectReason.trim().length < 3) {
-      toast.error('Please enter a rejection reason (at least 3 characters)')
+      toast.error('Please enter a rejection reason (at least 3 characters).')
       return
     }
     setIsSaving(true)
     try {
       const result = await rejectQuote(quote.id, rejectReason.trim(), true)
       if (result.success) {
-        toast.success('Quotation rejected and customer notified')
+        toast.success('Quotation rejected and customer notified.')
         setShowRejectModal(false)
         setRejectReason('')
         await loadQuote()
@@ -288,9 +380,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
     try {
       const result = await retryQuoteNotification(quote.id, notificationId)
       if (result.success) {
-        toast.success('Email notification sent successfully')
+        toast.success('Email notification sent.')
       } else {
-        toast.error(result.error || 'Retry failed')
+        toast.error(result.error || 'Email retry failed')
       }
       await loadQuote()
     } finally {
@@ -301,20 +393,23 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
   if (isLoading || !quote) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+        <Loader2 className="w-7 h-7 animate-spin text-orange-600" />
       </div>
     )
   }
 
   const statusConfig = getStatusConfig(quote.status)
-  const userTypeBadge = getUserTypeBadge(quote.account_type)
+  const customerName =
+    quote.requester_name || quote.guest_name || quote.company_details?.contact_name || 'Customer'
+  const companyName = quote.company_name || quote.company_details?.company_name || null
+  const customerEmail = quote.requester_email || quote.guest_email || ''
+  const projectedValidUntil = addDays(new Date(), validUntilDays)
 
   return (
     <div className="space-y-6 pb-12" data-testid="admin-quote-detail">
       <QuoteHeader
         quote={quote}
         statusConfig={statusConfig}
-        userTypeBadge={userTypeBadge}
         isSaving={isSaving}
         canReview={canReview}
         canIssue={canIssue}
@@ -323,19 +418,22 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
         onStartReview={handleStartReview}
         onPreviewPdf={handlePreviewPdf}
         onDownloadLatestPdf={() => handleDownloadRevisionPdf(quote.current_revision)}
-        onIssueClick={() => setShowIssueModal(true)}
+        onIssueClick={handleOpenIssueModal}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* Main Column */}
+        <div className="xl:col-span-8 space-y-6">
           <BusinessInformation quote={quote} />
 
           <QuoteItemsPricing
             items={editedItems}
+            submittedQuantities={submittedQuantities}
             canEditPricing={canEditPricing}
             hasUnsavedChanges={hasUnsavedChanges}
             isSaving={isSaving}
             calculatedTotals={calculatedTotals}
+            taxConfig={taxConfig}
             taxEnabled={taxEnabled}
             taxRate={taxRate}
             overallDiscountType={overallDiscountType}
@@ -370,7 +468,8 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
           <CustomerNotesAttachments quote={quote} />
         </div>
 
-        <div className="space-y-6">
+        {/* Secondary Column */}
+        <div className="xl:col-span-4 space-y-6">
           <DecisionPanel
             canEditPricing={canEditPricing}
             isReissue={isReissue}
@@ -379,7 +478,8 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
             validUntilDays={validUntilDays}
             adminResponseMessage={adminResponseMessage}
             adminInternalNotes={adminInternalNotes}
-            gstWarning={gstWarning}
+            adminResponses={quote.admin_responses || []}
+            configWarnings={configWarnings}
             onValidUntilDaysChange={setValidUntilDays}
             onResponseMessageChange={(v) => {
               setHasUnsavedChanges(true)
@@ -389,8 +489,9 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
               setHasUnsavedChanges(true)
               setAdminInternalNotes(v)
             }}
+            onAddTimestampedInternalNote={handleAddTimestampedInternalNote}
             onPreviewPdf={handlePreviewPdf}
-            onIssueClick={() => setShowIssueModal(true)}
+            onIssueClick={handleOpenIssueModal}
             onReject={() => setShowRejectModal(true)}
           />
 
@@ -407,42 +508,83 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
       {/* Confirm Issue Quotation Modal */}
       {showIssueModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-white">
+          <Card className="w-full max-w-lg bg-white border-gray-200">
             <CardContent className="pt-6 space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold text-gray-900">
                   {isReissue
-                    ? `Reissue Quotation (Revision ${(quote.current_revision || 1) + 1})`
-                    : 'Confirm Quotation Issuance'}
+                    ? `Confirm Reissue (Revision ${(quote.current_revision || 1) + 1})`
+                    : 'Confirm Issue & Send Quotation'}
                 </h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowIssueModal(false)}>
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-sm text-gray-600">
-                This will generate the official PDF ({formatINR(calculatedTotals.grand_total)}), store an immutable revision snapshot, mark the quotation as <strong>Quoted</strong>, and email the customer.
+
+              <p className="text-sm text-gray-600 leading-relaxed">
+                This will generate and verify the official quotation PDF, store an immutable revision snapshot, mark the quotation as <strong>Quoted</strong>, and email the customer.
               </p>
-              <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 space-y-1">
-                <p><strong>Grand Total:</strong> {formatINR(calculatedTotals.grand_total)}</p>
-                <p><strong>Validity:</strong> {validUntilDays} days from today</p>
-                <p><strong>Recipient:</strong> {quote.requester_email || quote.guest_email}</p>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs sm:text-sm text-gray-700 space-y-2">
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Quotation Number</span>
+                  <span className="font-mono font-medium text-gray-900">#{quote.quote_number}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Customer</span>
+                  <span className="font-medium text-gray-900 text-right">
+                    {customerName}
+                    {companyName ? ` (${companyName})` : ''}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Email Destination</span>
+                  <span className="font-medium text-gray-900 text-right break-all">
+                    {customerEmail}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-gray-500">Valid Until</span>
+                  <span className="font-medium text-gray-900">
+                    {format(projectedValidUntil, 'dd MMM yyyy')} ({validUntilDays} days)
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-gray-200 flex justify-between gap-2 items-baseline">
+                  <span className="font-medium text-gray-900">Grand Total</span>
+                  <span className="text-base font-semibold text-orange-600 tabular-nums">
+                    {formatINR(calculatedTotals.grand_total)}
+                  </span>
+                </div>
               </div>
-              <div className="flex gap-3 pt-2">
+
+              <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
                 <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePreviewPdf}
+                  disabled={isSaving}
+                  className="border-gray-300"
+                >
+                  <FileText className="w-4 h-4 mr-1.5" />
+                  Preview Draft PDF
+                </Button>
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={() => setShowIssueModal(false)}
                   disabled={isSaving}
-                  className="flex-1"
+                  className="sm:ml-auto"
                 >
                   Cancel
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleIssueConfirmed}
                   disabled={isSaving}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
-                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  {isSaving ? 'Issuing...' : 'Confirm & Issue'}
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  {isSaving ? 'Issuing Quotation...' : 'Confirm & Issue'}
                 </Button>
               </div>
             </CardContent>
@@ -453,23 +595,23 @@ export default function AdminQuoteDetailPage({ params }: AdminQuoteDetailProps) 
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-white">
+          <Card className="w-full max-w-md bg-white border-gray-200">
             <CardContent className="pt-6 space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Reject Quotation</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Reject Quotation Request</h3>
                 <Button variant="ghost" size="sm" onClick={() => setShowRejectModal(false)}>
                   <X className="w-4 h-4" />
                 </Button>
               </div>
               <p className="text-xs text-gray-600">
-                Provide a clear reason for rejecting this request. This reason will be included in the customer notification.
+                Provide a clear reason for declining this request. This explanation will be included in the customer update.
               </p>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Enter rejection reason..."
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 resize-none text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none text-sm outline-none"
               />
               <div className="flex gap-3">
                 <Button

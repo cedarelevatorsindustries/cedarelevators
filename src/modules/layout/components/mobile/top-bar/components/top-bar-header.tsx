@@ -30,7 +30,8 @@ export function TopBarHeader({
     '/cart',
     '/profile',
     '/account',
-    '/quotes/new'
+    '/quotes/new',
+    '/quotes/track',
   ].includes(pathname)
 
   const getPageTitle = () => {
@@ -51,8 +52,14 @@ export function TopBarHeader({
     }
 
     if (pathname === '/cart') return 'Cart'
-    if (pathname === '/quotes/new') return 'Quote'
-    if (pathname.startsWith('/quotes/') && pathname !== '/quotes/new') return 'Quote Details'
+    if (pathname === '/quotes/new') return 'Request a Quotation'
+    if (pathname === '/quotes/success') return 'Confirmation'
+    if (pathname === '/quotes/track') return 'Track Quotations'
+    if (pathname === '/quotes/track/verify') return 'Verify Email'
+    if (pathname.startsWith('/quotes/track/') || pathname.startsWith('/quotes/view/')) {
+      return 'Quotation Details'
+    }
+    if (pathname.startsWith('/quotes/')) return 'Quotation'
     if (pathname === '/profile' || pathname === '/account') return 'My Cedar'
     if (pathname.startsWith('/profile/orders/') && pathname !== '/profile/orders') return 'Order Detail'
 

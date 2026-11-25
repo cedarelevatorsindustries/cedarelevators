@@ -22,6 +22,8 @@ export type SubmitQuoteResult =
       itemsCount: number
       requestType: 'general' | 'single' | 'bulk'
       duplicate: boolean
+      emailStatus: 'sent' | 'failed'
+      submittedAt: string
       message: string
     }
   | {
@@ -268,6 +270,9 @@ export async function submitUnifiedQuote(rawInput: any): Promise<SubmitQuoteResu
   const isDuplicate = Boolean(rpcResult.duplicate)
 
   // Dispatch emails only for newly created quotes (never duplicate alerts on idempotent retries)
+  const submittedAt = new Date().toISOString()
+  let emailStatus: 'sent' | 'failed' = 'sent'
+
   if (!isDuplicate) {
     const { storeSettings, adminRecipient } = await getVerifiedCompanyConfig()
     const baseUrl = getAppBaseUrl()
@@ -280,7 +285,7 @@ export async function submitUnifiedQuote(rawInput: any): Promise<SubmitQuoteResu
     })
 
     // Fire both outbox notifications cleanly without letting email failure fail quote creation
-    await Promise.allSettled([
+    const [customerNotifResult] = await Promise.allSettled([
       dispatchQuoteNotification({
         quoteId,
         eventType: 'customer_submission_confirmation',
@@ -330,6 +335,13 @@ export async function submitUnifiedQuote(rawInput: any): Promise<SubmitQuoteResu
           })
         : Promise.resolve(),
     ])
+
+    if (
+      customerNotifResult.status === 'rejected' ||
+      (customerNotifResult.status === 'fulfilled' && !customerNotifResult.value.success)
+    ) {
+      emailStatus = 'failed'
+    }
   }
 
   return {
@@ -339,7 +351,9 @@ export async function submitUnifiedQuote(rawInput: any): Promise<SubmitQuoteResu
     itemsCount,
     requestType,
     duplicate: isDuplicate,
+    emailStatus,
+    submittedAt,
     message:
-      'Your quotation request has been submitted. Our technical team will review and respond shortly.',
+      'Your quotation request has been submitted. Our engineering team will review your requirements.',
   }
 }

@@ -150,8 +150,6 @@ export default async function NewQuotePage(props: PageProps) {
   }
 
   return (
-    <div className="container py-8 pt-24 max-w-7xl mx-auto px-4">
-      <QuoteForm initialItems={initialItems} fromQuoteList={fromSource === 'quote-list'} />
-    </div>
+    <QuoteForm initialItems={initialItems} fromQuoteList={fromSource === 'quote-list'} />
   )
 }

@@ -1,327 +1,252 @@
-"use client"
+'use client'
 
-import { useEffect, useState, useRef } from 'react'
-import Lottie, { LottieRefCurrentProps } from 'lottie-react'
-import { FileText, CheckCircle2, Search, Gavel, Mail, Clock, Eye, Download, HelpCircle, ArrowRight, User, Copy, Check } from 'lucide-react'
+import React, { useState } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import {
+  CheckCircle2,
+  Copy,
+  Check,
+  Mail,
+  ArrowRight,
+  AlertCircle,
+  FileSearch,
+  ClipboardCheck,
+  Send,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { QuotationPageShell } from '@/modules/quote/components/shared/quotation-page-shell'
+import { QuotationStatusBadge } from '@/modules/quote/components/shared/quotation-status-badge'
 
-interface TimelineStep {
-    icon: React.ReactNode
-    title: string
-    description: string
-    status: 'completed' | 'current' | 'pending'
+export interface QuoteConfirmationProps {
+  hasContext: boolean
+  quoteNumber?: string | null
+  submittedDateTime?: string | null
+  requestTypeLabel?: string
+  itemsCount?: number
+  customerEmail?: string | null
+  emailStatus?: 'sent' | 'failed'
 }
 
-interface QuoteConfirmationProps {
-    quoteId: string              // UUID for linking
-    quoteNumber: string          // Formatted for display (e.g., CED-QT-BZ-260116-000123)
-    submittedDate: string
-    submittedTime: string
-    accountType: string
-    isVerified?: boolean
-    itemsCount: number
-    priority: string
-    expectedResponseTime: string
-}
+const PROCESS_STAGES = [
+  {
+    icon: CheckCircle2,
+    title: 'Request received',
+    description: 'Your quotation request has been logged in our system.',
+    active: true,
+  },
+  {
+    icon: FileSearch,
+    title: 'Requirements reviewed',
+    description: 'Our technical team reviews specifications and component quantities.',
+    active: false,
+  },
+  {
+    icon: ClipboardCheck,
+    title: 'Quotation prepared',
+    description: 'Itemized commercial terms, taxes, and validity are finalized.',
+    active: false,
+  },
+  {
+    icon: Send,
+    title: 'Quotation sent',
+    description: 'Your formal PDF quotation is emailed and available to download.',
+    active: false,
+  },
+]
 
 export default function QuoteConfirmationPage({
-    quoteId,
-    quoteNumber,
-    submittedDate,
-    submittedTime,
-    accountType,
-    isVerified = false,
-    itemsCount,
-    priority,
-    expectedResponseTime = '24–48 business hours',
+  hasContext,
+  quoteNumber,
+  submittedDateTime,
+  requestTypeLabel = 'Quotation Request',
+  itemsCount = 0,
+  customerEmail,
+  emailStatus = 'sent',
 }: QuoteConfirmationProps) {
-    const [animationData, setAnimationData] = useState<any>(null)
-    const [animationComplete, setAnimationComplete] = useState(false)
-    const [copied, setCopied] = useState(false)
-    const [showStickyHeader, setShowStickyHeader] = useState(false)
-    const lottieRef = useRef<LottieRefCurrentProps>(null)
-    const headerRef = useRef<HTMLDivElement>(null)
+  const [copied, setCopied] = useState(false)
 
-    useEffect(() => {
-        fetch('/animation/Tick Animation.json')
-            .then(res => res.json())
-            .then(data => setAnimationData(data))
-            .catch(err => console.error('Failed to load animation:', err))
+  const handleCopy = () => {
+    if (!quoteNumber) return
+    navigator.clipboard?.writeText(quoteNumber)
+    setCopied(true)
+    toast.success('Quotation reference copied')
+    setTimeout(() => setCopied(false), 2000)
+  }
 
-        // Show email confirmation toast
-        const timer = setTimeout(() => {
-            toast.success('We\'ve emailed the details to you', {
-                duration: 4000,
-            })
-        }, 1500)
-
-        // Sticky header on scroll (mobile)
-        const handleScroll = () => {
-            if (headerRef.current) {
-                const headerBottom = headerRef.current.getBoundingClientRect().bottom
-                setShowStickyHeader(headerBottom < 0)
-            }
-        }
-
-        window.addEventListener('scroll', handleScroll)
-        return () => {
-            window.removeEventListener('scroll', handleScroll)
-            clearTimeout(timer)
-        }
-    }, [])
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(quoteNumber)
-        setCopied(true)
-        toast.success('Quote ID copied to clipboard')
-        setTimeout(() => setCopied(false), 2000)
-    }
-
-    const timelineSteps: TimelineStep[] = [
-        {
-            icon: <CheckCircle2 className="w-4 h-4" />,
-            title: 'Quote Received',
-            description: 'Application successfully logged in our system.',
-            status: 'current',
-        },
-        {
-            icon: <Search className="w-4 h-4" />,
-            title: 'Internal Review',
-            description: 'Pricing, bulk discounts, and tax verification.',
-            status: 'pending',
-        },
-        {
-            icon: <Gavel className="w-4 h-4" />,
-            title: 'Final Approval',
-            description: 'Sales manager sign-off on custom terms.',
-            status: 'pending',
-        },
-        {
-            icon: <Mail className="w-4 h-4" />,
-            title: 'Notification',
-            description: 'You will receive an email with the final PDF offer.',
-            status: 'pending',
-        },
-    ]
-
+  if (!hasContext || !quoteNumber) {
     return (
-        <div className="min-h-screen bg-gray-50 pt-36 pb-12 px-4">
-            {/* Sticky Header - Mobile Only */}
-            <div
-                className={`fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-md transition-transform duration-300 lg:hidden ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'
-                    }`}
+      <QuotationPageShell maxWidth="narrow">
+        <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm p-6 sm:p-8 text-center space-y-5">
+          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto text-gray-600">
+            <FileSearch className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h1 className="type-subsection text-gray-900">Quotation Status &amp; Confirmation</h1>
+            <p className="type-body-sm text-gray-600">
+              Your recent submission summary is not stored in this browser session. You can verify your email anytime to view all submitted requests.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Link
+              href="/quotes/track"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#FF5A1F] hover:bg-[#e54e18] text-white rounded-lg text-sm transition-colors"
             >
-                <div className="flex items-center justify-between px-4 py-3">
-                    <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quote ID</p>
-                        <p className="text-lg font-bold font-mono text-gray-900">#{quoteNumber}</p>
-                    </div>
-                    <button
-                        onClick={copyToClipboard}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Copy quote ID"
-                    >
-                        {copied ? (
-                            <Check className="w-5 h-5 text-green-600" />
-                        ) : (
-                            <Copy className="w-5 h-5 text-gray-400" />
-                        )}
-                    </button>
-                </div>
-            </div>
-            <div className="max-w-4xl mx-auto">
-                {/* Success Icon */}
-                <div ref={headerRef} className="flex flex-col items-center text-center mb-10">
-                    <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
-                        {!animationComplete ? (
-                            animationData && (
-                                <Lottie
-                                    lottieRef={lottieRef}
-                                    animationData={animationData}
-                                    loop={false}
-                                    autoplay={true}
-                                    style={{ width: 80, height: 80 }}
-                                    onComplete={() => setAnimationComplete(true)}
-                                />
-                            )
-                        ) : (
-                            <img
-                                src="/animation/tick.svg"
-                                alt="Success"
-                                className="w-12 h-12"
-                            />
-                        )}
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-green-600 mb-3">
-                        Quote Request Submitted Successfully!
-                    </h1>
-                    <p className="text-green-600 text-lg max-w-lg leading-relaxed">
-                        Your quotation request has been received and is under review.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Left Column */}
-                    <div className="lg:col-span-7 space-y-6">
-                        {/* Quote Summary Card */}
-                        <Card className="overflow-hidden shadow-sm">
-                            <div className="p-6">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className="flex items-start gap-2">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                                                Reference ID
-                                            </p>
-                                            <h2 className="text-2xl font-bold font-mono text-gray-900">#{quoteNumber}</h2>
-                                        </div>
-                                        <button
-                                            onClick={copyToClipboard}
-                                            className="mt-6 p-1.5 hover:bg-gray-100 rounded-md transition-colors group"
-                                            aria-label="Copy quote ID"
-                                        >
-                                            {copied ? (
-                                                <Check className="w-4 h-4 text-green-600" />
-                                            ) : (
-                                                <Copy className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <span className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-semibold rounded-md border border-orange-200">
-                                        RECEIVED
-                                    </span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-y-6 gap-x-4">
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-1">Date &amp; Time</p>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            {submittedDate} • {submittedTime}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-1">Request Type</p>
-                                        <div className="flex items-center gap-1.5">
-                                            {isVerified && (
-                                                <CheckCircle2 className="w-4 h-4 text-blue-500" />
-                                            )}
-                                            <p className="text-sm font-medium text-gray-900">{accountType}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-1">Items Included</p>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            {itemsCount === 0
-                                              ? 'General Enquiry (0 Items)'
-                                              : `${itemsCount} ${itemsCount === 1 ? 'Product' : 'Products'} Requested`}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 mb-1">Priority</p>
-                                        <p className="text-sm font-medium text-gray-900">{priority}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Processing Timeline */}
-                        <Card className="p-6 shadow-sm">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-8 flex items-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                Processing Timeline
-                            </h3>
-
-                            <div className="relative space-y-0">
-                                {timelineSteps.map((step, index) => (
-                                    <div key={index} className="flex gap-4">
-                                        <div className="flex flex-col items-center">
-                                            {/* Icon Circle */}
-                                            <div
-                                                className={`z-10 w-8 h-8 rounded-full flex items-center justify-center ${step.status === 'current'
-                                                    ? 'bg-blue-600 text-white ring-4 ring-blue-50'
-                                                    : step.status === 'completed'
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'bg-gray-100 border-2 border-gray-200 text-gray-400'
-                                                    }`}
-                                            >
-                                                {step.icon}
-                                            </div>
-
-                                            {/* Connecting Line */}
-                                            {index < timelineSteps.length - 1 && (
-                                                <div
-                                                    className={`h-12 w-0.5 ${step.status === 'completed'
-                                                        ? 'bg-blue-600'
-                                                        : 'bg-gradient-to-b from-gray-200 via-gray-200 to-transparent bg-[length:2px_8px] bg-repeat-y'
-                                                        }`}
-                                                ></div>
-                                            )}
-                                        </div>
-
-                                        <div className="pt-1">
-                                            <h4
-                                                className={`text-sm font-semibold ${step.status === 'current' ? 'text-gray-900' : 'text-gray-600'
-                                                    }`}
-                                            >
-                                                {step.title}
-                                            </h4>
-                                            <p className="text-xs text-gray-400 mt-0.5">{step.description}</p>
-                                            {step.status === 'current' && (
-                                                <span className="text-[10px] font-bold text-blue-600 mt-1 inline-block">
-                                                    CURRENT STEP
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Expected Response Time */}
-                            <div className="mt-8 flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                <p className="text-sm text-gray-600">
-                                    <span className="font-semibold text-gray-900">Typical response time:</span>{' '}
-                                    {expectedResponseTime}
-                                </p>
-                            </div>
-                        </Card>
-                    </div>
-
-                    {/* Right Column - Actions */}
-                    <div className="lg:col-span-5 flex flex-col gap-6">
-                        {/* Action Buttons */}
-                        <div className="flex flex-col gap-3">
-                            <div className="bg-orange-50/70 border border-orange-200/80 rounded-xl p-6 text-center space-y-4">
-                                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto text-orange-600">
-                                    <CheckCircle2 className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-gray-900 text-base">What happens next?</h4>
-                                    <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
-                                        Your enquiry has been assigned to our technical sales desk. An elevator specialist will review your specifications, component compatibility, and bulk pricing, then contact you within 24–48 hours.
-                                    </p>
-                                </div>
-                                <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                                    <Link href="/quotes/track" className="flex-1">
-                                        <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium">
-                                            Track Quotations
-                                        </Button>
-                                    </Link>
-                                    <Link href="/products" className="flex-1">
-                                        <Button variant="outline" className="w-full border-gray-300">
-                                            Browse Products
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-            </div>
+              <span>Track Your Quotations</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/quotes/new"
+              className="flex-1 inline-flex items-center justify-center px-5 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-lg text-sm transition-colors"
+            >
+              Request a Quotation
+            </Link>
+          </div>
         </div>
+      </QuotationPageShell>
     )
+  }
+
+  return (
+    <QuotationPageShell maxWidth="default">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Centered Header */}
+        <div className="bg-white rounded-2xl border border-gray-200/90 shadow-[0_1px_2px_rgba(17,24,39,0.03)] p-6 sm:p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center mx-auto text-emerald-700">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+
+          <div className="space-y-1.5 max-w-lg mx-auto">
+            <p className="type-eyebrow text-orange-600">Confirmation</p>
+            <h1 className="type-section text-gray-900">Your Request Has Been Received</h1>
+            <p className="type-body text-gray-600">
+              Thank you for contacting Cedar Elevators. Your quotation reference has been recorded.
+            </p>
+          </div>
+
+          {/* Reference Summary Strip */}
+          <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+            <div className="rounded-xl bg-gray-50/80 border border-gray-200/80 p-3.5 sm:col-span-2 lg:col-span-2 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500">Quotation Number</p>
+                <p className="text-sm sm:text-base font-mono text-gray-900 truncate mt-0.5">
+                  {quoteNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopy}
+                aria-label="Copy quotation number"
+                className="w-8 h-8 rounded-lg bg-white border border-gray-200 hover:border-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors shrink-0"
+              >
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-gray-50/80 border border-gray-200/80 p-3.5">
+              <p className="text-xs text-gray-500">Status</p>
+              <div className="mt-1">
+                <QuotationStatusBadge status="submitted" size="sm" />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-gray-50/80 border border-gray-200/80 p-3.5">
+              <p className="text-xs text-gray-500">Items Included</p>
+              <p className="text-sm text-gray-900 mt-0.5">
+                {itemsCount === 0
+                  ? 'General Enquiry'
+                  : `${itemsCount} ${itemsCount === 1 ? 'Product' : 'Products'}`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-gray-500">
+            {submittedDateTime && <span>Submitted: {submittedDateTime}</span>}
+            <span>Type: {requestTypeLabel}</span>
+          </div>
+        </div>
+
+        {/* Email Confirmation Note */}
+        {emailStatus === 'failed' ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-900">
+              <p>Your quotation request is saved cleanly, though automated email delivery experienced a temporary delay.</p>
+              <p className="text-xs text-amber-800 mt-1">
+                Save reference <span className="font-mono">{quoteNumber}</span> and check updates anytime via Track Your Quotations.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200/90 rounded-xl p-4 flex items-start gap-3">
+            <Mail className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-700">
+              Confirmation email sent to{' '}
+              <span className="text-gray-900">{customerEmail || 'your provided email address'}</span>
+              . Keep your quotation number handy or track status anytime without a password.
+            </p>
+          </div>
+        )}
+
+        {/* What Happens Next? */}
+        <div className="bg-white rounded-2xl border border-gray-200/90 shadow-[0_1px_2px_rgba(17,24,39,0.03)] p-6">
+          <h2 className="type-subsection text-gray-900 mb-5">What Happens Next?</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PROCESS_STAGES.map((stage, idx) => {
+              const Icon = stage.icon
+              return (
+                <div
+                  key={stage.title}
+                  className={`rounded-xl border p-4 space-y-2 ${
+                    stage.active
+                      ? 'bg-orange-50/50 border-orange-200'
+                      : 'bg-gray-50/50 border-gray-200/80'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                        stage.active
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-white border border-gray-200 text-gray-400'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <span className="text-xs text-gray-400 tabular-nums">0{idx + 1}</span>
+                  </div>
+                  <p className={`text-sm ${stage.active ? 'text-gray-900' : 'text-gray-700'}`}>
+                    {stage.title}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{stage.description}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+          <Link
+            href="/quotes/track"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF5A1F] hover:bg-[#e54e18] text-white rounded-lg text-sm transition-colors shadow-sm"
+          >
+            <span>Track Your Quotations</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            href="/products"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded-lg text-sm transition-colors"
+          >
+            Browse Products
+          </Link>
+          <Link
+            href="/"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 text-gray-600 hover:text-gray-900 text-sm transition-colors"
+          >
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    </QuotationPageShell>
+  )
 }

@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
+import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Loader2, Shield, Building2, Package, MessageSquareText } from 'lucide-react'
+import { AlertCircle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { unifiedQuoteSchema, type UnifiedQuoteValues } from '../forms/quote-schema'
 import { QuoteItemsInput, type InitialQuoteItemMeta } from './quote-items-input'
-import SuccessAnimation from '@/modules/checkout/components/success-animation'
-import { toast } from 'sonner'
+import { QuotationPageShell, QuotationPageHeader } from './shared/quotation-page-shell'
+import { QuotationSection } from './shared/quotation-section'
+import { saveLastQuoteSuccess } from './shared/quote-confirmation-storage'
 
 export type PrefilledQuoteItem = InitialQuoteItemMeta
 
@@ -29,18 +31,11 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const router = useRouter()
-
   const idempotencyKeyRef = useRef<string>(generateIdempotencyKey())
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
-  const [successData, setSuccessData] = useState<{
-    id: string
-    quoteNumber: string
-    itemsCount: number
-    requestType: string
-  } | null>(null)
 
   const form = useForm<UnifiedQuoteValues>({
     resolver: zodResolver(unifiedQuoteSchema) as any,
+    shouldFocusError: true,
     defaultValues: {
       items:
         initialItems.length > 0
@@ -68,11 +63,15 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
     control,
     handleSubmit,
     setValue,
+    setError,
+    clearErrors,
+    setFocus,
     watch,
     formState: { errors },
   } = form
 
   const watchedItems = watch('items') || []
+  const watchedNotes = watch('notes') || ''
 
   const distinctProductCount = useMemo(() => {
     const ids = new Set(
@@ -87,6 +86,24 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
     distinctProductCount >= 2 ? 'bulk' : distinctProductCount === 1 ? 'single' : 'general'
 
   const isCompanyRequired = requestMode === 'bulk'
+
+  // Clear stale company validation error immediately if items drop below 2 distinct products
+  useEffect(() => {
+    if (!isCompanyRequired && errors.company_name) {
+      clearErrors('company_name')
+    }
+  }, [isCompanyRequired, errors.company_name, clearErrors])
+
+  const onInvalidSubmit = (fieldErrors: FieldErrors<UnifiedQuoteValues>) => {
+    const firstKey = Object.keys(fieldErrors)[0] as keyof UnifiedQuoteValues | undefined
+    if (firstKey && firstKey !== 'items') {
+      try {
+        setFocus(firstKey)
+      } catch {
+        // Ignore if non-focusable
+      }
+    }
+  }
 
   const onSubmit = async (data: UnifiedQuoteValues) => {
     if (isSubmitting) return
@@ -125,26 +142,64 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
       const result = await response.json()
 
       if (!response.ok || !result.success) {
-        // Generate a fresh key on validation/server error so corrected resubmission succeeds cleanly
         idempotencyKeyRef.current = generateIdempotencyKey()
-        const errorMsg =
-          result.error ||
-          (result.details ? Object.values(result.details).flat().join(', ') : null) ||
-          'Failed to submit quotation request'
-        setSubmitError(errorMsg)
-        toast.error(errorMsg)
+
+        // Map returned field validation errors back to inline inputs cleanly
+        if (result.details && typeof result.details === 'object') {
+          const entries = Object.entries(result.details)
+          for (const [field, messages] of entries) {
+            const firstMsg = Array.isArray(messages) ? messages[0] : String(messages)
+            if (firstMsg && field in payload) {
+              setError(field as keyof UnifiedQuoteValues, { message: firstMsg })
+            }
+          }
+          const firstField = entries[0]?.[0] as keyof UnifiedQuoteValues | undefined
+          if (firstField && firstField !== 'items') {
+            try {
+              setFocus(firstField)
+            } catch {
+              // Ignore focus failures
+            }
+          }
+        }
+
+        const safeErrorMsg =
+          result.error || 'Please check the highlighted details and submit again.'
+        setSubmitError(safeErrorMsg)
+        toast.error(safeErrorMsg)
         return
       }
 
-      setSuccessData({
-        id: result.quoteId,
-        quoteNumber: result.quoteNumber || result.quoteId,
-        itemsCount: typeof result.itemsCount === 'number' ? result.itemsCount : validItems.length,
-        requestType: result.requestType || requestMode,
+      const quoteNumber = result.quoteNumber || result.quoteId
+      const resolvedItemsCount =
+        typeof result.itemsCount === 'number' ? result.itemsCount : validItems.length
+      const resolvedRequestType = (result.requestType || requestMode) as
+        | 'general'
+        | 'single'
+        | 'bulk'
+      const emailStatus = result.emailStatus === 'failed' ? 'failed' : 'sent'
+      const submittedAt = result.submittedAt || new Date().toISOString()
+
+      saveLastQuoteSuccess({
+        quoteNumber,
+        itemsCount: resolvedItemsCount,
+        requestType: resolvedRequestType,
+        customerEmail: payload.email,
+        customerName: payload.name,
+        companyName: payload.company_name || null,
+        submittedAt,
+        emailStatus,
       })
-      setShowSuccessAnimation(true)
-    } catch (error: any) {
-      const msg = error?.message || 'Network error while submitting quotation. Please retry.'
+
+      router.push(
+        `/quotes/success?quoteNumber=${encodeURIComponent(
+          quoteNumber
+        )}&itemsCount=${resolvedItemsCount}&requestType=${encodeURIComponent(
+          resolvedRequestType
+        )}&emailStatus=${emailStatus}`
+      )
+    } catch {
+      const msg = 'Unable to reach the server right now. Your details are preserved — please retry.'
       setSubmitError(msg)
       toast.error(msg)
     } finally {
@@ -152,290 +207,368 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
     }
   }
 
-  const handleAnimationComplete = () => {
-    if (!successData) return
-    router.push(
-      `/quotes/success?quoteId=${encodeURIComponent(successData.id)}&quoteNumber=${encodeURIComponent(
-        successData.quoteNumber
-      )}&itemsCount=${successData.itemsCount}&requestType=${encodeURIComponent(successData.requestType)}`
-    )
-  }
-
-  if (showSuccessAnimation) {
-    return (
-      <SuccessAnimation onAnimationComplete={handleAnimationComplete}>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <p className="text-gray-500 animate-pulse">Preparing confirmation...</p>
-        </div>
-      </SuccessAnimation>
-    )
-  }
+  const productSectionSummary =
+    distinctProductCount === 0
+      ? 'General Enquiry'
+      : distinctProductCount === 1
+        ? '1 Product'
+        : `${distinctProductCount} Products`
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-16">
-      {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Request a Quotation</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Submit a general enquiry, single-component quote, or multi-product commercial request — no account required.
-          </p>
+    <QuotationPageShell>
+      <QuotationPageHeader
+        eyebrow="Cedar Quotation Desk"
+        title="Request a Quotation"
+        description="Tell us what you need and our team will prepare a formal quotation."
+        actions={
+          <Link
+            href="/quotes/track"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            <span>Track Existing Quotes</span>
+            <ArrowRight className="w-4 h-4 text-gray-400" />
+          </Link>
+        }
+        reassurance={
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-gray-200/80 bg-white px-4 py-2.5 text-xs sm:text-sm text-gray-600">
+            <span className="inline-flex items-center gap-1.5 text-gray-800">
+              <CheckCircle2 className="w-4 h-4 text-orange-600 shrink-0" />
+              <span>No registration required</span>
+            </span>
+            <span className="text-gray-300 hidden sm:inline">|</span>
+            <span>
+              Submit specific products or leave items empty for a general elevator project enquiry.
+            </span>
+            {fromQuoteList && initialItems.length > 0 && (
+              <>
+                <span className="text-gray-300 hidden sm:inline">|</span>
+                <span className="text-orange-700">
+                  Loaded {initialItems.length}{' '}
+                  {initialItems.length === 1 ? 'item' : 'items'} from Quote List
+                </span>
+              </>
+            )}
+          </div>
+        }
+      />
+
+      <form
+        id="cedar-quote-form"
+        onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
+        noValidate
+        className="space-y-6"
+      >
+        {/* Hidden Honeypot */}
+        <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
+          <label htmlFor="hp_website">Website</label>
+          <input
+            id="hp_website"
+            type="text"
+            {...register('hp_website')}
+            tabIndex={-1}
+            autoComplete="off"
+          />
         </div>
-        <Link
-          href="/quotes/track"
-          className="text-sm font-medium text-orange-600 hover:text-orange-700 underline underline-offset-4 whitespace-nowrap"
+
+        {/* Section 1: Products */}
+        <QuotationSection
+          stepNumber="01"
+          title="Products"
+          description="Optional — add components from our catalog or proceed directly to a general enquiry."
+          rightSlot={
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-xs text-gray-700">
+              {productSectionSummary}
+            </span>
+          }
         >
-          Already requested a quote? Track status →
-        </Link>
-      </div>
+          <QuoteItemsInput
+            control={control}
+            errors={errors}
+            initialItems={initialItems}
+            setValue={setValue}
+            watch={watch}
+          />
+        </QuotationSection>
 
-      {/* Mode Indicator & Reassurance Banner */}
-      <div className="mb-6 bg-orange-50/70 border border-orange-200/80 rounded-xl p-4 flex items-start gap-3">
-        <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 mt-0.5">
-          {requestMode === 'bulk' ? (
-            <Building2 className="w-5 h-5" />
-          ) : requestMode === 'single' ? (
-            <Package className="w-5 h-5" />
-          ) : (
-            <Shield className="w-5 h-5" />
-          )}
-        </div>
-        <div className="text-xs sm:text-sm text-gray-700 space-y-1">
-          <p className="font-semibold text-gray-900">
-            {requestMode === 'bulk'
-              ? `Bulk Multi-Product Quotation (${distinctProductCount} distinct components)`
-              : requestMode === 'single'
-                ? 'Single-Product Commercial Quotation'
-                : 'General Elevator / Project Enquiry'}
-          </p>
-          <p>
-            {requestMode === 'bulk'
-              ? 'Company or organization name is required for multi-product bulk quotations. GST number remains optional.'
-              : 'No login required. Submit your contact details and our engineering sales desk will respond with formal pricing.'}
-          </p>
-          {fromQuoteList && initialItems.length > 0 && (
-            <p className="text-orange-700 font-medium">
-              Loaded {initialItems.length} {initialItems.length === 1 ? 'item' : 'items'} from your Quote List.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* 1. Product Selection */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-visible">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 rounded-t-xl">
-            <h2 className="text-lg font-semibold text-gray-900">Product Details</h2>
-            <p className="text-sm text-gray-600 mt-0.5">
-              Review selected items, adjust quantities, or add components
-            </p>
-          </div>
-          <div className="p-6">
-            <QuoteItemsInput
-              control={control}
-              register={register}
-              errors={errors}
-              initialItems={initialItems}
-              setValue={setValue}
-              watch={watch}
-            />
-          </div>
-        </div>
-
-        {/* 2. Contact & Company Information */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 rounded-t-xl">
-            <h2 className="text-lg font-semibold text-gray-900">Contact &amp; Company Details</h2>
-            <p className="text-sm text-gray-600 mt-0.5">
-              Where should we send your quotation PDF and updates?
-            </p>
-          </div>
-          <div className="p-6 grid md:grid-cols-2 gap-5">
-            {/* Hidden Honeypot */}
-            <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
-              <label htmlFor="hp_website">Website</label>
-              <input id="hp_website" type="text" {...register('hp_website')} tabIndex={-1} autoComplete="off" />
-            </div>
-
+        {/* Section 2: Your Information */}
+        <QuotationSection
+          stepNumber="02"
+          title="Your Information"
+          description="We will send confirmation and quotation updates to this contact email."
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="quote-name" className="block text-sm text-gray-800 mb-1.5">
                 Full Name <span className="text-red-500">*</span>
               </label>
               <input
+                id="quote-name"
                 type="text"
+                autoComplete="name"
+                aria-invalid={Boolean(errors.name)}
+                aria-describedby={errors.name ? 'quote-name-error' : undefined}
                 {...register('name')}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className={`w-full min-h-[44px] px-3.5 py-2.5 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors ${
+                  errors.name ? 'border-red-400' : 'border-gray-300'
+                }`}
                 placeholder="e.g. Rajesh Kumar"
               />
               {errors.name && (
-                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.name.message}
+                <p id="quote-name-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.name.message}</span>
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                {...register('email')}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                placeholder="rajesh@company.com"
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="quote-phone" className="block text-sm text-gray-800 mb-1.5">
                 Phone Number <span className="text-red-500">*</span>
               </label>
               <input
+                id="quote-phone"
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                aria-invalid={Boolean(errors.phone)}
+                aria-describedby={errors.phone ? 'quote-phone-error' : 'quote-phone-hint'}
                 {...register('phone')}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className={`w-full min-h-[44px] px-3.5 py-2.5 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors ${
+                  errors.phone ? 'border-red-400' : 'border-gray-300'
+                }`}
                 placeholder="+91 98765 43210"
               />
-              {errors.phone && (
-                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.phone.message}
+              {errors.phone ? (
+                <p id="quote-phone-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.phone.message}</span>
+                </p>
+              ) : (
+                <p id="quote-phone-hint" className="text-xs text-gray-500 mt-1">
+                  Include country code (e.g. +91 for India or international).
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="quote-email" className="block text-sm text-gray-800 mb-1.5">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="quote-email"
+                type="email"
+                autoComplete="email"
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? 'quote-email-error' : undefined}
+                {...register('email')}
+                className={`w-full min-h-[44px] px-3.5 py-2.5 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors ${
+                  errors.email ? 'border-red-400' : 'border-gray-300'
+                }`}
+                placeholder="name@company.com"
+              />
+              {errors.email && (
+                <p id="quote-email-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.email.message}</span>
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="quote-company" className="block text-sm text-gray-800 mb-1.5">
                 Company / Organization{' '}
                 {isCompanyRequired ? (
                   <span className="text-red-500">*</span>
                 ) : (
-                  <span className="text-gray-400 font-normal">(Optional)</span>
+                  <span className="text-gray-400 text-xs">(Optional)</span>
                 )}
               </label>
               <input
+                id="quote-company"
                 type="text"
+                autoComplete="organization"
+                aria-required={isCompanyRequired}
+                aria-invalid={Boolean(errors.company_name)}
+                aria-describedby={
+                  errors.company_name
+                    ? 'quote-company-error'
+                    : isCompanyRequired
+                      ? 'quote-company-hint'
+                      : undefined
+                }
                 {...register('company_name')}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${
+                className={`w-full min-h-[44px] px-3.5 py-2.5 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors ${
                   errors.company_name ? 'border-red-400' : 'border-gray-300'
                 }`}
                 placeholder="e.g. Apex Elevators Pvt Ltd"
               />
-              {errors.company_name && (
-                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.company_name.message}
+              {errors.company_name ? (
+                <p id="quote-company-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.company_name.message}</span>
                 </p>
-              )}
+              ) : isCompanyRequired ? (
+                <p id="quote-company-hint" className="text-xs text-orange-700 mt-1">
+                  Required when requesting 2 or more products.
+                </p>
+              ) : null}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                GST Number <span className="text-gray-400 font-normal">(Optional)</span>
+              <label htmlFor="quote-gstin" className="block text-sm text-gray-800 mb-1.5">
+                GSTIN <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <input
+                id="quote-gstin"
                 type="text"
-                {...register('gst_number')}
                 maxLength={15}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none uppercase font-mono text-sm"
+                aria-invalid={Boolean(errors.gst_number)}
+                aria-describedby={errors.gst_number ? 'quote-gstin-error' : 'quote-gstin-hint'}
+                {...register('gst_number')}
+                className={`w-full min-h-[44px] px-3.5 py-2.5 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 uppercase font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors ${
+                  errors.gst_number ? 'border-red-400' : 'border-gray-300'
+                }`}
                 placeholder="33ABCDE1234F1Z5"
               />
-              {errors.gst_number && (
-                <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {errors.gst_number.message}
+              {errors.gst_number ? (
+                <p id="quote-gstin-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.gst_number.message}</span>
+                </p>
+              ) : (
+                <p id="quote-gstin-hint" className="text-xs text-gray-500 mt-1">
+                  Optional 15-character tax registration number.
                 </p>
               )}
             </div>
+          </div>
+        </QuotationSection>
 
+        {/* Section 3: Project Information */}
+        <QuotationSection
+          stepNumber="03"
+          title="Project Information"
+          description="Optional project context helps us tailor technical compatibility and dispatch details."
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Project Name <span className="text-gray-400 font-normal">(Optional)</span>
+              <label htmlFor="quote-project-name" className="block text-sm text-gray-800 mb-1.5">
+                Project Name <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <input
+                id="quote-project-name"
                 type="text"
                 {...register('project_name')}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full min-h-[44px] px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors"
                 placeholder="e.g. Green Park Tower Modernization"
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Project Location / City <span className="text-gray-400 font-normal">(Optional)</span>
+            <div>
+              <label htmlFor="quote-project-location" className="block text-sm text-gray-800 mb-1.5">
+                Project Location <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <input
+                id="quote-project-location"
                 type="text"
                 {...register('project_location')}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full min-h-[44px] px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-colors"
                 placeholder="e.g. Chennai, Tamil Nadu"
               />
             </div>
           </div>
-        </div>
+        </QuotationSection>
 
-        {/* 3. Requirements & Notes */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 rounded-t-xl flex items-center gap-2">
-            <MessageSquareText className="w-4 h-4 text-gray-600" />
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Additional Requirements</h2>
-            </div>
-          </div>
-          <div className="p-6">
-            <textarea
-              {...register('notes')}
-              rows={4}
-              maxLength={2000}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none"
-              placeholder="Share shaft specifications, floor count, voltage/speed requirements, delivery timeline, or general questions..."
-            />
-            {errors.notes && (
-              <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {errors.notes.message}
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Section 4: Additional Requirements */}
+        <QuotationSection
+          stepNumber="04"
+          title="Additional Requirements"
+          description="Share technical parameters, floor count, shaft dimensions, delivery schedule, or any questions."
+          rightSlot={
+            <span className="text-xs text-gray-500 tabular-nums">
+              {watchedNotes.length} / 1,000
+            </span>
+          }
+        >
+          <textarea
+            id="quote-notes"
+            aria-label="Additional Notes"
+            aria-invalid={Boolean(errors.notes)}
+            aria-describedby={errors.notes ? 'quote-notes-error' : undefined}
+            {...register('notes')}
+            rows={4}
+            maxLength={1000}
+            className={`w-full px-3.5 py-3 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none resize-y transition-colors ${
+              errors.notes ? 'border-red-400' : 'border-gray-300'
+            }`}
+            placeholder="Share shaft specifications, floor count, capacity/speed requirements, delivery schedule, or general questions..."
+          />
+          {errors.notes && (
+            <p id="quote-notes-error" role="alert" className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{errors.notes.message}</span>
+            </p>
+          )}
+        </QuotationSection>
 
         {submitError && (
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div
+            role="alert"
+            className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-900">Unable to Submit Request</p>
+              <p className="text-sm text-red-900">Unable to Submit Request</p>
               <p className="text-sm text-red-700 mt-0.5">{submitError}</p>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          <p className="text-xs text-gray-500">
-            By submitting, you will receive a confirmation email with a secure link to track this quotation.
+        {/* Desktop Submit Bar */}
+        <div className="hidden md:flex items-center justify-between gap-4 pt-2">
+          <p className="text-xs text-gray-500 max-w-md">
+            You will receive an email confirmation with your quotation reference number and a link to check status anytime.
           </p>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-8 py-3.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="px-7 py-3 bg-[#FF5A1F] hover:bg-[#e54e18] text-white rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 shrink-0"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Submitting Request...
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Submitting Request...</span>
               </>
             ) : (
-              'Submit Quote Request'
+              <>
+                <span>Submit Quote Request</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Mobile Sticky Submit Bar */}
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3 px-5 bg-[#FF5A1F] hover:bg-[#e54e18] text-white rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Submitting Request...</span>
+              </>
+            ) : (
+              <>
+                <span>Submit Quote Request</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
             )}
           </button>
         </div>
       </form>
-    </div>
+    </QuotationPageShell>
   )
 }
