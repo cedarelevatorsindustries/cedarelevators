@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — PHASE 1 FEATURE DECISION MATRIX
+# CEDAR ELEVATORS - PHASE 1 FEATURE DECISION MATRIX
 **Document Version:** 1.0  
 **Status:** Read-Only Analysis Complete  
 **Classification Guide:**  

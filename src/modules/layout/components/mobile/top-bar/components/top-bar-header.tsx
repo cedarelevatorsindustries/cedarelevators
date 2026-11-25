@@ -1,6 +1,6 @@
 "use client"
 
-import { Menu, Heart, ChevronLeft } from "lucide-react"
+import { Menu, Bookmark, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useWishlist } from "@/lib/hooks/use-wishlist"
@@ -116,15 +116,16 @@ export function TopBarHeader({
 
       {/* Right: Icons (Wishlist Only) */}
       <div className="flex items-center justify-end gap-1">
-        {/* Wishlist/Like Icon with Badge */}
+        {/* Favourite List Icon with Badge */}
         <Link
           href="/wishlist"
           className={`flex items-center justify-center h-10 w-10 transition-colors relative ${iconColorClass}`}
-          aria-label="View wishlist"
+          aria-label="View favourite list"
+          title="Favourite List"
         >
-          <Heart size={24} />
+          <Bookmark size={22} />
           {count > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
               {count}
             </span>
           )}

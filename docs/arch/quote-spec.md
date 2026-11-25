@@ -458,7 +458,7 @@ Same sections as `/quotes/[id]` detail page (see section 2 above).
 ### Pricing Visibility
 - **Hidden for:** Guest, Individual, Business (Unverified)
 - **Visible for:** Business (Verified), Dealer/Installer
-- **UI Treatment:** Shows "—" or "Pricing not available" message
+- **UI Treatment:** Shows "-" or "Pricing not available" message
 
 ### Quote Conversion
 - **Available for:** Business (Verified), Dealer/Installer with approved quotes

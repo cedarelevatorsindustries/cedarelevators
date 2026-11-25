@@ -1,10 +1,10 @@
-# Cedar Elevators — Admin Authentication Migration Assessment
+# Cedar Elevators - Admin Authentication Migration Assessment
 ## Clerk Admin Auth → Supabase Auth (Phase A Inspection)
 
 **Date:** November 21, 2026  
 **Target Supabase Project:** `hbkdbrxzqaraarivudej`  
 **Assessment Phase:** Phase A (Read-only Codebase and Database Inspection)  
-**Status:** COMPLETE — Ready for Review & Approval  
+**Status:** COMPLETE - Ready for Review & Approval  
 
 ---
 
@@ -34,7 +34,7 @@ This assessment provides a definitive, ground-truth inspection of the authentica
    - **Dashboard Layout (`/admin/(dashboard)/layout.tsx`)**: Client-side check uses `supabase.auth.getUser()`, but does not verify `admin_profiles` or server-side authorization.
    - **Proxy Middleware (`src/proxy.ts`)**: Traps `/admin(.*)` and `/api/admin(.*)` using Clerk's `clerkMiddleware(auth => auth.protect())`, meaning administrators could not access the dashboard unless they also had an active Clerk session.
    - **Authorization Helper (`src/lib/auth/require-admin.ts`)**: Looked up Clerk's `auth().userId` against `admin_users.clerk_user_id`.
-   - **Admin API Routes**: Highly fragmented — 7 routes check Clerk via `requireAdmin()`, 7 check Clerk directly, 4 check Supabase Auth, 1 uses an email-matching fallback, and 11 endpoints are unguarded.
+   - **Admin API Routes**: Highly fragmented - 7 routes check Clerk via `requireAdmin()`, 7 check Clerk directly, 4 check Supabase Auth, 1 uses an email-matching fallback, and 11 endpoints are unguarded.
 
 ---
 
@@ -169,22 +169,22 @@ The 54 files referencing `createAdminClient()` have been categorized into verifi
 ## 7. Files Requiring Modification
 
 ### Core Authentication Infrastructure
-1. `src/lib/auth/require-admin.ts` — Rewrite to use `createServerSupabase()`, `auth.getUser()`, and `admin_profiles` lookup by UUID.
-2. `src/lib/auth/admin-roles.ts` — Update `getCurrentAdminUser()`, `getCurrentAdminRole()`, and `hasRole()` to use the Supabase Auth UUID and `admin_profiles`.
-3. `src/proxy.ts` — Remove Clerk `auth.protect()` from `/admin(.*)`. Implement Supabase SSR cookie verification for `/admin/*` routes while maintaining Clerk middleware for customer routes.
+1. `src/lib/auth/require-admin.ts` - Rewrite to use `createServerSupabase()`, `auth.getUser()`, and `admin_profiles` lookup by UUID.
+2. `src/lib/auth/admin-roles.ts` - Update `getCurrentAdminUser()`, `getCurrentAdminRole()`, and `hasRole()` to use the Supabase Auth UUID and `admin_profiles`.
+3. `src/proxy.ts` - Remove Clerk `auth.protect()` from `/admin(.*)`. Implement Supabase SSR cookie verification for `/admin/*` routes while maintaining Clerk middleware for customer routes.
 
 ### Admin Dashboard Layout & Pages
-4. `src/app/admin/(dashboard)/layout.tsx` — Enhance client/server auth check to verify `admin_profiles.is_active` and redirect unauthenticated/unauthorized users to `/admin/login`.
-5. `src/app/admin/(auth)/login/page.tsx` — Verify redirect destination and ensure clean session persistence.
-6. `src/app/admin/(auth)/logout/page.tsx` — Confirm session termination via `supabase.auth.signOut()` and redirection to `/admin/login`.
+4. `src/app/admin/(dashboard)/layout.tsx` - Enhance client/server auth check to verify `admin_profiles.is_active` and redirect unauthenticated/unauthorized users to `/admin/login`.
+5. `src/app/admin/(auth)/login/page.tsx` - Verify redirect destination and ensure clean session persistence.
+6. `src/app/admin/(auth)/logout/page.tsx` - Confirm session termination via `supabase.auth.signOut()` and redirection to `/admin/login`.
 
 ### Admin API Routes (30 files)
-7. All 30 routes under `src/app/api/admin/` — Secure with `await requireAdmin(requiredRole)`.
+7. All 30 routes under `src/app/api/admin/` - Secure with `await requireAdmin(requiredRole)`.
 
 ### Admin Server Actions
-8. `src/lib/actions/admin-quotes/quote-status.ts` — Remove `admin_users` table query; use `admin_profiles` and Supabase UUID.
-9. `src/lib/actions/admin-quotes/quote-management.ts` — Update admin identifier references from Clerk to Supabase UUID.
-10. `src/lib/actions/admin-quotes/quote-conversion.ts` — Ensure admin conversion records use Supabase admin identity.
+8. `src/lib/actions/admin-quotes/quote-status.ts` - Remove `admin_users` table query; use `admin_profiles` and Supabase UUID.
+9. `src/lib/actions/admin-quotes/quote-management.ts` - Update admin identifier references from Clerk to Supabase UUID.
+10. `src/lib/actions/admin-quotes/quote-conversion.ts` - Ensure admin conversion records use Supabase admin identity.
 
 ---
 
@@ -204,22 +204,22 @@ The 54 files referencing `createAdminClient()` have been categorized into verifi
 
 Following user approval, implementation will proceed through the remaining phases:
 
-1. **Phase B — Centralized Authorization (`src/lib/auth/require-admin.ts` & `admin-roles.ts`)**:
+1. **Phase B - Centralized Authorization (`src/lib/auth/require-admin.ts` & `admin-roles.ts`)**:
    - Implement Supabase SSR `auth.getUser()` + `admin_profiles` lookup by UUID.
    - Enforce role hierarchy: `staff` (1) < `manager` (2) < `admin` (3) < `super_admin` (4).
    - Return strongly-typed `AdminProfileRecord`.
-2. **Phase C — Admin Login & Session Flow**:
+2. **Phase C - Admin Login & Session Flow**:
    - Verify `/admin/login`, `/admin/logout`, and `/admin/recover`.
    - Ensure secure cookie session persistence via `@supabase/ssr`.
-3. **Phase D — Secure Admin Dashboard & All 30 API Routes**:
+3. **Phase D - Secure Admin Dashboard & All 30 API Routes**:
    - Apply `requireAdmin(minRole)` to all 30 admin API routes and admin server actions.
-4. **Phase E — Proxy Configuration (`src/proxy.ts`)**:
+4. **Phase E - Proxy Configuration (`src/proxy.ts`)**:
    - Configure proxy to verify Supabase Auth cookie session on `/admin/*` (except auth bypass routes).
    - Retain Clerk middleware exclusively for customer and dormant commerce routes.
-5. **Phase F — Eliminate Clerk Admin References**:
+5. **Phase F - Eliminate Clerk Admin References**:
    - Remove any residual Clerk checks from admin pages and actions.
    - Verify zero Clerk fallback remains in admin paths.
-6. **Phase G — Verification & Validation Suite**:
+6. **Phase G - Verification & Validation Suite**:
    - Test authentication, unauthorized access rejection (401/403), role hierarchy, customer regression (Clerk customer login & guest quotes), and Next.js production build (`tsc`, `lint`, `build`).
 
 ---

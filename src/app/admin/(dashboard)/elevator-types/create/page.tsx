@@ -522,11 +522,11 @@ export default function CreateElevatorTypePage() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs font-medium text-gray-600">Title</p>
-                          <p className="text-sm text-gray-900 mt-1">{formData.title || "—"}</p>
+                          <p className="text-sm text-gray-900 mt-1">{formData.title || "-"}</p>
                         </div>
                         <div>
                           <p className="text-xs font-medium text-gray-600">Slug</p>
-                          <p className="text-sm text-gray-900 mt-1 font-mono">{formData.slug || "—"}</p>
+                          <p className="text-sm text-gray-900 mt-1 font-mono">{formData.slug || "-"}</p>
                         </div>
                       </div>
                       {formData.subtitle && (
@@ -666,11 +666,11 @@ export default function CreateElevatorTypePage() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Title</p>
-                  <p className="text-sm text-gray-900 mt-1">{formData.title || "—"}</p>
+                  <p className="text-sm text-gray-900 mt-1">{formData.title || "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Slug</p>
-                  <p className="text-sm text-gray-900 mt-1 font-mono">{formData.slug || "—"}</p>
+                  <p className="text-sm text-gray-900 mt-1 font-mono">{formData.slug || "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Status</p>

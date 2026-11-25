@@ -121,19 +121,22 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     }
   }
 
-  // If application slug is provided, fetch the application and get its categories
+  // If application slug is provided, fetch the application and filter via product_applications + categories
   // Support both 'application' and 'app' parameters for compatibility
   const applicationSlug = params.application || params.app
   let activeApplication: any = undefined
   if (applicationSlug) {
     const application = await getApplicationBySlug(applicationSlug)
     if (application) {
+      queryParams.application_id = application.id
       const { getApplicationCategories } = await import('@/lib/actions/application-categories')
       const categoriesResult = await getApplicationCategories(application.id)
 
       if (categoriesResult.success && categoriesResult.links.length > 0) {
         const categoryIds = categoriesResult.links.map((link: any) => link.category.id)
-        queryParams.category_id = categoryIds
+        queryParams.category_id = queryParams.category_id
+          ? queryParams.category_id.filter((id: string) => categoryIds.includes(id))
+          : categoryIds
 
         activeApplication = {
           ...application,
@@ -148,12 +151,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     }
   }
 
-  // If elevator type is provided, fetch the type and filter by type
+  // If elevator type is provided, fetch the type and filter by elevator_type_id
   let activeType: any = undefined
   if (params.type) {
     const elevatorType = await getElevatorTypeBySlug(params.type)
     if (elevatorType) {
       queryParams.type = params.type
+      queryParams.elevator_type_id = elevatorType.id
       activeType = elevatorType
     }
   }

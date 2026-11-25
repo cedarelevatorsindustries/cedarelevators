@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — MASTER REMEDIATION PLAN
+# CEDAR ELEVATORS - MASTER REMEDIATION PLAN
 
 **Document Version:** 1.0 (Master Roadmap & Engineering Blueprint)  
 **Date:** November 19, 2026  

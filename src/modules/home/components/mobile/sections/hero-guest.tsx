@@ -162,13 +162,10 @@ const HeroSection = () => {
         {/* Mobile Primary Text */}
         <div className="mb-2">
           <h1
-            className={`font-space-grotesk text-white text-xs sm:text-sm font-light leading-snug uppercase tracking-wider transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`type-hero text-white transition-all duration-800 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
               textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)',
-              letterSpacing: '0.08em',
-              fontWeight: 300,
-              fontOpticalSizing: 'auto'
             }}
           >
             Premium Lift Components for Every Project
@@ -178,13 +175,10 @@ const HeroSection = () => {
         {/* Mobile Secondary Text */}
         <div className="mb-4">
           <p
-            className={`font-space-grotesk text-white/80 text-[10px] sm:text-[11px] font-light tracking-widest transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            className={`type-body-sm text-white/80 transition-all duration-800 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
             style={{
               textShadow: '0 1px 6px rgba(0, 0, 0, 0.6)',
-              letterSpacing: '0.14em',
-              fontWeight: 300,
-              fontOpticalSizing: 'auto'
             }}
           >
             engineering excellence in vertical transportation
@@ -195,7 +189,7 @@ const HeroSection = () => {
         <div className={`flex flex-col gap-2.5 transition-all duration-800 delay-900 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <LocalizedClientLink href="/quotes/new">
             <button
-              className="w-full bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 shadow-md font-space-grotesk"
+              className="type-button w-full bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-5 py-2.5 rounded-lg transition-all duration-300 shadow-md"
               aria-label="Get a quote for premium lift components"
             >
               Get a Quote
@@ -204,7 +198,7 @@ const HeroSection = () => {
 
           <LocalizedClientLink href="/products">
             <button
-              className="w-full bg-white/15 backdrop-blur-sm border border-white/30 text-white hover:bg-white/25 focus:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/40 px-5 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 shadow-md font-space-grotesk"
+              className="type-button w-full bg-white/15 backdrop-blur-sm border border-white/30 text-white hover:bg-white/25 focus:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/40 px-5 py-2.5 rounded-lg transition-all duration-300 shadow-md"
               aria-label="Browse our premium lift components catalog"
             >
               Browse Products

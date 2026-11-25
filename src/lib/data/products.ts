@@ -9,6 +9,7 @@ interface ListProductsParams {
     category_id?: string[]
     subcategory_id?: string  // Added for subcategory filtering
     application_id?: string
+    elevator_type_id?: string
     q?: string
   }
 }
@@ -117,6 +118,48 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       }
     }
 
+    // If filtering by application_id, intersect with product_applications junction table
+    if (queryParams?.application_id) {
+      const { data: appJunctionData } = await supabase
+        .from('product_applications')
+        .select('product_id')
+        .eq('application_id', queryParams.application_id)
+
+      if (appJunctionData && appJunctionData.length > 0) {
+        const appProductIds = appJunctionData.map(j => j.product_id)
+        productIds = productIds !== null
+          ? productIds.filter(id => appProductIds.includes(id))
+          : appProductIds
+
+        if (productIds.length === 0) {
+          return { response: { products: [], count: 0, offset, limit } }
+        }
+      } else {
+        return { response: { products: [], count: 0, offset, limit } }
+      }
+    }
+
+    // If filtering by elevator_type_id, intersect with product_elevator_types junction table
+    if (queryParams?.elevator_type_id) {
+      const { data: typeJunctionData } = await supabase
+        .from('product_elevator_types')
+        .select('product_id')
+        .eq('elevator_type_id', queryParams.elevator_type_id)
+
+      if (typeJunctionData && typeJunctionData.length > 0) {
+        const typeProductIds = typeJunctionData.map(j => j.product_id)
+        productIds = productIds !== null
+          ? productIds.filter(id => typeProductIds.includes(id))
+          : typeProductIds
+
+        if (productIds.length === 0) {
+          return { response: { products: [], count: 0, offset, limit } }
+        }
+      } else {
+        return { response: { products: [], count: 0, offset, limit } }
+      }
+    }
+
     // Check if we need to perform full-text search
     if (queryParams?.q) {
       console.log('[listProducts] Performing full-text search for:', queryParams.q)
@@ -155,25 +198,60 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
       }
 
       // Get full details for the searched products to ensure consistent data structure
-      // We need to fetch them to get product_categories relations which RPC doesn't return
-      const productIds = searchResults.map((p: any) => p.id)
+      // Intersect with productIds if category/application/elevator_type filters are also active
+      const searchedProductIds = searchResults
+        .map((p: any) => p.id)
+        .filter((id: string) => productIds === null || productIds.includes(id))
+
+      if (searchedProductIds.length === 0) {
+        return {
+          response: {
+            products: [],
+            count: 0,
+            offset,
+            limit
+          }
+        }
+      }
 
       const { data: fullProducts, error: fullProductsError } = await supabase
         .from('products')
         .select(`
-          *,
+          id,
+          name,
+          slug,
+          description,
+          sku,
+          price,
+          compare_at_price,
+          stock_quantity,
+          track_inventory,
+          allow_backorders,
+          images,
+          thumbnail_url,
+          status,
+          created_at,
           product_categories(
-            category:categories(*)
+            category:categories(id, title, slug, handle)
+          ),
+          product_subcategories(
+            subcategory:subcategories(id, title, slug)
+          ),
+          product_applications(
+            application:applications(id, title, handle)
           ),
           product_variants(
             id,
             name,
+            sku,
             variant_title,
             options,
+            price,
+            compare_at_price,
             inventory_quantity
           )
         `)
-        .in('id', productIds)
+        .in('id', searchedProductIds)
 
       if (fullProductsError) {
         console.error("Error fetching full product details for search results:", fullProductsError)
@@ -189,7 +267,7 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
       // Re-order fullProducts to match the rank order from searchResults
       const productsMap = new Map(fullProducts.map((p: any) => [p.id, p]))
-      const orderedProducts = productIds
+      const orderedProducts = searchedProductIds
         .map((id: string) => productsMap.get(id))
         .filter(Boolean)
         .map((p: any) => {
@@ -210,7 +288,9 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
               ...pc.category,
               name: pc.category?.title || pc.category?.name,
               handle: pc.category?.handle || pc.category?.slug
-            })).filter(Boolean) || []
+            })).filter(Boolean) || [],
+            subcategories: p.product_subcategories?.map((ps: any) => ps.subcategory).filter(Boolean) || [],
+            applications: p.product_applications?.map((pa: any) => pa.application).filter(Boolean) || []
           }
         })
 
@@ -251,15 +331,35 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
 
     let query = supabase
       .from('products')
-      // Fetch categories via product_categories junction table AND variants for stock display
+      // Fetch explicit catalog/filter columns + taxonomy junctions (avoids PostgREST statement timeout on * lateral joins)
       .select(`
-        *,
+        id,
+        name,
+        slug,
+        description,
+        sku,
+        price,
+        compare_at_price,
+        stock_quantity,
+        track_inventory,
+        allow_backorders,
+        images,
+        thumbnail_url,
+        status,
+        created_at,
         product_categories(
-          category:categories(*)
+          category:categories(id, title, slug, handle)
+        ),
+        product_subcategories(
+          subcategory:subcategories(id, title, slug)
+        ),
+        product_applications(
+          application:applications(id, title, handle)
         ),
         product_variants(
           id,
           name,
+          sku,
           variant_title,
           options,
           price,
@@ -305,12 +405,14 @@ export async function listProducts(params?: ListProductsParams): Promise<ListPro
           title: v.name || v.variant_title,
           inventory_quantity: v.inventory_quantity || 0
         })),
-        // Extract categories from junction table
+        // Extract categories, subcategories, and applications from junction tables
         categories: p.product_categories?.map((pc: any) => ({
           ...pc.category,
           name: pc.category?.title,
           handle: pc.category?.handle || pc.category?.slug
-        })).filter(Boolean) || []
+        })).filter(Boolean) || [],
+        subcategories: p.product_subcategories?.map((ps: any) => ps.subcategory).filter(Boolean) || [],
+        applications: p.product_applications?.map((pa: any) => pa.application).filter(Boolean) || []
       }
     })
 

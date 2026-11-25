@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { SlidersHorizontal } from "lucide-react"
 import { UnifiedFilters } from "./index"
+import { extractVariantOptions, parseCatalogFiltersFromURL, buildCatalogFilterSearchParams } from "@/lib/catalog/filter-utils"
 import type {
     CatalogFilters,
     PLPFilters,
@@ -24,126 +25,112 @@ export function CatalogFilterDrawer({ variant = 'default', products = [] }: { va
     const [catalogFilters, setCatalogFilters] = useState<CatalogFilters>({})
     const [plpFilters, setPLPFilters] = useState<PLPFilters>({})
 
-    // Available options
-    const [catalogOptions, setCatalogOptions] = useState<AvailableCatalogOptions>({
-        applications: [],
-        elevatorTypes: [],
-        categories: [],
-        subcategories: []
-    })
-    const [plpOptions, setPLPOptions] = useState<AvailablePLPOptions>({
-        priceRange: { min: 0, max: 50000 },
-        variantOptions: {},
-        ratings: [5, 4, 3, 2, 1]
-    })
+    // Derive available options synchronously from products (no network delay / stuck loading)
+    const catalogOptions = useMemo<AvailableCatalogOptions>(() => {
+        const catMap = new Map<string, { id: string; name: string; count: number }>()
+        const subMap = new Map<string, { id: string; name: string; count: number }>()
+        const appMap = new Map<string, { id: string; name: string; count: number }>()
+
+        products.forEach((p: any) => {
+            p.categories?.forEach((c: any) => {
+                if (!c?.id) return
+                const existing = catMap.get(c.id)
+                if (existing) existing.count += 1
+                else catMap.set(c.id, { id: c.id, name: c.name || c.title || c.id, count: 1 })
+            })
+            p.subcategories?.forEach((s: any) => {
+                if (!s?.id) return
+                const existing = subMap.get(s.id)
+                if (existing) existing.count += 1
+                else subMap.set(s.id, { id: s.id, name: s.name || s.title || s.id, count: 1 })
+            })
+            p.applications?.forEach((a: any) => {
+                if (!a?.id) return
+                const existing = appMap.get(a.id)
+                if (existing) existing.count += 1
+                else appMap.set(a.id, { id: a.id, name: a.name || a.title || a.id, count: 1 })
+            })
+        })
+
+        return {
+            applications: Array.from(appMap.values()),
+            elevatorTypes: [],
+            categories: Array.from(catMap.values()),
+            subcategories: Array.from(subMap.values()),
+        }
+    }, [products])
+
+    const plpOptions = useMemo<AvailablePLPOptions>(() => {
+        const rawOptions = extractVariantOptions(products)
+        const variantOptions: Record<string, string[]> = {}
+        Object.entries(rawOptions).forEach(([key, values]) => {
+            if (values.length > 0) {
+                variantOptions[key] = values.map((v) => v.value)
+            }
+        })
+        return {
+            priceRange: { min: 0, max: 50000 },
+            variantOptions,
+            ratings: [5, 4, 3, 2, 1],
+        }
+    }, [products])
 
     // Parse filters from URL
     useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
-
-        // Catalog params
-        const applications = params.get('applications')?.split(',').filter(Boolean)
-        const elevatorTypes = params.get('elevator_types')?.split(',').filter(Boolean)
-        const categories = params.get('categories')?.split(',').filter(Boolean)
-        const subcategories = params.get('subcategories')?.split(',').filter(Boolean)
-
-        // PLP params
-        const availability = params.get('availability') as any
-        const minRating = params.get('min_rating') ? Number(params.get('min_rating')) : undefined
-        const priceMin = params.get('price_min') ? Number(params.get('price_min')) : undefined
-        const priceMax = params.get('price_max') ? Number(params.get('price_max')) : undefined
-        const sort = params.get('sort') as any
-
-        setCatalogFilters({ applications, elevatorTypes, categories, subcategories })
+        const parsed = parseCatalogFiltersFromURL(searchParams)
+        setCatalogFilters({
+            applications: parsed.applications.length > 0 ? parsed.applications : undefined,
+            categories: parsed.categories.length > 0 ? parsed.categories : undefined,
+            subcategories: parsed.subcategories.length > 0 ? parsed.subcategories : undefined,
+        })
         setPLPFilters({
-            availability,
-            minRating,
-            priceRange: priceMin || priceMax ? { min: priceMin || 0, max: priceMax || 50000 } : undefined,
-            sort
+            availability: parsed.availability !== 'all' ? (parsed.availability as any) : undefined,
+            variantOptions: Object.keys(parsed.options).length > 0 ? parsed.options : undefined,
+            sort: parsed.sort !== 'featured' ? (parsed.sort as any) : undefined,
         })
     }, [searchParams])
 
-    // Fetch options on mount and when drawer opens
-    useEffect(() => {
-        if (open) {
-            fetchFilterOptions()
-        }
-    }, [open, catalogFilters.applications, catalogFilters.categories, catalogFilters.elevatorTypes, products])
-
-    const fetchFilterOptions = async () => {
-        // Extract variants from products if available
-        if (products.length > 0) {
-            const extractedVariants = new Set<string>()
-            products.forEach(p => {
-                p.variants?.forEach(v => {
-                    const title = v.variant_title || v.title
-                    if (title && title.toLowerCase() !== 'default title') {
-                        extractedVariants.add(title)
-                    }
-                })
-            })
-
-            if (extractedVariants.size > 0) {
-                setPLPOptions(prev => ({
-                    ...prev,
-                    variantOptions: {
-                        "Variants": Array.from(extractedVariants)
-                    }
-                }))
-            }
-        }
-    }
-
     const applyFilters = () => {
-        const params = new URLSearchParams(searchParams.toString())
-
-        // Clear old params
-        // Catalog
-        params.delete('applications')
-        params.delete('elevator_types')
-        params.delete('categories')
-        params.delete('subcategories')
-        // PLP
-        params.delete('availability')
-        params.delete('price_min')
-        params.delete('price_max')
-        params.delete('min_rating')
-        params.delete('sort')
-
-        // Add catalog filters
-        if (catalogFilters.applications?.length) params.set('applications', catalogFilters.applications.join(','))
-        if (catalogFilters.elevatorTypes?.length) params.set('elevator_types', catalogFilters.elevatorTypes.join(','))
-        if (catalogFilters.categories?.length) params.set('categories', catalogFilters.categories.join(','))
-        if (catalogFilters.subcategories?.length) params.set('subcategories', catalogFilters.subcategories.join(','))
-
-        // Add PLP filters
-        if (plpFilters.availability) params.set('availability', plpFilters.availability)
-        if (plpFilters.priceRange) {
-            params.set('price_min', String(plpFilters.priceRange.min))
-            params.set('price_max', String(plpFilters.priceRange.max))
-        }
-        if (plpFilters.minRating) params.set('min_rating', String(plpFilters.minRating))
-        if (plpFilters.sort) params.set('sort', plpFilters.sort)
-
-        router.push(`${pathname}?${params.toString()}`, { scroll: false })
+        const params = buildCatalogFilterSearchParams(searchParams, {
+            availability: (plpFilters.availability as any) || 'all',
+            options: plpFilters.variantOptions || {},
+            categories: catalogFilters.categories || [],
+            subcategories: catalogFilters.subcategories || [],
+            applications: catalogFilters.applications || [],
+            sort: (plpFilters.sort as any) || 'featured',
+        })
+        const query = params.toString()
+        router.push(query ? `${pathname}?${query}` : pathname, { scroll: false })
         setOpen(false)
     }
 
     const clearAll = () => {
         setCatalogFilters({})
         setPLPFilters({})
-        router.push(pathname, { scroll: false })
+        const params = buildCatalogFilterSearchParams(searchParams, {
+            availability: 'all',
+            options: {},
+            categories: [],
+            subcategories: [],
+            applications: [],
+            sort: 'featured',
+        })
+        const query = params.toString()
+        router.push(query ? `${pathname}?${query}` : pathname, { scroll: false })
         setOpen(false)
     }
 
+    const activeVariantOptionCount = Object.values(plpFilters.variantOptions || {}).reduce(
+        (sum, vals) => sum + vals.length,
+        0
+    )
     const activeFilterCount =
         (catalogFilters.applications?.length || 0) +
         (catalogFilters.elevatorTypes?.length || 0) +
         (catalogFilters.categories?.length || 0) +
         (catalogFilters.subcategories?.length || 0) +
         (plpFilters.availability ? 1 : 0) +
-        (plpFilters.priceRange ? 1 : 0) +
-        (plpFilters.minRating ? 1 : 0) +
+        activeVariantOptionCount +
         (plpFilters.sort ? 1 : 0)
 
     return (
@@ -180,27 +167,15 @@ export function CatalogFilterDrawer({ variant = 'default', products = [] }: { va
                 </SheetHeader>
 
                 <div className="flex flex-col h-[calc(100vh-140px)] overflow-y-auto pr-2">
-                    {(() => {
-                        const hasData = catalogOptions.applications.length > 0 ||
-                            catalogOptions.categories.length > 0 ||
-                            catalogOptions.elevatorTypes.length > 0;
-
-                        return hasData ? (
-                            <UnifiedFilters
-                                catalogFilters={catalogFilters}
-                                plpFilters={plpFilters}
-                                onCatalogChange={setCatalogFilters}
-                                onPLPChange={setPLPFilters}
-                                catalogOptions={catalogOptions}
-                                plpOptions={plpOptions}
-                                mode="catalog"
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                                <p>Loading filters...</p>
-                            </div>
-                        );
-                    })()}
+                    <UnifiedFilters
+                        catalogFilters={catalogFilters}
+                        plpFilters={plpFilters}
+                        onCatalogChange={setCatalogFilters}
+                        onPLPChange={setPLPFilters}
+                        catalogOptions={catalogOptions}
+                        plpOptions={plpOptions}
+                        mode="catalog"
+                    />
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t flex gap-2">

@@ -13,16 +13,37 @@ import { QueryProvider } from "@/components/providers/query-provider"
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100/50">
-      <div className="text-center">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-600 mx-auto mb-6"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 bg-orange-600 rounded-full animate-pulse"></div>
+    <div className="flex h-screen bg-gray-50 animate-pulse">
+      {/* Sidebar Skeleton */}
+      <div className="hidden lg:flex w-64 flex-col border-r border-gray-200 bg-white p-4 space-y-6">
+        <div className="h-8 w-36 bg-gray-200 rounded-md" />
+        <div className="space-y-2.5">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="h-9 w-full bg-gray-100 rounded-lg" />
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content Skeleton */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="h-16 border-b border-gray-200 bg-white px-6 flex items-center justify-between">
+          <div className="h-6 w-48 bg-gray-200 rounded" />
+          <div className="h-9 w-9 bg-gray-200 rounded-full" />
+        </div>
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                <div className="h-4 w-24 bg-gray-200 rounded" />
+                <div className="h-7 w-16 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+          <div className="h-80 bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+            <div className="h-5 w-40 bg-gray-200 rounded" />
+            <div className="h-56 w-full bg-gray-100 rounded-lg" />
           </div>
         </div>
-        <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">Admin Portal</h3>
-        <p className="text-gray-500">Verifying administrator session...</p>
       </div>
     </div>
   )

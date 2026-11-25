@@ -76,7 +76,7 @@ export default function Pagination({
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
               className={`min-w-[40px] px-3 py-2 rounded-lg font-medium transition-colors ${
-                isActive ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
+                isActive ? 'bg-orange-600 text-white' : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
               }`}
               aria-label={`Page ${pageNum}`}
               aria-current={isActive ? 'page' : undefined}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Heart, LoaderCircle } from "lucide-react"
+import { Bookmark, LoaderCircle } from "lucide-react"
 import { useWishlist } from "@/lib/hooks"
 import { Product } from "@/lib/types/domain"
 import { cn } from "@/lib/utils"
@@ -88,13 +88,14 @@ export default function WishlistButton({
         {isLoading ? (
           <LoaderCircle className={cn(iconSizes[size], "animate-spin text-gray-600")} />
         ) : (
-          <Heart
+          <Bookmark
+            fill={isWishlisted ? "currentColor" : "none"}
             className={cn(
               iconSizes[size],
               "transition-all",
               isWishlisted
-                ? "fill-red-500 text-red-500"
-                : "text-gray-600 hover:text-red-500"
+                ? "fill-orange-600 text-orange-600"
+                : "text-gray-600 hover:text-orange-600"
             )}
           />
         )}
@@ -128,8 +129,9 @@ export default function WishlistButton({
         </>
       ) : (
         <>
-          <Heart
-            className={cn("w-5 h-5", isWishlisted && "fill-red-500")}
+          <Bookmark
+            fill={isWishlisted ? "currentColor" : "none"}
+            className={cn("w-5 h-5", isWishlisted && "fill-orange-600 text-orange-600")}
           />
           {showLabel && (isWishlisted ? "Saved" : "Save")}
         </>

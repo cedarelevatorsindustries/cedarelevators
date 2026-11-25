@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — SECURITY REMEDIATION PLAN
+# CEDAR ELEVATORS - SECURITY REMEDIATION PLAN
 
 **Document Version:** 1.0 (Detailed Security Architecture & Hardening Blueprint)  
 **Date:** November 19, 2026  

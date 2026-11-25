@@ -13,7 +13,6 @@ const isDormantCommerceRoute = createRouteMatcher([
   '/checkout(.*)',
   '/cart(.*)',
   '/profile(.*)',
-  '/wishlist(.*)',
   '/track(.*)',
   '/order-confirmation(.*)',
   '/choose-type(.*)',
@@ -186,11 +185,7 @@ export default clerkMiddleware(async (_auth, request) => {
     return NextResponse.redirect(new URL(`/products?collection=${handle}`, request.url), 301)
   }
 
-  // Normalize legacy category routes to canonical /products?category=...
-  if (url.pathname === '/categories' || url.pathname === '/categories/') {
-    return NextResponse.redirect(new URL('/products', request.url), 301)
-  }
-
+  // Normalize legacy category handle routes to canonical /products?category=...
   if (url.pathname.startsWith('/categories/') && url.pathname !== '/categories/') {
     const handle = url.pathname.replace(/^\/categories\//, '')
     return NextResponse.redirect(new URL(`/products?category=${handle}`, request.url), 301)

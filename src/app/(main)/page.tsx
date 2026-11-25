@@ -83,34 +83,34 @@ export default async function HomePage() {
 
   return (
     <div className="w-full bg-white flex flex-col min-h-screen overflow-x-hidden pb-20 md:pb-0">
-      {/* SECTION 02 — COMPACT HERO */}
+      {/* SECTION 02 - COMPACT HERO */}
       <CompactHero />
 
       {/* OPTIONAL PROMOTIONAL BANNER */}
       <HomepagePromotionBanner promotion={storeSettings?.homepage_promotion} />
 
-      {/* SECTION 03 — SHOP BY APPLICATION */}
+      {/* SECTION 03 - SHOP BY APPLICATION */}
       <ShopByApplication applications={serializedApplications} />
 
-      {/* SECTION 05 — BROWSE PRODUCT CATEGORIES */}
+      {/* SECTION 05 - BROWSE PRODUCT CATEGORIES */}
       <ProductCategoriesSection categories={serializedCategories} />
 
-      {/* SECTION 06 — FEATURED PRODUCTS */}
+      {/* SECTION 06 - FEATURED PRODUCTS */}
       <FeaturedProducts products={serializedProducts} />
 
-      {/* SECTION 07 — SHOP BY ELEVATOR TYPE */}
+      {/* SECTION 07 - SHOP BY ELEVATOR TYPE */}
       <ShopByElevatorType elevatorTypes={serializedElevatorTypes} />
 
-      {/* SECTION 08 — EXCLUSIVE AT CEDAR */}
+      {/* SECTION 08 - EXCLUSIVE AT CEDAR */}
       <ExclusiveCedar collections={collections} />
 
-      {/* SECTION 09 — WHY CHOOSE CEDAR? */}
+      {/* SECTION 09 - WHY CHOOSE CEDAR? */}
       <WhyChooseCedar />
 
-      {/* SECTION 10 — ABOUT CEDAR + DARK CONVERSION CTA */}
+      {/* SECTION 10 - ABOUT CEDAR + DARK CONVERSION CTA */}
       <AboutCedarCta />
 
-      {/* SECTION 11 — FREQUENTLY ASKED QUESTIONS */}
+      {/* SECTION 11 - FREQUENTLY ASKED QUESTIONS */}
       <FaqAccordion />
     </div>
   )

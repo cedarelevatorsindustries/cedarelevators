@@ -115,11 +115,11 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-xs text-gray-500">Title</p>
-                <p className="font-medium text-gray-900">{formData.title || '—'}</p>
+                <p className="font-medium text-gray-900">{formData.title || '-'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">SKU</p>
-                <p className="font-medium text-gray-900">{formData.sku || '—'}</p>
+                <p className="font-medium text-gray-900">{formData.sku || '-'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Status</p>
@@ -300,7 +300,7 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
               <p className="text-sm font-medium">
                 {formData.application_ids?.length > 0
                   ? `${formData.application_ids.length} selected`
-                  : '—'}
+                  : '-'}
               </p>
             </div>
             <div>
@@ -308,7 +308,7 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
               <p className="text-sm font-medium">
                 {formData.category_ids?.length > 0
                   ? `${formData.category_ids.length} selected`
-                  : '—'}
+                  : '-'}
               </p>
             </div>
             <div>
@@ -316,7 +316,7 @@ export function ReviewPublishTab({ formData, onGoToStep, validationErrors }: Rev
               <p className="text-sm font-medium">
                 {formData.subcategory_ids?.length > 0
                   ? `${formData.subcategory_ids.length} selected`
-                  : '—'}
+                  : '-'}
               </p>
             </div>
             <div>

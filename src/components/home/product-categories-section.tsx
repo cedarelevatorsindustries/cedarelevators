@@ -64,19 +64,16 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
         {/* Section Header with Blue & Orange Theme */}
         <div className="flex items-end justify-between mb-8 sm:mb-10">
           <div>
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-blue-600">
-              Component Families
-            </span>
-            <h2 className="text-xl sm:text-3xl font-semibold text-zinc-900 tracking-tight mt-0.5 sm:mt-1">
+            <h2 className="type-section text-zinc-900">
               Browse Product Categories
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-600 mt-0.5 sm:mt-1 hidden sm:block">
+            <p className="type-body-sm text-zinc-600 mt-1 hidden sm:block">
               Explore precision engineering components organized by functional family.
             </p>
           </div>
           <Link
-            href="/products"
-            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-orange-600 hover:text-blue-600 transition-colors"
+            href="/categories"
+            className="type-nav inline-flex items-center gap-1 text-orange-600 hover:text-blue-600 transition-colors"
           >
             <span>All Categories</span>
             <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -92,11 +89,11 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
               <Link
                 key={cat.slug}
                 href={`/products?category=${cat.slug}`}
-                className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1 duration-200 shrink-0"
+                className="flex flex-col items-center text-center shrink-0"
               >
                 {/* Guaranteed 1:1 Geometric Circle Frame */}
                 <div
-                  className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 aspect-square rounded-full bg-white border-2 border-zinc-200 group-hover:border-blue-600 group-hover:shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300 relative shrink-0 shadow-xs mb-3.5"
+                  className="w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 aspect-square rounded-full bg-white border-2 border-zinc-200 flex items-center justify-center overflow-hidden relative shrink-0 shadow-xs mb-3.5"
                   style={{
                     aspectRatio: "1 / 1",
                   }}
@@ -105,12 +102,12 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
                     <img
                       src={cat.image}
                       alt={cat.name}
-                      className="w-18 h-18 sm:w-22 sm:h-22 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain group-hover:scale-110 transition-transform duration-300 pointer-events-none"
+                      className="w-18 h-18 sm:w-22 sm:h-22 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain pointer-events-none"
                       loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100/70 flex items-center justify-center">
-                      <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-600 group-hover:text-orange-600 uppercase select-none transition-colors">
+                      <span className="text-3xl sm:text-4xl md:text-5xl font-light text-blue-600 uppercase select-none">
                         {firstLetter}
                       </span>
                     </div>
@@ -118,7 +115,7 @@ export function ProductCategoriesSection({ categories = [] }: ProductCategoriesS
                 </div>
 
                 {/* Category Name */}
-                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-zinc-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight max-w-[160px] text-center">
+                <h3 className="type-product text-zinc-900 line-clamp-2 max-w-[160px] text-center">
                   {cat.name}
                 </h3>
               </Link>

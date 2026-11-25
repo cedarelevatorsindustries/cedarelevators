@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs"
 import type { Metadata, Viewport } from "next"
+import { GeistSans } from "geist/font/sans"
 import "@/styles/globals.css"
 import { JsonLd } from "@/components/seo/json-ld"
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data"
@@ -103,10 +104,7 @@ export const viewport: Viewport = {
   ],
 }
 
-// Font variable is defined via @import in globals.css with system-ui fallbacks
-const spaceGrotesk = {
-  variable: "",
-}
+// GeistSans is self-hosted locally via the official `geist` package (variable font supporting 200, 300, 400)
 
 export default function RootLayout({
   children,
@@ -123,7 +121,7 @@ export default function RootLayout({
       dynamic={true}
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
         <head>
           {/* Structured Data */}
           <JsonLd data={generateOrganizationSchema()} />
@@ -165,7 +163,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={spaceGrotesk.variable}>
+        <body className={`${GeistSans.className} antialiased`}>
           <QueryProvider>
             {children}
             <PwaInstallPrompt />

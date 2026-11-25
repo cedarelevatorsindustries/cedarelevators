@@ -21,18 +21,18 @@ export function StockFilter({ selectedValue = 'all', onChange, counts }: StockFi
   ]
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       <RadioGroup value={selectedValue} onValueChange={onChange as any}>
         {options.map((option) => (
-          <div key={option.value} className="flex items-center space-x-3">
+          <div key={option.value} className="flex items-center space-x-3 py-1">
             <RadioGroupItem
               value={option.value}
               id={`stock-${option.value}`}
-              className="data-[state=checked]:border-orange-600 data-[state=checked]:text-orange-600"
+              className="border-gray-300 data-[state=checked]:border-orange-600 data-[state=checked]:text-orange-600 focus-visible:ring-orange-500/30"
             />
             <Label
               htmlFor={`stock-${option.value}`}
-              className="flex-1 cursor-pointer flex items-center justify-between text-sm font-normal"
+              className="flex-1 cursor-pointer flex items-center justify-between text-sm font-normal min-h-[24px]"
             >
               <span className="text-gray-700">{option.label}</span>
               {option.count !== undefined && (

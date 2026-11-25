@@ -74,17 +74,14 @@ module.exports = {
       },
       fontFamily: {
         sans: [
-          "Inter",
+          "var(--font-geist)",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
           "Helvetica Neue",
-          "Ubuntu",
           "sans-serif",
         ],
-        montserrat: ["var(--font-montserrat)", "sans-serif"],
-        "space-grotesk": ["var(--font-space-grotesk)", "sans-serif"],
       },
       keyframes: {
         ring: {

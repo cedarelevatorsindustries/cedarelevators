@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — PHASE 1 FEATURE INVENTORY
+# CEDAR ELEVATORS - PHASE 1 FEATURE INVENTORY
 **Discovery Date:** November 2026  
 **Status:** Read-Only Discovery Complete  
 **Scope:** Customer Website, Admin Portal, Backend APIs, Database, and Integrations  
@@ -121,55 +121,55 @@ The application was originally architected as a full-scale B2B/B2C multi-tenant 
 
 The PostgreSQL database contains **73 tables**. They are categorized below:
 
-### 5.1 Core Catalogue & Taxonomy (P1_ACTIVE — 17 Tables)
-1. `products` — Base product master (name, slug, description, specs, base price, status).
-2. `product_variants` — Specific models/sizes linked to products.
-3. `categories` — Product categories (e.g., Motors, Controllers, Doors).
-4. `subcategories` — Nested subcategories.
-5. `category_subcategories` — Relationship junction table.
-6. `product_categories` — Product to category mappings.
-7. `product_subcategories` — Product to subcategory mappings.
-8. `applications` — Elevator application groupings (Passenger, Freight, Hospital).
-9. `application_categories` — Mapping categories to applications.
-10. `product_applications` — Direct product to application mapping.
-11. `elevator_types` — Elevator drive types (Hydraulic, Traction, MRL).
-12. `product_elevator_types` — Product to elevator type mappings.
-13. `product_types` — Secondary product categorization.
-14. `collections` — Merchandised collections.
-15. `product_collections` — Product to collection linkages with display sorting.
-16. `banners` — Promotional and discovery banners.
-17. `banner_slides` — Multi-image slides for carousel banners.
+### 5.1 Core Catalogue & Taxonomy (P1_ACTIVE - 17 Tables)
+1. `products` - Base product master (name, slug, description, specs, base price, status).
+2. `product_variants` - Specific models/sizes linked to products.
+3. `categories` - Product categories (e.g., Motors, Controllers, Doors).
+4. `subcategories` - Nested subcategories.
+5. `category_subcategories` - Relationship junction table.
+6. `product_categories` - Product to category mappings.
+7. `product_subcategories` - Product to subcategory mappings.
+8. `applications` - Elevator application groupings (Passenger, Freight, Hospital).
+9. `application_categories` - Mapping categories to applications.
+10. `product_applications` - Direct product to application mapping.
+11. `elevator_types` - Elevator drive types (Hydraulic, Traction, MRL).
+12. `product_elevator_types` - Product to elevator type mappings.
+13. `product_types` - Secondary product categorization.
+14. `collections` - Merchandised collections.
+15. `product_collections` - Product to collection linkages with display sorting.
+16. `banners` - Promotional and discovery banners.
+17. `banner_slides` - Multi-image slides for carousel banners.
 
-### 5.2 Quotations & Enquiries (P1_ACTIVE — 7 Tables)
-18. `quotes` — Core quotation master supporting both guest and account submissions.
-19. `quote_items` — Snapshot line items (name, sku, thumbnail, qty, requested price).
-20. `quote_attachments` — Technical drawings or RFP files attached to enquiries.
-21. `quote_admin_responses` — Admin communication and quote pricing proposals.
-22. `quote_audit_log` — Timestamped audit trail of quote status changes.
-23. `quote_baskets` — Temporary guest/session quote baskets.
-24. `quote_counters` — Sequence counters for generating quote reference IDs.
+### 5.2 Quotations & Enquiries (P1_ACTIVE - 7 Tables)
+18. `quotes` - Core quotation master supporting both guest and account submissions.
+19. `quote_items` - Snapshot line items (name, sku, thumbnail, qty, requested price).
+20. `quote_attachments` - Technical drawings or RFP files attached to enquiries.
+21. `quote_admin_responses` - Admin communication and quote pricing proposals.
+22. `quote_audit_log` - Timestamped audit trail of quote status changes.
+23. `quote_baskets` - Temporary guest/session quote baskets.
+24. `quote_counters` - Sequence counters for generating quote reference IDs.
 
-### 5.3 Administration, Roles & Site Settings (P1_ACTIVE — 7 Tables)
-25. `admin_profiles` — Authenticated administrator profiles linked to Supabase Auth UUIDs.
-26. `admin_settings` — Global administrative settings and emergency recovery keys.
-27. `admin_invites` — Staff onboarding tokens.
-28. `admin_users` — Legacy administrative roles (retained for backward compatibility).
-29. `store_settings` — Store identity, contact numbers, email, operational info.
-30. `system_settings` — Feature flags and maintenance mode switches.
-31. `pricing_settings` — Price visibility flags (e.g. "hide prices for guests").
+### 5.3 Administration, Roles & Site Settings (P1_ACTIVE - 7 Tables)
+25. `admin_profiles` - Authenticated administrator profiles linked to Supabase Auth UUIDs.
+26. `admin_settings` - Global administrative settings and emergency recovery keys.
+27. `admin_invites` - Staff onboarding tokens.
+28. `admin_users` - Legacy administrative roles (retained for backward compatibility).
+29. `store_settings` - Store identity, contact numbers, email, operational info.
+30. `system_settings` - Feature flags and maintenance mode switches.
+31. `pricing_settings` - Price visibility flags (e.g. "hide prices for guests").
 
-### 5.4 CMS & Brand Trust Content (P1_ACTIVE — 9 Tables)
-32. `policies` — Legal and commercial policy markdown pages.
-33. `why_choose_hero` — Hero content for "Why Choose Us" page.
-34. `why_choose_items` — Value proposition feature items.
-35. `why_choose_stats` — Statistical callouts (e.g. installations, clients).
-36. `why_choose_cta` — Bottom conversion call-to-action block.
-37. `warranty_hero` — Warranty page hero content.
-38. `warranty_period` — Warranty duration breakdown by product class.
-39. `warranty_coverage` — Covered vs non-covered terms.
-40. `warranty_claim_steps` — Step-by-step warranty claim instructions.
+### 5.4 CMS & Brand Trust Content (P1_ACTIVE - 9 Tables)
+32. `policies` - Legal and commercial policy markdown pages.
+33. `why_choose_hero` - Hero content for "Why Choose Us" page.
+34. `why_choose_items` - Value proposition feature items.
+35. `why_choose_stats` - Statistical callouts (e.g. installations, clients).
+36. `why_choose_cta` - Bottom conversion call-to-action block.
+37. `warranty_hero` - Warranty page hero content.
+38. `warranty_period` - Warranty duration breakdown by product class.
+39. `warranty_coverage` - Covered vs non-covered terms.
+40. `warranty_claim_steps` - Step-by-step warranty claim instructions.
 
-### 5.5 E-Commerce, Customer Accounts & Deferred Features (P2_DEFERRED — 33 Tables)
+### 5.5 E-Commerce, Customer Accounts & Deferred Features (P2_DEFERRED - 33 Tables)
 41. `carts`, 42. `cart_items`, 43. `orders`, 44. `order_items`, 45. `order_audit_log`, 46. `checkout_sessions`, 47. `payment_transactions`, 48. `payment_settings`, 49. `tax_settings`, 50. `shipping_settings`, 51. `pickup_locations`, 52. `wishlists`, 53. `wishlist_items`, 54. `user_favourites`, 55. `recently_viewed`, 56. `product_reviews`, 57. `customer_notes`, 58. `customer_meta`, 59. `user_profiles`, 60. `profiles`, 61. `users`, 62. `user_addresses`, 63. `businesses`, 64. `business_members`, 65. `business_addresses`, 66. `business_documents`, 67. `business_verifications`, 68. `business_verification_documents`, 69. `verification_documents`, 70. `verification_audit_log`, 71. `documents`, 72. `inventory_items`, 73. `inventory_adjustments`.
 
 ---

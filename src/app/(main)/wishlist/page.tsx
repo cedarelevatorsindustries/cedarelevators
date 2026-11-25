@@ -1,8 +1,7 @@
 "use client"
 
 import { useWishlist } from "@/lib/hooks"
-import { Heart, LoaderCircle, Trash2 } from "lucide-react"
-import Link from "next/link"
+import { LoaderCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -16,14 +15,14 @@ export default function WishlistPage() {
   const [isClearing, setIsClearing] = useState(false)
 
   const handleClearAll = async () => {
-    if (!confirm("Are you sure you want to remove all items from your wishlist?")) return
+    if (!confirm("Are you sure you want to remove all products from your quote list?")) return
 
     setIsClearing(true)
     try {
       await clearWishlist()
-      toast.success("Wishlist cleared")
+      toast.success("Quote list cleared")
     } catch (error) {
-      toast.error("Failed to clear wishlist")
+      toast.error("Failed to clear quote list")
     } finally {
       setIsClearing(false)
     }
@@ -32,7 +31,7 @@ export default function WishlistPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoaderCircle className="w-12 h-12 animate-spin text-blue-600" />
+        <LoaderCircle className="w-10 h-10 animate-spin text-orange-600" />
       </div>
     )
   }
@@ -42,9 +41,9 @@ export default function WishlistPage() {
       <div className="min-h-screen bg-gray-50 pt-20">
         <EmptyState
           image="/empty-states/wishlist-empty-state.png"
-          title="Your Wishlist is Empty"
-          description="Save your favorite products to your wishlist and shop them later."
-          actionLabel="Browse Products"
+          title="Your list is waiting to be filled."
+          description="Explore our elevator components and save the products you're interested in. You can review your selection here whenever you're ready."
+          actionLabel="Explore Products"
           actionLink="/products"
         />
       </div>
@@ -52,23 +51,26 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-24 lg:pb-0">
-      <div className="max-w-[1400px] mx-auto px-4 py-8">
-        {/* Header with Clear All Button */}
-        <div className="mb-8 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-24 lg:pb-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header with Clear List Button */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              My Wishlist
+            <h1 className="type-section text-gray-900 mb-2">
+              Your Quote List
             </h1>
-            <p className="text-gray-600">
-              {count} {count === 1 ? "item" : "items"} saved
+            <p className="type-body-sm text-gray-600 max-w-2xl">
+              Keep the products you&apos;re interested in one place. Review your selection and add or remove products as your requirements evolve.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {count} {count === 1 ? "product" : "products"} saved
             </p>
           </div>
 
           {count > 0 && (
             <Button
               variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+              className="text-gray-700 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 self-start sm:self-auto"
               onClick={handleClearAll}
               disabled={isClearing}
             >
@@ -80,7 +82,7 @@ export default function WishlistPage() {
               ) : (
                 <>
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
+                  Clear List
                 </>
               )}
             </Button>
@@ -88,31 +90,33 @@ export default function WishlistPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Products Grid */}
+          {/* Three-Column Product Grid */}
           <div className="flex-1 w-full">
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {items.map((item) => {
-                // Convert wishlist item to product format for ProductCard
-                // NOTE: Wishlist API doesn't return inventory_quantity, so we default to 999 (in stock)
-                // This prevents false "OUT OF STOCK" display. Actual stock is checked at checkout.
                 const product = {
                   id: item.product_id,
                   title: item.product_title || item.products?.title || "",
                   thumbnail: item.product_thumbnail || item.products?.thumbnail || null,
                   handle: item.product_handle || item.products?.handle || "",
                   description: item.products?.description || "",
+                  price: item.price || item.variants?.price || 0,
                   variants: [
                     {
                       id: item.variant_id,
                       title: item.variant_title || item.variants?.title || "",
                       price: item.price || item.variants?.price || 0,
-                      inventory_quantity: 999, // Default to in-stock since API doesn't return inventory
+                      inventory_quantity: 999,
                       calculated_price: {
-                        calculated_amount: item.price || item.variants?.calculated_price?.calculated_amount || item.variants?.price || 0,
+                        calculated_amount:
+                          item.price ||
+                          item.variants?.calculated_price?.calculated_amount ||
+                          item.variants?.price ||
+                          0,
                       },
                     },
                   ],
-                } as any // Type assertion to avoid TypeScript errors
+                } as any
 
                 return (
                   <WishlistProductCard
@@ -126,7 +130,7 @@ export default function WishlistPage() {
             </div>
           </div>
 
-          {/* Actions Sidebar - Tier-based CTAs */}
+          {/* Right-Side Quote List Summary Panel */}
           <div className="lg:w-80 w-full">
             <WishlistActions items={items} />
           </div>
@@ -135,4 +139,3 @@ export default function WishlistPage() {
     </div>
   )
 }
-

@@ -65,6 +65,7 @@
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",
 		"date-fns": "^4.1.0",
+		"geist": "^1.9.2",
 		"icons": "^1.0.0",
 		"jspdf": "^3.0.4",
 		"jspdf-autotable": "^5.0.7",

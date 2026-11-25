@@ -7,271 +7,273 @@ import { FilterGroup } from "./FilterGroup"
 import { StockFilter } from "./StockFilter"
 import { CheckboxFilter } from "./CheckboxFilter"
 import type { Product } from "@/lib/types/domain"
+import {
+  extractVariantOptions,
+  parseCatalogFiltersFromURL,
+  buildCatalogFilterSearchParams,
+  isProductInStock,
+  normalizeOptionValue,
+  type AvailabilityFilter,
+} from "@/lib/catalog/filter-utils"
 
 interface FilterOption {
-    id: string
-    name: string
-    count?: number
+  id: string
+  name: string
+  count?: number
 }
 
 interface UnifiedFilterSidebarProps {
-    className?: string
-    products?: Product[]
-    // Catalog-specific filter options (only shown on main catalog page)
-    applications?: FilterOption[]
-    categories?: FilterOption[]
-    subcategories?: FilterOption[]
+  className?: string
+  products?: Product[]
+  totalProducts?: number
+  // Catalog-specific filter options
+  applications?: FilterOption[]
+  categories?: FilterOption[]
+  subcategories?: FilterOption[]
 }
 
 export function UnifiedFilterSidebar({
-    className,
-    products = [],
-    applications = [],
-    categories = [],
-    subcategories = []
+  className,
+  products = [],
+  totalProducts,
+  applications = [],
+  categories = [],
+  subcategories = [],
 }: UnifiedFilterSidebarProps) {
-    const router = useRouter()
-    const pathname = usePathname()
-    const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-    // Filter state
-    const [availability, setAvailability] = useState<'all' | 'in_stock' | 'out_of_stock'>('all')
-    const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
-    // Catalog-specific filters
-    const [selectedApplications, setSelectedApplications] = useState<string[]>([])
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all")
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([])
 
-    // Extract variant options grouped by option name
-    const variantOptions = useMemo(() => {
-        const optionGroups: Record<string, Set<string>> = {}
-        products.forEach(p => {
-            p.variants?.forEach(v => {
-                if (v.options && typeof v.options === 'object') {
-                    Object.entries(v.options).forEach(([optionName, optionValue]) => {
-                        if (optionName && optionValue && String(optionValue).toLowerCase() !== 'default') {
-                            const normalizedName = optionName.charAt(0).toUpperCase() + optionName.slice(1).toLowerCase()
-                            if (!optionGroups[normalizedName]) {
-                                optionGroups[normalizedName] = new Set()
-                            }
-                            optionGroups[normalizedName].add(String(optionValue))
-                        }
-                    })
-                }
-            })
-        })
-        const result: Record<string, string[]> = {}
-        Object.entries(optionGroups).forEach(([name, values]) => {
-            result[name] = Array.from(values).sort()
-        })
-        return result
-    }, [products])
+  // Extract deduplicated, naturally sorted variant options
+  const variantOptions = useMemo(() => extractVariantOptions(products), [products])
 
-    // Parse filters from URL
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
+  // Compute stock counts for Availability radio options
+  const stockCounts = useMemo(() => {
+    let inStock = 0
+    let outOfStock = 0
+    products.forEach((p) => {
+      if (isProductInStock(p)) inStock++
+      else outOfStock++
+    })
+    return { in_stock: inStock, out_of_stock: outOfStock }
+  }, [products])
 
-        const avail = params.get('availability')
-        if (avail === 'in_stock' || avail === 'out_of_stock') {
-            setAvailability(avail)
-        } else {
-            setAvailability('all')
-        }
+  // Sync local UI state from URL search params (single source of truth)
+  useEffect(() => {
+    const parsed = parseCatalogFiltersFromURL(searchParams)
+    setAvailability(parsed.availability)
 
-        // Parse variant options from URL
-        const newSelectedOptions: Record<string, string[]> = {}
-        Object.keys(variantOptions).forEach(optionName => {
-            const key = `option_${optionName}`
-            const values = params.get(key)?.split(',').filter(Boolean) || []
-            if (values.length > 0) {
-                newSelectedOptions[optionName] = values
-            }
-        })
-        setSelectedOptions(newSelectedOptions)
+    // Map URL option values back to canonical display labels from variantOptions
+    const mappedOptions: Record<string, string[]> = {}
+    Object.entries(parsed.options).forEach(([optName, rawValues]) => {
+      const availableForGroup = variantOptions[optName] || []
+      const mapped = rawValues.map((rawVal) => {
+        const norm = normalizeOptionValue(rawVal)
+        const match = availableForGroup.find((o) => normalizeOptionValue(o.value) === norm)
+        return match ? match.value : rawVal
+      })
+      if (mapped.length > 0) {
+        mappedOptions[optName] = Array.from(new Set(mapped))
+      }
+    })
+    setSelectedOptions(mappedOptions)
 
-        // Parse catalog filters
-        setSelectedApplications(params.get('applications')?.split(',').filter(Boolean) || [])
-        setSelectedCategories(params.get('categories')?.split(',').filter(Boolean) || [])
-        setSelectedSubcategories(params.get('subcategories')?.split(',').filter(Boolean) || [])
-    }, [searchParams, variantOptions])
+    setSelectedApplications(parsed.applications)
+    setSelectedCategories(parsed.categories)
+    setSelectedSubcategories(parsed.subcategories)
+  }, [searchParams, variantOptions])
 
-    const handleOptionChange = (optionName: string, values: string[]) => {
-        const updated = { ...selectedOptions }
-        if (values.length > 0) {
-            updated[optionName] = values
-        } else {
-            delete updated[optionName]
-        }
-        setSelectedOptions(updated)
-        applyFilters(availability, updated, selectedApplications, selectedCategories, selectedSubcategories)
-    }
-
-    const handleAvailabilityChange = (value: 'all' | 'in_stock' | 'out_of_stock') => {
-        setAvailability(value)
-        applyFilters(value, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories)
-    }
-
-    const handleApplicationsChange = (values: string[]) => {
-        setSelectedApplications(values)
-        applyFilters(availability, selectedOptions, values, selectedCategories, selectedSubcategories)
-    }
-
-    const handleCategoriesChange = (values: string[]) => {
-        setSelectedCategories(values)
-        applyFilters(availability, selectedOptions, selectedApplications, values, selectedSubcategories)
-    }
-
-    const handleSubcategoriesChange = (values: string[]) => {
-        setSelectedSubcategories(values)
-        applyFilters(availability, selectedOptions, selectedApplications, selectedCategories, values)
-    }
-
-    const applyFilters = (
-        avail: 'all' | 'in_stock' | 'out_of_stock',
-        options: Record<string, string[]>,
-        apps: string[],
-        cats: string[],
-        subs: string[]
-    ) => {
-        const params = new URLSearchParams(searchParams.toString())
-
-        // Clear old params
-        params.delete('availability')
-        params.delete('applications')
-        params.delete('categories')
-        params.delete('subcategories')
-        Object.keys(variantOptions).forEach(optionName => {
-            params.delete(`option_${optionName}`)
-        })
-
-        // Add new params
-        if (avail !== 'all') {
-            params.set('availability', avail)
-        }
-
-        Object.entries(options).forEach(([optionName, values]) => {
-            if (values.length > 0) {
-                params.set(`option_${optionName}`, values.join(','))
-            }
-        })
-
-        if (apps.length > 0) {
-            params.set('applications', apps.join(','))
-        }
-        if (cats.length > 0) {
-            params.set('categories', cats.join(','))
-        }
-        if (subs.length > 0) {
-            params.set('subcategories', subs.join(','))
-        }
-
-        router.push(`${pathname}?${params.toString()}`, { scroll: false })
-    }
-
-    const handleClearAll = () => {
-        setAvailability('all')
-        setSelectedOptions({})
-        setSelectedApplications([])
-        setSelectedCategories([])
-        setSelectedSubcategories([])
-        router.push(pathname, { scroll: false })
-    }
-
-    // Count active filters
-    const activeFilterCount = useMemo(() => {
-        let count = availability !== 'all' ? 1 : 0
-        Object.values(selectedOptions).forEach(values => {
-            count += values.length
-        })
-        count += selectedApplications.length
-        count += selectedCategories.length
-        count += selectedSubcategories.length
-        return count
-    }, [availability, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories])
-
-    const hasVariantOptions = Object.keys(variantOptions).length > 0
-
-    return (
-        <aside className={`w-full lg:w-80 ${className}`}>
-            <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-24 overflow-visible">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Filters</h3>
-                    {activeFilterCount > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleClearAll}
-                            className="text-orange-600 hover:text-orange-700"
-                        >
-                            Clear All
-                        </Button>
-                    )}
-                </div>
-
-                <div className="space-y-0">
-                    {/* Availability Filter */}
-                    <FilterGroup title="Availability" defaultExpanded>
-                        <StockFilter
-                            selectedValue={availability}
-                            onChange={handleAvailabilityChange}
-                        />
-                    </FilterGroup>
-
-                    {/* Variant Option Filters - Grouped by Option Name */}
-                    {hasVariantOptions && Object.entries(variantOptions).map(([optionName, values]) => (
-                        <FilterGroup key={optionName} title={optionName}>
-                            <CheckboxFilter
-                                options={values.map(v => ({ value: v, label: v }))}
-                                selectedValues={selectedOptions[optionName] || []}
-                                onChange={(selected) => handleOptionChange(optionName, selected)}
-                            />
-                        </FilterGroup>
-                    ))}
-
-                    {/* Catalog-Specific Filters */}
-                    {applications.length > 0 && (
-                        <FilterGroup title="Applications">
-                            <CheckboxFilter
-                                options={applications.map(a => ({
-                                    value: a.id,
-                                    label: a.name,
-                                    count: a.count
-                                }))}
-                                selectedValues={selectedApplications}
-                                onChange={handleApplicationsChange}
-                            />
-                        </FilterGroup>
-                    )}
-
-                    {categories.length > 0 && (
-                        <FilterGroup title="Categories">
-                            <CheckboxFilter
-                                options={categories.map(c => ({
-                                    value: c.id,
-                                    label: c.name,
-                                    count: c.count
-                                }))}
-                                selectedValues={selectedCategories}
-                                onChange={handleCategoriesChange}
-                            />
-                        </FilterGroup>
-                    )}
-
-                    {subcategories.length > 0 && (
-                        <FilterGroup title="Subcategories">
-                            <CheckboxFilter
-                                options={subcategories.map(s => ({
-                                    value: s.id,
-                                    label: s.name,
-                                    count: s.count
-                                }))}
-                                selectedValues={selectedSubcategories}
-                                onChange={handleSubcategoriesChange}
-                            />
-                        </FilterGroup>
-                    )}
-                </div>
-            </div>
-        </aside>
+  const pushFiltersToURL = (next: {
+    availability?: AvailabilityFilter
+    options?: Record<string, string[]>
+    applications?: string[]
+    categories?: string[]
+    subcategories?: string[]
+  }) => {
+    const params = buildCatalogFilterSearchParams(
+      searchParams,
+      next,
+      Object.keys(variantOptions)
     )
+    const queryStr = params.toString()
+    router.push(queryStr ? `${pathname}?${queryStr}` : pathname, { scroll: false })
+  }
+
+  const handleOptionChange = (optionName: string, values: string[]) => {
+    const updated = { ...selectedOptions }
+    if (values.length > 0) {
+      updated[optionName] = values
+    } else {
+      delete updated[optionName]
+    }
+    setSelectedOptions(updated)
+    pushFiltersToURL({ options: updated })
+  }
+
+  const handleAvailabilityChange = (value: AvailabilityFilter) => {
+    setAvailability(value)
+    pushFiltersToURL({ availability: value })
+  }
+
+  const handleApplicationsChange = (values: string[]) => {
+    setSelectedApplications(values)
+    pushFiltersToURL({ applications: values })
+  }
+
+  const handleCategoriesChange = (values: string[]) => {
+    setSelectedCategories(values)
+    pushFiltersToURL({ categories: values })
+  }
+
+  const handleSubcategoriesChange = (values: string[]) => {
+    setSelectedSubcategories(values)
+    pushFiltersToURL({ subcategories: values })
+  }
+
+  const handleClearAll = () => {
+    setAvailability("all")
+    setSelectedOptions({})
+    setSelectedApplications([])
+    setSelectedCategories([])
+    setSelectedSubcategories([])
+
+    const params = buildCatalogFilterSearchParams(
+      searchParams,
+      {
+        availability: "all",
+        options: {},
+        applications: [],
+        categories: [],
+        subcategories: [],
+        sort: "featured",
+      },
+      Object.keys(variantOptions)
+    )
+    const queryStr = params.toString()
+    router.push(queryStr ? `${pathname}?${queryStr}` : pathname, { scroll: false })
+  }
+
+  const activeFilterCount = useMemo(() => {
+    let count = availability !== "all" ? 1 : 0
+    Object.values(selectedOptions).forEach((values) => {
+      count += values.length
+    })
+    count += selectedApplications.length
+    count += selectedCategories.length
+    count += selectedSubcategories.length
+    return count
+  }, [availability, selectedOptions, selectedApplications, selectedCategories, selectedSubcategories])
+
+  const hasVariantOptions = Object.keys(variantOptions).length > 0
+
+  return (
+    <aside className={`w-full lg:w-72 xl:w-80 flex-shrink-0 ${className || ""}`}>
+      <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg text-gray-900">Filters</h3>
+              {activeFilterCount > 0 && (
+                <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                  {activeFilterCount}
+                </span>
+              )}
+            </div>
+            {totalProducts !== undefined && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                {totalProducts.toLocaleString()} {totalProducts === 1 ? "product" : "products"}
+              </p>
+            )}
+          </div>
+          {activeFilterCount > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAll}
+              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 h-8 px-2.5 text-xs"
+            >
+              Clear All
+            </Button>
+          )}
+        </div>
+
+        <div className="space-y-0">
+          {/* Availability Filter */}
+          <FilterGroup title="Availability">
+            <StockFilter
+              selectedValue={availability}
+              onChange={handleAvailabilityChange}
+              counts={stockCounts}
+            />
+          </FilterGroup>
+
+          {/* Variant Option Filters - Grouped by Option Name */}
+          {hasVariantOptions &&
+            Object.entries(variantOptions).map(([optionName, values]) => (
+              <FilterGroup
+                key={optionName}
+                title={optionName}
+                count={selectedOptions[optionName]?.length}
+              >
+                <CheckboxFilter
+                  options={values}
+                  selectedValues={selectedOptions[optionName] || []}
+                  onChange={(selected) => handleOptionChange(optionName, selected)}
+                />
+              </FilterGroup>
+            ))}
+
+          {/* Catalog-Specific Filters */}
+          {applications.length > 0 && (
+            <FilterGroup title="Applications" count={selectedApplications.length}>
+              <CheckboxFilter
+                options={applications.map((a) => ({
+                  value: a.id,
+                  label: a.name,
+                  count: a.count,
+                }))}
+                selectedValues={selectedApplications}
+                onChange={handleApplicationsChange}
+              />
+            </FilterGroup>
+          )}
+
+          {categories.length > 0 && (
+            <FilterGroup title="Categories" count={selectedCategories.length}>
+              <CheckboxFilter
+                options={categories.map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                  count: c.count,
+                }))}
+                selectedValues={selectedCategories}
+                onChange={handleCategoriesChange}
+              />
+            </FilterGroup>
+          )}
+
+          {subcategories.length > 0 && (
+            <FilterGroup title="Subcategories" count={selectedSubcategories.length}>
+              <CheckboxFilter
+                options={subcategories.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                  count: s.count,
+                }))}
+                selectedValues={selectedSubcategories}
+                onChange={handleSubcategoriesChange}
+              />
+            </FilterGroup>
+          )}
+        </div>
+      </div>
+    </aside>
+  )
 }

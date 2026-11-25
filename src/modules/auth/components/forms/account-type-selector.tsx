@@ -18,7 +18,7 @@ export default function AccountTypeSelector({ onSelectType, disabled = false }: 
           Choose how you want to use Cedar
         </h1>
         <p className="mt-3 text-gray-500 text-base font-normal leading-normal max-w-lg mx-auto">
-          You can switch later — this helps us personalise your experience.
+          You can switch later - this helps us personalise your experience.
         </p>
       </div>
 

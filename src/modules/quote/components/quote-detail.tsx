@@ -340,14 +340,14 @@ export function QuoteDetail({ quote, userType }: QuoteDetailProps) {
                                     <td className="px-6 py-4 text-right tabular-nums text-gray-600">
                                         {item.unit_price
                                             ? `₹${item.unit_price.toLocaleString()}`
-                                            : '—'}
+                                            : '-'}
                                     </td>
                                 )}
                                 {canSeePricing && (
                                     <td className="px-6 py-4 text-right tabular-nums font-medium text-gray-900">
                                         {item.unit_price
                                             ? `₹${(item.unit_price * item.quantity).toLocaleString()}`
-                                            : '—'}
+                                            : '-'}
                                     </td>
                                 )}
                             </tr>

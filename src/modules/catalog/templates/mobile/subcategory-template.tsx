@@ -8,6 +8,7 @@ import ProductCard from "@/components/ui/product-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
 import { ProductFilterDrawer, FilterChips } from "@/modules/catalog/components/filters"
+import { isProductInStock, normalizeOptionKey, normalizeOptionValue } from "@/lib/catalog/filter-utils"
 
 interface SubcategoryTemplateProps {
   category: ProductCategory
@@ -74,20 +75,14 @@ export default function SubcategoryTemplate({
       }
     }
 
-    // Apply availability filter
-    if (availabilityFilter !== 'all') {
-      if (availabilityFilter === 'in_stock') {
-        filtered = filtered.filter(p =>
-          p.variants?.some(v => v.inventory_quantity > 0)
-        )
-      } else if (availabilityFilter === 'out_of_stock') {
-        filtered = filtered.filter(p =>
-          !p.variants?.some(v => v.inventory_quantity > 0)
-        )
-      }
+    // Apply availability filter using verified inventory business rules
+    if (availabilityFilter === 'in_stock') {
+      filtered = filtered.filter(p => isProductInStock(p))
+    } else if (availabilityFilter === 'out_of_stock') {
+      filtered = filtered.filter(p => !isProductInStock(p))
     }
 
-    // Apply variant option filters
+    // Apply variant option filters (AND across groups, OR within group, unit-normalized)
     const hasOptionFilters = Object.values(selectedOptions).some(arr => arr.length > 0)
     if (hasOptionFilters) {
       filtered = filtered.filter(p =>
@@ -95,11 +90,11 @@ export default function SubcategoryTemplate({
           if (!v.options || typeof v.options !== 'object') return false
           return Object.entries(selectedOptions).every(([optionName, values]) => {
             if (values.length === 0) return true
-            // Check if variant has this option with a matching value
+            const normalizedTargets = values.map(val => normalizeOptionValue(val))
             const optionValue = Object.entries(v.options).find(
-              ([key]) => key.toLowerCase() === optionName.toLowerCase()
+              ([key]) => normalizeOptionKey(key).toLowerCase() === optionName.toLowerCase()
             )?.[1]
-            return optionValue && values.includes(String(optionValue))
+            return optionValue !== undefined && optionValue !== null && normalizedTargets.includes(normalizeOptionValue(String(optionValue)))
           })
         })
       )

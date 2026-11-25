@@ -252,7 +252,7 @@ export default function AdminQuotesPage() {
                                                         {quote.guest_name || quote.company_details?.company_name || 'User'}
                                                     </p>
                                                     <p className="text-gray-500 text-xs">
-                                                        {quote.guest_email || quote.company_details?.contact_phone || '—'}
+                                                        {quote.guest_email || quote.company_details?.contact_phone || '-'}
                                                     </p>
                                                 </div>
                                             </td>

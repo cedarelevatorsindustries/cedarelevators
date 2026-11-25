@@ -1,4 +1,4 @@
-# Cedar Elevators — Phase 1 Authentication Simplification Report
+# Cedar Elevators - Phase 1 Authentication Simplification Report
 
 **Date:** November 2026  
 **Status:** Completed  

@@ -19,7 +19,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 console.log('======================================================================')
-console.log('CEDAR ELEVATORS — PHASE C: SUPABASE ADMIN AUTH & SESSION TEST SUITE')
+console.log('CEDAR ELEVATORS - PHASE C: SUPABASE ADMIN AUTH & SESSION TEST SUITE')
 console.log('======================================================================\n')
 
 let passed = 0
@@ -45,9 +45,9 @@ async function runPhaseCTests() {
   const targetEmail = 'cedarelevatorsindustries@gmail.com'
   const { data: usersData, error: userLookupError } = await adminClient.auth.admin.listUsers()
   const liveAdminUser = usersData?.users?.find(u => u.email === targetEmail)
-  
+
   assert(1, 'Administrator exists in Supabase Auth', !!liveAdminUser && !userLookupError, `Admin user ${targetEmail} not found`)
-  
+
   if (liveAdminUser) {
     const { data: profile } = await adminClient
       .from('admin_profiles')
@@ -55,7 +55,7 @@ async function runPhaseCTests() {
       .eq('user_id', liveAdminUser.id)
       .maybeSingle()
 
-    assert(1, 'Administrator profile is active super_admin', 
+    assert(1, 'Administrator profile is active super_admin',
       profile && profile.role === 'super_admin' && profile.is_active === true,
       `Profile: ${JSON.stringify(profile)}`
     )
@@ -68,7 +68,7 @@ async function runPhaseCTests() {
     email: targetEmail,
     password: 'CompletelyWrongPassword123!'
   })
-  assert(2, 'Invalid credentials rejected by Supabase Auth', 
+  assert(2, 'Invalid credentials rejected by Supabase Auth',
     !!invalidLoginError && !invalidLogin.session,
     'Invalid password unexpectedly succeeded'
   )
@@ -84,7 +84,7 @@ async function runPhaseCTests() {
     .eq('user_id', fakeCustomerUuid)
     .maybeSingle()
 
-  assert(3, 'Ordinary customer lacks admin_profiles record', 
+  assert(3, 'Ordinary customer lacks admin_profiles record',
     customerProfile === null,
     'Found unexpected admin profile for fake customer'
   )
@@ -122,7 +122,7 @@ async function runPhaseCTests() {
   // -------------------------------------------------------------------------
   const actionsContent = readFileSync(resolve(process.cwd(), 'src/lib/actions/admin-auth.ts'), 'utf-8')
   assert(7, 'adminRequestPasswordRecoveryAction prevents email enumeration',
-    actionsContent.includes('adminRequestPasswordRecoveryAction') && 
+    actionsContent.includes('adminRequestPasswordRecoveryAction') &&
     actionsContent.includes('resetPasswordForEmail') &&
     actionsContent.includes('If an administrator account exists with this email'),
     'Recovery response might leak account existence'
@@ -133,7 +133,7 @@ async function runPhaseCTests() {
   // -------------------------------------------------------------------------
   const resetPageContent = readFileSync(resolve(process.cwd(), 'src/app/admin/(auth)/reset-password/page.tsx'), 'utf-8')
   assert(8, 'Password reset page validates recovery session and enforces minimum length',
-    resetPageContent.includes('verifyRecoverySession') && 
+    resetPageContent.includes('verifyRecoverySession') &&
     resetPageContent.includes('password.length < 8') &&
     resetPageContent.includes('adminResetPasswordAction'),
     'Reset password page lacks proper validation'
@@ -152,7 +152,7 @@ async function runPhaseCTests() {
   // Scenario 10: Server Action Password Update & Recovery Session Purge
   // -------------------------------------------------------------------------
   assert(10, 'adminResetPasswordAction signs out of recovery session after password update',
-    actionsContent.includes('adminResetPasswordAction') && 
+    actionsContent.includes('adminResetPasswordAction') &&
     actionsContent.includes('supabase.auth.updateUser') &&
     actionsContent.includes('await supabase.auth.signOut()'),
     'Password reset does not properly purge temporary recovery session'

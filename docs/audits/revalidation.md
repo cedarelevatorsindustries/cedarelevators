@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — TECHNICAL AUDIT REVALIDATION & CORRECTION REPORT
+# CEDAR ELEVATORS - TECHNICAL AUDIT REVALIDATION & CORRECTION REPORT
 
 **Document Version:** 2.0 (Post-Audit Revalidation & Evidence Verification)  
 **Date:** November 15, 2026  
@@ -93,12 +93,12 @@ Several critical findings from the initial audit were based on incomplete enviro
 ## 2. VERIFIED VS. UNVERIFIED FINDINGS
 
 To provide absolute technical clarity, every feature and architectural module is evaluated against a 6-tier verification framework:
-* **Tier 1 — Source Code Exists:** Code is written in the repository.
-* **Tier 2 — Build Succeeds:** Code compiles cleanly under `pnpm run build` without TypeScript or bundler errors.
-* **Tier 3 — Local Runtime Works:** Component/API loads in local Next.js dev server.
-* **Tier 4 — External Service Works:** Third-party integration (Clerk, Supabase, Cloudinary, Razorpay, Resend) responds with valid live credentials.
-* **Tier 5 — Live Database Operations Work:** Supabase Postgres queries (SELECT, INSERT, UPDATE) succeed against live database tables.
-* **Tier 6 — End-to-End User Workflow Works:** Complete user flow functions from browser action to database commit and user feedback.
+* **Tier 1 - Source Code Exists:** Code is written in the repository.
+* **Tier 2 - Build Succeeds:** Code compiles cleanly under `pnpm run build` without TypeScript or bundler errors.
+* **Tier 3 - Local Runtime Works:** Component/API loads in local Next.js dev server.
+* **Tier 4 - External Service Works:** Third-party integration (Clerk, Supabase, Cloudinary, Razorpay, Resend) responds with valid live credentials.
+* **Tier 5 - Live Database Operations Work:** Supabase Postgres queries (SELECT, INSERT, UPDATE) succeed against live database tables.
+* **Tier 6 - End-to-End User Workflow Works:** Complete user flow functions from browser action to database commit and user feedback.
 
 ### 2.1 Verification Breakdown by Module
 

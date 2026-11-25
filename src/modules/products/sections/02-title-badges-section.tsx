@@ -79,24 +79,6 @@ export default function TitleBadgesSection({
         </p>
       )}
 
-      {/* SKU - Copyable */}
-      {sku && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">SKU:</span>
-          <button
-            onClick={handleCopySKU}
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-mono text-gray-700 transition-colors group"
-          >
-            <span>{sku}</span>
-            {copied ? (
-              <CheckIcon className="w-4 h-4 text-green-600" />
-            ) : (
-              <Copy className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-            )}
-          </button>
-        </div>
-      )}
-
       {/* Rating - Only show if reviews exist */}
       {reviewCount > 0 && (
         <button

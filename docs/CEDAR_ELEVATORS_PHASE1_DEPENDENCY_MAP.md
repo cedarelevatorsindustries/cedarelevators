@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — PHASE 1 DEPENDENCY MAP
+# CEDAR ELEVATORS - PHASE 1 DEPENDENCY MAP
 **Document Version:** 1.0  
 **Status:** Read-Only Architectural Mapping Complete  
 **Objective:** Explicitly trace relationships between active Phase 1 features, deferred Phase 2 modules, backend operations, database tables, and external services to prevent regressions during feature reduction.

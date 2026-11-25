@@ -41,7 +41,7 @@ Fixed the admin panel to display real-time data from Supabase instead of dummy/m
 **Status:** ✅ Updated
 
 **Changes:**
-- Removed hardcoded "—" values for quick stats
+- Removed hardcoded "-" values for quick stats
 - Added real-time data fetching using `getQuickStats()`
 - Added loading states for better UX
 - Added refresh functionality

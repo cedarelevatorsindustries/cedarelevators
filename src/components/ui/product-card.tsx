@@ -1,7 +1,7 @@
 "use client"
 
 import { Product } from "@/lib/types/domain"
-import { Package, Heart, ShoppingCart, MessageSquare } from "lucide-react"
+import { Package, Bookmark, ShoppingCart, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useUser } from "@/lib/auth/client"
 import { getUserPricingState } from "@/lib/utils/pricing-utils"
@@ -55,8 +55,8 @@ export default function ProductCard({
 
   // NOTE: removed local state isWishlisted, using hook state
 
-  // Determine user type and verification status
-  const userState = getUserPricingState(user)
+  // Determine user type and verification status (guarded by mounted to avoid SSR/client hydration mismatch)
+  const userState = mounted ? getUserPricingState(user) : 'guest'
   // Business includes both verified and unverified for general "business" logic
   const isBusiness = userState === 'business_unverified' || userState === 'business_verified'
   const isVerified = userState === 'business_verified'
@@ -152,18 +152,18 @@ export default function ProductCard({
   const totalInventory = variantInventory + productStock
   const isOutOfStock = totalInventory === 0
 
-  // Mobile Card Variant - Compact with cart icon left of quote button
+  // Mobile Card Variant - Compact with generous text breathing space
   if (variant === "mobile") {
     return (
-      <div className="group relative bg-gray-50 rounded-xl p-2 hover:shadow-xl transition-all duration-300">
+      <div className="relative bg-gray-50 rounded-xl p-3">
         {/* Image Section */}
         <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
-          <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-2 shadow-sm">
+          <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-xs">
             {product.thumbnail ? (
               <img
                 src={product.thumbnail}
                 alt={product.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -187,29 +187,32 @@ export default function ProductCard({
               </div>
             )}
 
-            {/* Wishlist Button - Top Right */}
+            {/* Favourite List Button - Top Right */}
             <button
               onClick={handleWishlist}
+              aria-label={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
+              title={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
               className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
             >
-              <Heart
-                className={`w-3 h-3 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+              <Bookmark
+                fill={isWishlisted ? "currentColor" : "none"}
+                className={`w-3 h-3 ${isWishlisted ? "fill-orange-600 text-orange-600" : "text-gray-600"}`}
               />
             </button>
           </div>
         </Link>
 
         {/* Content Section */}
-        <div className="space-y-1.5">
+        <div className="space-y-2.5 px-0.5">
           <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
             {/* Title - Truncated to 1 line */}
-            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors leading-tight">
+            <h3 className="type-product text-gray-900 line-clamp-1">
               {product.title}
             </h3>
 
             {/* Description - Truncated to 2 lines */}
             {product.description && (
-              <p className="text-[10px] text-gray-600 line-clamp-2 leading-snug mt-1">
+              <p className="text-[11px] text-gray-600 line-clamp-2 leading-relaxed mt-1.5">
                 {product.description}
               </p>
             )}
@@ -262,14 +265,14 @@ export default function ProductCard({
     const categoryType = product.metadata?.category as string || "Featured"
 
     return (
-      <div className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+      <div className="relative bg-white border border-gray-100 rounded-xl overflow-hidden h-full flex flex-col">
         {/* Square Image with Badge */}
         <Link href={`/products/${product.handle}`} className="block relative aspect-square overflow-hidden bg-gray-50" onClick={handleProductClick}>
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
               alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -294,28 +297,31 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Wishlist - Top Right */}
+          {/* Favourite List - Top Right */}
           <button
             onClick={handleWishlist}
+            aria-label={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
+            title={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-md hover:bg-white transition-colors z-10"
           >
-            <Heart
-              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+            <Bookmark
+              fill={isWishlisted ? "currentColor" : "none"}
+              className={`w-3.5 h-3.5 ${isWishlisted ? "fill-orange-600 text-orange-600" : "text-gray-600"}`}
             />
           </button>
         </Link>
 
         {/* Content Outside Image */}
-        <div className="p-3 flex flex-col flex-1 gap-2">
+        <div className="p-4 flex flex-col flex-1 gap-3">
           <Link href={`/products/${product.handle}`} className="flex-1" onClick={handleProductClick}>
             {/* Title */}
-            <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight mb-1 group-hover:text-blue-600 transition-colors">
+            <h3 className="type-product text-gray-900 line-clamp-2 mb-1.5">
               {product.title}
             </h3>
 
             {/* Description - Optional */}
             {product.description && (
-              <p className="text-[10px] text-gray-500 line-clamp-1">
+              <p className="text-xs text-gray-500 line-clamp-1 leading-relaxed">
                 {product.description}
               </p>
             )}
@@ -362,15 +368,15 @@ export default function ProductCard({
 
   // Default Card Variant
   return (
-    <div className="group relative bg-gray-50 rounded-xl p-3 hover:shadow-xl transition-all duration-300">
+    <div className="relative bg-gray-50 rounded-2xl p-4 sm:p-5 border border-gray-100">
       {/* Image Section - Separate with Rounded Corners */}
       <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
-        <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-3 shadow-sm">
+        <div className="aspect-square bg-white rounded-xl relative overflow-hidden mb-4 shadow-xs">
           {product.thumbnail ? (
             <img
               src={product.thumbnail}
               alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -394,29 +400,32 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Wishlist Button - Top Right */}
+          {/* Favourite List Button - Top Right */}
           <button
             onClick={handleWishlist}
+            aria-label={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
+            title={isWishlisted ? "Remove from favourite list" : "Save to favourite list"}
             className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-colors z-10"
           >
-            <Heart
-              className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+            <Bookmark
+              fill={isWishlisted ? "currentColor" : "none"}
+              className={`w-4 h-4 ${isWishlisted ? "fill-orange-600 text-orange-600" : "text-gray-600"}`}
             />
           </button>
         </div>
       </Link>
 
-      {/* Content Section - Direct on Background */}
-      <div className="space-y-2">
-        <Link href={`/products/${product.handle}`} onClick={handleProductClick}>
+      {/* Content Section - Generous breathing space */}
+      <div className="space-y-3 px-0.5">
+        <Link href={`/products/${product.handle}`} onClick={handleProductClick} className="block">
           {/* Title - Truncated */}
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+          <h3 className="type-product text-gray-900 line-clamp-1">
             {product.title}
           </h3>
 
           {/* Description - 2 lines */}
           {product.description && (
-            <p className="text-xs text-gray-600 line-clamp-2 min-h-[32px] mb-2">
+            <p className="type-body-sm text-gray-600 line-clamp-2 min-h-[40px] mt-2">
               {product.description}
             </p>
           )}
@@ -425,25 +434,25 @@ export default function ProductCard({
         {/* Price Section */}
         {formattedPrice ? (
           // Show Price with MRP and Discount
-          <div className="py-1 mt-2">
+          <div className="py-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-lg font-bold text-gray-900">{formattedPrice}</span>
+              <span className="text-base text-gray-900">{formattedPrice}</span>
               {formattedMRP && (
-                <span className="text-sm text-gray-400 line-through">{formattedMRP}</span>
+                <span className="text-xs text-gray-400 line-through">{formattedMRP}</span>
               )}
               {discountPercent && discountPercent > 0 && (
-                <span className="text-xs font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
                   {discountPercent}%
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500">(Inclusive of all taxes)</p>
+            <p className="type-label text-gray-500 mt-1">(Inclusive of all taxes)</p>
           </div>
         ) : (
           // Price on Request
-          <div className="py-1 mt-2">
-            <p className="text-sm font-medium text-orange-600">Price on request</p>
-            <p className="text-xs text-gray-500">Request quote for pricing</p>
+          <div className="py-1.5 space-y-1">
+            <p className="type-body-sm text-orange-600">Price on request</p>
+            <p className="type-label text-gray-500">Request quote for pricing</p>
           </div>
         )}
 
@@ -452,7 +461,7 @@ export default function ProductCard({
           {/* Request Quote - For Everyone */}
           <button
             onClick={handleRequestQuote}
-            className="w-full py-2.5 rounded-lg font-medium text-sm border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-2"
+            className="type-button w-full py-2.5 px-4 rounded-lg border border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4 h-4" />
             {isBusiness && !isVerified ? "Get Bulk Quote" : "Quote"}

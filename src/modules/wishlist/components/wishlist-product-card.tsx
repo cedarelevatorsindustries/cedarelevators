@@ -1,7 +1,7 @@
 'use client'
 
-import { X } from 'lucide-react'
-import ProductCard from '@/components/ui/product-card'
+import Link from 'next/link'
+import { Bookmark, Package, ArrowRight, Trash2 } from 'lucide-react'
 import { useWishlist } from '@/lib/hooks/use-wishlist'
 import { toast } from 'sonner'
 import { useState } from 'react'
@@ -13,9 +13,18 @@ interface WishlistProductCardProps {
     wishlistItemId: string
 }
 
-export function WishlistProductCard({ product, variantId, wishlistItemId }: WishlistProductCardProps) {
+export function WishlistProductCard({ product, variantId }: WishlistProductCardProps) {
     const { removeItem } = useWishlist()
     const [isRemoving, setIsRemoving] = useState(false)
+
+    const rawPrice =
+        (product as any).price ||
+        product.variants?.[0]?.calculated_price?.calculated_amount ||
+        product.variants?.[0]?.price ||
+        0
+    const price = typeof rawPrice === 'number' ? rawPrice : 0
+    const formattedPrice = price > 0 ? `₹${Number(price).toLocaleString('en-IN')}` : null
+    const productHref = product.handle ? `/products/${product.handle}` : '/products'
 
     const handleRemove = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -24,28 +33,83 @@ export function WishlistProductCard({ product, variantId, wishlistItemId }: Wish
         setIsRemoving(true)
         try {
             await removeItem(variantId)
-            toast.success('Removed from wishlist')
+            toast.success('Removed from quote list')
         } catch (error) {
-            console.error('Error removing from wishlist:', error)
-            toast.error('Failed to remove item')
+            console.error('Error removing from quote list:', error)
+            toast.error('Failed to remove product')
         } finally {
             setIsRemoving(false)
         }
     }
 
     return (
-        <div className="relative group">
-            <ProductCard product={product} variant="default" />
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col justify-between transition-colors">
+            {/* Product Image */}
+            <Link href={productHref} className="block aspect-square bg-gray-50 rounded-xl relative overflow-hidden mb-4">
+                {product.thumbnail ? (
+                    <img
+                        src={product.thumbnail}
+                        alt={product.title || 'Product'}
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-12 h-12 text-gray-300" />
+                    </div>
+                )}
 
-            {/* Delete Button - Top Left Corner */}
-            <button
-                onClick={handleRemove}
-                disabled={isRemoving}
-                className="absolute top-5 left-5 z-20 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Remove from wishlist"
-            >
-                <X className="w-4 h-4" />
-            </button>
+                {/* Saved Bookmark Toggle (Click to Remove) */}
+                <button
+                    type="button"
+                    onClick={handleRemove}
+                    disabled={isRemoving}
+                    aria-label="Remove from quote list"
+                    title="Remove from quote list"
+                    className="absolute top-2.5 right-2.5 bg-white/95 rounded-full p-2 shadow-sm hover:bg-white transition-colors disabled:opacity-50"
+                >
+                    <Bookmark fill="currentColor" className="w-4 h-4 fill-orange-600 text-orange-600" />
+                </button>
+            </Link>
+
+            {/* Product Details */}
+            <div className="space-y-3 flex-1 flex flex-col justify-between">
+                <div>
+                    <Link href={productHref} className="block">
+                        <h3 className="type-product text-gray-900 line-clamp-2 hover:text-orange-600 transition-colors">
+                            {product.title}
+                        </h3>
+                    </Link>
+
+                    <div className="mt-2">
+                        {formattedPrice ? (
+                            <p className="text-base text-gray-900">{formattedPrice}</p>
+                        ) : (
+                            <p className="type-body-sm text-orange-600">Price on request</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Actions: View Product & Remove */}
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                    <Link
+                        href={productHref}
+                        className="type-button inline-flex items-center gap-1.5 text-sm text-gray-900 hover:text-orange-600 transition-colors"
+                    >
+                        <span>View product</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <button
+                        type="button"
+                        onClick={handleRemove}
+                        disabled={isRemoving}
+                        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{isRemoving ? 'Removing...' : 'Remove'}</span>
+                    </button>
+                </div>
+            </div>
         </div>
     )
 }

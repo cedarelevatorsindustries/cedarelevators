@@ -1,10 +1,11 @@
 "use client"
 
 import { Product, ProductCategory } from "@/lib/types/domain"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react"
 import { CatalogFilterDrawer } from "@/modules/catalog/components/filters"
 import Link from "next/link"
 import { useRef } from "react"
+import { useSearchParams } from "next/navigation"
 
 interface CatalogBannerProps {
     title: string
@@ -29,6 +30,8 @@ export function CatalogBanner({
     products = []
 }: CatalogBannerProps) {
     const scrollRef = useRef<HTMLDivElement>(null)
+    const searchParams = useSearchParams()
+    const activeCategoryParam = searchParams?.get(type === "application" ? "category" : "subcategory")
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
@@ -136,31 +139,76 @@ export function CatalogBanner({
                                     className="overflow-x-auto scrollbar-hide -mx-2"
                                 >
                                     <div className="flex gap-8 px-2 pb-2 pt-4">
-                                        {categories.map((category) => (
-                                            <Link
-                                                key={category.id}
-                                                href={
-                                                    type === "application"
-                                                        ? `/catalog?application=${slug}&category=${category.slug || category.handle || category.id}`
-                                                        : `/categories/${slug}?subcategory=${category.slug || category.handle || category.id}`
-                                                }
-                                                className="flex flex-col items-center gap-2 group min-w-[100px]"
+                                        {/* All Option (Default Screen) */}
+                                        <Link
+                                            href={
+                                                type === "application"
+                                                    ? `/products?application=${slug}`
+                                                    : `/categories/${slug}`
+                                            }
+                                            className="flex flex-col items-center gap-2 group min-w-[100px]"
+                                        >
+                                            <div
+                                                className={`w-16 h-16 rounded-lg flex items-center justify-center transition-colors ${
+                                                    !activeCategoryParam
+                                                        ? "bg-orange-50 text-orange-600 ring-2 ring-orange-600"
+                                                        : "bg-gray-100 text-gray-600 group-hover:bg-orange-50 group-hover:text-orange-600"
+                                                }`}
                                             >
-                                                {/* Image Container */}
-                                                <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
-                                                    <img
-                                                        src={category.thumbnail || category.thumbnail_image || category.image_url || "/images/image.png"}
-                                                        alt={category.name || ""}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                                                    />
-                                                </div>
+                                                <LayoutGrid className="w-7 h-7" />
+                                            </div>
+                                            <span
+                                                className={`text-xs font-medium text-center transition-colors leading-tight max-w-[100px] ${
+                                                    !activeCategoryParam
+                                                        ? "text-orange-600 font-semibold"
+                                                        : "text-gray-700 group-hover:text-orange-600"
+                                                }`}
+                                            >
+                                                All
+                                            </span>
+                                        </Link>
 
-                                                {/* Category Name */}
-                                                <span className="text-xs font-medium text-gray-700 text-center group-hover:text-blue-700 transition-colors line-clamp-2 leading-tight max-w-[100px]">
-                                                    {category.name}
-                                                </span>
-                                            </Link>
-                                        ))}
+                                        {categories.map((category) => {
+                                            const categoryIdentifier = category.slug || category.handle || category.id
+                                            const isSelected =
+                                                activeCategoryParam === categoryIdentifier ||
+                                                activeCategoryParam === category.id
+                                            return (
+                                                <Link
+                                                    key={category.id}
+                                                    href={
+                                                        type === "application"
+                                                            ? `/products?application=${slug}&category=${categoryIdentifier}`
+                                                            : `/categories/${slug}?subcategory=${categoryIdentifier}`
+                                                    }
+                                                    className="flex flex-col items-center gap-2 group min-w-[100px]"
+                                                >
+                                                    {/* Image Container */}
+                                                    <div
+                                                        className={`w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100 ${
+                                                            isSelected ? "ring-2 ring-orange-600" : ""
+                                                        }`}
+                                                    >
+                                                        <img
+                                                            src={category.thumbnail || category.thumbnail_image || category.image_url || "/images/image.png"}
+                                                            alt={category.name || ""}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                        />
+                                                    </div>
+
+                                                    {/* Category Name */}
+                                                    <span
+                                                        className={`text-xs font-medium text-center transition-colors line-clamp-2 leading-tight max-w-[100px] ${
+                                                            isSelected
+                                                                ? "text-orange-600 font-semibold"
+                                                                : "text-gray-700 group-hover:text-orange-600"
+                                                        }`}
+                                                    >
+                                                        {category.name}
+                                                    </span>
+                                                </Link>
+                                            )
+                                        })}
                                     </div>
                                 </div>
                             </div>

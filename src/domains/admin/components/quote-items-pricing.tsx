@@ -101,7 +101,7 @@ export function QuoteItemsPricing({
                                                 {item.total_price.toLocaleString()}
                                             </span>
                                         ) : (
-                                            <span className="text-sm text-gray-500">—</span>
+                                            <span className="text-sm text-gray-500">-</span>
                                         )}
                                     </td>
                                 </tr>

@@ -1,4 +1,4 @@
-# Cedar Elevators — Phase 1 Rapid Implementation Report
+# Cedar Elevators - Phase 1 Rapid Implementation Report
 ## Application Simplification & Production Delivery
 
 **Project**: Cedar Elevators  

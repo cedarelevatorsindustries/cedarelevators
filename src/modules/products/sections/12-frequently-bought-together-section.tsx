@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Product, ProductCategory, Order } from "@/lib/types/domain"
-import { ShoppingCart, Check, Package, Heart, MessageSquare } from "lucide-react"
+import { Product } from "@/lib/types/domain"
+import { Bookmark, Check, Package, LoaderCircle } from "lucide-react"
 import { useUser } from "@/lib/auth/client"
+import { useWishlist } from "@/lib/hooks/use-wishlist"
+import { toast } from "sonner"
 
 interface FrequentlyBoughtTogetherSectionProps {
   mainProduct: Product
@@ -15,10 +17,11 @@ interface FrequentlyBoughtTogetherSectionProps {
 export default function FrequentlyBoughtTogetherSection({
   mainProduct,
   bundleProducts,
-  onAddBundle,
   isMobile = false
 }: FrequentlyBoughtTogetherSectionProps) {
   const { user } = useUser()
+  const { addItem, isInWishlist } = useWishlist()
+  const [isAdding, setIsAdding] = useState(false)
 
   // Show up to 4 bundle products for mobile, 3 for desktop
   const limitedBundleProducts = bundleProducts.slice(0, isMobile ? 6 : 3)
@@ -59,6 +62,44 @@ export default function FrequentlyBoughtTogetherSection({
   }, 0)
 
   const selectedCount = selectedProducts.size
+
+  const handleAddBundleToList = async () => {
+    const itemsToAdd = allProducts.filter((p) => selectedProducts.has(p.id))
+    if (itemsToAdd.length === 0) return
+
+    setIsAdding(true)
+    try {
+      let addedCount = 0
+      for (const product of itemsToAdd) {
+        const variantId = product.variants?.[0]?.id || product.id || ""
+        if (!variantId || isInWishlist(variantId)) continue
+        const price =
+          product.variants?.[0]?.calculated_price?.calculated_amount ||
+          product.variants?.[0]?.price ||
+          (product as any).price ||
+          0
+        await addItem(
+          variantId,
+          product.id,
+          product.title || "",
+          product.thumbnail || null,
+          price
+        )
+        addedCount++
+      }
+
+      if (addedCount > 0) {
+        toast.success(`Added ${addedCount} ${addedCount === 1 ? "item" : "items"} to your list`)
+      } else {
+        toast.info("Selected items are already in your list")
+      }
+    } catch (error) {
+      console.error("Error adding bundle to list:", error)
+      toast.error("Failed to add bundle to list")
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
     <div className={`bg-white rounded-xl border border-gray-200 ${isMobile ? 'p-4' : 'p-6 lg:p-8'}`}>
@@ -152,11 +193,16 @@ export default function FrequentlyBoughtTogetherSection({
             </div>
 
             <button
-              onClick={onAddBundle}
-              className="bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 px-6 py-3 shadow-lg text-sm"
+              onClick={handleAddBundleToList}
+              disabled={isAdding}
+              className="bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-60 transition-colors flex items-center justify-center gap-2 px-6 py-3 shadow-lg text-sm"
             >
-              <ShoppingCart className="w-5 h-5" />
-              Add Bundle
+              {isAdding ? (
+                <LoaderCircle className="w-5 h-5 animate-spin" />
+              ) : (
+                <Bookmark className="w-5 h-5" />
+              )}
+              {isAdding ? "Adding..." : "Add Bundle"}
             </button>
           </div>
         </div>

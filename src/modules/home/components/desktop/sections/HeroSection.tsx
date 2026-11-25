@@ -150,14 +150,10 @@ const HeroSection = () => {
             >
               {/* Desktop Main Headline */}
               <h1
-                className={`font-space-grotesk text-white text-lg md:text-xl lg:text-2xl font-light leading-snug tracking-wider mb-3 transition-all duration-800 delay-300 max-w-lg uppercase ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`type-hero text-white mb-3 transition-all duration-800 delay-300 max-w-lg ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
-                  fontFamily: '"Space Grotesk", sans-serif',
-                  fontWeight: 300,
                   textShadow: '0 2px 10px rgba(0, 0, 0, 0.6)',
-                  letterSpacing: '0.08em',
-                  fontOpticalSizing: 'auto'
                 }}
               >
                 Premium Lift Components for Every Project
@@ -165,14 +161,10 @@ const HeroSection = () => {
 
               {/* Desktop Subheadline/Tagline */}
               <p
-                className={`font-space-grotesk text-white/80 text-xs lg:text-sm font-light mb-6 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                className={`type-body-sm text-white/80 mb-6 transition-all duration-800 delay-500 whitespace-nowrap ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
                 style={{
-                  fontFamily: '"Space Grotesk", sans-serif',
-                  fontWeight: 300,
                   textShadow: '0 1px 6px rgba(0, 0, 0, 0.5)',
-                  letterSpacing: '0.14em',
-                  fontOpticalSizing: 'auto'
                 }}
               >
                 engineering excellence in vertical transportation
@@ -184,9 +176,8 @@ const HeroSection = () => {
                 {/* Primary CTA */}
                 <LocalizedClientLink href="/quotes/new">
                   <button
-                    className="group relative overflow-hidden bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl font-space-grotesk"
+                    className="type-button group relative overflow-hidden bg-orange-500 hover:bg-orange-600 focus:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-300 text-white px-6 py-2.5 rounded-lg transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl"
                     style={{
-                      fontFamily: '"Space Grotesk", sans-serif',
                       boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
                     }}
                     aria-label="Get a quote for premium lift components"
@@ -200,10 +191,7 @@ const HeroSection = () => {
                 {/* Secondary CTA */}
                 <LocalizedClientLink href="/products">
                   <button
-                    className="group relative overflow-hidden bg-transparent border border-white/70 text-white hover:bg-white/15 focus:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/40 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl font-space-grotesk"
-                    style={{
-                      fontFamily: '"Space Grotesk", sans-serif'
-                    }}
+                    className="type-button group relative overflow-hidden bg-transparent border border-white/70 text-white hover:bg-white/15 focus:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/40 px-6 py-2.5 rounded-lg transition-all duration-300 transform hover:scale-105 focus:scale-105 shadow-md hover:shadow-xl focus:shadow-xl"
                     aria-label="Browse our premium lift components and products catalog"
                     type="button"
                   >

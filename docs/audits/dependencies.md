@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — DEPENDENCY CLEANUP & CODE HEALTH PLAN
+# CEDAR ELEVATORS - DEPENDENCY CLEANUP & CODE HEALTH PLAN
 
 **Document Version:** 1.0 (Dependency Audit, Classification & Codebase Health)  
 **Date:** November 19, 2026  

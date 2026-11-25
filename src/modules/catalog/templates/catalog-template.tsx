@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Product, ProductCategory } from "@/lib/types/domain"
 import ProductCard from "@/components/ui/product-card"
-import { Pagination, ResultsHeader } from "@/modules/catalog/sections"
-import { UnifiedFilterSidebar, FilterBottomSheet } from "@/modules/catalog/components/filters"
+import { Pagination, SortControls, type SortOption } from "@/modules/catalog/sections"
+import { UnifiedFilterSidebar, ActiveFilterChips } from "@/modules/catalog/components/filters"
 import { BannerCarousel } from "@/modules/catalog/components/banner-carousel"
 import { HeroLite } from "@/modules/catalog/components/hero-lite"
 import { CatalogBanner } from "@/modules/catalog/components/catalog-banner"
@@ -13,6 +13,12 @@ import { HorizontalFilterBar } from "@/modules/catalog/components/desktop/horizo
 import type { ViewMode } from "@/modules/catalog/sections"
 import { CatalogType, CATALOG_CONFIGS } from "@/types/catalog"
 import { filterProductsByType, getProductTag, getRelatedKeywords } from "@/lib/catalog/product-filters"
+import {
+  parseCatalogFiltersFromURL,
+  buildCatalogFilterSearchParams,
+  applyCatalogFilters,
+  type CatalogSortOption,
+} from "@/lib/catalog/filter-utils"
 import { BannerWithSlides } from "@/lib/types/banners"
 import { EmptyState } from "@/components/ui/empty-state"
 import DynamicCollectionSection from "@/components/common/DynamicCollectionSection"
@@ -42,6 +48,15 @@ interface CatalogTemplateProps {
 }
 
 const ITEMS_PER_PAGE = 24
+
+const CATALOG_SORT_OPTIONS: SortOption[] = [
+  { id: "featured", label: "Featured" },
+  { id: "price_asc", label: "Price: Low to High" },
+  { id: "price_desc", label: "Price: High to Low" },
+  { id: "name_asc", label: "Name: A to Z" },
+  { id: "name_desc", label: "Name: Z to A" },
+  { id: "newest", label: "Newest First" },
+]
 
 export default function CatalogTemplate({
   products: initialProducts,
@@ -192,7 +207,13 @@ export default function CatalogTemplate({
     }))
   }, [categories, initialProducts])
 
-  // Combine and filter products
+  // Parse all URL-driven filters (availability, option_*, categories, subcategories, applications, sort, q)
+  const urlFilters = useMemo(
+    () => parseCatalogFiltersFromURL(urlSearchParams),
+    [urlSearchParams]
+  )
+
+  // Combine and filter products using unified filtering + sorting
   const allDisplayProducts = useMemo(() => {
     const combined = config.fallbackToAll
       ? [...primaryProducts, ...fallbackProducts]
@@ -201,8 +222,6 @@ export default function CatalogTemplate({
     let filtered = [...combined]
 
     // Apply horizontal filter bar filters (check both id and slug/handle)
-    // Skip filtering if the selected category is the same as the page's main category
-    // (backend already filtered for main category)
     const isMainCategory = selectedCategory && (
       selectedCategory === effectiveSearchParams.category ||
       (currentCategory && (
@@ -221,8 +240,6 @@ export default function CatalogTemplate({
         )
       )
     } else if (selectedSubcategory && catalogType !== 'category') {
-      // Only apply client-side subcategory filtering if NOT on a category page
-      // Category pages already filter by subcategory on the server-side
       filtered = filtered.filter(product =>
         product.categories?.some((cat: any) =>
           cat.id === selectedSubcategory ||
@@ -232,34 +249,114 @@ export default function CatalogTemplate({
       )
     }
 
-    // Apply sidebar filters
-    if (activeFilters.category && activeFilters.category.length > 0) {
-      filtered = filtered.filter(product =>
-        product.categories?.some(cat =>
-          activeFilters.category.includes(cat.handle || cat.id)
-        )
-      )
-    }
+    // Apply unified URL filters (availability, variant options, categories, subcategories, applications, sort)
+    // Skip re-filtering by `q` here when catalogType === 'search' because server RPC search_products already ranked & filtered it
+    filtered = applyCatalogFilters(filtered, {
+      ...urlFilters,
+      q: catalogType === 'search' ? '' : urlFilters.q,
+    })
 
     return filtered
-  }, [primaryProducts, fallbackProducts, config.fallbackToAll, activeFilters, selectedCategory, selectedSubcategory])
+  }, [primaryProducts, fallbackProducts, config.fallbackToAll, urlFilters, selectedCategory, selectedSubcategory, catalogType, effectiveSearchParams.category, currentCategory])
+
+  // Build active filter chips for display & individual removal
+  const activeFilterChips = useMemo(() => {
+    const chips: Array<{ key: string; label: string; value: any }> = []
+    if (urlFilters.availability === "in_stock") {
+      chips.push({ key: "availability", label: "In Stock", value: "in_stock" })
+    } else if (urlFilters.availability === "out_of_stock") {
+      chips.push({ key: "availability", label: "Out of Stock", value: "out_of_stock" })
+    }
+    Object.entries(urlFilters.options).forEach(([optName, vals]) => {
+      vals.forEach((v) => {
+        chips.push({ key: `option_${optName}`, label: `${optName}: ${v}`, value: v })
+      })
+    })
+    urlFilters.applications.forEach((id) => {
+      const match = activeApplication?.categories?.find((c: any) => c.id === id)
+      chips.push({ key: "applications", label: match?.name || id, value: id })
+    })
+    urlFilters.categories.forEach((id) => {
+      const match = categories.find((c) => c.id === id || c.handle === id)
+      chips.push({ key: "categories", label: match?.name || id, value: id })
+    })
+    urlFilters.subcategories.forEach((id) => {
+      const match = categories.find((c) => c.id === id || c.handle === id)
+      chips.push({ key: "subcategories", label: match?.name || id, value: id })
+    })
+    return chips
+  }, [urlFilters, categories, activeApplication])
+
+  const handleSortChange = (sortId: string) => {
+    const params = buildCatalogFilterSearchParams(urlSearchParams, {
+      sort: sortId as CatalogSortOption,
+    })
+    const queryStr = params.toString()
+    router.push(queryStr ? `/products?${queryStr}` : "/products", { scroll: false })
+  }
+
+  const handleRemoveChip = (key: string, value?: any) => {
+    if (key === "availability") {
+      const params = buildCatalogFilterSearchParams(urlSearchParams, { availability: "all" })
+      const q = params.toString()
+      router.push(q ? `/products?${q}` : "/products", { scroll: false })
+      return
+    }
+    if (key.startsWith("option_")) {
+      const optName = key.slice("option_".length)
+      const nextOpts = { ...urlFilters.options }
+      nextOpts[optName] = (nextOpts[optName] || []).filter((v) => v !== value)
+      if (nextOpts[optName].length === 0) delete nextOpts[optName]
+      const params = buildCatalogFilterSearchParams(urlSearchParams, { options: nextOpts })
+      const q = params.toString()
+      router.push(q ? `/products?${q}` : "/products", { scroll: false })
+      return
+    }
+    if (key === "categories" || key === "subcategories" || key === "applications") {
+      const nextArr = urlFilters[key].filter((v) => v !== value)
+      const params = buildCatalogFilterSearchParams(urlSearchParams, { [key]: nextArr })
+      const q = params.toString()
+      router.push(q ? `/products?${q}` : "/products", { scroll: false })
+    }
+  }
+
+  const handleClearAllFilters = () => {
+    setActiveFilters({})
+    setSearchQuery("")
+    const params = buildCatalogFilterSearchParams(urlSearchParams, {
+      availability: "all",
+      options: {},
+      categories: [],
+      subcategories: [],
+      applications: [],
+      sort: "featured",
+    })
+    const q = params.toString()
+    router.push(q ? `/products?${q}` : "/products", { scroll: false })
+  }
 
   // Pagination
-  const totalPages = Math.ceil(allDisplayProducts.length / ITEMS_PER_PAGE)
+  const itemsPerPage = catalogType === "application" ? 10 : ITEMS_PER_PAGE
+  const totalPages = Math.ceil(allDisplayProducts.length / itemsPerPage)
   const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-    return allDisplayProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE)
-  }, [allDisplayProducts, currentPage])
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return allDisplayProducts.slice(startIndex, startIndex + itemsPerPage)
+  }, [allDisplayProducts, currentPage, itemsPerPage])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   // Track primary vs fallback sections
   const primaryCount = primaryProducts.length
   const showPrimarySection = config.filterPrimaryProducts && primaryCount > 0
   const showFallbackSection = config.fallbackToAll && fallbackProducts.length > 0
 
-  // Reset to page 1 when filters change
-  useMemo(() => {
+  // Reset to page 1 when filters, search, or catalog type change
+  useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, activeFilters, catalogType])
+  }, [searchQuery, urlSearchParams, catalogType])
 
   // Handlers
   const handleFilterChange = (filters: Record<string, string[]>) => {
@@ -293,7 +390,7 @@ export default function CatalogTemplate({
           backgroundImage={activeApplication.banner_image || activeApplication.image_url || "/images/image.png"}
           categories={activeApplication.categories || []}
           type="application"
-          slug={activeApplication.slug}
+          slug={activeApplication.slug || activeApplication.handle}
           variant={config.bannerVariant || "full"}
           products={productsForFilters}
         />
@@ -384,7 +481,7 @@ export default function CatalogTemplate({
               {relatedKeywords.map((keyword) => (
                 <a
                   key={keyword}
-                  href={`/catalog?type=search&search=${encodeURIComponent(keyword)}`}
+                  href={`/products?q=${encodeURIComponent(keyword)}`}
                   className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm hover:border-orange-600 hover:text-orange-600 transition-colors"
                 >
                   {keyword}
@@ -401,6 +498,7 @@ export default function CatalogTemplate({
             {/* Filter Sidebar */}
             <UnifiedFilterSidebar
               products={productsForFilters}
+              totalProducts={allDisplayProducts.length}
               applications={activeApplication?.categories?.map((cat: any) => ({
                 id: cat.id,
                 name: cat.name,
@@ -417,7 +515,12 @@ export default function CatalogTemplate({
             />
 
             {/* Products Column */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
+              <ActiveFilterChips
+                filters={activeFilterChips}
+                onRemove={handleRemoveChip}
+                onClearAll={handleClearAllFilters}
+              />
               {/* Collection Title and Description for collection type */}
               {catalogType === "collection" && activeCollection && (
                 <div className="mb-6">
@@ -447,7 +550,7 @@ export default function CatalogTemplate({
                   {/* Section 1: Collection Products */}
                   {primaryProducts.length > 0 ? (
                     <>
-                      <div className={`mt-6 grid ${getGridColumns()}`}>
+                      <div className={`grid ${getGridColumns()}`}>
                         {primaryProducts.map((product) => {
                           const tag = getProductTag(product, catalogType)
                           return (
@@ -480,7 +583,7 @@ export default function CatalogTemplate({
                           </div>
 
                           {/* Section 2 Grid: All Products */}
-                          <div className={`mt-6 grid ${getGridColumns()}`}>
+                          <div className={`grid ${getGridColumns()}`}>
                             {fallbackProducts.map((product) => {
                               const tag = getProductTag(product, catalogType)
                               return (
@@ -509,7 +612,7 @@ export default function CatalogTemplate({
                       description="This collection doesn't have any products yet."
                       actionLabel="Browse All Products"
                       onAction={() => {
-                        router.push('/catalog')
+                        router.push('/products')
                       }}
                     />
                   )}
@@ -519,7 +622,7 @@ export default function CatalogTemplate({
                 <>
                   {paginatedProducts.length > 0 ? (
                     <>
-                      <div className={`mt-6 grid ${getGridColumns()}`}>
+                      <div className={`grid ${getGridColumns()}`}>
                         {paginatedProducts.map((product) => {
                           const tag = getProductTag(product, catalogType)
                           return (
@@ -552,7 +655,7 @@ export default function CatalogTemplate({
                         <Pagination
                           currentPage={currentPage}
                           totalPages={totalPages}
-                          onPageChange={setCurrentPage}
+                          onPageChange={handlePageChange}
                         />
                       )}
                     </>
@@ -561,13 +664,8 @@ export default function CatalogTemplate({
                       image="/empty-states/no-result-found.png"
                       title="No results found."
                       description="We couldn't find any elevator components matching your search. Try different keywords or browse all parts."
-                      actionLabel="Clear Search & Browse All"
-                      onAction={() => {
-                        setActiveFilters({})
-                        setSearchQuery("")
-                        // Also clear URL params by pushing to base catalog URL
-                        router.push('/catalog')
-                      }}
+                      actionLabel="Clear Filters & Browse All"
+                      onAction={handleClearAllFilters}
                     />
                   )}
                 </>
@@ -614,7 +712,7 @@ export default function CatalogTemplate({
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    onPageChange={setCurrentPage}
+                    onPageChange={handlePageChange}
                   />
                 )}
               </>

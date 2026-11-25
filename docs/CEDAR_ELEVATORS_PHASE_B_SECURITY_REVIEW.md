@@ -1,4 +1,4 @@
-# Cedar Elevators — Phase B Security Review
+# Cedar Elevators - Phase B Security Review
 ## Centralized Supabase Admin Authorization
 
 **Date:** November 21, 2026  

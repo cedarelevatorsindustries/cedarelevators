@@ -2,11 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@/lib/auth/client'
-import { useWishlist } from '@/lib/hooks/use-wishlist'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, MessageSquare, LogIn, Loader2 } from 'lucide-react'
-import { getUserPricingState } from '@/lib/utils/pricing-utils'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { WishlistItem } from '@/lib/hooks/use-wishlist'
 
@@ -15,219 +12,112 @@ interface WishlistActionsProps {
 }
 
 export function WishlistActions({ items }: WishlistActionsProps) {
-    const { user } = useUser()
     const router = useRouter()
-    const { clearWishlist } = useWishlist()
     const [isProcessing, setIsProcessing] = useState(false)
 
-    const userState = getUserPricingState(user)
-    const isGuest = userState === 'guest'
-    const isIndividual = userState === 'individual'
-    const isBusinessUnverified = userState === 'business_unverified'
-    const isBusinessVerified = userState === 'business_verified'
+    const count = items.length
+    const paddedCount = String(count).padStart(2, '0')
 
-    const handleAddAllToCart = async () => {
-        if (items.length === 0) return
+    const handleProceedToQuote = () => {
+        if (count === 0) return
 
         setIsProcessing(true)
         try {
-            // TODO: Implement bulk add to cart
-            toast.success('Adding items to cart...')
-            router.push('/cart')
+            const productIds = items.map((item) => item.product_id).join(',')
+            router.push(`/quotes/new?productIds=${encodeURIComponent(productIds)}`)
         } catch (error) {
-            toast.error('Failed to add items to cart')
-        } finally {
+            toast.error('Failed to open quote request')
             setIsProcessing(false)
         }
-    }
-
-    const handleAddAllToQuote = async () => {
-        if (items.length === 0) return
-
-        setIsProcessing(true)
-        try {
-            // Build quote URL with all product IDs
-            const productIds = items.map(item => item.product_id).join(',')
-            router.push(`/quotes/new?productIds=${productIds}`)
-        } catch (error) {
-            toast.error('Failed to create quote')
-        } finally {
-            setIsProcessing(false)
-        }
-    }
-
-    const handleLogin = () => {
-        router.push('/sign-in?redirect=/wishlist')
     }
 
     return (
         <>
-            {/* Desktop Actions */}
-            <div className="hidden lg:block bg-white p-6 rounded-lg border border-gray-200 shadow-sm sticky top-24">
-                <h2 className="text-lg font-semibold mb-4">Actions</h2>
+            {/* Desktop Quote List Summary Panel */}
+            <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-200 sticky top-24">
+                <h2 className="text-base font-normal text-gray-900 mb-4">
+                    Quote List Summary
+                </h2>
 
-                <div className="space-y-3">
-                    {isGuest && (
-                        <>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Login to proceed with bulk quote or checkout
-                            </p>
-                            <Button
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                size="lg"
-                                onClick={handleLogin}
-                            >
-                                <LogIn className="w-4 h-4 mr-2" />
-                                Login to Continue
-                            </Button>
-                        </>
-                    )}
+                {/* Prominent Count */}
+                <div className="pb-5 border-b border-gray-100">
+                    <div className="text-5xl font-extralight tracking-tight text-gray-900">
+                        {paddedCount}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                        Products in your list
+                    </p>
+                </div>
 
-                    {isIndividual && (
-                        <Button
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                            size="lg"
-                            onClick={handleAddAllToQuote}
-                            disabled={isProcessing || items.length === 0}
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <MessageSquare className="w-4 h-4 mr-2" />
-                                    Add All to Quote
-                                </>
-                            )}
-                        </Button>
-                    )}
+                {/* Selection Metadata */}
+                <div className="py-4 space-y-3 border-b border-gray-100 text-sm">
+                    <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Items selected</span>
+                        <span className="text-gray-900">{count}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Availability</span>
+                        <span className="text-gray-900">Check on request</span>
+                    </div>
+                </div>
 
-                    {isBusinessUnverified && (
-                        <>
-                            <p className="text-sm text-amber-600 mb-4">
-                                Complete verification to unlock checkout
-                            </p>
-                            <Button
-                                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                                size="lg"
-                                onClick={handleAddAllToQuote}
-                                disabled={isProcessing || items.length === 0}
-                            >
-                                {isProcessing ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <MessageSquare className="w-4 h-4 mr-2" />
-                                        Add All to Quote
-                                    </>
-                                )}
-                            </Button>
-                        </>
-                    )}
+                {/* Callout & Primary CTA */}
+                <div className="pt-5 space-y-3">
+                    <p className="text-sm font-normal text-gray-900">
+                        Ready to discuss your requirements?
+                    </p>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                        Your selected products are ready to be included in a quotation request.
+                    </p>
 
-                    {isBusinessVerified && (
-                        <>
-                            <Button
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                size="lg"
-                                onClick={handleAddAllToCart}
-                                disabled={isProcessing || items.length === 0}
-                            >
-                                {isProcessing ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Adding...
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShoppingCart className="w-4 h-4 mr-2" />
-                                        Add All to Cart
-                                    </>
-                                )}
-                            </Button>
+                    <Button
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white mt-2"
+                        size="lg"
+                        onClick={handleProceedToQuote}
+                        disabled={isProcessing || count === 0}
+                    >
+                        {isProcessing ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Opening Quote...
+                            </>
+                        ) : (
+                            <>
+                                <span>Proceed to Quote Request</span>
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                        )}
+                    </Button>
 
-                            <Button
-                                variant="outline"
-                                className="w-full border-orange-300 text-orange-600 hover:bg-orange-50"
-                                size="lg"
-                                onClick={handleAddAllToQuote}
-                                disabled={isProcessing || items.length === 0}
-                            >
-                                <MessageSquare className="w-4 h-4 mr-2" />
-                                Add All to Quote
-                            </Button>
-                        </>
-                    )}
+                    <p className="text-xs text-gray-500 leading-relaxed pt-1">
+                        You can continue browsing and update this list anytime.
+                    </p>
                 </div>
             </div>
 
-            {/* Mobile Fixed Bottom Bar */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50 safe-area-bottom">
-                <div className="flex gap-3">
-                    {isGuest && (
-                        <Button
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                            size="lg"
-                            onClick={handleLogin}
-                        >
-                            <LogIn className="w-4 h-4 mr-2" />
-                            Login
-                        </Button>
-                    )}
-
-                    {(isIndividual || isBusinessUnverified) && (
-                        <Button
-                            className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
-                            size="lg"
-                            onClick={handleAddAllToQuote}
-                            disabled={isProcessing || items.length === 0}
-                        >
-                            {isProcessing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <MessageSquare className="w-4 h-4 mr-2" />
-                                    Quote All
-                                </>
-                            )}
-                        </Button>
-                    )}
-
-                    {isBusinessVerified && (
-                        <>
-                            <Button
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                                size="lg"
-                                onClick={handleAddAllToCart}
-                                disabled={isProcessing || items.length === 0}
-                            >
-                                {isProcessing ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        <ShoppingCart className="w-4 h-4 mr-2" />
-                                        Cart
-                                    </>
-                                )}
-                            </Button>
-
-                            <Button
-                                variant="outline"
-                                className="flex-1 border-orange-300 text-orange-600"
-                                size="lg"
-                                onClick={handleAddAllToQuote}
-                                disabled={isProcessing || items.length === 0}
-                            >
-                                <MessageSquare className="w-4 h-4 mr-2" />
-                                Quote
-                            </Button>
-                        </>
-                    )}
+            {/* Mobile Sticky Summary Bar */}
+            <div className="lg:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
+                <div className="flex items-center justify-between gap-3">
+                    <div>
+                        <p className="text-xs text-gray-500">Quote List Summary</p>
+                        <p className="text-sm text-gray-900">
+                            {count} {count === 1 ? 'product' : 'products'} selected
+                        </p>
+                    </div>
+                    <Button
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        onClick={handleProceedToQuote}
+                        disabled={isProcessing || count === 0}
+                    >
+                        {isProcessing ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <>
+                                <span>Proceed to Quote Request</span>
+                                <ArrowRight className="w-4 h-4 ml-1.5" />
+                            </>
+                        )}
+                    </Button>
                 </div>
             </div>
         </>

@@ -1,4 +1,4 @@
-# Cedar Elevators — Phase C Final Security Review & Closure Report
+# Cedar Elevators - Phase C Final Security Review & Closure Report
 
 ## 1. Executive Summary
 
@@ -109,10 +109,10 @@ During this final verification:
 - `src/components/admin/admin-access-denied-view.tsx`
 
 ### Modified (Security Hardening)
-- `src/app/api/admin/auth/callback/route.ts` — Added open redirect sanitization on `next` parameter.
-- `src/proxy.ts` — Enforced exact hostname matching (`admin.localhost` or configured `ADMIN_DOMAIN`); completely eliminated any broad `startsWith('admin.')` fallback.
-- `src/lib/actions/admin-auth.ts` — Hardened `adminRecoveryAction` to dispatch email instead of returning raw reset link in HTTP response.
-- `src/app/admin/(auth)/recover/page.tsx` — Updated recovery form to remove direct link navigation.
+- `src/app/api/admin/auth/callback/route.ts` - Added open redirect sanitization on `next` parameter.
+- `src/proxy.ts` - Enforced exact hostname matching (`admin.localhost` or configured `ADMIN_DOMAIN`); completely eliminated any broad `startsWith('admin.')` fallback.
+- `src/lib/actions/admin-auth.ts` - Hardened `adminRecoveryAction` to dispatch email instead of returning raw reset link in HTTP response.
+- `src/app/admin/(auth)/recover/page.tsx` - Updated recovery form to remove direct link navigation.
 
 ---
 
@@ -147,4 +147,4 @@ The following administrative tasks must be performed in the production hosting a
 
 All requirements and security verification criteria for Phase C have been met.
 
-**PHASE C — COMPLETE.**
+**PHASE C - COMPLETE.**

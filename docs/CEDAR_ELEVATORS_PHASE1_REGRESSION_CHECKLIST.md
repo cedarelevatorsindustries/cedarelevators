@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — PHASE 1 REGRESSION CHECKLIST
+# CEDAR ELEVATORS - PHASE 1 REGRESSION CHECKLIST
 **Document Version:** 1.0  
 **Status:** Verification Protocol (Pre-Implementation & Post-Implementation)  
 **Target Architecture:** Phase 1 Catalogue & Quotation Platform  

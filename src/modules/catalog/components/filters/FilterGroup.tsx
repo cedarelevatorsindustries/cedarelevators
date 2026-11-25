@@ -11,7 +11,7 @@ interface FilterGroupProps {
   count?: number
 }
 
-export function FilterGroup({ title, children, defaultExpanded = true, count }: FilterGroupProps) {
+export function FilterGroup({ title, children, defaultExpanded = false, count }: FilterGroupProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   return (

@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — PHASE 1 SIMPLIFICATION PLAN
+# CEDAR ELEVATORS - PHASE 1 SIMPLIFICATION PLAN
 **Document Version:** 1.0  
 **Status:** Implementation Blueprint (Awaiting Approval)  
 **Methodology:** Non-Destructive Feature Reduction (Prune, Protect & Preserve)  

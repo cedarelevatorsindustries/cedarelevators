@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — DATABASE SAFETY & INTEGRITY PLAN
+# CEDAR ELEVATORS - DATABASE SAFETY & INTEGRITY PLAN
 
 **Document Version:** 1.0 (Production Database Safeguards & Baseline Synchronization)  
 **Date:** November 19, 2026  

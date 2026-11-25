@@ -1,4 +1,4 @@
-# CEDAR ELEVATORS — BACKUP COMPLETENESS & RECOVERABILITY AUDIT
+# CEDAR ELEVATORS - BACKUP COMPLETENESS & RECOVERABILITY AUDIT
 
 **Document ID:** `CEDAR-TASK-0.1.1-COMPLETENESS-AUDIT`  
 **Execution Timestamp:** November 19, 2026, 21:55:00 IST (`2026-11-19T16:25:00.000Z`)  
@@ -197,7 +197,7 @@ Inspection of `cedar_storage_inventory.json` against Supabase Storage API establ
 ### 5.3 Specific Assets Requiring Binary Backup
 If the Supabase storage buckets were corrupted or deleted, the following **38 media files (total ~27.3 MB)** could not be recovered from the current backup:
 
-1. **`banners` bucket (Public) — 9 files (~6.6 MB):**
+1. **`banners` bucket (Public) - 9 files (~6.6 MB):**
    * `slide-005lzq5gw33e2-1767119703847.png` (733.9 KB)
    * `slide-34t0j0wxjhh-1767119095576.png` (733.9 KB)
    * `slide-3a6x67j190s-1767119642057.png` (733.9 KB)
@@ -207,9 +207,9 @@ If the Supabase storage buckets were corrupted or deleted, the following **38 me
    * `slide-u2m41q1u49-1767119477046.png` (733.9 KB)
    * `slide-u9z5z18q3x-1767119782531.png` (733.9 KB)
    * `slide-yp1x62j3j-1767119532675.png` (733.9 KB)
-2. **`categories` bucket (Public) — 26 files (~19.5 MB):**
+2. **`categories` bucket (Public) - 26 files (~19.5 MB):**
    * 26 high-resolution category hero banners and cards (e.g., `passenger-elevators.png`, `freight-elevators.png`, `home-elevators.png`, and subcategory graphics).
-3. **`avatars` bucket (Public) — 3 files (~1.2 MB):**
+3. **`avatars` bucket (Public) - 3 files (~1.2 MB):**
    * 3 staff and administrator user avatar graphics.
 
 ---

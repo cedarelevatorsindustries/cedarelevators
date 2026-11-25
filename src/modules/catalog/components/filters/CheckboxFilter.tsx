@@ -47,18 +47,17 @@ export function CheckboxFilter({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {visibleOptions.map((option) => (
-        <div key={option.value} className="flex items-center space-x-3">
+        <div key={option.value} className="flex items-center space-x-3 py-1">
           <Checkbox
             id={`filter-${option.value}`}
             checked={selectedValues.includes(option.value)}
             onCheckedChange={() => handleToggle(option.value)}
-            className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
           />
           <Label
             htmlFor={`filter-${option.value}`}
-            className="text-sm font-normal cursor-pointer flex-1 flex items-center justify-between"
+            className="text-sm font-normal cursor-pointer flex-1 flex items-center justify-between min-h-[24px]"
           >
             <span className="text-gray-700 hover:text-gray-900">
               {option.label}
@@ -74,8 +73,9 @@ export function CheckboxFilter({
 
       {hasMore && (
         <button
+          type="button"
           onClick={() => setShowAll(!showAll)}
-          className="text-sm text-orange-600 hover:text-orange-700 font-medium mt-2"
+          className="text-sm text-orange-600 hover:text-orange-700 mt-2 cursor-pointer"
         >
           {showAll ? `Show Less` : `Show ${options.length - maxVisible} More`}
         </button>

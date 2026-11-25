@@ -56,15 +56,12 @@ export function FaqAccordion() {
   return (
     <section id="faq" className="w-full py-10 sm:py-16 bg-white">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
-        {/* Section Header with Blue & Orange Theme */}
+        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60 mb-2">
-            Support & Information
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-zinc-900 tracking-tight">
+          <h2 className="type-section text-zinc-900">
             Frequently Asked Questions
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-600 mt-2">
+          <p className="type-body-sm text-zinc-600 mt-2">
             Find answers to common questions about our products and quotation process.
           </p>
         </div>
