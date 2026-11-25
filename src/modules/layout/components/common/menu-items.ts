@@ -22,6 +22,7 @@ export const guestCatalogItems: MenuItem[] = [
   { icon: Grid3X3, label: "All Categories", href: "/categories" },
   { icon: Bookmark, label: "Quote List", href: "/wishlist" },
   { icon: FileText, label: "Request a Quote", href: "/quotes/new" },
+  { icon: ShieldCheck, label: "Track Quotations", href: "/quotes/track" },
 ]
 
 export const guestMoreMenuItems: MenuItem[] = [

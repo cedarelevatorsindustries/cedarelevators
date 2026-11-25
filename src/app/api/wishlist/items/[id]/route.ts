@@ -85,3 +85,53 @@ export async function DELETE(
         )
     }
 }
+
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const supabase = await createServerSupabase()
+        const { data: { user } } = await supabase.auth.getUser()
+        const { id: itemId } = await params
+
+        const cookieStore = await cookies()
+        const sessionId = cookieStore.get('guest_session_id')?.value
+
+        if (!user && !sessionId) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const body = await request.json()
+        const quantity = Math.min(10000, Math.max(1, Math.floor(Number(body?.quantity) || 1)))
+
+        const wishlistQuery = user
+            ? supabase.from('wishlists').select('id').eq('user_id', user.id).eq('is_default', true).single()
+            : supabase.from('wishlists').select('id').eq('session_id', sessionId).eq('is_default', true).single()
+
+        const { data: wishlist, error: wishlistError } = await wishlistQuery
+        if (wishlistError || !wishlist) {
+            return NextResponse.json({ success: false, error: 'Quote list not found' }, { status: 404 })
+        }
+
+        const { data: updated, error } = await supabase
+            .from('wishlist_items')
+            .update({ quantity })
+            .eq('id', itemId)
+            .eq('wishlist_id', wishlist.id)
+            .select()
+            .single()
+
+        if (error) {
+            throw error
+        }
+
+        return NextResponse.json({ success: true, item: updated })
+    } catch (error) {
+        console.error('Error updating wishlist item quantity:', error)
+        return NextResponse.json(
+            { success: false, error: 'Failed to update quantity' },
+            { status: 500 }
+        )
+    }
+}

@@ -1,31 +1,26 @@
-'use client'
-
 // =====================================================
-// Quote Management Types
+// Quote Management Types (Unified Phase 1 + Legacy Compat)
 // =====================================================
 
-// User Types
 export type UserType = 'guest' | 'individual' | 'business' | 'verified'
 
-// Quote Status - Simplified Cedar B2B Workflow
-// Flow: draft → pending → reviewing → approved → converted (or rejected at any stage)
+export type QuoteRequestType = 'general' | 'single' | 'bulk'
+
 export type QuoteStatus =
-  | 'draft'       // Initial state before submission
-  | 'pending'     // Initial state when quote is submitted
-  | 'reviewing'   // Admin is reviewing and pricing
-  | 'approved'    // Quote approved and sent to customer
-  | 'rejected'    // Quote rejected (reason required)
-  | 'converted'   // Quote converted to order (verified business only)
-  | 'expired'     // Quote expired
+  | 'draft'
+  | 'pending'
+  | 'submitted'
+  | 'reviewing'
+  | 'quoted'
+  | 'approved'
+  | 'rejected'
+  | 'converted'
+  | 'expired'
 
-export type QuotePriority = 'low' | 'medium' | 'high'
-
-// =====================================================
-// Quote Basket Types (Client-side)
-// =====================================================
+export type QuotePriority = 'low' | 'normal' | 'medium' | 'high' | 'urgent'
 
 export interface QuoteBasketItem {
-  id: string // unique basket item id
+  id: string
   product_id: string
   variant_id?: string
   product_name: string
@@ -42,81 +37,29 @@ export interface QuoteBasket {
   updated_at: string
 }
 
-// =====================================================
-// Quote Submission Types
-// =====================================================
-
-export interface GuestQuoteSubmission {
-  guest_name: string
-  guest_email: string
-  guest_phone: string
-  notes: string // max 200 chars
-  items: QuoteBasketItem[]
-}
-
-export interface IndividualQuoteSubmission {
-  notes: string // max 500 chars
-  items: QuoteBasketItem[]
-  attachment?: {
-    file_name: string
-    file_url: string
-    file_size: number
-    mime_type: string
-  }
-}
-
-export interface BusinessQuoteSubmission {
-  notes: string // max 1000 chars
-  items: QuoteBasketItem[]
-  company_details: {
-    company_name: string
-    gst_number?: string
-    pan_number?: string
-    contact_name?: string
-    contact_phone?: string
-  }
-  attachments?: Array<{
-    file_name: string
-    file_url: string
-    file_size: number
-    mime_type: string
-  }> // max 2
-}
-
-export interface VerifiedQuoteSubmission extends BusinessQuoteSubmission {
-  template_id?: string
-  attachments?: Array<{
-    file_name: string
-    file_url: string
-    file_size: number
-    mime_type: string
-  }> // max 5
-}
-
-// =====================================================
-// Quote Item Types (From Database)
-// =====================================================
-
 export interface QuoteItem {
   id: string
   quote_id: string
-  product_id?: string
-  variant_id?: string
+  product_id?: string | null
+  variant_id?: string | null
   product_name: string
-  product_sku?: string
-  product_thumbnail?: string
+  product_sku?: string | null
+  product_thumbnail?: string | null
+  variant_title?: string | null
+  variant_sku?: string | null
+  specifications?: Record<string, any> | null
   quantity: number
-  unit_price: number
+  unit_price: number | null
   discount_percentage: number
-  total_price: number
+  discount_amount?: number
+  tax_rate?: number
+  tax_amount?: number
+  total_price: number | null
+  line_total?: number | null
   bulk_pricing_requested: boolean
-  notes?: string
+  notes?: string | null
   created_at: string
 }
-
-// =====================================================
-// Quote Message Types
-// =====================================================
 
 export interface QuoteMessage {
   id: string
@@ -130,10 +73,6 @@ export interface QuoteMessage {
   created_at: string
 }
 
-// =====================================================
-// Quote Attachment Types
-// =====================================================
-
 export interface QuoteAttachment {
   id: string
   quote_id: string
@@ -141,37 +80,76 @@ export interface QuoteAttachment {
   file_url: string
   file_size?: number
   mime_type?: string
-  uploaded_at: string
+  uploaded_at?: string
+  created_at?: string
 }
 
-// =====================================================
-// Quote Template Types
-// =====================================================
-
-export interface QuoteTemplate {
+export interface QuoteRevision {
   id: string
-  clerk_user_id: string
-  name: string
-  description?: string
-  items: QuoteBasketItem[]
-  default_notes?: string
-  use_count: number
-  last_used_at?: string
+  quote_id: string
+  revision_number: number
+  status: string
+  subtotal: number
+  discount_total: number
+  taxable_amount: number
+  tax_rate: number
+  tax_total: number
+  grand_total: number
+  currency: string
+  valid_until: string
+  terms_and_conditions?: string | null
+  customer_message?: string | null
+  company_snapshot: Record<string, any>
+  customer_snapshot: Record<string, any>
+  items_snapshot: any[]
+  pdf_storage_bucket: string
+  pdf_storage_path: string
+  pdf_size_bytes?: number | null
+  pdf_sha256?: string | null
+  issued_by: string
+  issued_by_name?: string | null
+  issued_at: string
+}
+
+export interface QuoteNotification {
+  id: string
+  quote_id: string
+  revision_number?: number | null
+  event_type:
+    | 'customer_submission_confirmation'
+    | 'admin_new_quote_alert'
+    | 'customer_quote_issued'
+    | 'customer_quote_rejected'
+  recipient_email: string
+  subject: string
+  status: 'pending' | 'sent' | 'failed'
+  attempts: number
+  provider_message_id?: string | null
+  last_error?: string | null
+  payload?: Record<string, any> | null
+  dedupe_key?: string | null
+  sent_at?: string | null
   created_at: string
   updated_at: string
 }
 
-// =====================================================
-// Main Quote Type
-// =====================================================
-
 export interface Quote {
   id: string
   quote_number: string
+  user_id?: string | null
   clerk_user_id?: string
-  guest_name?: string
-  guest_email?: string
-  guest_phone?: string
+  guest_name?: string | null
+  guest_email?: string | null
+  guest_phone?: string | null
+  requester_name?: string | null
+  requester_email?: string | null
+  requester_phone?: string | null
+  company_name?: string | null
+  gst_number?: string | null
+  project_name?: string | null
+  project_location?: string | null
+  request_type?: QuoteRequestType
+  currency?: string
   account_type: UserType
   status: QuoteStatus
   priority: QuotePriority
@@ -182,41 +160,48 @@ export interface Quote {
     contact_name?: string
     contact_phone?: string
   }
-  notes?: string
-  bulk_pricing_requested: boolean
+  notes?: string | null
+  bulk_pricing_requested?: boolean
   template_id?: string
   subtotal: number
   discount_total: number
+  overall_discount_type?: 'fixed' | 'percentage'
+  overall_discount_value?: number
+  taxable_amount?: number
+  tax_rate?: number
+  tax_enabled?: boolean
   tax_total: number
-  estimated_total: number
-  pricing_visible: boolean // Controls if verified business can see pricing
-  admin_notes?: string
-  admin_response_message?: string // Public response sent to customer
-  admin_internal_notes?: string // Internal admin notes (not visible to customer)
-  admin_response_at?: string
-  responded_by?: string
-  valid_until: string
-  converted_order_id?: string
-  converted_at?: string
-  approved_by?: string
-  approved_at?: string
-  rejected_by?: string // Admin who rejected
-  rejected_at?: string // When rejected
-  rejected_reason?: string
-  reviewing_started_at?: string // When review started
-  reviewing_by?: string // Admin who started review
-  expired_at?: string // When quote expired
+  estimated_total: number | null
+  pricing_visible?: boolean
+  admin_notes?: string | null
+  admin_response_message?: string | null
+  admin_internal_notes?: string | null
+  admin_response_at?: string | null
+  responded_by?: string | null
+  terms_and_conditions?: string | null
+  valid_until?: string | null
+  converted_order_id?: string | null
+  converted_at?: string | null
+  approved_by?: string | null
+  approved_at?: string | null
+  issued_by?: string | null
+  issued_at?: string | null
+  rejected_by?: string | null
+  rejected_at?: string | null
+  rejected_reason?: string | null
+  reviewing_started_at?: string | null
+  reviewing_by?: string | null
+  expired_at?: string | null
+  current_revision?: number
+  latest_pdf_path?: string | null
   created_at: string
   updated_at: string
-  // Relations
   items?: QuoteItem[]
   messages?: QuoteMessage[]
   attachments?: QuoteAttachment[]
+  revisions?: QuoteRevision[]
+  notifications?: QuoteNotification[]
 }
-
-// =====================================================
-// API Response Types
-// =====================================================
 
 export interface QuoteFilters {
   status: QuoteStatus | 'all'
@@ -240,19 +225,31 @@ export interface QuoteListResponse {
   limit: number
 }
 
-// =====================================================
-// Quote Audit Log Types
-// =====================================================
-
 export type QuoteActionType =
   | 'created'
+  | 'opened_for_review'
   | 'status_changed'
   | 'priority_changed'
   | 'pricing_updated'
   | 'item_pricing_updated'
+  | 'discount_updated'
+  | 'tax_updated'
+  | 'internal_note_added'
+  | 'issued'
+  | 'reissued'
   | 'approved'
   | 'rejected'
+  | 'expired'
   | 'converted'
+  | 'pdf_generated'
+  | 'email_attempted'
+  | 'email_sent'
+  | 'email_failed'
+  | 'customer_viewed'
+  | 'customer_pdf_downloaded'
+  | 'guest_history_verified'
+  | 'message_sent'
+  | 'clarification_requested'
 
 export type AdminRole = 'staff' | 'manager' | 'admin' | 'super_admin'
 
@@ -260,18 +257,20 @@ export interface QuoteAuditLog {
   id: string
   quote_id: string
   action_type: QuoteActionType
-  old_status?: QuoteStatus
-  new_status?: QuoteStatus
-  old_priority?: QuotePriority
-  new_priority?: QuotePriority
-  pricing_changed: boolean
-  old_total?: number
-  new_total?: number
-  admin_clerk_id?: string
-  admin_name?: string
-  admin_role?: AdminRole
-  notes?: string
-  metadata?: Record<string, any>
+  actor_type?: 'customer' | 'admin' | 'system' | 'cron'
+  old_status?: QuoteStatus | null
+  new_status?: QuoteStatus | null
+  old_priority?: QuotePriority | null
+  new_priority?: QuotePriority | null
+  pricing_changed?: boolean
+  old_total?: number | null
+  new_total?: number | null
+  admin_id?: string | null
+  admin_clerk_id?: string | null
+  admin_name?: string | null
+  admin_role?: AdminRole | string | null
+  notes?: string | null
+  metadata?: Record<string, any> | null
   created_at: string
 }
 
@@ -286,4 +285,3 @@ export interface AdminUser {
   created_at: string
   updated_at: string
 }
-

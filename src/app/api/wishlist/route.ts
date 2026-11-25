@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase/server'
+import { createServerSupabase, createAdminClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
@@ -105,11 +105,60 @@ export async function GET(request: NextRequest) {
             throw itemsError
         }
 
+        const rawItems = items || []
+        let enrichedItems = rawItems
+
+        if (rawItems.length > 0) {
+            try {
+                const adminSupabase = createAdminClient()
+                const productIds = Array.from(new Set(rawItems.map((i: any) => i.product_id).filter(Boolean)))
+                const variantIds = Array.from(
+                    new Set(rawItems.map((i: any) => i.variant_id).filter((v: any) => Boolean(v) && !productIds.includes(v)))
+                )
+
+                const [{ data: products }, { data: variants }] = await Promise.all([
+                    productIds.length > 0
+                        ? adminSupabase.from('products').select('id, name, slug, sku, thumbnail_url').in('id', productIds)
+                        : Promise.resolve({ data: [] }),
+                    variantIds.length > 0
+                        ? adminSupabase.from('product_variants').select('id, name, sku, variant_title, options').in('id', variantIds)
+                        : Promise.resolve({ data: [] }),
+                ])
+
+                const prodMap = new Map((products || []).map((p: any) => [p.id, p]))
+                const varMap = new Map((variants || []).map((v: any) => [v.id, v]))
+
+                enrichedItems = rawItems.map((item: any) => {
+                    const prod = prodMap.get(item.product_id)
+                    const variant = varMap.get(item.variant_id)
+                    const variantTitle =
+                        item.variant_title ||
+                        variant?.variant_title ||
+                        (variant?.options && typeof variant.options === 'object'
+                            ? Object.values(variant.options).filter(Boolean).join(' / ')
+                            : null) ||
+                        variant?.name ||
+                        null
+
+                    return {
+                        ...item,
+                        product_title: prod?.name || item.product_title || '',
+                        product_thumbnail: prod?.thumbnail_url || item.product_thumbnail || null,
+                        product_handle: prod?.slug || item.product_handle || '',
+                        product_sku: variant?.sku || prod?.sku || null,
+                        variant_title: variantTitle,
+                    }
+                })
+            } catch (enrichErr) {
+                console.warn('Could not enrich wishlist items:', enrichErr)
+            }
+        }
+
         return NextResponse.json({
             success: true,
             wishlist,
-            items: items || [],
-            count: items?.length || 0
+            items: enrichedItems,
+            count: enrichedItems.length
         })
 
     } catch (error) {

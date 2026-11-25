@@ -306,7 +306,6 @@ export default function ProductDetailPage({
                 <TitleBadgesSection
                   title={product.title || ""}
                   badges={badges}
-                  sku={product.id}
                   description={product.description || ""}
                   rating={reviews.length > 0 ? averageRating : undefined}
                   reviewCount={reviews.length}

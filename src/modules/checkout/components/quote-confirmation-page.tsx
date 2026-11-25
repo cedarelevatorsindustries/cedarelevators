@@ -189,20 +189,20 @@ export default function QuoteConfirmationPage({
                                             )}
                                         </button>
                                     </div>
-                                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-md border border-blue-100">
-                                        IN REVIEW
+                                    <span className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-semibold rounded-md border border-orange-200">
+                                        RECEIVED
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-y-6 gap-x-4">
                                     <div>
-                                        <p className="text-xs text-gray-500 mb-1">Date & Time</p>
+                                        <p className="text-xs text-gray-500 mb-1">Date &amp; Time</p>
                                         <p className="text-sm font-medium text-gray-900">
                                             {submittedDate} • {submittedTime}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-500 mb-1">Account Type</p>
+                                        <p className="text-xs text-gray-500 mb-1">Request Type</p>
                                         <div className="flex items-center gap-1.5">
                                             {isVerified && (
                                                 <CheckCircle2 className="w-4 h-4 text-blue-500" />
@@ -213,7 +213,9 @@ export default function QuoteConfirmationPage({
                                     <div>
                                         <p className="text-xs text-gray-500 mb-1">Items Included</p>
                                         <p className="text-sm font-medium text-gray-900">
-                                            {itemsCount} {itemsCount === 1 ? 'Product' : 'Products'} Requested
+                                            {itemsCount === 0
+                                              ? 'General Enquiry (0 Items)'
+                                              : `${itemsCount} ${itemsCount === 1 ? 'Product' : 'Products'} Requested`}
                                         </p>
                                     </div>
                                     <div>
@@ -302,14 +304,14 @@ export default function QuoteConfirmationPage({
                                     </p>
                                 </div>
                                 <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                                    <Link href="/products" className="flex-1">
-                                        <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium">
-                                            Browse Products
+                                    <Link href="/quotes/track" className="flex-1">
+                                        <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium">
+                                            Track Quotations
                                         </Button>
                                     </Link>
-                                    <Link href="/" className="flex-1">
+                                    <Link href="/products" className="flex-1">
                                         <Button variant="outline" className="w-full border-gray-300">
-                                            Return Home
+                                            Browse Products
                                         </Button>
                                     </Link>
                                 </div>

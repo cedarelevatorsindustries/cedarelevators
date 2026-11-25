@@ -1,46 +1,46 @@
 /**
  * Admin Quotes Module
- * 
- * This module provides all admin quote management functionality,
- * organized into logical sub-modules for better maintainability.
  */
 
-// Audit logging and expiry
 export {
-    getQuoteAuditTimeline,
-    checkAndExpireQuote,
-    expireOverdueQuotes
+  getQuoteAuditTimeline,
+  checkAndExpireQuote,
+  expireOverdueQuotes,
 } from './quote-audit'
 
-// Query operations
 export {
-    getAdminQuotes,
-    getAdminQuoteById,
-    getAdminQuoteStats,
-    getQuoteAuditLog,
-    type AdminQuoteFilters
+  getAdminQuotes,
+  getAdminQuoteById,
+  getAdminQuoteStats,
+  getQuoteAuditLog,
+  type AdminQuoteFilters,
 } from './quote-queries'
 
-// Status management
 export {
-    updateQuoteStatus,
-    approveQuote,
-    rejectQuote,
-    updateQuotePriority
+  updateQuoteStatus,
+  issueQuotation,
+  approveQuote,
+  rejectQuote,
+  updateQuotePriority,
+  type IssueQuotationOptions,
 } from './quote-status'
 
-// Pricing operations
 export {
-    updateQuotePricing,
-    updateQuoteItemPricing
+  saveQuoteCommercialPricing,
+  updateQuotePricing,
+  updateQuoteItemPricing,
+  type SaveCommercialPricingInput,
 } from './quote-pricing'
 
-// Quote to order conversion
 export { convertQuoteToOrder } from './quote-conversion'
 
-// Messaging
 export { addAdminQuoteMessage } from './quote-messages'
 
-// Management operations
-export { deleteQuote } from './quote-management'
-
+export {
+  deleteQuote,
+  addAdminNote,
+  setQuoteExpiry,
+  updateQuoteItems,
+  updateQuoteQuantities,
+  retryQuoteNotification,
+} from './quote-management'

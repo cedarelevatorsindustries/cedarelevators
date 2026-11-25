@@ -1,107 +1,160 @@
-// Quote State Machine - Enforces valid state transitions
-// Based on specification: draft → pending → reviewing → approved/rejected → converted
+// Quote State Machine - Unified Phase 1 + Legacy Compatibility
 
 export type QuoteStatus =
-    | 'draft'
-    | 'pending'
-    | 'reviewing'
-    | 'approved'
-    | 'rejected'
-    | 'converted'
-    | 'expired'
+  | 'draft'
+  | 'pending'
+  | 'submitted'
+  | 'reviewing'
+  | 'quoted'
+  | 'approved'
+  | 'rejected'
+  | 'converted'
+  | 'expired'
 
-// Named export for backward compatibility
 export { type QuoteStatus as QuoteStatusType }
 
 export type UserType = 'guest' | 'individual' | 'business' | 'verified'
 
-// Valid state transitions map
 const ALLOWED_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
-    draft: ['pending'],
-    pending: ['reviewing', 'rejected'], // Can reject without review
-    reviewing: ['approved', 'rejected'],
-    approved: ['converted', 'expired'],
-    rejected: [], // Terminal state
-    converted: [], // Terminal state
-    expired: [], // Terminal state
+  draft: ['submitted', 'pending'],
+  pending: ['reviewing', 'quoted', 'approved', 'rejected'],
+  submitted: ['reviewing', 'quoted', 'rejected'],
+  reviewing: ['quoted', 'approved', 'rejected'],
+  quoted: ['quoted', 'converted', 'expired'], // quoted -> quoted supports explicit revision reissue
+  approved: ['quoted', 'converted', 'expired'],
+  rejected: [],
+  converted: [],
+  expired: [],
 }
 
-// Check if a state transition is allowed
+export function isIssuedQuoteStatus(status?: string | null): boolean {
+  return status === 'quoted' || status === 'approved'
+}
+
+export function canIssueQuoteStatus(status?: string | null): boolean {
+  return ['submitted', 'pending', 'reviewing', 'quoted', 'approved'].includes(status || '')
+}
+
 export function isValidTransition(
-    currentStatus: QuoteStatus,
-    newStatus: QuoteStatus
+  currentStatus: QuoteStatus,
+  newStatus: QuoteStatus
 ): boolean {
-    const allowedNext = ALLOWED_TRANSITIONS[currentStatus]
-    return allowedNext.includes(newStatus)
+  const allowedNext = ALLOWED_TRANSITIONS[currentStatus] || []
+  return allowedNext.includes(newStatus)
 }
 
-// Get all allowed next states for a given status
 export function getAllowedNextStates(currentStatus: QuoteStatus): QuoteStatus[] {
-    return ALLOWED_TRANSITIONS[currentStatus] || []
+  return ALLOWED_TRANSITIONS[currentStatus] || []
 }
 
-// Check if a quote is in a terminal state (cannot be modified)
 export function isTerminalState(status: QuoteStatus): boolean {
-    return ['rejected', 'converted', 'expired'].includes(status)
+  return ['rejected', 'converted', 'expired'].includes(status)
 }
 
-// Check if a quote is locked (cannot be edited)
 export function isQuoteLocked(status: QuoteStatus): boolean {
-    // Quotes are locked after approval or in terminal states
-    return ['approved', 'rejected', 'converted', 'expired'].includes(status)
+  return ['rejected', 'converted', 'expired'].includes(status)
 }
 
-// Get human-readable status label
 export function getStatusLabel(status: QuoteStatus): string {
-    const labels: Record<QuoteStatus, string> = {
-        draft: 'Draft',
-        pending: 'Pending Review',
-        reviewing: 'Under Review',
-        approved: 'Approved',
-        rejected: 'Rejected',
-        converted: 'Converted to Order',
-        expired: 'Expired',
-    }
-    return labels[status]
+  const labels: Record<QuoteStatus, string> = {
+    draft: 'Draft',
+    pending: 'Received',
+    submitted: 'Submitted',
+    reviewing: 'Under Review',
+    quoted: 'Quoted',
+    approved: 'Quoted',
+    rejected: 'Rejected',
+    converted: 'Converted',
+    expired: 'Expired',
+  }
+  return labels[status] || status
 }
 
-// Get status color for UI
+export function getCustomerStatusInfo(status?: string | null): {
+  label: string
+  tone: 'neutral' | 'info' | 'success' | 'danger' | 'warning'
+  description: string
+} {
+  switch (status) {
+    case 'submitted':
+    case 'pending':
+      return {
+        label: 'Received',
+        tone: 'info',
+        description: 'Your enquiry has been logged and assigned to our technical sales team.',
+      }
+    case 'reviewing':
+      return {
+        label: 'Under Review',
+        tone: 'warning',
+        description: 'Our engineering and commercial desk is preparing your quotation.',
+      }
+    case 'quoted':
+    case 'approved':
+      return {
+        label: 'Quoted',
+        tone: 'success',
+        description: 'Your official Cedar Elevators quotation has been issued and is ready to view.',
+      }
+    case 'rejected':
+      return {
+        label: 'Unable to Proceed',
+        tone: 'danger',
+        description: 'Please review our team notes or contact Cedar Elevators for alternatives.',
+      }
+    case 'expired':
+      return {
+        label: 'Expired',
+        tone: 'neutral',
+        description: 'The validity period for this quotation has ended.',
+      }
+    case 'converted':
+      return {
+        label: 'Converted',
+        tone: 'success',
+        description: 'This quotation has been converted.',
+      }
+    default:
+      return {
+        label: 'Received',
+        tone: 'info',
+        description: 'Your quotation request is being processed.',
+      }
+  }
+}
+
 export function getStatusColor(status: QuoteStatus): string {
-    const colors: Record<QuoteStatus, string> = {
-        draft: 'gray',
-        pending: 'orange',
-        reviewing: 'blue',
-        approved: 'green',
-        rejected: 'red',
-        converted: 'emerald',
-        expired: 'gray',
-    }
-    return colors[status]
+  const colors: Record<QuoteStatus, string> = {
+    draft: 'gray',
+    pending: 'orange',
+    submitted: 'orange',
+    reviewing: 'blue',
+    quoted: 'green',
+    approved: 'green',
+    rejected: 'red',
+    converted: 'emerald',
+    expired: 'gray',
+  }
+  return colors[status] || 'gray'
 }
 
-// Validate state transition with error message
 export function validateTransition(
-    currentStatus: QuoteStatus,
-    newStatus: QuoteStatus
+  currentStatus: QuoteStatus,
+  newStatus: QuoteStatus
 ): { valid: boolean; error?: string } {
-    if (currentStatus === newStatus) {
-        return { valid: false, error: 'Quote is already in this state' }
+  if (isTerminalState(currentStatus)) {
+    return {
+      valid: false,
+      error: `Cannot modify quote in ${getStatusLabel(currentStatus)} state`,
     }
+  }
 
-    if (isTerminalState(currentStatus)) {
-        return {
-            valid: false,
-            error: `Cannot modify quote in ${getStatusLabel(currentStatus)} state`
-        }
+  if (!isValidTransition(currentStatus, newStatus)) {
+    return {
+      valid: false,
+      error: `Invalid transition from ${getStatusLabel(currentStatus)} to ${getStatusLabel(newStatus)}`,
     }
+  }
 
-    if (!isValidTransition(currentStatus, newStatus)) {
-        return {
-            valid: false,
-            error: `Invalid transition from ${getStatusLabel(currentStatus)} to ${getStatusLabel(newStatus)}`,
-        }
-    }
-
-    return { valid: true }
+  return { valid: true }
 }
-

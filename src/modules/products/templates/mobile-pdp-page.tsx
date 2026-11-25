@@ -545,7 +545,6 @@ export default function MobileProductDetailPage({
               title={product.title || ""}
               badges={badges}
               description={product.description || ""}
-              sku={product.metadata?.sku as string}
               rating={reviews.length > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : undefined}
               reviewCount={reviews.length}
               onClickReviews={scrollToReviews}

@@ -1,96 +1,110 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_FILE_TYPES = [
-    "image/jpeg",
-    "image/png",
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-];
+export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
 
-// Reusable Item Schema
 export const quoteItemSchema = z.object({
-    product_id: z.string().min(1, "Product is required"),
-    variant_id: z.string().optional().nullable(),
-    product_name: z.string().optional(), // For UI display only
-    quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
-});
+  product_id: z.string().min(1, 'Product is required'),
+  variant_id: z.string().optional().nullable(),
+  product_name: z.string().optional(),
+  quantity: z.coerce
+    .number()
+    .int('Quantity must be a whole number')
+    .min(1, 'Quantity must be at least 1')
+    .max(10000, 'Maximum quantity per line is 10,000')
+    .default(1),
+})
 
-// Helper for file validation
-const fileValidation = z.custom<FileList>()
-    .refine((files) => !files || files.length === 0 || Array.from(files).every(file => file.size <= MAX_FILE_SIZE), {
-        message: `Max file size is 5MB.`
-    })
-    .refine((files) => !files || files.length === 0 || Array.from(files).every(file => ACCEPTED_FILE_TYPES.includes(file.type)), {
-        message: "Only .jpg, .png, .pdf and .doc formats are supported."
-    });
+export const unifiedQuoteSchema = z
+  .object({
+    items: z.array(quoteItemSchema).max(100, 'Maximum 100 items per quotation request').default([]),
 
-// --- GUEST FORM ---
-export const guestQuoteSchema = z.object({
-    // Supports one or more items (or empty for general inquiries)
-    items: z.array(quoteItemSchema).default([]),
+    // Mandatory contact fields
+    name: z
+      .string()
+      .trim()
+      .min(2, 'Full name must be at least 2 characters')
+      .max(100, 'Full name cannot exceed 100 characters'),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email('Please enter a valid email address')
+      .max(150, 'Email cannot exceed 150 characters'),
+    phone: z
+      .string()
+      .trim()
+      .max(20, 'Phone number cannot exceed 20 characters')
+      .refine((val) => val.replace(/\D/g, '').length >= 10, {
+        message: 'Valid phone number is required (at least 10 digits)',
+      }),
 
-    // Contact Info (required for guest enquiry)
-    name: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name cannot exceed 100 characters"),
-    email: z.string().trim().email("Valid email address is required").max(150, "Email cannot exceed 150 characters"),
-    phone: z.string().trim().min(10, "Valid contact phone number is required (at least 10 digits)").max(20, "Phone number cannot exceed 20 characters"),
+    // Conditional company & optional commercial/project fields
+    company_name: z
+      .string()
+      .trim()
+      .max(150, 'Company name cannot exceed 150 characters')
+      .optional()
+      .or(z.literal('')),
+    gst_number: z
+      .string()
+      .trim()
+      .transform((val) => val.toUpperCase())
+      .refine((val) => val === '' || GSTIN_REGEX.test(val), {
+        message: 'GST number must be a valid 15-character GSTIN (e.g. 33ABCDE1234F1Z5)',
+      })
+      .optional()
+      .or(z.literal('')),
+    project_name: z
+      .string()
+      .trim()
+      .max(150, 'Project name cannot exceed 150 characters')
+      .optional()
+      .or(z.literal('')),
+    project_location: z
+      .string()
+      .trim()
+      .max(150, 'Project location cannot exceed 150 characters')
+      .optional()
+      .or(z.literal('')),
+    notes: z
+      .string()
+      .trim()
+      .max(2000, 'Additional details cannot exceed 2000 characters')
+      .optional()
+      .or(z.literal('')),
 
-    // Optional Company & Requirements
-    company_name: z.string().trim().max(150, "Company name cannot exceed 150 characters").optional().or(z.literal('')),
-    notes: z.string().trim().max(2000, "Notes cannot exceed 2000 characters").optional().or(z.literal('')),
-
-    // Anti-spam honeypot (should stay empty)
+    // Security / deduplication metadata
     hp_website: z.string().optional(),
-});
+    idempotency_key: z.string().trim().max(100).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const distinctProducts = new Set(
+      (data.items || [])
+        .map((item) => item.product_id?.trim())
+        .filter((id): id is string => Boolean(id))
+    )
 
-// --- INDIVIDUAL FORM ---
-export const individualQuoteSchema = z.object({
-    items: z.array(quoteItemSchema).min(1, "Add at least one item"),
-    notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
+    if (distinctProducts.size >= 2) {
+      const company = (data.company_name || '').trim()
+      if (company.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['company_name'],
+          message: 'Company name is required for bulk quotation requests with 2 or more products.',
+        })
+      }
+    }
+  })
 
-    // Contact Info (pre-filled from profile, but editable)
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional().or(z.literal('')),
+export type UnifiedQuoteValues = z.infer<typeof unifiedQuoteSchema>
 
-    // Single attachment allowed
-    attachments: fileValidation.optional(), // We'll validate length manually or via refinement if needed
-});
+// Compatibility re-exports for any untouched legacy consumers
+export const guestQuoteSchema = unifiedQuoteSchema
+export const individualQuoteSchema = unifiedQuoteSchema
+export const businessUnverifiedQuoteSchema = unifiedQuoteSchema
+export const businessVerifiedQuoteSchema = unifiedQuoteSchema
 
-// --- BUSINESS (UNVERIFIED) FORM ---
-export const businessUnverifiedQuoteSchema = z.object({
-    items: z.array(quoteItemSchema).min(1, "Add at least one item"),
-    bulk_pricing_requested: z.boolean().default(false),
-    notes: z.string().max(1000, "Notes cannot exceed 1000 characters").optional(),
-
-    // Contact Info (pre-filled from profile, but editable)
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional().or(z.literal('')),
-
-    // Max 2 attachments
-    attachments: fileValidation.optional(),
-});
-
-// --- BUSINESS (VERIFIED) FORM ---
-export const businessVerifiedQuoteSchema = z.object({
-    items: z.array(quoteItemSchema).min(1, "Add at least one item"),
-    bulk_pricing_requested: z.boolean().default(false),
-    save_as_draft: z.boolean().optional(),
-    notes: z.string().max(1000, "Notes cannot exceed 1000 characters").optional(),
-
-    // Contact Info (pre-filled from profile, but editable)
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional().or(z.literal('')),
-
-    // Max 5 attachments
-    attachments: fileValidation.optional(),
-});
-
-export type GuestQuoteValues = z.infer<typeof guestQuoteSchema>;
-export type IndividualQuoteValues = z.infer<typeof individualQuoteSchema>;
-export type BusinessUnverifiedQuoteValues = z.infer<typeof businessUnverifiedQuoteSchema>;
-export type BusinessVerifiedQuoteValues = z.infer<typeof businessVerifiedQuoteSchema>;
-
+export type GuestQuoteValues = UnifiedQuoteValues
+export type IndividualQuoteValues = UnifiedQuoteValues
+export type BusinessUnverifiedQuoteValues = UnifiedQuoteValues
+export type BusinessVerifiedQuoteValues = UnifiedQuoteValues

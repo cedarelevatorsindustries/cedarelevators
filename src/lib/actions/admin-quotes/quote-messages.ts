@@ -1,48 +1,48 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { revalidatePath } from 'next/cache'
+import { logQuoteAction } from './quote-audit'
 
-/**
- * Add admin message to quote
- * Updated to use quotes table fields instead of deprecated quote_admin_responses table
- */
 export async function addAdminQuoteMessage(
-    quoteId: string,
-    message: string,
-    isInternal: boolean = false
+  quoteId: string,
+  message: string,
+  isInternal: boolean = false
 ): Promise<{ success: boolean; error?: string }> {
-    try {
-        const supabase = createAdminClient()
-
-        // Update quotes table with message in appropriate field
-        const updateData: Record<string, any> = {
-            admin_response_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-
-        if (isInternal) {
-            updateData.admin_internal_notes = message
-        } else {
-            updateData.admin_response_message = message
-        }
-
-        const { error } = await supabase
-            .from('quotes')
-            .update(updateData)
-            .eq('id', quoteId)
-
-        if (error) {
-            console.error('Error adding admin message:', error)
-            return { success: false, error: error.message }
-        }
-
-        revalidatePath(`/admin/quotes/${quoteId}`)
-
-        return { success: true }
-    } catch (error: any) {
-        console.error('Error in addAdminQuoteMessage:', error)
-        return { success: false, error: error.message || 'Failed to send message' }
+  try {
+    const authCheck = await requireAdmin('manager')
+    if (!authCheck.authorized) {
+      return { success: false, error: authCheck.error }
     }
-}
 
+    const supabase = createAdminClient()
+    const now = new Date().toISOString()
+
+    const updateData: Record<string, any> = {
+      updated_at: now,
+    }
+
+    if (isInternal) {
+      updateData.admin_internal_notes = message
+    } else {
+      updateData.admin_response_message = message
+      updateData.admin_response_at = now
+    }
+
+    const { error } = await supabase.from('quotes').update(updateData).eq('id', quoteId)
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    await logQuoteAction(quoteId, isInternal ? 'internal_note_added' : 'message_sent', {
+      actorType: 'admin',
+      notes: isInternal ? 'Internal admin note updated' : 'Customer response message updated',
+    })
+
+    revalidatePath(`/admin/quotes/${quoteId}`)
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to save message' }
+  }
+}

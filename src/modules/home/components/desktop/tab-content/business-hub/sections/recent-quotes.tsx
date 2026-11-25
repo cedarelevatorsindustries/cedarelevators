@@ -106,9 +106,9 @@ export default function RecentQuotes({ isVerified = false }: RecentQuotesProps) 
                     </div>
                   </div>
                   <div className="text-right">
-                    {isVerified && quote.estimated_total > 0 ? (
+                    {isVerified && (quote.estimated_total ?? 0) > 0 ? (
                       <p className="text-lg font-semibold text-gray-900 mb-1">
-                        ₹{quote.estimated_total.toLocaleString()}
+                        ₹{(quote.estimated_total ?? 0).toLocaleString()}
                       </p>
                     ) : (
                       <p className="text-lg font-semibold text-gray-400 mb-1">-</p>

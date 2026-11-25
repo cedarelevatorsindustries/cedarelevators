@@ -20,19 +20,19 @@ export interface QuotePermissions {
  * Returns the capability set for a given user role.
  */
 export function getQuotePermissions(userType: UserType | string | null, verificationStatus: VerificationStatus = null): QuotePermissions {
-    // Default: Guest permissions
+    // Default: Guest-first Phase 1 permissions (supports general, single, and bulk quotes)
     const permissions: QuotePermissions = {
         canCreate: true,
-        canViewList: false,
+        canViewList: true,
         canViewPricing: false,
         canCheckout: false,
         maxAttachments: 0,
-        maxItems: 1, // Only single item for guest
-        notesMaxLength: 300,
+        maxItems: 100,
+        notesMaxLength: 2000,
         canSaveDraft: false,
         canExportCSV: false,
         canUseTemplates: false,
-        hasBulkPricing: false
+        hasBulkPricing: true
     };
 
     if (!userType || userType === 'guest') {

@@ -1,85 +1,58 @@
 'use client'
 
-import { useUser } from '@/lib/auth/client'
-import { getUserPricingState } from '@/lib/utils/pricing-utils'
 import QuoteConfirmationPage from '@/modules/checkout/components/quote-confirmation-page'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
 function QuoteSuccessContent() {
-    const { user } = useUser()
-    const userState = getUserPricingState(user)
-    const searchParams = useSearchParams()
+  const searchParams = useSearchParams()
 
-    // Get both UUID and formatted quote number
-    const quoteId = searchParams.get('quoteId') || 'UNKNOWN'
-    const quoteNumber = searchParams.get('quoteNumber') || quoteId
-    const itemsCountParam = searchParams.get('itemsCount')
-    const itemsCount = itemsCountParam !== null ? parseInt(itemsCountParam, 10) : 1
+  const quoteId = searchParams.get('quoteId') || 'UNKNOWN'
+  const quoteNumber = searchParams.get('quoteNumber') || quoteId
+  const itemsCountParam = searchParams.get('itemsCount')
+  const parsedCount = itemsCountParam !== null ? parseInt(itemsCountParam, 10) : 0
+  const itemsCount = !isNaN(parsedCount) && parsedCount >= 0 ? parsedCount : 0
+  const requestTypeParam = searchParams.get('requestType')
 
-    // Determine account type display text
-    const getAccountTypeText = () => {
-        switch (userState) {
-            case 'guest':
-                return 'Guest'
-            case 'individual':
-                return 'Individual Account'
-            case 'business_unverified':
-                return 'Business Account'
-            case 'business_verified':
-                return 'Verified Business'
-            default:
-                return 'Guest'
-        }
-    }
+  const accountTypeText =
+    requestTypeParam === 'bulk'
+      ? 'Bulk Multi-Product Quote'
+      : requestTypeParam === 'single' || itemsCount === 1
+        ? 'Single-Product Quote'
+        : 'General Enquiry'
 
-    // Determine priority level
-    const getPriority = () => {
-        switch (userState) {
-            case 'guest':
-                return 'Low Priority'
-            case 'individual':
-                return 'Standard'
-            case 'business_unverified':
-                return 'Standard Business'
-            case 'business_verified':
-                return 'High Priority'
-            default:
-                return 'Standard'
-        }
-    }
-
-    const now = new Date()
-    const submittedDate = now.toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    })
-    const submittedTime = now.toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
+  const now = new Date()
+  const submittedDate = now.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+  const submittedTime =
+    now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
     }) + ' IST'
 
-    return (
-        <QuoteConfirmationPage
-            quoteId={quoteId}
-            quoteNumber={quoteNumber}
-            submittedDate={submittedDate}
-            submittedTime={submittedTime}
-            accountType={getAccountTypeText()}
-            isVerified={userState === 'business_verified'}
-            itemsCount={2}
-            priority={getPriority()}
-            expectedResponseTime="24–48 business hours"
-        />
-    )
+  return (
+    <QuoteConfirmationPage
+      quoteId={quoteId}
+      quoteNumber={quoteNumber}
+      submittedDate={submittedDate}
+      submittedTime={submittedTime}
+      accountType={accountTypeText}
+      isVerified={false}
+      itemsCount={itemsCount}
+      priority="Standard"
+      expectedResponseTime="24–48 business hours"
+    />
+  )
 }
 
 export default function QuoteSuccessPage() {
-    return (
-        <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
-            <QuoteSuccessContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <QuoteSuccessContent />
+    </Suspense>
+  )
 }

@@ -1,207 +1,142 @@
-'use server';
+'use server'
 
-import { createServerSupabase } from '@/lib/supabase/server';
-import { currentUser } from '@clerk/nextjs/server';
+import { createAdminClient } from '@/lib/supabase/server'
 
 export interface ProductOption {
-    value: string;
-    label: string;
-    sku: string;
-    price?: number;
+  value: string
+  label: string
+  name: string
+  sku: string
+  thumbnail?: string | null
+  specifications?: Record<string, any> | null
+  price?: number
 }
 
 /**
- * Check if user can see prices (only verified business users)
- */
-async function canUserSeePrices(): Promise<boolean> {
-    try {
-        const user = await currentUser();
-        if (!user) return false;
-
-        // Only verified business users or admins can see prices
-        const isAdmin = user.publicMetadata?.role === 'admin';
-        const isVerifiedBusiness =
-            user.publicMetadata?.account_type === 'business' &&
-            user.publicMetadata?.verification_status === 'verified';
-
-        return isAdmin || isVerifiedBusiness;
-    } catch {
-        return false;
-    }
-}
-
-/**
- * Fetch products for quote form dropdown
- * Returns simplified product list optimized for selection
- * Prices are only included for verified business users
+ * Fetch active products for the unified quotation form selector (guest-first, no Clerk required)
  */
 export async function getProductsForQuote(searchQuery?: string): Promise<{
-    success: boolean;
-    products?: ProductOption[];
-    error?: string;
+  success: boolean
+  products?: ProductOption[]
+  error?: string
 }> {
-    try {
-        const supabase = await createServerSupabase();
-        const showPrices = await canUserSeePrices();
+  try {
+    const supabase = createAdminClient()
 
-        let query = supabase
-            .from('products')
-            .select('id, name, sku, price')
-            .eq('status', 'active')
-            .order('name');
+    let query = supabase
+      .from('products')
+      .select('id, name, sku, thumbnail_url, specifications, technical_specs')
+      .eq('status', 'active')
+      .order('name')
 
-        // If search query provided, filter by name or SKU
-        if (searchQuery && searchQuery.trim()) {
-            query = query.or(`name.ilike.%${searchQuery}%,sku.ilike.%${searchQuery}%`);
-        }
-
-        // Limit to 50 products for dropdown performance
-        query = query.limit(50);
-
-        const { data, error } = await query;
-
-        if (error) {
-            console.error('Error fetching products for quote:', error);
-            return { success: false, error: error.message };
-        }
-
-        // Transform to dropdown format - only include prices for verified users
-        const products: ProductOption[] = (data || []).map(product => ({
-            value: product.id,
-            label: `${product.name} ${product.sku ? `(${product.sku})` : ''}`,
-            sku: product.sku || '',
-            price: showPrices ? product.price : undefined
-        }));
-
-        return {
-            success: true,
-            products
-        };
-    } catch (error: any) {
-        console.error('Error fetching products for quote:', error);
-        return { success: false, error: error.message };
+    if (searchQuery && searchQuery.trim()) {
+      const safe = searchQuery.trim().replace(/[,%()]/g, '')
+      if (safe) {
+        query = query.or(`name.ilike.%${safe}%,sku.ilike.%${safe}%`)
+      }
     }
+
+    query = query.limit(50)
+
+    const { data, error } = await query
+    if (error) {
+      console.error('Error fetching products for quote:', error)
+      return { success: false, error: error.message }
+    }
+
+    const products: ProductOption[] = (data || []).map((product: any) => ({
+      value: product.id,
+      name: product.name,
+      label: `${product.name}${product.sku ? ` (${product.sku})` : ''}`,
+      sku: product.sku || '',
+      thumbnail: product.thumbnail_url || null,
+      specifications:
+        (product.specifications && typeof product.specifications === 'object'
+          ? product.specifications
+          : null) ||
+        (product.technical_specs && typeof product.technical_specs === 'object'
+          ? product.technical_specs
+          : null),
+    }))
+
+    return { success: true, products }
+  } catch (error: any) {
+    console.error('Error fetching products for quote:', error)
+    return { success: false, error: error.message }
+  }
 }
 
-/**
- * Search products with autocomplete for quote form
- * Optimized for fast typeahead search
- * Prices are only included for verified business users
- */
 export async function searchProductsForQuote(query: string): Promise<{
-    success: boolean;
-    products?: ProductOption[];
-    error?: string;
+  success: boolean
+  products?: ProductOption[]
+  error?: string
 }> {
-    try {
-        if (!query || query.length < 2) {
-            return { success: true, products: [] };
-        }
-
-        const supabase = await createServerSupabase();
-        const showPrices = await canUserSeePrices();
-
-        const { data, error } = await supabase
-            .from('products')
-            .select('id, name, sku, price')
-            .eq('status', 'active')
-            .or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
-            .order('name')
-            .limit(20);
-
-        if (error) {
-            console.error('Error searching products for quote:', error);
-            return { success: false, error: error.message };
-        }
-
-        // Only include prices for verified business users
-        const products: ProductOption[] = (data || []).map(product => ({
-            value: product.id,
-            label: `${product.name} ${product.sku ? `(${product.sku})` : ''}`,
-            sku: product.sku || '',
-            price: showPrices ? product.price : undefined
-        }));
-
-        return {
-            success: true,
-            products
-        };
-    } catch (error: any) {
-        console.error('Error searching products for quote:', error);
-        return { success: false, error: error.message };
-    }
+  if (!query || query.trim().length < 2) {
+    return getProductsForQuote()
+  }
+  return getProductsForQuote(query)
 }
 
 export interface VariantOption {
-    value: string;
-    label: string;
-    sku: string | null;
-    price?: number;
-    options?: Record<string, string>;
-    variant_title?: string | null;
+  value: string
+  label: string
+  sku: string | null
+  price?: number
+  options?: Record<string, string>
+  variant_title?: string | null
 }
 
 /**
- * Get variants for a specific product
- * Used to populate variant dropdown in quote form after product selection
+ * Get active variants for a product
  */
 export async function getProductVariants(productId: string): Promise<{
-    success: boolean;
-    variants?: VariantOption[];
-    error?: string;
+  success: boolean
+  variants?: VariantOption[]
+  error?: string
 }> {
-    try {
-        if (!productId) {
-            return { success: true, variants: [] };
-        }
-
-        const supabase = await createServerSupabase();
-        const showPrices = await canUserSeePrices();
-
-        const { data, error } = await supabase
-            .from('product_variants')
-            .select('id, name, sku, price, options, variant_title')
-            .eq('product_id', productId)
-            .order('name');
-
-        if (error) {
-            console.error('Error fetching product variants:', error);
-            return { success: false, error: error.message };
-        }
-
-        // Transform to dropdown format
-        const variants: VariantOption[] = (data || []).map(variant => {
-            let label = variant.variant_title;
-
-            // If no variant title, try to construct from options
-            if (!label && variant.options && typeof variant.options === 'object') {
-                const values = Object.values(variant.options);
-                if (values.length > 0) {
-                    label = values.join(' / ');
-                }
-            }
-
-            // Fallback to name or generated ID
-            if (!label) {
-                label = variant.name || `Variant ${variant.sku || variant.id.slice(0, 8)}`;
-            }
-
-            return {
-                value: variant.id,
-                label: label,
-                sku: variant.sku,
-                price: showPrices ? variant.price : undefined,
-                options: variant.options,
-                variant_title: variant.variant_title
-            };
-        });
-
-        return {
-            success: true,
-            variants
-        };
-    } catch (error: any) {
-        console.error('Error fetching product variants:', error);
-        return { success: false, error: error.message };
+  try {
+    if (!productId) {
+      return { success: true, variants: [] }
     }
+
+    const supabase = createAdminClient()
+
+    const { data, error } = await supabase
+      .from('product_variants')
+      .select('id, name, sku, options, variant_title, status')
+      .eq('product_id', productId)
+      .neq('status', 'inactive')
+      .order('name')
+
+    if (error) {
+      console.error('Error fetching product variants:', error)
+      return { success: false, error: error.message }
+    }
+
+    const variants: VariantOption[] = (data || []).map((variant: any) => {
+      let label = variant.variant_title
+      if (!label && variant.options && typeof variant.options === 'object') {
+        const values = Object.values(variant.options).filter(Boolean)
+        if (values.length > 0) {
+          label = values.join(' / ')
+        }
+      }
+      if (!label) {
+        label = variant.name || `Variant ${variant.sku || variant.id.slice(0, 8)}`
+      }
+
+      return {
+        value: variant.id,
+        label,
+        sku: variant.sku || null,
+        options: variant.options || undefined,
+        variant_title: variant.variant_title || label,
+      }
+    })
+
+    return { success: true, variants }
+  } catch (error: any) {
+    console.error('Error fetching product variants:', error)
+    return { success: false, error: error.message }
+  }
 }

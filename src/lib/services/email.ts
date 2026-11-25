@@ -657,3 +657,335 @@ export async function sendQuoteExpiredEmail(
     return { success: false, error: error.message || 'Failed to send email' }
   }
 }
+
+function escapeHtml(value: string | null | undefined): string {
+  if (!value) return ''
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Send Phase 1 customer quotation request confirmation email (no unissued prices)
+ */
+export async function sendQuoteSubmissionConfirmationEmail(
+  to: string,
+  data: {
+    quoteNumber: string
+    customerName: string
+    companyName?: string | null
+    submittedDate: string
+    requestType: 'general' | 'single' | 'bulk'
+    items: Array<{ product_name: string; variant_title?: string | null; quantity: number }>
+    viewUrl: string
+    trackUrl: string
+    supportEmail?: string | null
+    supportPhone?: string | null
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    if (!resend) {
+      return { success: false, error: 'Resend email service not configured' }
+    }
+
+    const itemsRows =
+      data.items.length > 0
+        ? data.items
+            .map(
+              (item) => `
+              <tr>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; font-size: 14px; color: #111827;">
+                  ${escapeHtml(item.product_name)}${item.variant_title ? `<br><span style="font-size: 12px; color: #6b7280;">Variant: ${escapeHtml(item.variant_title)}</span>` : ''}
+                </td>
+                <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-size: 14px; font-weight: 600; color: #111827;">
+                  ${item.quantity}
+                </td>
+              </tr>`
+            )
+            .join('')
+        : `<tr><td colspan="2" style="padding: 12px; font-size: 14px; color: #4b5563;">General elevator component / project enquiry</td></tr>`
+
+    const subject = `We received your quotation request — ${data.quoteNumber}`
+
+    const { data: result, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+          <body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1f2937; max-width: 620px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
+            <div style="background-color: #111827; padding: 24px; border-radius: 8px 8px 0 0; border-bottom: 4px solid #ea580c;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 20px; letter-spacing: 0.5px;">CEDAR ELEVATORS INDUSTRIES</h1>
+              <p style="color: #d1d5db; margin: 4px 0 0 0; font-size: 13px;">Precision Elevator Components &amp; Engineering Supply</p>
+            </div>
+
+            <div style="background-color: #ffffff; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+              <h2 style="margin-top: 0; font-size: 18px; color: #111827;">Quotation Request Received</h2>
+              <p>Dear ${escapeHtml(data.customerName)},</p>
+              <p>Thank you for contacting Cedar Elevators. Our technical sales and engineering team has received your quotation request and will review specifications and pricing shortly.</p>
+
+              <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 16px; margin: 20px 0;">
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Quotation Reference:</strong> <span style="font-family: monospace; font-weight: 700; color: #c2410c;">${escapeHtml(data.quoteNumber)}</span></p>
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Submitted Date:</strong> ${escapeHtml(data.submittedDate)}</p>
+                ${data.companyName ? `<p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Company:</strong> ${escapeHtml(data.companyName)}</p>` : ''}
+                <p style="margin: 0; font-size: 14px;"><strong>Status:</strong> Received (Pending Engineering Review)</p>
+              </div>
+
+              <h3 style="font-size: 15px; color: #111827; margin-bottom: 10px;">Submitted Summary</h3>
+              <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+                <thead>
+                  <tr style="background-color: #f9fafb;">
+                    <th style="padding: 10px 12px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Item</th>
+                    <th style="padding: 10px 12px; text-align: center; font-size: 12px; text-transform: uppercase; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Qty</th>
+                  </tr>
+                </thead>
+                <tbody>${itemsRows}</tbody>
+              </table>
+
+              <div style="text-align: center; margin: 28px 0 20px 0;">
+                <a href="${escapeHtml(data.viewUrl)}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 26px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                  View Request Status
+                </a>
+              </div>
+
+              <p style="font-size: 13px; color: #6b7280; text-align: center; margin-bottom: 24px;">
+                Want to view all your quotation requests? <a href="${escapeHtml(data.trackUrl)}" style="color: #ea580c; text-decoration: underline;">Track your quotations</a>
+              </p>
+
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+              <p style="font-size: 12px; color: #6b7280; margin: 0;">
+                Need assistance? ${data.supportEmail ? `Email <a href="mailto:${escapeHtml(data.supportEmail)}" style="color: #374151;">${escapeHtml(data.supportEmail)}</a>` : ''}${data.supportEmail && data.supportPhone ? ' • ' : ''}${data.supportPhone ? `Call ${escapeHtml(data.supportPhone)}` : ''}
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true, messageId: result?.id }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send confirmation email' }
+  }
+}
+
+/**
+ * Send admin new quotation alert email
+ */
+export async function sendAdminNewQuoteAlertEmail(
+  to: string,
+  data: {
+    quoteId: string
+    quoteNumber: string
+    customerName: string
+    companyName?: string | null
+    email: string
+    phone: string
+    requestType: 'general' | 'single' | 'bulk'
+    itemsCount: number
+    submittedDate: string
+    adminQuoteUrl: string
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    if (!resend) {
+      return { success: false, error: 'Resend email service not configured' }
+    }
+
+    const requestLabel =
+      data.requestType === 'bulk'
+        ? 'Bulk Multi-Product Quote'
+        : data.requestType === 'single'
+          ? 'Single Product Quote'
+          : 'General Enquiry'
+
+    const { data: result, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `New Quotation Request — ${data.quoteNumber} (${requestLabel})`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+          <body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
+            <div style="background-color: #111827; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 4px solid #ea580c;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 18px;">New Quotation Request Alert</h1>
+            </div>
+            <div style="background-color: #ffffff; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+              <p style="margin-top: 0;">A new quotation enquiry has been submitted on Cedar Elevators:</p>
+              <table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;">
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280; width: 150px;">Quote Number</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; font-weight: 700;">${escapeHtml(data.quoteNumber)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Request Type</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${escapeHtml(requestLabel)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Customer Name</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${escapeHtml(data.customerName)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Company</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${escapeHtml(data.companyName || 'Not specified')}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Email</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${escapeHtml(data.email)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Phone</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${escapeHtml(data.phone)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f3f4f6; color: #6b7280;">Line Items</td><td style="padding: 8px; border-bottom: 1px solid #f3f4f6;">${data.itemsCount}</td></tr>
+                <tr><td style="padding: 8px; color: #6b7280;">Submitted</td><td style="padding: 8px;">${escapeHtml(data.submittedDate)}</td></tr>
+              </table>
+
+              <div style="text-align: center; margin: 24px 0 8px 0;">
+                <a href="${escapeHtml(data.adminQuoteUrl)}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">
+                  Open Quotation in Admin Workspace
+                </a>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true, messageId: result?.id }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send admin alert email' }
+  }
+}
+
+/**
+ * Send official Quotation Issued email to customer (after PDF generation & storage verified)
+ */
+export async function sendQuoteIssuedEmail(
+  to: string,
+  data: {
+    quoteNumber: string
+    revisionNumber: number
+    customerName: string
+    issuedDate: string
+    validUntil: string
+    grandTotalFormatted: string
+    adminMessage?: string | null
+    viewUrl: string
+    pdfUrl: string
+    supportEmail?: string | null
+    supportPhone?: string | null
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    if (!resend) {
+      return { success: false, error: 'Resend email service not configured' }
+    }
+
+    const revLabel = data.revisionNumber > 1 ? ` (Revision ${data.revisionNumber})` : ''
+    const subject = `Your Cedar Elevators quotation is ready — ${data.quoteNumber}`
+
+    const { data: result, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+          <body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1f2937; max-width: 620px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
+            <div style="background-color: #111827; padding: 24px; border-radius: 8px 8px 0 0; border-bottom: 4px solid #ea580c;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 20px;">CEDAR ELEVATORS INDUSTRIES</h1>
+              <p style="color: #d1d5db; margin: 4px 0 0 0; font-size: 13px;">Official Commercial Quotation</p>
+            </div>
+
+            <div style="background-color: #ffffff; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+              <h2 style="margin-top: 0; font-size: 18px; color: #111827;">Your Quotation Is Ready</h2>
+              <p>Dear ${escapeHtml(data.customerName)},</p>
+              <p>We have prepared your official commercial quotation${escapeHtml(revLabel)}. You can review the itemized pricing online or download the quotation PDF directly below.</p>
+
+              <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-left: 4px solid #ea580c; border-radius: 6px; padding: 16px; margin: 20px 0;">
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Quotation Number:</strong> <span style="font-family: monospace; font-weight: 700;">${escapeHtml(data.quoteNumber)}</span>${escapeHtml(revLabel)}</p>
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Issued Date:</strong> ${escapeHtml(data.issuedDate)}</p>
+                <p style="margin: 0 0 6px 0; font-size: 14px;"><strong>Valid Until:</strong> ${escapeHtml(data.validUntil)}</p>
+                <p style="margin: 0; font-size: 16px; color: #111827;"><strong>Quoted Amount:</strong> <span style="color: #ea580c; font-weight: 700;">${escapeHtml(data.grandTotalFormatted)}</span></p>
+              </div>
+
+              ${
+                data.adminMessage
+                  ? `<div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 14px; margin: 18px 0;">
+                      <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #1e40af;">Message from Cedar Elevators:</p>
+                      <p style="margin: 0; font-size: 14px; color: #1e3a8a;">${escapeHtml(data.adminMessage)}</p>
+                    </div>`
+                  : ''
+              }
+
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="${escapeHtml(data.viewUrl)}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 4px;">
+                  View Quotation Online
+                </a>
+                <a href="${escapeHtml(data.pdfUrl)}" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 4px;">
+                  Download PDF Quotation
+                </a>
+              </div>
+
+              <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+              <p style="font-size: 12px; color: #6b7280; margin: 0;">
+                For commercial clarifications or order confirmation, reply to ${escapeHtml(data.supportEmail || 'our sales team')}${data.supportPhone ? ` or call ${escapeHtml(data.supportPhone)}` : ''}.
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true, messageId: result?.id }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send quotation issued email' }
+  }
+}
+
+/**
+ * Send 6-digit passwordless OTP verification code for guest quotation history
+ */
+export async function sendGuestOtpEmail(
+  to: string,
+  data: {
+    code: string
+    expiresInMinutes: number
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    if (!resend) {
+      return { success: false, error: 'Resend email service not configured' }
+    }
+
+    const { data: result, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Your Cedar Elevators verification code: ${data.code}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+          <body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1f2937; max-width: 520px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
+            <div style="background-color: #111827; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 4px solid #ea580c;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 18px;">CEDAR ELEVATORS</h1>
+            </div>
+            <div style="background-color: #ffffff; padding: 26px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+              <h2 style="margin-top: 0; font-size: 18px;">Quotation History Verification Code</h2>
+              <p>Enter the following one-time verification code to access your Cedar Elevators quotation history:</p>
+              <div style="text-align: center; margin: 24px 0; padding: 18px; background-color: #f9fafb; border: 1px dashed #d1d5db; border-radius: 8px;">
+                <span style="font-family: monospace; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #ea580c;">${escapeHtml(data.code)}</span>
+              </div>
+              <p style="font-size: 13px; color: #4b5563;">This code expires in ${data.expiresInMinutes} minutes. If you did not request this code, you can safely ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true, messageId: result?.id }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send verification code email' }
+  }
+}

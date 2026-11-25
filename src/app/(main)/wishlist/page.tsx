@@ -20,7 +20,6 @@ export default function WishlistPage() {
     setIsClearing(true)
     try {
       await clearWishlist()
-      toast.success("Quote list cleared")
     } catch (error) {
       toast.error("Failed to clear quote list")
     } finally {
@@ -42,7 +41,7 @@ export default function WishlistPage() {
         <EmptyState
           image="/empty-states/wishlist-empty-state.png"
           title="Your list is waiting to be filled."
-          description="Explore our elevator components and save the products you're interested in. You can review your selection here whenever you're ready."
+          description="Explore our elevator components and save the products you're interested in."
           actionLabel="Explore Products"
           actionLink="/products"
         />
@@ -124,6 +123,9 @@ export default function WishlistPage() {
                     product={product}
                     variantId={item.variant_id}
                     wishlistItemId={item.id}
+                    quantity={item.quantity || 1}
+                    sku={item.product_sku}
+                    variantTitle={item.variant_title}
                   />
                 )
               })}

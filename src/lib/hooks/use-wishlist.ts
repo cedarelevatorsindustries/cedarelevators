@@ -15,7 +15,8 @@ export interface WishlistItem {
   product_title?: string
   product_thumbnail?: string | null
   product_handle?: string
-  variant_title?: string
+  product_sku?: string | null
+  variant_title?: string | null
   price?: number
   // Legacy nested structure (for backwards compatibility)
   products?: {
@@ -133,10 +134,10 @@ export function useWishlist() {
       if (context?.previous) {
         queryClient.setQueryData(wishlistKeys.all, context.previous)
       }
-      toast.error('Failed to add to wishlist')
+      toast.error('Failed to add to quote list')
     },
     onSuccess: () => {
-      toast.success('Added to wishlist')
+      toast.success('Added to quote list')
       // Refetch to get real ID
       queryClient.invalidateQueries({ queryKey: wishlistKeys.all })
     }
@@ -167,10 +168,10 @@ export function useWishlist() {
       if (context?.previous) {
         queryClient.setQueryData(wishlistKeys.all, context.previous)
       }
-      toast.error('Failed to remove from wishlist')
+      toast.error('Failed to remove from quote list')
     },
     onSuccess: () => {
-      toast.success('Removed from wishlist')
+      toast.success('Removed from quote list')
     }
   })
 
@@ -194,11 +195,42 @@ export function useWishlist() {
       if (context?.previous) {
         queryClient.setQueryData(wishlistKeys.all, context.previous)
       }
-      toast.error('Failed to clear wishlist')
+      toast.error('Failed to clear quote list')
     },
     onSuccess: () => {
-      toast.success('Wishlist cleared')
+      toast.success('Quote list cleared')
     }
+  })
+
+  // Update item quantity mutation
+  const updateQtyMutation = useMutation({
+    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const response = await fetch(`/api/wishlist/items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
+      })
+      const data = await response.json()
+      if (!data.success) throw new Error(data.error || 'Failed to update quantity')
+      return data
+    },
+    onMutate: async ({ itemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: wishlistKeys.all })
+      const previous = queryClient.getQueryData<WishlistData>(wishlistKeys.all)
+      queryClient.setQueryData<WishlistData>(wishlistKeys.all, (old) => ({
+        items: (old?.items || []).map((item) =>
+          item.id === itemId ? { ...item, quantity } : item
+        ),
+        count: old?.count || 0,
+      }))
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(wishlistKeys.all, context.previous)
+      }
+      toast.error('Failed to update quantity')
+    },
   })
 
   // Merge guest wishlist mutation
@@ -262,6 +294,14 @@ export function useWishlist() {
     return clearMutation.mutateAsync()
   }, [clearMutation])
 
+  const updateQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      const safeQty = Math.min(10000, Math.max(1, Math.floor(quantity)))
+      return updateQtyMutation.mutateAsync({ itemId, quantity: safeQty })
+    },
+    [updateQtyMutation]
+  )
+
   const refresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: wishlistKeys.all })
   }, [queryClient])
@@ -272,6 +312,7 @@ export function useWishlist() {
     isLoading,
     addItem,
     removeItem,
+    updateQuantity,
     toggleItem,
     isInWishlist,
     mergeGuestWishlist,

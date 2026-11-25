@@ -1,14 +1,12 @@
 "use client"
 
-import { Star, Award, TrendingUp, Zap, Copy, Check as CheckIcon } from "lucide-react"
-import { useState } from "react"
+import { Star, Award, TrendingUp, Zap } from "lucide-react"
 
 interface TitleBadgesSectionProps {
   title: string
   rating?: number
   reviewCount?: number
   badges?: Array<"bestseller" | "new" | "featured" | "verified">
-  sku?: string
   description?: string
   onClickReviews?: () => void
 }
@@ -18,25 +16,14 @@ export default function TitleBadgesSection({
   rating = 0,
   reviewCount = 0,
   badges = [],
-  sku,
   description,
   onClickReviews
 }: TitleBadgesSectionProps) {
-  const [copied, setCopied] = useState(false)
-
   const badgeConfig = {
     bestseller: { icon: TrendingUp, label: "BESTSELLER", color: "bg-orange-500 text-white" },
     new: { icon: Zap, label: "NEW", color: "bg-green-500 text-white" },
     featured: { icon: Award, label: "FEATURED", color: "bg-blue-500 text-white" },
     verified: { icon: Award, label: "VERIFIED", color: "bg-green-500 text-white" }
-  }
-
-  const handleCopySKU = () => {
-    if (sku) {
-      navigator.clipboard.writeText(sku)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
   }
 
   // Truncate description to 2-3 lines (approximately 150 characters)
