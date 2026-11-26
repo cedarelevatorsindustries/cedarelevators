@@ -1,6 +1,7 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 
 /**
  * Analytics Actions for Dashboard
@@ -204,8 +205,10 @@ export async function getRecentOrders(limit: number = 5): Promise<RecentOrder[]>
 
 export async function getRecentActivity(limit: number = 10): Promise<RecentActivity[]> {
     try {
-        const supabase = createServerSupabaseClient()
-        if (!supabase) return []
+        const authCheck = await requireAdmin('staff')
+        if (!authCheck.authorized) return []
+
+        const supabase = createAdminClient()
 
         const { data: activities } = await supabase
             .from('admin_activity_logs')

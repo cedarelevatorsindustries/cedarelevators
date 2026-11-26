@@ -1,18 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Activity,
-    Settings,
     Package,
     FileText,
     User,
-    Trash2,
-    Edit,
-    PlusCircle,
     ShoppingCart,
-    LoaderCircle
+    ArrowRight
 } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
@@ -37,103 +30,120 @@ const entityIcons = {
     customer: User,
 }
 
-const entityColors = {
-    product: "text-purple-600 bg-purple-100",
-    order: "text-blue-600 bg-blue-100",
-    quote: "text-orange-600 bg-orange-100",
-    customer: "text-green-600 bg-green-100",
+const entityInlineStyles: Record<ActivityItem["type"], { backgroundColor: string; borderColor: string; color: string }> = {
+    product: { backgroundColor: "#F9F8F5", borderColor: "#EAE8E2", color: "#77736D" },
+    order: { backgroundColor: "#F9F8F5", borderColor: "#EAE8E2", color: "#4D6F8F" },
+    quote: { backgroundColor: "#FFF0E8", borderColor: "#F5D5C3", color: "#E85A24" },
+    customer: { backgroundColor: "#F9F8F5", borderColor: "#EAE8E2", color: "#238A62" },
 }
 
 export function RecentActivities({ activities, isLoading = false }: RecentActivitiesProps) {
-    if (isLoading) {
-        return (
-            <Card className="border-gray-200 shadow-sm h-full">
-                <CardHeader className="pb-3 border-b border-gray-100">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-orange-600" />
-                        Recent Activities
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8">
-                    <div className="flex items-center justify-center">
-                        <LoaderCircle className="w-8 h-8 animate-spin text-orange-600" />
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
-
-    if (activities.length === 0) {
-        return (
-            <Card className="border-gray-200 shadow-sm h-full">
-                <CardHeader className="pb-3 border-b border-gray-100">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-orange-600" />
-                        Recent Activities
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-center py-12">
-                        <Activity className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500 text-sm">No recent activities found.</p>
-                        <p className="text-gray-400 text-xs mt-1">Activities will appear here as you work with the system.</p>
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
-
     return (
-        <Card className="border-gray-200 shadow-sm h-full">
-            <CardHeader className="pb-3 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-orange-600" />
-                        Recent Activities
-                    </CardTitle>
-                    <Button variant="ghost" size="sm" className="text-xs text-orange-600 hover:text-orange-700 hover:bg-orange-50" asChild>
-                        <Link href="/admin/activity-log">View All</Link>
-                    </Button>
+        <section className="cedar-admin-card flex h-full flex-col">
+            <div className="cedar-admin-card-header flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
+                <div>
+                    <h3
+                        className="text-[17px] font-semibold tracking-tight"
+                        style={{ color: "#171717" }}
+                    >
+                        Recent Activity
+                    </h3>
+                    <p className="mt-0.5 text-[12.5px]" style={{ color: "#77736D" }}>
+                        Latest administrative actions and system events.
+                    </p>
                 </div>
-            </CardHeader>
-            <CardContent className="p-0">
-                <ScrollArea className="h-[400px]">
-                    <div className="divide-y divide-gray-100">
+                <Link href="/admin/activity-log" className="cedar-admin-btn-subtle shrink-0">
+                    <span>View All</span>
+                    <ArrowRight className="h-3.5 w-3.5" style={{ color: "#77736D" }} />
+                </Link>
+            </div>
+
+            {isLoading ? (
+                <div className="cedar-admin-divided px-5 sm:px-6">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-start gap-3 py-3.5">
+                            <div
+                                className="h-8 w-8 animate-pulse rounded-lg shrink-0"
+                                style={{ backgroundColor: "#F3F2EE" }}
+                            />
+                            <div className="flex-1 space-y-1.5">
+                                <div
+                                    className="h-3.5 w-36 animate-pulse rounded"
+                                    style={{ backgroundColor: "#F3F2EE" }}
+                                />
+                                <div
+                                    className="h-3 w-52 animate-pulse rounded"
+                                    style={{ backgroundColor: "#F7F6F3" }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : activities.length === 0 ? (
+                <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+                    <div
+                        className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: "#F9F8F5", border: "1px solid #EAE8E2" }}
+                    >
+                        <Activity className="h-5 w-5" style={{ color: "#A09B94" }} />
+                    </div>
+                    <p className="text-[13px] font-medium" style={{ color: "#171717" }}>
+                        No recent activities found
+                    </p>
+                    <p className="mt-1 max-w-[240px] text-xs" style={{ color: "#77736D" }}>
+                        Administrative actions and system updates will appear here.
+                    </p>
+                </div>
+            ) : (
+                <ScrollArea className="h-[360px]">
+                    <div className="cedar-admin-divided">
                         {activities.map((activity) => {
                             const EntityIcon = entityIcons[activity.type] || Activity
+                            const style = entityInlineStyles[activity.type] || entityInlineStyles.product
 
                             return (
-                                <div key={activity.id} className="p-4 hover:bg-gray-50/50 transition-colors flex gap-4 group">
-                                    <div className={`mt-1 h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${entityColors[activity.type]}`}>
-                                        <EntityIcon className="h-4 w-4" />
+                                <div
+                                    key={activity.id}
+                                    className="flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-[#F9F8F5] sm:px-6"
+                                >
+                                    <div
+                                        className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+                                        style={{
+                                            backgroundColor: style.backgroundColor,
+                                            border: `1px solid ${style.borderColor}`,
+                                            color: style.color,
+                                        }}
+                                    >
+                                        <EntityIcon className="h-3.5 w-3.5" />
                                     </div>
-                                    <div className="flex-1 min-w-0 space-y-1">
+                                    <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-2">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900 leading-none mb-1">
-                                                    {activity.title}
-                                                </p>
-                                                <p className="text-xs text-gray-500">
-                                                    {activity.description}
-                                                </p>
-                                            </div>
-                                            <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                                            <p
+                                                className="text-[13.5px] font-medium truncate"
+                                                style={{ color: "#171717" }}
+                                            >
+                                                {activity.title}
+                                            </p>
+                                            <span
+                                                className="text-[11.5px] whitespace-nowrap flex-shrink-0"
+                                                style={{ color: "#A09B94" }}
+                                            >
                                                 {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                                            <span className="flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
-                                                <span className="capitalize">{activity.type}</span>
-                                            </span>
-                                        </div>
+                                        <p
+                                            className="mt-0.5 text-[12px] line-clamp-2"
+                                            style={{ color: "#77736D" }}
+                                        >
+                                            {activity.description}
+                                        </p>
                                     </div>
                                 </div>
                             )
                         })}
                     </div>
                 </ScrollArea>
-            </CardContent>
-        </Card>
+            )}
+        </section>
     )
 }
-

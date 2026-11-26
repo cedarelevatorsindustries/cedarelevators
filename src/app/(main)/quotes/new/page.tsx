@@ -19,13 +19,22 @@ export default async function NewQuotePage(props: PageProps) {
   const supabase = createAdminClient()
 
   const fromSource = typeof searchParams.from === 'string' ? searchParams.from : undefined
-  const productIdParam = typeof searchParams.productId === 'string' ? searchParams.productId.trim() : undefined
-  const productIdsParam = typeof searchParams.productIds === 'string' ? searchParams.productIds : undefined
-  const variantIdParam = typeof searchParams.variantId === 'string' ? searchParams.variantId.trim() : undefined
+  const singleProductParam =
+    (typeof searchParams.productId === 'string' ? searchParams.productId.trim() : '') ||
+    (typeof searchParams.product === 'string' ? searchParams.product.trim() : '') ||
+    undefined
+  const productListParam =
+    (typeof searchParams.productIds === 'string' ? searchParams.productIds.trim() : '') ||
+    (typeof searchParams.products === 'string' ? searchParams.products.trim() : '') ||
+    undefined
+  const variantIdParam =
+    (typeof searchParams.variantId === 'string' ? searchParams.variantId.trim() : '') ||
+    (typeof searchParams.variant === 'string' ? searchParams.variant.trim() : '') ||
+    undefined
   const quantityParam = typeof searchParams.quantity === 'string' ? parseInt(searchParams.quantity, 10) : 1
   const singleQty = !isNaN(quantityParam) && quantityParam >= 1 ? Math.min(10000, quantityParam) : 1
 
-  // Collect desired (productId, variantId?, quantity) pairs
+  // Collect desired (product_id, variant_id?, quantity) pairs
   const requestedItems: Array<{ product_id: string; variant_id?: string | null; quantity: number }> = []
 
   // 1. If coming from Quote List, read saved guest session wishlist items first (authoritative quantities & variants)
@@ -63,43 +72,96 @@ export default async function NewQuotePage(props: PageProps) {
     }
   }
 
-  // 2. Fallback or explicit productIds comma-separated URL param
-  if (requestedItems.length === 0 && productIdsParam) {
-    const ids = productIdsParam
+  // Track raw identifier entries (can be UUIDs or product handles/slugs)
+  const rawTokens: Array<{ token: string; variantId: string | null; quantity: number }> = []
+
+  // 2. Comma-separated productIds / products URL param
+  if (requestedItems.length === 0 && productListParam) {
+    const tokens = productListParam
       .split(',')
-      .map((id) => id.trim())
-      .filter((id) => UUID_REGEX.test(id))
-    for (const id of Array.from(new Set(ids))) {
-      requestedItems.push({ product_id: id, variant_id: null, quantity: 1 })
+      .map((t) => t.trim())
+      .filter(Boolean)
+    for (const token of Array.from(new Set(tokens))) {
+      rawTokens.push({ token, variantId: null, quantity: 1 })
     }
   }
 
-  // 3. Single product query params from PDP / Product Card
-  if (requestedItems.length === 0 && productIdParam && UUID_REGEX.test(productIdParam)) {
-    requestedItems.push({
-      product_id: productIdParam,
-      variant_id:
-        variantIdParam && variantIdParam !== productIdParam && UUID_REGEX.test(variantIdParam)
-          ? variantIdParam
-          : null,
+  // 3. Single product query params from PDP / Product Card / Cedar Collection Enquire (?product=<handle|uuid> or ?productId=<uuid|handle>)
+  if (requestedItems.length === 0 && rawTokens.length === 0 && singleProductParam) {
+    rawTokens.push({
+      token: singleProductParam,
+      variantId: variantIdParam && UUID_REGEX.test(variantIdParam) ? variantIdParam : null,
       quantity: singleQty,
     })
+  }
+
+  // Resolve UUIDs and handles into canonical product IDs
+  const resolvedProductRecords = new Map<string, any>()
+  if (rawTokens.length > 0) {
+    const uuidTokens = Array.from(new Set(rawTokens.map((t) => t.token).filter((t) => UUID_REGEX.test(t))))
+    const handleTokens = Array.from(new Set(rawTokens.map((t) => t.token).filter((t) => !UUID_REGEX.test(t))))
+
+    const [byIdRes, bySlugRes] = await Promise.all([
+      uuidTokens.length > 0
+        ? supabase
+            .from('products')
+            .select('id, slug, name, sku, thumbnail_url, status, specifications, technical_specs')
+            .in('id', uuidTokens)
+            .eq('status', 'active')
+        : Promise.resolve({ data: [] }),
+      handleTokens.length > 0
+        ? supabase
+            .from('products')
+            .select('id, slug, name, sku, thumbnail_url, status, specifications, technical_specs')
+            .in('slug', handleTokens)
+            .eq('status', 'active')
+        : Promise.resolve({ data: [] }),
+    ])
+
+    const byId = new Map((byIdRes.data || []).map((p: any) => [p.id, p]))
+    const bySlug = new Map<string, any>()
+    for (const p of bySlugRes.data || []) {
+      if (p.slug) {
+        bySlug.set(p.slug, p)
+        bySlug.set(String(p.slug).toLowerCase(), p)
+      }
+    }
+
+    const seenResolvedIds = new Set<string>()
+    for (const entry of rawTokens) {
+      const prod = UUID_REGEX.test(entry.token)
+        ? byId.get(entry.token)
+        : bySlug.get(entry.token) || bySlug.get(entry.token.toLowerCase())
+      if (prod && !seenResolvedIds.has(prod.id)) {
+        seenResolvedIds.add(prod.id)
+        resolvedProductRecords.set(prod.id, prod)
+        requestedItems.push({
+          product_id: prod.id,
+          variant_id: entry.variantId && entry.variantId !== prod.id ? entry.variantId : null,
+          quantity: entry.quantity,
+        })
+      }
+    }
   }
 
   // Hydrate full product & variant metadata from DB
   let initialItems: PrefilledQuoteItem[] = []
   if (requestedItems.length > 0) {
-    const pids = Array.from(new Set(requestedItems.map((i) => i.product_id)))
+    const missingProductIds = Array.from(
+      new Set(requestedItems.map((i) => i.product_id).filter((id) => !resolvedProductRecords.has(id)))
+    )
     const vids = Array.from(
       new Set(requestedItems.map((i) => i.variant_id).filter((v): v is string => Boolean(v)))
     )
 
-    const [{ data: products }, { data: variants }] = await Promise.all([
-      supabase
-        .from('products')
-        .select('id, name, sku, thumbnail_url, status, specifications, technical_specs')
-        .in('id', pids)
-        .eq('status', 'active'),
+    const [{ data: extraProducts }, { data: variants }] = await Promise.all([
+      missingProductIds.length > 0
+        ? supabase
+            .from('products')
+            .select('id, slug, name, sku, thumbnail_url, status, specifications, technical_specs')
+            .in('id', missingProductIds)
+            .eq('status', 'active')
+        : Promise.resolve({ data: [] }),
       vids.length > 0
         ? supabase
             .from('product_variants')
@@ -108,13 +170,16 @@ export default async function NewQuotePage(props: PageProps) {
         : Promise.resolve({ data: [] }),
     ])
 
-    const prodMap = new Map((products || []).map((p: any) => [p.id, p]))
+    for (const p of extraProducts || []) {
+      resolvedProductRecords.set(p.id, p)
+    }
+
     const varMap = new Map((variants || []).map((v: any) => [v.id, v]))
 
     initialItems = requestedItems
-      .filter((req) => prodMap.has(req.product_id))
+      .filter((req) => resolvedProductRecords.has(req.product_id))
       .map((req) => {
-        const prod = prodMap.get(req.product_id)
+        const prod = resolvedProductRecords.get(req.product_id)
         const variant = req.variant_id ? varMap.get(req.variant_id) : null
         const validVariant =
           variant && variant.product_id === prod.id && variant.status !== 'inactive' ? variant : null
@@ -149,7 +214,18 @@ export default async function NewQuotePage(props: PageProps) {
       })
   }
 
+  const sourceKey =
+    fromSource === 'quote-list'
+      ? `from=quote-list:${initialItems.map((i) => `${i.product_id}:${i.variant_id || ''}:${i.quantity}`).join(',')}`
+      : initialItems.length > 0
+        ? initialItems.map((i) => `${i.product_id}:${i.variant_id || ''}:${i.quantity}`).join(',')
+        : 'empty'
+
   return (
-    <QuoteForm initialItems={initialItems} fromQuoteList={fromSource === 'quote-list'} />
+    <QuoteForm
+      initialItems={initialItems}
+      fromQuoteList={fromSource === 'quote-list'}
+      sourceKey={sourceKey}
+    />
   )
 }

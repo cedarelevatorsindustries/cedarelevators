@@ -102,12 +102,12 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
 
   return (
     <div className={cn(
-      "flex flex-col h-full bg-transparent transition-all duration-300",
+      "cedar-admin-sidebar flex flex-col h-full transition-all duration-300",
       collapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
       <div className={cn(
-        "border-b border-gray-100/50 flex-shrink-0",
+        "cedar-admin-sidebar-divider border-b flex-shrink-0",
         collapsed ? "p-3" : "p-4"
       )}>
         <div className={cn(
@@ -118,11 +118,11 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
             "flex items-center",
             collapsed ? "justify-center" : "space-x-3"
           )}>
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Settings className="w-4 h-4 text-white" />
+            <div className="cedar-admin-icon-well" style={{ width: 32, height: 32, backgroundColor: "#FFFFFF", color: "#E85A24" }}>
+              <Settings className="w-4 h-4" />
             </div>
             {!collapsed && (
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-[15px] font-semibold" style={{ color: "#171717" }}>
                 Settings
               </h1>
             )}
@@ -131,7 +131,8 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+              className="h-8 w-8 rounded-lg hover:bg-black/5"
+              style={{ color: "#77736D" }}
               asChild
             >
               <Link href="/admin">
@@ -184,24 +185,22 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
                             <Link href={item.href}>
                               <div
                                 className={cn(
-                                  "flex items-center rounded-lg transition-all duration-150",
+                                  "cedar-admin-nav-item",
                                   collapsed ? "justify-center p-2.5" : "px-3 py-2",
-                                  isActive
-                                    ? "bg-orange-50 text-orange-600"
-                                    : "text-gray-600 hover:bg-gray-50/50 hover:text-gray-900"
+                                  isActive && "cedar-admin-nav-item-active"
                                 )}
                               >
                                 {IconComponent && (
                                   <IconComponent
-                                    className={cn(
-                                      "h-4 w-4 flex-shrink-0",
-                                      !collapsed && "mr-3",
-                                      isActive ? "text-orange-600" : "text-gray-400"
-                                    )}
+                                    className="h-4 w-4 flex-shrink-0"
+                                    style={{
+                                      marginRight: collapsed ? 0 : 10,
+                                      color: isActive ? "#E85A24" : "#9A958D",
+                                    }}
                                   />
                                 )}
                                 {!collapsed && (
-                                  <span className="text-sm font-medium flex-1">
+                                  <span className="text-[13.5px] font-medium flex-1">
                                     {item.title}
                                   </span>
                                 )}
@@ -250,41 +249,41 @@ export function SettingsSidebar({ collapsed = false }: SettingsSidebarProps) {
 
       {/* Footer - Profile & Logout */}
       <div className={cn(
-        "border-t border-gray-100/50 flex-shrink-0",
+        "cedar-admin-sidebar-divider border-t flex-shrink-0",
         collapsed ? "p-2" : "p-3"
       )}>
         {/* Profile Link */}
         <Link href="/admin/settings/profile">
           <div className={cn(
-            "flex items-center rounded-lg transition-all duration-150 mb-2",
+            "cedar-admin-nav-item mb-1.5",
             collapsed ? "justify-center p-2.5" : "px-3 py-2",
-            pathname === '/admin/settings/profile'
-              ? "bg-orange-50 text-orange-600"
-              : "text-gray-600 hover:bg-gray-50/50 hover:text-gray-900"
+            pathname === '/admin/settings/profile' && "cedar-admin-nav-item-active"
           )}>
-            <User className={cn(
-              "h-4 w-4 flex-shrink-0",
-              !collapsed && "mr-3",
-              pathname === '/admin/settings/profile' ? "text-orange-600" : "text-gray-400"
-            )} />
+            <User
+              className="h-4 w-4 flex-shrink-0"
+              style={{
+                marginRight: collapsed ? 0 : 10,
+                color: pathname === '/admin/settings/profile' ? "#E85A24" : "#9A958D",
+              }}
+            />
             {!collapsed && (
-              <span className="text-sm font-medium">Profile</span>
+              <span className="text-[13.5px] font-medium">Profile</span>
             )}
           </div>
         </Link>
 
         {/* Logout Button */}
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           onClick={handleLogout}
           className={cn(
-            "w-full text-red-600 hover:text-red-700 hover:bg-red-50",
+            "cedar-admin-nav-item cedar-admin-nav-logout cursor-pointer",
             collapsed ? "justify-center px-2" : "justify-start px-3"
           )}
         >
-          <LogOut className={cn("h-4 w-4", !collapsed && "mr-3")} />
-          {!collapsed && <span className="text-sm font-medium">Logout</span>}
-        </Button>
+          <LogOut className="h-4 w-4" style={{ marginRight: collapsed ? 0 : 10 }} />
+          {!collapsed && <span className="text-[13.5px] font-medium">Logout</span>}
+        </button>
       </div>
     </div>
   )

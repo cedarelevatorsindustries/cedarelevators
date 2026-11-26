@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { CustomReactSelect } from "@/components/ui/select"
 import { getQuoteChartData, QuoteChartData } from "@/lib/actions/admin-dashboard"
 import { LoaderCircle } from "lucide-react"
+import { ChartTooltip } from "@/components/admin/dashboard/chart-tooltip"
 
 export function QuotationChart() {
     const [view, setView] = useState<'daily' | 'weekly' | 'monthly'>("monthly")
@@ -47,35 +48,42 @@ export function QuotationChart() {
                 </div>
             </div>
             {isLoading ? (
-                <div className="flex items-center justify-center h-[350px]">
-                    <LoaderCircle className="w-8 h-8 animate-spin text-orange-600" />
+                <div className="flex items-center justify-center h-[320px]">
+                    <LoaderCircle className="w-6 h-6 animate-spin text-[#E85A24]" />
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={data}>
+                <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EAE8E2" />
                         <XAxis
                             dataKey="name"
-                            stroke="#888888"
-                            fontSize={12}
+                            stroke="#A09B94"
+                            fontSize={11}
                             tickLine={false}
                             axisLine={false}
                         />
                         <YAxis
-                            stroke="#888888"
-                            fontSize={12}
+                            stroke="#A09B94"
+                            fontSize={11}
+                            allowDecimals={false}
                             tickLine={false}
                             axisLine={false}
-                            tickFormatter={(value) => `${value}`}
                         />
                         <Tooltip
-                            cursor={{ fill: '#f4f4f5' }}
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            content={<ChartTooltip suffix=" quotes" />}
+                            cursor={{ fill: '#F9F8F5' }}
                         />
-                        <Bar dataKey="count" fill="#ea580c" radius={[4, 4, 0, 0]} barSize={view === 'monthly' ? undefined : 40} />
+                        <Bar
+                            dataKey="count"
+                            name="Quotations"
+                            fill="#E85A24"
+                            radius={[6, 6, 0, 0]}
+                            barSize={view === 'monthly' ? undefined : 36}
+                            isAnimationActive={false}
+                        />
                     </BarChart>
                 </ResponsiveContainer>
             )}
         </div>
     )
 }
-

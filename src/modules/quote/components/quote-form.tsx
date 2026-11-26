@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useForm, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
@@ -12,12 +12,18 @@ import { QuoteItemsInput, type InitialQuoteItemMeta } from './quote-items-input'
 import { QuotationPageShell, QuotationPageHeader } from './shared/quotation-page-shell'
 import { QuotationSection } from './shared/quotation-section'
 import { saveLastQuoteSuccess } from './shared/quote-confirmation-storage'
+import {
+  readQuoteDraft,
+  saveQuoteDraft,
+  clearQuoteDraft,
+} from './shared/quote-draft-storage'
 
 export type PrefilledQuoteItem = InitialQuoteItemMeta
 
 interface QuoteFormProps {
   initialItems?: PrefilledQuoteItem[]
   fromQuoteList?: boolean
+  sourceKey?: string
 }
 
 function generateIdempotencyKey(): string {
@@ -27,11 +33,30 @@ function generateIdempotencyKey(): string {
   return `idem_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 }
 
-export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFormProps) {
+export function QuoteForm({
+  initialItems = [],
+  fromQuoteList = false,
+  sourceKey,
+}: QuoteFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [resolvedItemMeta, setResolvedItemMeta] = useState<InitialQuoteItemMeta[]>(initialItems)
   const router = useRouter()
   const idempotencyKeyRef = useRef<string>(generateIdempotencyKey())
+  const hasHydratedDraftRef = useRef<boolean>(false)
+  const itemsModifiedRef = useRef<boolean>(false)
+  const itemMetaSnapshotRef = useRef<InitialQuoteItemMeta[]>(initialItems)
+
+  const computedSourceKey = useMemo(
+    () =>
+      sourceKey ||
+      (fromQuoteList
+        ? `from=quote-list:${initialItems.map((i) => `${i.product_id}:${i.variant_id || ''}:${i.quantity}`).join(',')}`
+        : initialItems.length > 0
+          ? initialItems.map((i) => `${i.product_id}:${i.variant_id || ''}:${i.quantity}`).join(',')
+          : 'empty'),
+    [sourceKey, fromQuoteList, initialItems]
+  )
 
   const form = useForm<UnifiedQuoteValues>({
     resolver: zodResolver(unifiedQuoteSchema) as any,
@@ -63,12 +88,151 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
     control,
     handleSubmit,
     setValue,
+    getValues,
+    reset,
     setError,
     clearErrors,
     setFocus,
     watch,
     formState: { errors },
   } = form
+
+  const persistDraftSnapshot = useCallback(
+    (values: {
+      name?: unknown
+      email?: unknown
+      phone?: unknown
+      company_name?: unknown
+      gst_number?: unknown
+      project_name?: unknown
+      project_location?: unknown
+      notes?: unknown
+      items?: unknown
+    }) => {
+      const normalizedItems = Array.isArray(values.items)
+        ? values.items
+            .filter(
+              (item): item is { product_id: string; variant_id?: unknown; quantity?: unknown } =>
+                Boolean(item && typeof item === 'object' && typeof (item as any).product_id === 'string')
+            )
+            .map((item) => ({
+              product_id: item.product_id.trim(),
+              variant_id: typeof item.variant_id === 'string' ? item.variant_id.trim() : '',
+              quantity: Math.max(1, Math.min(10000, Number(item.quantity) || 1)),
+            }))
+        : []
+
+      saveQuoteDraft({
+        version: 1,
+        sourceKey: computedSourceKey,
+        itemsModified: itemsModifiedRef.current,
+        name: typeof values.name === 'string' ? values.name : '',
+        email: typeof values.email === 'string' ? values.email : '',
+        phone: typeof values.phone === 'string' ? values.phone : '',
+        company_name: typeof values.company_name === 'string' ? values.company_name : '',
+        gst_number: typeof values.gst_number === 'string' ? values.gst_number : '',
+        project_name: typeof values.project_name === 'string' ? values.project_name : '',
+        project_location: typeof values.project_location === 'string' ? values.project_location : '',
+        notes: typeof values.notes === 'string' ? values.notes : '',
+        items: normalizedItems,
+        itemMeta: itemMetaSnapshotRef.current,
+        updatedAt: new Date().toISOString(),
+      })
+    },
+    [computedSourceKey]
+  )
+
+  const handleItemMetaUpdate = useCallback(
+    (meta: InitialQuoteItemMeta[]) => {
+      itemMetaSnapshotRef.current = meta
+      if (hasHydratedDraftRef.current) {
+        persistDraftSnapshot(getValues())
+      }
+    },
+    [getValues, persistDraftSnapshot]
+  )
+
+  const handleItemsUserChange = useCallback(() => {
+    itemsModifiedRef.current = true
+  }, [])
+
+  // Restore tab-scoped draft from sessionStorage on mount (vanishes when tab closes, survives refreshes)
+  useEffect(() => {
+    const draft = readQuoteDraft()
+    if (draft) {
+      const metaMap = new Map<string, InitialQuoteItemMeta>()
+      for (const m of draft.itemMeta) {
+        if (m?.product_id) metaMap.set(m.product_id, m)
+      }
+      for (const m of initialItems) {
+        if (m?.product_id) metaMap.set(m.product_id, m)
+      }
+
+      let nextItems: Array<{ product_id: string; variant_id?: string; quantity: number }> = []
+      let nextItemsModified = draft.itemsModified
+
+      if (initialItems.length === 0 || draft.sourceKey === computedSourceKey) {
+        nextItems = draft.items
+      } else if (fromQuoteList || !draft.itemsModified) {
+        nextItems = initialItems.map((i) => ({
+          product_id: i.product_id,
+          variant_id: i.variant_id || '',
+          quantity: i.quantity || 1,
+        }))
+        nextItemsModified = false
+      } else {
+        nextItems = [...draft.items]
+        for (const incoming of initialItems) {
+          const incomingVar = incoming.variant_id || ''
+          const exists = nextItems.some(
+            (existing) =>
+              existing.product_id === incoming.product_id &&
+              (existing.variant_id || '') === incomingVar
+          )
+          if (!exists) {
+            nextItems.push({
+              product_id: incoming.product_id,
+              variant_id: incomingVar,
+              quantity: incoming.quantity || 1,
+            })
+          }
+        }
+        nextItemsModified = true
+      }
+
+      const nextMeta = Array.from(metaMap.values())
+      itemsModifiedRef.current = nextItemsModified
+      itemMetaSnapshotRef.current = nextMeta
+      setResolvedItemMeta(nextMeta)
+
+      reset({
+        items: nextItems,
+        name: draft.name,
+        email: draft.email,
+        phone: draft.phone,
+        company_name: draft.company_name,
+        gst_number: draft.gst_number,
+        project_name: draft.project_name,
+        project_location: draft.project_location,
+        notes: draft.notes,
+        hp_website: '',
+        idempotency_key: idempotencyKeyRef.current,
+      })
+    }
+
+    hasHydratedDraftRef.current = true
+    persistDraftSnapshot(getValues())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist every typed field or item update in sessionStorage across refreshes
+  useEffect(() => {
+    const subscription = watch((values) => {
+      if (!hasHydratedDraftRef.current) return
+      persistDraftSnapshot(values)
+    })
+    return () => subscription.unsubscribe()
+  }, [watch, persistDraftSnapshot])
 
   const watchedItems = watch('items') || []
   const watchedNotes = watch('notes') || ''
@@ -212,6 +376,8 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
         emailStatus,
       })
 
+      clearQuoteDraft()
+
       router.push(
         `/quotes/success?quoteNumber=${encodeURIComponent(
           quoteNumber
@@ -308,9 +474,11 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
           <QuoteItemsInput
             control={control}
             errors={errors}
-            initialItems={initialItems}
+            initialItems={resolvedItemMeta}
             setValue={setValue}
             watch={watch}
+            onItemsUserChange={handleItemsUserChange}
+            onItemMetaUpdate={handleItemMetaUpdate}
           />
         </QuotationSection>
 

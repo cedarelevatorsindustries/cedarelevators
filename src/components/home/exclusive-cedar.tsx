@@ -238,7 +238,11 @@ export function ExclusiveCedar({ collections = [] }: ExclusiveCedarProps) {
                       Details
                     </Link>
                     <Link
-                      href={`/quotes/new?product=${encodeURIComponent(productSlug)}`}
+                      href={
+                        p.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(p.id))
+                          ? `/quotes/new?product=${encodeURIComponent(productSlug)}&productId=${encodeURIComponent(p.id)}`
+                          : `/quotes/new?product=${encodeURIComponent(productSlug)}`
+                      }
                       className="inline-flex items-center justify-center py-1.5 px-2.5 rounded-md bg-orange-600 hover:bg-orange-500 text-xs font-medium text-white transition-colors"
                     >
                       Enquire

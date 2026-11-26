@@ -11,19 +11,27 @@ import {
     CommandSeparator,
 } from "@/components/ui/command"
 import {
-    Search,
+    LayoutDashboard,
     Package,
-    Users,
-    ShoppingCart,
-    Settings,
-    BarChart3,
+    FolderTree,
     Layers,
+    Image,
+    Settings,
+    Store,
     FileText,
-    Percent
+    Tag,
 } from "lucide-react"
 
 const searchData = [
-    // Quotations
+    // Main Navigation
+    {
+        id: "dashboard",
+        title: "Dashboard",
+        description: "Overview and business performance metrics",
+        icon: LayoutDashboard,
+        href: "/admin",
+        category: "Navigation"
+    },
     {
         id: "quotations",
         title: "Quotation Requests",
@@ -32,70 +40,58 @@ const searchData = [
         href: "/admin/quotes",
         category: "Navigation"
     },
-
-    // Orders
-    {
-        id: "orders",
-        title: "Orders",
-        description: "Manage customer orders",
-        icon: ShoppingCart,
-        href: "/admin/orders",
-        category: "Navigation"
-    },
-
-    // Products
     {
         id: "products",
         title: "Products",
-        description: "Manage your product catalog",
+        description: "Manage your elevator product catalog",
         icon: Package,
         href: "/admin/products",
         category: "Navigation"
     },
     {
-        id: "inventory",
-        title: "Inventory",
-        description: "Track stock levels",
-        icon: BarChart3,
-        href: "/admin/inventory",
+        id: "applications",
+        title: "Applications",
+        description: "Building types and elevator applications",
+        icon: Layers,
+        href: "/admin/applications",
         category: "Navigation"
     },
-
-    // Customers
     {
-        id: "customers",
-        title: "Customers",
-        description: "Manage customer accounts",
-        icon: Users,
-        href: "/admin/customers",
+        id: "categories",
+        title: "Categories",
+        description: "Product categories and taxonomies",
+        icon: FolderTree,
+        href: "/admin/categories",
         category: "Navigation"
     },
-
-    // Collections
+    {
+        id: "elevator-types",
+        title: "Elevator Types",
+        description: "Traction, hydraulic, and custom elevator types",
+        icon: Tag,
+        href: "/admin/elevator-types",
+        category: "Navigation"
+    },
     {
         id: "collections",
         title: "Collections",
-        description: "Product collections",
-        icon: Layers,
+        description: "Featured product groupings and collections",
+        icon: Store,
         href: "/admin/collections",
         category: "Navigation"
     },
-
-    // Coupons
     {
-        id: "coupons",
-        title: "Coupons",
-        description: "Discount codes and promotions",
-        icon: Percent,
-        href: "/admin/coupons",
+        id: "banners",
+        title: "Banners",
+        description: "Storefront promotional and hero banners",
+        icon: Image,
+        href: "/admin/banners",
         category: "Navigation"
     },
-
-    // Settings
     {
         id: "settings",
         title: "Settings",
-        description: "Store configuration",
+        description: "System and profile configuration",
         icon: Settings,
         href: "/admin/settings",
         category: "Navigation"
@@ -111,11 +107,11 @@ const searchData = [
         category: "Quick Actions"
     },
     {
-        id: "create-coupon",
-        title: "Create New Coupon",
-        description: "Set up a discount code",
-        icon: Percent,
-        href: "/admin/coupons/new",
+        id: "review-quotes",
+        title: "Review New Quotations",
+        description: "Open pending customer quote submissions",
+        icon: FileText,
+        href: "/admin/quotes",
         category: "Quick Actions"
     },
 ]
@@ -169,16 +165,16 @@ export function GlobalSearch() {
                                             key={item.id}
                                             value={`${item.title} ${item.description}`}
                                             onSelect={() => handleSelect(item.href)}
-                                            className="flex items-center space-x-3 p-3 cursor-pointer"
+                                            className="flex items-center space-x-3 p-3 cursor-pointer rounded-lg"
                                         >
-                                            <div className="p-2 rounded-lg bg-red-100">
-                                                <Icon className="h-4 w-4 text-red-600" />
+                                            <div className="p-2 rounded-lg bg-[#F9F8F5] border border-[#EAE8E2]">
+                                                <Icon className="h-4 w-4 text-[#77736D]" />
                                             </div>
                                             <div className="flex-1">
-                                                <div className="font-medium text-gray-900">
+                                                <div className="font-medium text-[#171717]">
                                                     {item.title}
                                                 </div>
-                                                <div className="text-sm text-gray-600">
+                                                <div className="text-sm text-[#77736D]">
                                                     {item.description}
                                                 </div>
                                             </div>

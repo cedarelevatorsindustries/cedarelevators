@@ -19,24 +19,24 @@ export default function SettingsLayout({
   return (
     <QueryProvider>
       <SettingsProvider>
-        <div className="flex h-screen bg-gradient-to-br from-orange-50/50 to-orange-100/30">
+        <div className="cedar-admin-theme cedar-admin-shell flex h-screen">
           <div className="flex h-full min-h-0 w-full">
             {/* Desktop Settings Sidebar */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block flex-shrink-0">
               <SettingsSidebar collapsed={sidebarCollapsed} />
             </div>
 
             {/* Mobile Settings Sidebar Sheet */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetContent side="left" className="p-0 w-64 bg-white border-r border-orange-100">
+              <SheetContent side="left" className="cedar-admin-theme cedar-admin-sidebar p-0 w-64 border-r border-[#EAE8E2]">
                 <SettingsSidebar collapsed={false} />
               </SheetContent>
             </Sheet>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-1.5 lg:p-2">
-              <div className="flex-1 flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl border border-orange-100/50">
-                <div className="border-b border-gray-100 flex-shrink-0">
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-1 sm:p-1.5 lg:p-1.5 lg:pl-0">
+              <div className="cedar-admin-workspace-surface flex-1 flex flex-col overflow-hidden">
+                <div className="cedar-admin-header flex-shrink-0">
                   <SettingsHeader
                     sidebarCollapsed={sidebarCollapsed}
                     onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}

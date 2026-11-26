@@ -201,17 +201,21 @@ export default function MobileProductDetailPage({
       productName: product.title || "",
       quantity: quantity.toString()
     })
+    if (product.handle) {
+      params.set('product', product.handle)
+    }
 
     // Add variant_id if a variant is selected (mobile uses selectedVariants state)
     if (Object.keys(selectedVariants).length > 0) {
-      // Find matching variant based on selected options
       const matchingVariant = product.variants?.find((v: any) => {
         if (!v.options) return false
         return Object.entries(selectedVariants).every(([key, value]) => v.options[key] === value)
       })
-      if (matchingVariant) {
+      if (matchingVariant && matchingVariant.id !== product.id) {
         params.set('variantId', matchingVariant.id)
       }
+    } else if (product.variants?.length === 1 && product.variants[0]?.id && product.variants[0].id !== product.id) {
+      params.set('variantId', product.variants[0].id)
     }
 
     router.push(`/quotes/new?${params.toString()}`)

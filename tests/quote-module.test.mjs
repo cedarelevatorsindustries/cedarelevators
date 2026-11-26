@@ -96,3 +96,40 @@ test('5. Email sender fallback targets verified Resend subdomain updates.cedarel
     'Default sender email domain must match verified Resend domain updates.cedarelevators.in'
   )
 })
+
+test('6. /quotes/new resolves both product handles and UUIDs across all product CTAs', () => {
+  const newQuotePageSrc = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/(main)/quotes/new/page.tsx'),
+    'utf8'
+  )
+  assert.ok(
+    newQuotePageSrc.includes('searchParams.product') &&
+      newQuotePageSrc.includes(".in('slug', handleTokens)"),
+    '/quotes/new must resolve product slugs in addition to productId UUIDs'
+  )
+
+  const cardSrc = fs.readFileSync(path.join(process.cwd(), 'src/components/ui/product-card.tsx'), 'utf8')
+  assert.ok(cardSrc.includes('e.stopPropagation()'), 'ProductCard quote click must stop propagation')
+
+  const cedarSrc = fs.readFileSync(
+    path.join(process.cwd(), 'src/components/home/exclusive-cedar.tsx'),
+    'utf8'
+  )
+  assert.ok(cedarSrc.includes('/quotes/new?product='), 'ExclusiveCedar Enquire CTA must pass product slug/id')
+})
+
+test('7. Quote form persists draft in sessionStorage (survives refresh, clears on tab close & submit)', () => {
+  const storageSrc = fs.readFileSync(
+    path.join(process.cwd(), 'src/modules/quote/components/shared/quote-draft-storage.ts'),
+    'utf8'
+  )
+  const formSrc = fs.readFileSync(
+    path.join(process.cwd(), 'src/modules/quote/components/quote-form.tsx'),
+    'utf8'
+  )
+
+  assert.ok(storageSrc.includes('sessionStorage.setItem'), 'Draft must use tab-scoped sessionStorage')
+  assert.ok(!storageSrc.includes('localStorage'), 'Draft must vanish when tab closes (no localStorage)')
+  assert.ok(formSrc.includes('readQuoteDraft'), 'QuoteForm must restore draft on mount')
+  assert.ok(formSrc.includes('clearQuoteDraft'), 'QuoteForm must clear draft after successful submission')
+})

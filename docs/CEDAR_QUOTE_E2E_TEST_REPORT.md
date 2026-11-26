@@ -27,7 +27,7 @@
 | `RESEND_API_KEY` | Updated & Operational | Updated to new `Cedar Mailer` key; live send succeeded (`provider_message_id` returned) |
 | `RESEND_FROM_EMAIL` | Updated & Operational | Set to verified domain `Cedar Elevators <noreply@updates.cedarelevators.in>` |
 | `ADMIN_NOTIFICATION_EMAIL` / `store_settings.admin_notification_email` | Fallback active | `admin_notification_email` is `null`; falls back to `store_settings.support_email` (`support@cedarelevator.com`) |
-| `UPSTASH_REDIS_REST_URL` (`full-imp-14776.upstash.io`) | External DNS Error (`ENOTFOUND`) | Circuit breaker + `retry: false` cleanly fall back to in-memory limiter; owner should replace URL/token if distributed Redis rate limiting is needed in serverless prod |
+| `UPSTASH_REDIS_REST_URL` (`stirring-wren-221328.upstash.io`) | Updated & Operational | Provisioned Upstash Redis DB `cedarelevators` (`ap-south-1` / Mumbai, Free Tier); `PING`/`SET`/`GET`/`INCR`/`DEL` verified live via `@upstash/redis` (`src/lib/redis.ts`) with circuit-breaker fallback intact |
 | `tax_settings.store_gstin` | `null` in DB | `tax_settings.gst_enabled = true`, `default_gst_percentage = 18.00`, `store_state = Tamil Nadu`, `store_gstin = null` (`store_settings.gst_number` has legacy non-15-char `"9784562318546"`). Admin issuance blocks GST quotes until valid Store GSTIN is configured |
 | `CRON_SECRET` | Present & Operational | Verified `401` without secret and `200` with `Bearer <CRON_SECRET>` |
 | `GUEST_QUOTE_SECRET` | Optional fallback used | Uses `SUPABASE_SERVICE_ROLE_KEY` server pepper cleanly; setting a dedicated `GUEST_QUOTE_SECRET` is recommended for rotation hygiene |
@@ -82,7 +82,7 @@
 
 ## G. Outstanding Issues & Manual Actions
 
-1. **External / Env:** `UPSTASH_REDIS_REST_URL` (`full-imp-14776.upstash.io`) does not resolve via DNS. In-memory fallback prevents any user-facing hang on single-instance/local runtimes, but owner should supply a valid Upstash database URL/token for multi-instance production rate limiting.
+1. **Upstash Redis Provisioned:** Replaced the unreachable `full-imp-14776.upstash.io` endpoint with the live `cedarelevators` Upstash Redis database (`ap-south-1`, `stirring-wren-221328.upstash.io`) in `.env`; distributed Redis caching and rate limiting are now active alongside the fast-fail circuit-breaker fallback.
 2. **Admin Commercial Config:** Set a valid 15-character GSTIN in Admin Tax Settings (`tax_settings.store_gstin`) so admins can issue GST-enabled quotations cleanly without configuration warnings.
 3. **Browser Interactive Automation Limitation:** The `chrome_devtools` MCP session available here disabled interactive `click`, `fill`, `navigate_page`, and network/console list tools (`click`/`fill` returned disabled-tool errors), so live UI click-through testing inside Chrome and authenticated Supabase Admin browser workflow steps were verified via server-side SSR/API/DB tests rather than interactive Chrome DevTools automation.
 

@@ -200,10 +200,13 @@ export default function ProductDetailPage({
       productName: product.title || "",
       quantity: quantity.toString()
     })
+    if (product.handle) {
+      params.set('product', product.handle)
+    }
 
-    // Add variant_id if a variant is selected
+    // Add variant_id if a distinct variant is selected
     const selectedVariantId = getSelectedVariantId()
-    if (selectedVariantId) {
+    if (selectedVariantId && selectedVariantId !== product.id) {
       params.set('variantId', selectedVariantId)
     }
 

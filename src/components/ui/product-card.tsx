@@ -98,10 +98,14 @@ export default function ProductCard({
 
   const handleRequestQuote = (e: React.MouseEvent) => {
     e.preventDefault()
-    const params = new URLSearchParams({
-      productId: product.id,
-      productName: product.title
-    })
+    e.stopPropagation()
+    const params = new URLSearchParams()
+    if (product.id) params.set('productId', product.id)
+    if (product.handle) params.set('product', product.handle)
+    if (product.title) params.set('productName', product.title)
+    if (product.variants?.length === 1 && product.variants[0]?.id && product.variants[0].id !== product.id) {
+      params.set('variantId', product.variants[0].id)
+    }
     router.push(`/quotes/new?${params.toString()}`)
   }
 
@@ -247,6 +251,7 @@ export default function ProductCard({
           <div className="flex gap-1.5 pt-1">
             {/* Request Quote Button - For Everyone */}
             <button
+              type="button"
               onClick={handleRequestQuote}
               className="flex-1 py-1.5 rounded-lg font-medium text-xs border-2 border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
             >
@@ -353,6 +358,7 @@ export default function ProductCard({
             {/* Actions: Quote only (users add variants to cart from product detail page) */}
             <div className="flex gap-1.5">
               <button
+                type="button"
                 onClick={handleRequestQuote}
                 className="w-8 h-8 rounded-lg bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 border border-orange-100 hover:border-orange-500 transition-all flex items-center justify-center"
                 title={isBusiness && !isVerified ? "Get Bulk Quote" : "Request Quote"}
@@ -460,6 +466,7 @@ export default function ProductCard({
         <div className="flex gap-2 pt-2">
           {/* Request Quote - For Everyone */}
           <button
+            type="button"
             onClick={handleRequestQuote}
             className="type-button w-full py-2.5 px-4 rounded-lg border border-gray-300 text-gray-700 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
           >

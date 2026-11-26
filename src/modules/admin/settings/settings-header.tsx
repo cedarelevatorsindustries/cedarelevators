@@ -28,7 +28,8 @@ export function SettingsHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-lg hover:bg-gray-100 lg:hidden"
+            className="h-9 w-9 rounded-lg hover:bg-black/5 lg:hidden"
+            style={{ color: "#77736D" }}
             onClick={onToggleMobileMenu}
           >
             <Menu className="h-4 w-4" />
@@ -38,27 +39,27 @@ export function SettingsHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="hidden lg:flex h-8 w-8 lg:h-10 lg:w-10 rounded-lg hover:bg-gray-100"
+            className="hidden lg:flex h-9 w-9 rounded-lg hover:bg-black/5"
+            style={{ color: "#77736D" }}
             onClick={onToggleSidebar}
           >
             <Menu className="h-4 w-4" />
           </Button>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-base lg:text-lg xl:text-xl font-bold text-gray-900 truncate">
+            <h2 className="text-base lg:text-lg font-semibold truncate" style={{ color: "#171717" }}>
               Store Configuration
             </h2>
-            <p className="text-xs lg:text-sm text-gray-600 mt-1 truncate hidden sm:block">
+            <p className="text-xs mt-0.5 truncate hidden sm:block" style={{ color: "#77736D" }}>
               Manage your store settings and preferences
             </p>
           </div>
         </div>
 
         <div className="flex items-center space-x-2 lg:space-x-3 flex-shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 hidden md:flex"
+          <button
+            type="button"
+            className="cedar-admin-btn-compact hidden md:inline-flex"
             onClick={async () => {
               const promise = triggerSave()
               toast.promise(promise, {
@@ -73,7 +74,7 @@ export function SettingsHeader({
             <Save className="mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">{isSaving ? "Saving..." : "Save All Changes"}</span>
             <span className="lg:hidden">{isSaving ? "Saving..." : "Save"}</span>
-          </Button>
+          </button>
 
 
         </div>

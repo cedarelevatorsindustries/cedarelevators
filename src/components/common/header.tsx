@@ -1,10 +1,8 @@
 "use client"
 
-
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Search, Command, Menu } from "lucide-react"
+import { Search, Command, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { GlobalSearch } from "./global-search"
 import { useEffect, useState } from "react"
 import { getCurrentAdminAction } from '@/lib/actions/admin-auth'
@@ -17,7 +15,7 @@ interface HeaderProps {
     onToggleMobileMenu: () => void
 }
 
-export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onToggleMobileMenu }: HeaderProps) {
+export function Header({ sidebarCollapsed, onToggleSidebar, onToggleMobileMenu }: HeaderProps) {
     const [profile, setProfile] = useState<AdminProfile | null>(null)
     const [user, setUser] = useState<any>(null)
 
@@ -30,40 +28,46 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
         })
     }, [])
 
-    const getInitial = (email: string) => {
-        return email?.charAt(0)?.toUpperCase() || 'A'
+    const getInitial = (nameOrEmail: string) => {
+        return nameOrEmail?.trim()?.charAt(0)?.toUpperCase() || 'A'
     }
 
     const displayName = profile?.display_name || user?.email?.split('@')[0] || "Admin"
+    const roleLabel = profile?.role ? profile.role.replace('_', ' ') : 'Administrator'
 
     return (
-        <header className="px-6 py-4 border-b border-gray-100" suppressHydrationWarning>
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+        <header className="px-4 sm:px-6 py-2.5" suppressHydrationWarning>
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                     {/* Mobile Menu Toggle */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-lg hover:bg-gray-100 lg:hidden"
+                    <button
+                        type="button"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-[9px] text-[#77736D] hover:text-[#171717] hover:bg-[#F3F2EE] lg:hidden flex-shrink-0 transition-colors cursor-pointer"
                         onClick={onToggleMobileMenu}
+                        aria-label="Open navigation menu"
                     >
                         <Menu className="h-4 w-4" />
-                    </Button>
+                    </button>
 
                     {/* Desktop Sidebar Toggle */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="hidden lg:flex h-10 w-10 rounded-lg hover:bg-gray-100"
+                    <button
+                        type="button"
+                        className="hidden lg:inline-flex h-9 w-9 items-center justify-center rounded-[9px] text-[#77736D] hover:text-[#171717] hover:bg-[#F3F2EE] flex-shrink-0 transition-colors cursor-pointer"
                         onClick={onToggleSidebar}
+                        aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
-                        <Menu className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="relative w-full max-w-80 justify-start text-sm text-gray-500 h-10 px-4 py-2 bg-gray-50/50 border-gray-200/60 hover:bg-gray-100"
+                        {sidebarCollapsed ? (
+                            <PanelLeftOpen className="h-4 w-4" />
+                        ) : (
+                            <PanelLeftClose className="h-4 w-4" />
+                        )}
+                    </button>
+
+                    {/* Global Search Trigger */}
+                    <button
+                        type="button"
+                        className="cedar-admin-search-trigger"
                         onClick={() => {
-                            // Trigger the global search by dispatching a keyboard event
                             const event = new KeyboardEvent('keydown', {
                                 key: 'j',
                                 ctrlKey: true,
@@ -72,33 +76,50 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
                             document.dispatchEvent(event)
                         }}
                     >
-                        <Search className="mr-3 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Search quotations, customers, products...</span>
-                        <div className="ml-auto hidden sm:flex items-center space-x-1">
-                            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-gray-100 px-1.5 font-mono text-[10px] font-medium text-gray-600">
-                                <Command className="h-3 w-3" />
+                        <Search className="mr-2.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: "#A09B94" }} />
+                        <span className="truncate flex-1">Search quotations, customers, products...</span>
+                        <span className="ml-2 hidden sm:inline-flex items-center">
+                            <kbd className="cedar-admin-kbd">
+                                <Command className="h-2.5 w-2.5" />
                                 J
                             </kbd>
-                        </div>
-                    </Button>
+                        </span>
+                    </button>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                    {/* Avatar - clickable to go to profile */}
-                    <Button variant="ghost" className="relative h-10 w-auto px-2 rounded-lg hover:bg-gray-100 gap-3" asChild>
-                        <Link href="/admin/settings/profile">
-                            <div className="text-right hidden md:block">
-                                <p className="text-sm font-medium leading-none">{displayName}</p>
-                                <p className="text-xs text-gray-500 mt-1 capitalize">{profile ? profile.role.replace('_', ' ') : 'Loading...'}</p>
-                            </div>
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src={profile?.avatar_url || "/avatars/admin.png"} alt={displayName} />
-                                <AvatarFallback className="bg-red-100 text-red-700 font-semibold">
-                                    {getInitial(user?.email || "")}
-                                </AvatarFallback>
-                            </Avatar>
-                        </Link>
-                    </Button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Administrator Profile Identity */}
+                    <Link
+                        href="/admin/settings/profile"
+                        className="inline-flex items-center gap-2.5 h-9 px-2 rounded-[10px] hover:bg-[#F3F2EE] transition-colors"
+                    >
+                        <div className="text-right hidden md:block">
+                            <p
+                                className="text-[13px] font-medium leading-none"
+                                style={{ color: "#171717" }}
+                            >
+                                {displayName}
+                            </p>
+                            <p
+                                className="text-[11px] mt-1 capitalize leading-none"
+                                style={{ color: "#77736D" }}
+                            >
+                                {roleLabel}
+                            </p>
+                        </div>
+                        <Avatar className="h-8 w-8" style={{ border: "1px solid #EAE8E2" }}>
+                            <AvatarImage
+                                src={profile?.avatar_url || "/avatars/admin.png"}
+                                alt={displayName}
+                            />
+                            <AvatarFallback
+                                className="text-xs font-medium"
+                                style={{ backgroundColor: "#F3F2EE", color: "#171717" }}
+                            >
+                                {getInitial(profile?.display_name || user?.email || "A")}
+                            </AvatarFallback>
+                        </Avatar>
+                    </Link>
                 </div>
             </div>
 
@@ -106,4 +127,3 @@ export function Header({ sidebarCollapsed, onToggleSidebar, mobileMenuOpen, onTo
         </header>
     )
 }
-

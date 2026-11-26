@@ -38,6 +38,8 @@ interface QuoteItemsInputProps {
   initialItems?: InitialQuoteItemMeta[]
   setValue: UseFormSetValue<any>
   watch: UseFormWatch<any>
+  onItemsUserChange?: () => void
+  onItemMetaUpdate?: (meta: InitialQuoteItemMeta[]) => void
 }
 
 export function QuoteItemsInput({
@@ -46,6 +48,8 @@ export function QuoteItemsInput({
   initialItems = [],
   setValue,
   watch,
+  onItemsUserChange,
+  onItemMetaUpdate,
 }: QuoteItemsInputProps) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -100,6 +104,82 @@ export function QuoteItemsInput({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Sync metadata and variants when draft/restored items hydrate after initial render
+  useEffect(() => {
+    if (!initialItems.length) return
+
+    setProductOptions((prev) => {
+      const next = [...prev]
+      const seen = new Set(next.map((p) => p.value))
+      for (const item of initialItems) {
+        if (!item.product_id || seen.has(item.product_id)) continue
+        seen.add(item.product_id)
+        next.unshift({
+          value: item.product_id,
+          name: item.name,
+          label: `${item.name}${item.sku ? ` (${item.sku})` : ''}`,
+          sku: item.sku || '',
+          thumbnail: item.thumbnail || null,
+          specifications: item.specifications || null,
+        })
+      }
+      return next
+    })
+
+    setProductMetaMap((prev) => {
+      const next = new Map(prev)
+      for (const item of initialItems) {
+        if (!item.product_id) continue
+        next.set(item.product_id, {
+          value: item.product_id,
+          name: item.name,
+          label: `${item.name}${item.sku ? ` (${item.sku})` : ''}`,
+          sku: item.sku || '',
+          thumbnail: item.thumbnail || null,
+          specifications: item.specifications || null,
+        })
+      }
+      return next
+    })
+
+    for (const item of initialItems) {
+      if (item.product_id) {
+        loadVariants(item.product_id)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialItems])
+
+  const lastMetaSignatureRef = React.useRef<string>('')
+
+  // Notify parent form of current item metadata so sessionStorage draft retains product titles/thumbnails
+  useEffect(() => {
+    if (!onItemMetaUpdate) return
+    const snapshot: InitialQuoteItemMeta[] = []
+    const seen = new Set<string>()
+    for (const item of watchedItems) {
+      const pid = item?.product_id?.trim()
+      if (!pid || seen.has(pid)) continue
+      const meta = productMetaMap.get(pid)
+      if (!meta) continue
+      seen.add(pid)
+      snapshot.push({
+        product_id: pid,
+        variant_id: item?.variant_id || '',
+        quantity: Math.max(1, Number(item?.quantity) || 1),
+        name: meta.name,
+        sku: meta.sku || '',
+        thumbnail: meta.thumbnail || null,
+        specifications: meta.specifications || null,
+      })
+    }
+    const sig = JSON.stringify(snapshot)
+    if (sig !== lastMetaSignatureRef.current) {
+      lastMetaSignatureRef.current = sig
+      onItemMetaUpdate(snapshot)
+    }
+  }, [watchedItems, productMetaMap, onItemMetaUpdate])
 
   const loadProducts = async (query?: string) => {
     setIsLoadingProducts(true)
@@ -192,7 +272,10 @@ export function QuoteItemsInput({
           </p>
           <button
             type="button"
-            onClick={() => append({ product_id: '', variant_id: '', quantity: 1 })}
+            onClick={() => {
+              onItemsUserChange?.()
+              append({ product_id: '', variant_id: '', quantity: 1 })
+            }}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm transition-colors shrink-0"
           >
             <Plus className="w-4 h-4" />
@@ -212,7 +295,10 @@ export function QuoteItemsInput({
           </p>
           <button
             type="button"
-            onClick={() => append({ product_id: '', variant_id: '', quantity: 1 })}
+            onClick={() => {
+              onItemsUserChange?.()
+              append({ product_id: '', variant_id: '', quantity: 1 })
+            }}
             className="mt-4 inline-flex items-center gap-1.5 px-4 py-2.5 bg-white border border-gray-300 hover:border-orange-500 text-gray-800 hover:text-orange-600 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -281,7 +367,10 @@ export function QuoteItemsInput({
 
                     <button
                       type="button"
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        onItemsUserChange?.()
+                        remove(index)
+                      }}
                       aria-label={`Remove item ${index + 1}`}
                       className="sm:hidden w-9 h-9 inline-flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                     >
@@ -314,6 +403,7 @@ export function QuoteItemsInput({
                             id={`quote-item-product-${index}`}
                             value={value}
                             onChange={(newProductId: string) => {
+                              onItemsUserChange?.()
                               // Check whether selecting this product with empty variant matches another row
                               if (mergeDuplicateIfPresent(index, newProductId, '')) {
                                 return
@@ -369,6 +459,7 @@ export function QuoteItemsInput({
                                     variants={variants}
                                     value={value}
                                     onChange={(nextVariantId: string) => {
+                                      onItemsUserChange?.()
                                       if (
                                         nextVariantId &&
                                         mergeDuplicateIfPresent(index, selectedProductId, nextVariantId)
@@ -382,6 +473,7 @@ export function QuoteItemsInput({
                                   <QuoteSelect
                                     value={value}
                                     onChange={(nextVariantId: string) => {
+                                      onItemsUserChange?.()
                                       if (
                                         nextVariantId &&
                                         mergeDuplicateIfPresent(index, selectedProductId, nextVariantId)
@@ -427,7 +519,10 @@ export function QuoteItemsInput({
                             <QuantityControl
                               inputId={`quote-item-qty-${index}`}
                               value={Number(value) || 1}
-                              onChange={(qty) => onChange(qty)}
+                              onChange={(qty) => {
+                                onItemsUserChange?.()
+                                onChange(qty)
+                              }}
                               itemLabel={productMeta?.name || `Item ${index + 1}`}
                             />
                           )}
@@ -445,7 +540,10 @@ export function QuoteItemsInput({
                   {/* Desktop Remove */}
                   <button
                     type="button"
-                    onClick={() => remove(index)}
+                    onClick={() => {
+                      onItemsUserChange?.()
+                      remove(index)
+                    }}
                     aria-label={`Remove item ${index + 1}`}
                     title="Remove product"
                     className="hidden sm:inline-flex w-9 h-9 items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0 mt-5"

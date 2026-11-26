@@ -129,12 +129,13 @@ function SelectTrigger({
       aria-haspopup="listbox"
       onClick={() => setOpen(!open)}
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-sm transition-all duration-200",
-        "hover:border-orange-300 hover:shadow-md",
-        "focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400",
-        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50",
-        size === "default" ? "h-10" : "h-8 text-xs",
-        open && "border-orange-400 ring-2 ring-orange-500/20",
+        "flex w-full items-center justify-between gap-2 rounded-[8px] border bg-white px-3 text-[13px] transition-all duration-150",
+        "border-[#EAE8E2] text-[#171717]",
+        "hover:border-[#DCD8CE] hover:bg-[#FAFAF8]",
+        "focus:outline-none focus:ring-2 focus:ring-[rgba(232,90,36,0.15)] focus:border-[#D4895A]",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[#F9F8F5]",
+        size === "default" ? "h-9" : "h-7 text-[12px]",
+        open && "border-[#D4895A] ring-2 ring-[rgba(232,90,36,0.12)]",
         className
       )}
       {...props}
@@ -142,9 +143,10 @@ function SelectTrigger({
       <span className="flex-1 text-left truncate">{children}</span>
       <ChevronDown
         className={cn(
-          "h-4 w-4 text-gray-400 transition-transform duration-200 shrink-0",
-          open && "rotate-180 text-orange-500"
+          "h-3.5 w-3.5 transition-transform duration-200 shrink-0",
+          open ? "rotate-180" : ""
         )}
+        style={{ color: open ? "#E85A24" : "#A09B94" }}
       />
     </button>
   )
@@ -160,11 +162,17 @@ function SelectValue({ placeholder }: SelectValueProps) {
 
   // If we have a stored label, use it. Otherwise show placeholder or nothing.
   if (!value) {
-    return <span className="text-gray-400">{placeholder}</span>
+    return <span style={{ color: "#A09B94" }}>{placeholder}</span>
   }
 
-  // Use the stored label if available, otherwise show the value as fallback
-  return <span>{valueLabel || value}</span>
+  // Use the stored label if available
+  if (valueLabel) {
+    return <span style={{ color: "#171717" }}>{valueLabel}</span>
+  }
+
+  // Capitalize fallback instead of raw lowercase
+  const formatted = value === "all" ? (placeholder || "All") : value.charAt(0).toUpperCase() + value.slice(1)
+  return <span style={{ color: "#171717" }}>{formatted}</span>
 }
 
 // SelectContent
@@ -183,20 +191,23 @@ function SelectContent({
 }: SelectContentProps) {
   const { open } = useSelectContext()
 
-  if (!open) return null
-
   return (
     <div
       data-cedar-select-content
       role="listbox"
       className={cn(
-        "absolute z-50 min-w-[8rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg",
-        "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
-        // Position logic
-        "top-[calc(100%+4px)] w-full",
+        "absolute z-50 min-w-[8rem] overflow-hidden transition-all duration-150",
+        "top-[calc(100%+5px)] w-full",
         align === "end" ? "right-0" : "left-0",
         className
       )}
+      style={{
+        display: open ? "block" : "none",
+        backgroundColor: "#FFFFFF",
+        border: "1px solid #EAE8E2",
+        borderRadius: "10px",
+        boxShadow: "0 8px 24px rgba(23,23,23,0.09), 0 2px 6px rgba(23,23,23,0.04)",
+      }}
     >
       <div className="max-h-[280px] overflow-y-auto p-1">
         {children}
@@ -251,17 +262,29 @@ function SelectItem({
       data-disabled={disabled || undefined}
       onClick={handleClick}
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-md px-3 py-2 text-sm outline-none transition-colors",
-        "hover:bg-orange-50 hover:text-orange-700",
-        isSelected && "bg-orange-100 text-orange-700 font-medium",
+        "relative flex cursor-pointer select-none items-center rounded-[7px] px-3 py-2 text-[13px] outline-none transition-colors",
+        isSelected
+          ? "font-medium"
+          : "text-[#171717]",
         disabled && "pointer-events-none opacity-50",
         className
       )}
+      style={
+        isSelected
+          ? { backgroundColor: "#FFF0E8", color: "#C04A18" }
+          : undefined
+      }
+      onMouseEnter={(e) => {
+        if (!isSelected) (e.currentTarget as HTMLDivElement).style.backgroundColor = "#F9F8F5"
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) (e.currentTarget as HTMLDivElement).style.backgroundColor = ""
+      }}
       {...props}
     >
       <span className="flex-1">{children}</span>
       {isSelected && (
-        <Check className="h-4 w-4 text-orange-600 shrink-0 ml-2" />
+        <Check className="h-3.5 w-3.5 shrink-0 ml-2" style={{ color: "#E85A24" }} />
       )}
     </div>
   )

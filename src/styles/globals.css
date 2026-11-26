@@ -1,8 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
 @import "tailwindcss";
+@import "./admin-theme.css";
 
 @theme inline {
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+
+  /* Shadcn/UI semantic token bindings (safe defaults for every browser) */
+  --color-background: var(--background, #FFFFFF);
+  --color-foreground: var(--foreground, #171717);
+  --color-card: var(--card, #FFFFFF);
+  --color-card-foreground: var(--card-foreground, #171717);
+  --color-popover: var(--popover, #FFFFFF);
+  --color-popover-foreground: var(--popover-foreground, #171717);
+  --color-primary: var(--primary, #E85A24);
+  --color-primary-foreground: var(--primary-foreground, #FFFFFF);
+  --color-secondary: var(--secondary, #F3F2EE);
+  --color-secondary-foreground: var(--secondary-foreground, #171717);
+  --color-muted: var(--muted, #F9F8F5);
+  --color-muted-foreground: var(--muted-foreground, #77736D);
+  --color-accent: var(--accent, #F3F2EE);
+  --color-accent-foreground: var(--accent-foreground, #171717);
+  --color-destructive: var(--destructive, #C84B42);
+  --color-destructive-foreground: var(--destructive-foreground, #FFFFFF);
+  --color-border: var(--border, #E5E7EB);
+  --color-input: var(--input, #E5E7EB);
+  --color-ring: var(--ring, rgba(232, 90, 36, 0.25));
 
   /* Strict 3-weight policy: 200 (Extra Light), 300 (Light), 400 (Regular) */
   --font-weight-thin: 200;

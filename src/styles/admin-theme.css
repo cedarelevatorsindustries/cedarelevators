@@ -1,0 +1,449 @@
+/*
+ * Cedar Elevators — Admin Design System Tokens & Self-Contained Classes
+ * Scoped to .cedar-admin-theme / .cedar-admin-* so the public storefront retains its exact styles.
+ * Uses explicit hex/rgba values and explicit CSS rules for 100% consistency across browsers & local dev.
+ */
+.cedar-admin-theme {
+  /* Override storefront 3-weight clamp inside Admin only */
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 600;
+
+  /* Standard UI token defaults inside Admin */
+  --background: #FFFFFF;
+  --foreground: #171717;
+  --card: #FFFFFF;
+  --card-foreground: #171717;
+  --popover: #FFFFFF;
+  --popover-foreground: #171717;
+  --primary: #E85A24;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F2EE;
+  --secondary-foreground: #171717;
+  --muted: #F9F8F5;
+  --muted-foreground: #77736D;
+  --accent: #F3F2EE;
+  --accent-foreground: #171717;
+  --destructive: #C84B42;
+  --destructive-foreground: #FFFFFF;
+  --border: #EAE8E2;
+  --input: #EAE8E2;
+  --ring: rgba(232, 90, 36, 0.25);
+
+  /* Cedar Admin semantic tokens */
+  --cedar-admin-bg: #F5F4F2;
+  --cedar-admin-sidebar: #F5F4F2;
+  --cedar-admin-surface: #FFFFFF;
+  --cedar-admin-surface-secondary: #F9F8F5;
+  --cedar-admin-text-primary: #171717;
+  --cedar-admin-text-secondary: #77736D;
+  --cedar-admin-text-muted: #A09B94;
+  --cedar-admin-border: #EAE8E2;
+  --cedar-admin-border-strong: #DCD8CE;
+  --cedar-admin-accent: #E85A24;
+  --cedar-admin-accent-hover: #D14D1B;
+  --cedar-admin-accent-subtle: #FFF0E8;
+  --cedar-admin-success: #238A62;
+  --cedar-admin-warning: #C48A32;
+  --cedar-admin-error: #C84B42;
+  --cedar-admin-info: #4D6F8F;
+
+  --font-cedar-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  background-color: #F5F4F2;
+  color: #171717;
+}
+
+.font-cedar-serif {
+  font-family: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-synthesis-style: auto;
+}
+
+/* Outer admin shell and sidebar */
+.cedar-admin-shell {
+  background-color: #F5F4F2;
+  color: #171717;
+}
+
+.cedar-admin-sidebar {
+  background-color: #F5F4F2;
+  color: #171717;
+}
+
+.cedar-admin-sidebar-divider {
+  border-color: rgba(234, 232, 226, 0.9);
+}
+
+/* Floating white workspace card inside shell (matches Behalf reference) */
+.cedar-admin-workspace-surface {
+  background-color: #FFFFFF;
+  background-image: radial-gradient(
+    ellipse 90% 280px at 55% 0%,
+    rgba(255, 230, 210, 0.45) 0%,
+    rgba(255, 245, 235, 0.25) 35%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border: 1px solid #EAE8E2;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(23, 23, 23, 0.025);
+}
+
+/* Top header bar inside settings workspace */
+.cedar-admin-header {
+  border-bottom: 1px solid #EAE8E2;
+  background-color: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Sidebar navigation items */
+.cedar-admin-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 35px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #6F6B65;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  text-decoration: none;
+}
+
+.cedar-admin-nav-item:hover {
+  background-color: rgba(234, 232, 226, 0.6);
+  color: #171717;
+}
+
+.cedar-admin-nav-item-active {
+  background-color: #FFFFFF;
+  color: #171717;
+  border: 1px solid #EAE8E2;
+  box-shadow: 0 1px 2px rgba(23, 23, 23, 0.04);
+}
+
+.cedar-admin-nav-item-active:hover {
+  background-color: #FFFFFF;
+  color: #171717;
+}
+
+.cedar-admin-nav-logout:hover {
+  background-color: #FDF2F1;
+  color: #C84B42;
+}
+
+.cedar-admin-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  background-color: #FBEFE6;
+  color: #B94A1E;
+  border: 1px solid #F3D5C0;
+}
+
+/* Sidebar search trigger & shortcut pill */
+.cedar-admin-search-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  border: 1px solid #E4E1DA;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #9A958D;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.cedar-admin-search-trigger:hover {
+  background-color: #FFFFFF;
+  border-color: #D6D2C8;
+  color: #77736D;
+}
+
+.cedar-admin-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid #EAE8E2;
+  background-color: #F9F8F5;
+  color: #A09B94;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+/* Cards & Metric cards */
+.cedar-admin-card {
+  background-color: #FFFFFF;
+  border: 1px solid #EAE8E2;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(23, 23, 23, 0.025);
+}
+
+.cedar-admin-metric-card {
+  background-color: #FFFFFF;
+  border: 1px solid #EAE8E2;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(23, 23, 23, 0.025);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.cedar-admin-metric-card-link:hover {
+  border-color: #DCD8CE;
+  box-shadow: 0 4px 14px rgba(23, 23, 23, 0.045);
+}
+
+.cedar-admin-icon-well {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #EAE8E2;
+  background-color: #F9F8F5;
+  color: #77736D;
+  flex-shrink: 0;
+}
+
+.cedar-admin-icon-well-accent {
+  border-color: #F5D5C3;
+  background-color: #FFF0E8;
+  color: #E85A24;
+}
+
+/* Action Buttons */
+.cedar-admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 8px;
+  border: 1px solid #E85A24;
+  background-color: #E85A24;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(232, 90, 36, 0.18);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.cedar-admin-btn-primary:hover {
+  background-color: #D14D1B;
+  border-color: #D14D1B;
+  color: #FFFFFF;
+}
+
+.cedar-admin-btn-neutral {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 8px;
+  border: 1px solid #EAE8E2;
+  background-color: #FFFFFF;
+  color: #171717;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.cedar-admin-btn-neutral:hover {
+  background-color: #F9F8F5;
+  border-color: #DCD8CE;
+  color: #171717;
+}
+
+.cedar-admin-btn-compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid #EAE8E2;
+  background-color: #FFFFFF;
+  color: #171717;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.cedar-admin-btn-compact:hover {
+  background-color: #F9F8F5;
+  border-color: #DCD8CE;
+}
+
+.cedar-admin-btn-compact:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cedar-admin-btn-subtle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid #EAE8E2;
+  background-color: #F9F8F5;
+  color: #171717;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.cedar-admin-btn-subtle:hover {
+  background-color: #F3F2EE;
+  border-color: #DCD8CE;
+}
+
+/* Pills & Segmented Date Range Control */
+.cedar-admin-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid #EAE8E2;
+  background-color: #F9F8F5;
+  color: #77736D;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.cedar-admin-range-group {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 8px;
+  border: 1px solid #EAE8E2;
+  background-color: #F9F8F5;
+  width: fit-content;
+}
+
+.cedar-admin-range-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #77736D;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.cedar-admin-range-btn:hover {
+  color: #171717;
+}
+
+.cedar-admin-range-btn-active {
+  background-color: #FFFFFF;
+  color: #171717;
+  border-color: rgba(234, 232, 226, 0.9);
+  box-shadow: 0 1px 2px rgba(23, 23, 23, 0.06);
+}
+
+/* Hairline dividers for lists (immune to Tailwind divide utilities) */
+.cedar-admin-divided > * + * {
+  border-top: 1px solid #EAE8E2;
+}
+
+.cedar-admin-card-header {
+  border-bottom: 1px solid #EAE8E2;
+}
+
+.cedar-admin-card-footer {
+  border-top: 1px solid #EAE8E2;
+}
+
+/* Explicit Chart Container Heights for cross-browser Recharts sizing */
+.cedar-admin-chart-activity {
+  width: 100%;
+  height: 260px;
+  min-height: 260px;
+}
+
+.cedar-admin-chart-status {
+  width: 100%;
+  height: 210px;
+  min-height: 210px;
+}
+
+.cedar-admin-chart-trend {
+  width: 100%;
+  height: 225px;
+  min-height: 225px;
+}
+
+/* Tooltip surface */
+.cedar-admin-tooltip {
+  border-radius: 12px;
+  border: 1px solid #EAE8E2;
+  background-color: rgba(255, 255, 255, 0.97);
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(23, 23, 23, 0.08);
+}
+
+/* Logo toggle button — collapsed sidebar hover shows hamburger */
+.cedar-admin-logo-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Warm-neutral scrollbar inside admin */
+.cedar-admin-theme * {
+  scrollbar-width: thin;
+  scrollbar-color: #DCD8CE transparent;
+}
+
+.cedar-admin-theme *::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.cedar-admin-theme *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cedar-admin-theme *::-webkit-scrollbar-thumb {
+  background-color: #DCD8CE;
+  border-radius: 9999px;
+}
+
+.cedar-admin-theme *::-webkit-scrollbar-thumb:hover {
+  background-color: #BDB7AB;
+}

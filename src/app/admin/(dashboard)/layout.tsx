@@ -7,41 +7,50 @@ import { checkAdminSessionAction } from "@/lib/actions/admin-auth"
 import { AdminLoginView } from "@/components/admin/admin-login-view"
 import { AdminAccessDeniedView } from "@/components/admin/admin-access-denied-view"
 import { Sidebar } from "@/components/common/sidebar"
-import { Header } from "@/components/common/header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { QueryProvider } from "@/components/providers/query-provider"
+import { Menu } from "lucide-react"
 
 function LoadingScreen() {
   return (
-    <div className="flex h-screen bg-gray-50 animate-pulse">
+    <div className="cedar-admin-theme cedar-admin-shell flex h-screen animate-pulse">
       {/* Sidebar Skeleton */}
-      <div className="hidden lg:flex w-64 flex-col border-r border-gray-200 bg-white p-4 space-y-6">
-        <div className="h-8 w-36 bg-gray-200 rounded-md" />
-        <div className="space-y-2.5">
+      <div className="hidden lg:flex w-64 flex-col p-3.5 space-y-5">
+        <div className="flex items-center gap-2.5 px-1 py-1">
+          <div className="h-7 w-7 rounded-md" style={{ backgroundColor: "#E6E3DC" }} />
+          <div className="space-y-1.5">
+            <div className="h-3.5 w-24 rounded" style={{ backgroundColor: "#E6E3DC" }} />
+            <div className="h-2.5 w-20 rounded" style={{ backgroundColor: "#EAE8E2" }} />
+          </div>
+        </div>
+        <div className="h-8 w-full rounded-[8px]" style={{ backgroundColor: "#FFFFFF", border: "1px solid #EAE8E2" }} />
+        <div className="space-y-1.5">
           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <div key={i} className="h-9 w-full bg-gray-100 rounded-lg" />
+            <div key={i} className="h-8 w-full rounded-[8px]" style={{ backgroundColor: "#EAE8E2" }} />
           ))}
         </div>
       </div>
 
       {/* Main Content Skeleton */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-16 border-b border-gray-200 bg-white px-6 flex items-center justify-between">
-          <div className="h-6 w-48 bg-gray-200 rounded" />
-          <div className="h-9 w-9 bg-gray-200 rounded-full" />
-        </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-                <div className="h-4 w-24 bg-gray-200 rounded" />
-                <div className="h-7 w-16 bg-gray-200 rounded" />
-              </div>
-            ))}
-          </div>
-          <div className="h-80 bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-            <div className="h-5 w-40 bg-gray-200 rounded" />
-            <div className="h-56 w-full bg-gray-100 rounded-lg" />
+      <div className="flex-1 flex flex-col overflow-hidden p-1 sm:p-1.5 lg:p-1.5 lg:pl-0">
+        <div className="cedar-admin-workspace-surface flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 lg:p-10 space-y-6 max-w-7xl mx-auto w-full">
+            <div className="space-y-2">
+              <div className="h-9 w-72 rounded-lg" style={{ backgroundColor: "#F3F2EE" }} />
+              <div className="h-4 w-80 rounded" style={{ backgroundColor: "#F7F6F3" }} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="cedar-admin-metric-card h-28 space-y-3">
+                  <div className="h-3.5 w-24 rounded" style={{ backgroundColor: "#F3F2EE" }} />
+                  <div className="h-7 w-16 rounded" style={{ backgroundColor: "#EAE8E2" }} />
+                </div>
+              ))}
+            </div>
+            <div className="cedar-admin-card h-80 p-6 space-y-4">
+              <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F3F2EE" }} />
+              <div className="h-56 w-full rounded-lg" style={{ backgroundColor: "#F9F8F5" }} />
+            </div>
           </div>
         </div>
       </div>
@@ -67,6 +76,10 @@ export default function AdminLayout({
   // Specific admin utility routes that bypass dashboard layout
   const authRoutes = ['/admin/setup', '/admin/recover', '/admin/reset-password', '/admin/pending', '/admin/logout', '/admin/invite']
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+
+  // Dormant Phase 2 e-commerce routes deferred from Phase 1 release
+  const phase2Routes = ['/admin/orders', '/admin/inventory', '/admin/customers', '/admin/coupons', '/admin/business-verification']
+  const isPhase2Route = phase2Routes.some(route => pathname.startsWith(route))
 
   const isRootAdmin = pathname === '/admin' || pathname === '/admin/' || pathname === '/'
 
@@ -116,14 +129,23 @@ export default function AdminLayout({
 
   // Redirect unauthenticated visitors attempting to access inner admin sub-routes
   useEffect(() => {
+    if (isPhase2Route) {
+      router.replace('/admin')
+      return
+    }
     if (authStatus === 'unauthenticated' && !isRootAdmin && !isAuthRoute) {
       router.push(pathname.startsWith('/admin') ? '/admin' : '/')
     }
-  }, [authStatus, isRootAdmin, isAuthRoute, pathname, router])
+  }, [authStatus, isRootAdmin, isAuthRoute, isPhase2Route, pathname, router])
 
   // If it's a utility auth route (recover, invite, etc.), render directly
   if (isAuthRoute) {
     return <>{children}</>
+  }
+
+  // If user attempted to access a deferred Phase 2 route, don't flash content while redirecting
+  if (isPhase2Route) {
+    return <LoadingScreen />
   }
 
   // Show loading state while verifying
@@ -146,38 +168,52 @@ export default function AdminLayout({
     return <QueryProvider>{children}</QueryProvider>
   }
 
-  // Authenticated active administrator: Render dashboard shell
+  // Authenticated active administrator: Headerless workspace inside warm off-white sidebar shell
   return (
     <QueryProvider>
-      <div className="flex h-screen bg-gradient-to-br from-orange-50/50 to-orange-100/30">
+      <div className="cedar-admin-theme cedar-admin-shell flex h-screen">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block">
-          <Sidebar collapsed={sidebarCollapsed} />
+        <div className="hidden lg:block flex-shrink-0">
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+            showGlobalSearch
+          />
         </div>
 
         {/* Mobile Sidebar Sheet */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="p-0 w-64 bg-white border-r border-orange-100">
-            <Sidebar collapsed={false} />
+          <SheetContent
+            side="left"
+            className="cedar-admin-theme cedar-admin-sidebar p-0 w-64 border-r border-[#EAE8E2]"
+          >
+            <Sidebar
+              collapsed={false}
+              onNavigate={() => setMobileMenuOpen(false)}
+              showGlobalSearch={false}
+            />
           </SheetContent>
         </Sheet>
 
-        {/* Merged Single Card - Header + Content */}
-        <div className="flex-1 flex flex-col overflow-hidden p-1.5 lg:p-2">
-          <div className="flex-1 flex flex-col overflow-hidden bg-white/80 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-xl border border-orange-100/50">
-            {/* Header inside the card */}
-            <div className="border-b border-gray-100 flex-shrink-0">
-              <Header
-                sidebarCollapsed={sidebarCollapsed}
-                onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-                mobileMenuOpen={mobileMenuOpen}
-                onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-              />
-            </div>
-
+        {/* Main White Workspace Panel (tight 3-side padding, reduced corner radius, no top header) */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0 p-1 sm:p-1.5 lg:p-1.5 lg:pl-0">
+          <div className="cedar-admin-workspace-surface flex-1 flex flex-col overflow-hidden">
             {/* Main content area */}
             <main className="flex-1 overflow-y-auto overflow-x-hidden">
-              <div className="p-6 lg:p-10 w-full max-w-full">
+              {/* Mobile-only drawer button (desktop has no header; toggle lives in sidebar) */}
+              <div className="flex items-center justify-between px-4 pt-3 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Open navigation menu"
+                  className="cedar-admin-btn-compact"
+                >
+                  <Menu className="h-4 w-4" style={{ color: "#77736D" }} />
+                  <span>Menu</span>
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-full">
                 <div className="max-w-7xl mx-auto w-full min-w-0">
                   {children}
                 </div>
