@@ -3,32 +3,13 @@
  * Using Upstash Redis for serverless-friendly caching
  */
 
-import { Redis } from '@upstash/redis'
+import {
+  redis,
+  isRedisCircuitOpen,
+  tripRedisCircuit,
+} from '@/lib/redis'
 
-// Check if Redis is configured
-const isRedisConfigured = 
-  process.env.UPSTASH_REDIS_REST_URL && 
-  process.env.UPSTASH_REDIS_REST_TOKEN
-
-// Initialize Redis client (only if configured) with retries disabled to prevent multi-second hangs on unreachable hosts
-let redis: Redis | null = null
-let redisUnavailableUntil = 0
-
-if (isRedisConfigured) {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    retry: false,
-  })
-}
-
-export function isRedisCircuitOpen(): boolean {
-  return Date.now() < redisUnavailableUntil
-}
-
-export function tripRedisCircuit(cooldownMs: number = 5 * 60 * 1000): void {
-  redisUnavailableUntil = Date.now() + cooldownMs
-}
+export { isRedisCircuitOpen, tripRedisCircuit }
 
 /**
  * Cache service with fallback when Redis is not configured

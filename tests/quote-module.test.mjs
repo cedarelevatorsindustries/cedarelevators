@@ -79,11 +79,12 @@ test('3. No obsolete B2B/B2C/UserType classification strings remain in new store
 })
 
 test('4. Redis rate-limiter disables infinite retries and implements circuit-breaker fallback', () => {
+  const libRedisSrc = fs.readFileSync(path.join(process.cwd(), 'src/lib/redis.ts'), 'utf8')
   const redisSrc = fs.readFileSync(path.join(process.cwd(), 'src/lib/services/redis.ts'), 'utf8')
   const rlSrc = fs.readFileSync(path.join(process.cwd(), 'src/lib/services/rate-limit.ts'), 'utf8')
 
-  assert.ok(redisSrc.includes('retry: false'), 'Upstash Redis client must disable exponential retries')
-  assert.ok(redisSrc.includes('tripRedisCircuit'), 'redis.ts must export circuit breaker')
+  assert.ok(libRedisSrc.includes('retry: false'), 'Upstash Redis client must disable exponential retries')
+  assert.ok(redisSrc.includes('tripRedisCircuit'), 'services/redis.ts must re-export circuit breaker')
   assert.ok(rlSrc.includes('withFastTimeout'), 'rate-limit.ts must enforce fast timeout fallback')
   assert.ok(rlSrc.includes('isRedisCircuitOpen'), 'rate-limit.ts must honor circuit breaker state')
 })
