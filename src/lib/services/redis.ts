@@ -10,14 +10,24 @@ const isRedisConfigured =
   process.env.UPSTASH_REDIS_REST_URL && 
   process.env.UPSTASH_REDIS_REST_TOKEN
 
-// Initialize Redis client (only if configured)
+// Initialize Redis client (only if configured) with retries disabled to prevent multi-second hangs on unreachable hosts
 let redis: Redis | null = null
+let redisUnavailableUntil = 0
 
 if (isRedisConfigured) {
   redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL!,
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    retry: false,
   })
+}
+
+export function isRedisCircuitOpen(): boolean {
+  return Date.now() < redisUnavailableUntil
+}
+
+export function tripRedisCircuit(cooldownMs: number = 5 * 60 * 1000): void {
+  redisUnavailableUntil = Date.now() + cooldownMs
 }
 
 /**
@@ -28,8 +38,7 @@ export const cacheService = {
    * Get value from cache
    */
   async get<T = any>(key: string): Promise<T | null> {
-    if (!redis) {
-      console.warn('Redis not configured, skipping cache get')
+    if (!redis || isRedisCircuitOpen()) {
       return null
     }
 
@@ -37,7 +46,8 @@ export const cacheService = {
       const value = await redis.get<T>(key)
       return value
     } catch (error) {
-      console.error('Redis get error:', error)
+      tripRedisCircuit()
+      console.warn('Redis get error (tripping circuit breaker):', error)
       return null
     }
   },

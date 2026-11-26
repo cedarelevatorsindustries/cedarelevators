@@ -1,4 +1,4 @@
-import { redis } from './redis'
+import { redis, isRedisCircuitOpen, tripRedisCircuit } from './redis'
 
 interface MemoryBucket {
   count: number
@@ -13,8 +13,24 @@ export interface RateLimitResult {
   retryAfterSeconds: number
 }
 
+const REDIS_TIMEOUT_MS = 1000
+
+async function withFastTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: NodeJS.Timeout | null = null
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
 /**
- * Durable Upstash Redis rate limiter with automatic in-memory fallback for local dev.
+ * Durable Upstash Redis rate limiter with fast-fail circuit breaker and automatic in-memory fallback.
  */
 export async function checkRateLimit(
   key: string,
@@ -23,14 +39,14 @@ export async function checkRateLimit(
 ): Promise<RateLimitResult> {
   const namespacedKey = `cedar:rl:${key}`
 
-  if (redis) {
+  if (redis && !isRedisCircuitOpen()) {
     try {
-      const count = await redis.incr(namespacedKey)
+      const count = await withFastTimeout(redis.incr(namespacedKey), REDIS_TIMEOUT_MS)
       if (count === 1) {
-        await redis.expire(namespacedKey, windowSeconds)
+        await withFastTimeout(redis.expire(namespacedKey, windowSeconds), REDIS_TIMEOUT_MS)
       }
       if (count > maxRequests) {
-        const ttl = await redis.ttl(namespacedKey)
+        const ttl = await withFastTimeout(redis.ttl(namespacedKey), REDIS_TIMEOUT_MS)
         return {
           allowed: false,
           remaining: 0,
@@ -43,7 +59,8 @@ export async function checkRateLimit(
         retryAfterSeconds: 0,
       }
     } catch (err) {
-      console.warn('[RateLimit] Redis error, falling back to memory:', err)
+      tripRedisCircuit()
+      console.warn('[RateLimit] Redis unreachable, tripped fallback circuit to memory:', err)
     }
   }
 

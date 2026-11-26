@@ -24,7 +24,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    let body: any
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON request body.' },
+        { status: 400 }
+      )
+    }
 
     // 2. Honeypot Anti-Spam Trap
     if (body?.hp_website && typeof body.hp_website === 'string' && body.hp_website.trim().length > 0) {

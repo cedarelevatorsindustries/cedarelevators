@@ -52,7 +52,23 @@ export function QuoteItemsInput({
     name: 'items',
   })
 
-  const [productOptions, setProductOptions] = useState<ProductOption[]>([])
+  const [productOptions, setProductOptions] = useState<ProductOption[]>(() => {
+    const seen = new Set<string>()
+    const opts: ProductOption[] = []
+    for (const item of initialItems) {
+      if (!item.product_id || seen.has(item.product_id)) continue
+      seen.add(item.product_id)
+      opts.push({
+        value: item.product_id,
+        name: item.name,
+        label: `${item.name}${item.sku ? ` (${item.sku})` : ''}`,
+        sku: item.sku || '',
+        thumbnail: item.thumbnail || null,
+        specifications: item.specifications || null,
+      })
+    }
+    return opts
+  })
   const [productMetaMap, setProductMetaMap] = useState<Map<string, ProductOption>>(() => {
     const map = new Map<string, ProductOption>()
     for (const item of initialItems) {

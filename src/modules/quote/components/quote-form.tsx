@@ -133,11 +133,32 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
         idempotency_key: idempotencyKeyRef.current,
       }
 
-      const response = await fetch('/api/quotes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
+      const controller = new AbortController()
+      const timeoutHandle = setTimeout(() => controller.abort(), 25000)
+
+      let response: Response
+      try {
+        response = await fetch('/api/quotes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(timeoutHandle)
+      }
+
+      const contentType = response.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        idempotencyKeyRef.current = generateIdempotencyKey()
+        const unexpectedMsg =
+          response.status >= 500
+            ? 'Our quotation server encountered a temporary error. Please retry in a moment.'
+            : `Unexpected server response (HTTP ${response.status}). Please retry.`
+        setSubmitError(unexpectedMsg)
+        toast.error(unexpectedMsg)
+        return
+      }
 
       const result = await response.json()
 
@@ -198,8 +219,11 @@ export function QuoteForm({ initialItems = [], fromQuoteList = false }: QuoteFor
           resolvedRequestType
         )}&emailStatus=${emailStatus}`
       )
-    } catch {
-      const msg = 'Unable to reach the server right now. Your details are preserved — please retry.'
+    } catch (err: any) {
+      const msg =
+        err?.name === 'AbortError'
+          ? 'Request timed out while waiting for the server. Your details are preserved — please retry.'
+          : 'Network connectivity problem — unable to reach the server. Your details are preserved — please retry.'
       setSubmitError(msg)
       toast.error(msg)
     } finally {

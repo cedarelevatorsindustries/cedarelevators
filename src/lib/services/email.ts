@@ -6,7 +6,8 @@ if (!process.env.RESEND_API_KEY) {
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Cedar Elevators <updates@cedarelevators.in>'
+const FROM_EMAIL =
+  process.env.RESEND_FROM_EMAIL || 'Cedar Elevators <noreply@updates.cedarelevators.in>'
 
 /**
  * Send order confirmation email
